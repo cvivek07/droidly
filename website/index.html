@@ -1,0 +1,2903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Droidly — Android Interview Prep</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #ffffff;
+      --bg2:          #f4f6f9;
+      --bg3:          #eaecf0;
+      --card:         #ffffff;
+      --ink:          #0f1117;
+      --ink2:         #374151;
+      --muted:        #6b7280;
+      --green:        #3d7a4f;
+      --green2:       #2e6040;
+      --green-mid:    #4caf70;
+      --green-light:  #e8f2ec;
+      --green-pale:   #f0f8f2;
+      --amber:        #c47d2e;
+      --amber-light:  #fdf3e3;
+      --border:       rgba(15,17,23,0.08);
+      --border-green: rgba(61,122,79,0.2);
+      --shadow-sm:    0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+      --shadow-md:    0 4px 16px rgba(0,0,0,0.07), 0 2px 6px rgba(0,0,0,0.04);
+      --shadow-lg:    0 12px 40px rgba(0,0,0,0.09), 0 4px 12px rgba(0,0,0,0.05);
+      --shadow-green: 0 8px 32px rgba(61,122,79,0.22);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ─── TEXTURE OVERLAY ─────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.18;
+    }
+
+    * { position: relative; z-index: 1; }
+
+    /* ─── NAV ─────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      background: rgba(255,255,255,0.90);
+      backdrop-filter: blur(20px) saturate(1.6);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04);
+    }
+    nav::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--green2), var(--green-mid), var(--green));
+      z-index: 1;
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--ink);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800; font-size: 20px; letter-spacing: -0.5px;
+    }
+
+    .logo-mark { display: flex; align-items: center; flex-shrink: 0; }
+    .logo-mark img { height: 32px; width: auto; display: block; object-fit: contain; }
+
+    .nav-center {
+      display: flex; gap: 4px; align-items: center;
+    }
+
+    .nav-link {
+      color: var(--muted); text-decoration: none;
+      font-size: 14px; font-weight: 500;
+      padding: 7px 14px; border-radius: 8px;
+      transition: all 0.18s;
+    }
+    .nav-link:hover { color: var(--ink); background: var(--bg2); }
+
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+
+    .nav-pill {
+      font-size: 12px; font-weight: 600;
+      background: var(--green-light); color: var(--green);
+      border: 1px solid var(--border-green);
+      padding: 5px 12px; border-radius: 100px;
+    }
+
+    .btn-nav {
+      background: var(--ink); color: var(--bg);
+      padding: 9px 22px; border-radius: 100px;
+      font-size: 14px; font-weight: 600;
+      text-decoration: none; letter-spacing: -0.2px;
+      transition: all 0.18s;
+    }
+    .btn-nav:hover { background: var(--green); transform: translateY(-1px); }
+
+    /* ─── HERO ────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0; align-items: stretch;
+      padding-top: 68px;
+    }
+
+    .hero-left {
+      padding: 80px 60px 80px 48px;
+      display: flex; flex-direction: column; justify-content: center;
+      border-right: 1px solid var(--border);
+      background:
+        radial-gradient(ellipse 70% 55% at 15% 85%, rgba(61,122,79,0.055) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 90% 10%, rgba(76,175,112,0.04) 0%, transparent 60%),
+        #ffffff;
+    }
+
+    .hero-right {
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 20%, rgba(255,255,255,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(0,0,0,0.1) 0%, transparent 55%),
+        var(--green);
+      display: flex; align-items: center; justify-content: center;
+      padding: 60px 48px;
+      position: relative; overflow: hidden;
+    }
+
+    /* Grid overlay on hero-right */
+    .hero-right-grid {
+      position: absolute; inset: 0; z-index: 1;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 44px 44px;
+      pointer-events: none;
+    }
+
+    /* Hero left dot grid */
+    .hero-left::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 0;
+      background-image: radial-gradient(circle, rgba(61,122,79,0.12) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(ellipse 70% 80% at 80% 90%, black 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Green side decorative circles */
+    .hero-right::before {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.08);
+      top: -180px; right: -180px;
+    }
+    .hero-right::after {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.06);
+      bottom: -80px; left: -80px;
+    }
+
+    /* Announcement pill above hero */
+    .announce-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--green-pale);
+      border: 1px solid var(--border-green);
+      border-radius: 100px;
+      padding: 6px 14px 6px 6px;
+      text-decoration: none;
+      font-size: 13px; color: var(--ink2);
+      font-weight: 500;
+      transition: all 0.18s;
+      width: fit-content;
+    }
+    .announce-pill:hover { border-color: var(--green); color: var(--green); background: var(--green-light); }
+    .announce-new {
+      background: var(--green); color: white;
+      font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 100px;
+      flex-shrink: 0;
+    }
+    .announce-arrow { color: var(--green); font-weight: 700; }
+
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--green); margin-bottom: 24px;
+    }
+    .eyebrow::before {
+      content: '';
+      width: 24px; height: 2px;
+      background: var(--green); border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: clamp(40px, 4.5vw, 66px);
+      line-height: 1.02; letter-spacing: -2px;
+      color: var(--ink);
+    }
+
+    h1 .accent {
+      background: linear-gradient(135deg, var(--green) 0%, #5ab876 50%, var(--green2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+    }
+
+    .hero-sub {
+      margin-top: 20px;
+      font-size: 17px; color: var(--ink2);
+      line-height: 1.7; max-width: 440px;
+      font-weight: 400;
+    }
+
+    .hero-ctas {
+      display: flex; gap: 12px;
+      margin-top: 40px; flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--green); color: white;
+      padding: 15px 30px; border-radius: 12px;
+      font-size: 15px; font-weight: 600;
+      text-decoration: none; letter-spacing: -0.2px;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-green);
+    }
+    .btn-primary:hover { background: var(--green2); transform: translateY(-2px); box-shadow: 0 14px 40px rgba(61,122,79,0.25); }
+
+    .btn-ghost {
+      background: transparent; color: var(--ink);
+      padding: 15px 28px; border-radius: 12px;
+      border: 1.5px solid var(--border);
+      font-size: 15px; font-weight: 500;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: all 0.18s;
+    }
+    .btn-ghost:hover { border-color: var(--green); color: var(--green); }
+
+    .hero-proof {
+      display: flex; align-items: center; gap: 0;
+      margin-top: 36px; padding: 20px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-proof-item {
+      flex: 1; text-align: center;
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .hero-proof-num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 22px; font-weight: 800;
+      letter-spacing: -1px; color: var(--ink);
+      line-height: 1;
+    }
+    .hero-proof-label {
+      font-size: 11px; color: var(--muted);
+      font-weight: 500; letter-spacing: 0.2px;
+    }
+    .hero-proof-div {
+      width: 1px; height: 32px;
+      background: var(--border); flex-shrink: 0;
+    }
+
+    .hero-trust {
+      display: flex; align-items: center; gap: 14px;
+      margin-top: 28px;
+    }
+
+    .avatar-row { display: flex; }
+    .av {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid var(--bg);
+      background: var(--green);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; margin-left: -9px;
+    }
+    .av:first-child { margin-left: 0; }
+
+    .trust-text { font-size: 13px; color: var(--muted); }
+    .trust-text strong { color: var(--ink); font-weight: 600; }
+
+    /* Hero card (right side) */
+    .hero-card {
+      background: white;
+      border-radius: 20px;
+      padding: 28px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+
+    .hcard-top {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 16px;
+    }
+    .hcard-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase; background: var(--green-light);
+      color: var(--green); padding: 4px 10px; border-radius: 6px;
+    }
+    .hcard-diff {
+      font-size: 10px; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase; background: var(--amber-light);
+      color: var(--amber); padding: 4px 10px; border-radius: 6px;
+    }
+    .hcard-q {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 16px; font-weight: 700;
+      color: var(--ink); line-height: 1.45; margin-bottom: 18px;
+    }
+    .hcard-code {
+      background: #1a1e2e; border-radius: 10px;
+      padding: 14px 16px; margin-bottom: 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px; line-height: 1.9;
+      color: #cdd6f4;
+    }
+    .hcard-code .ln { display: block; }
+    .c-cm  { color: #6a7490; font-style: italic; }
+    .c-kw  { color: #c792ea; }
+    .c-fn  { color: #82aaff; }
+    .c-tp  { color: #ffcb6b; }
+    .c-st  { color: #c3e88d; }
+    .c-br  { color: #89ddff; }  /* brackets & braces */
+    .c-nm  { color: #f78c6c; }  /* numbers */
+
+    .hcard-btns { display: flex; gap: 8px; }
+    .hcard-btn {
+      flex: 1; padding: 10px;
+      border-radius: 8px; border: 1.5px solid var(--border);
+      background: none; font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      color: var(--ink2); transition: all 0.18s; text-align: center;
+    }
+    .hcard-btn:hover { border-color: var(--green); color: var(--green); }
+    .hcard-btn.fill { background: var(--green); border-color: var(--green); color: white; }
+    .hcard-btn.fill:hover { background: var(--green2); }
+
+    /* Floating badges on hero-right */
+    .float-badge {
+      position: absolute; z-index: 3;
+      background: white; border-radius: 12px;
+      padding: 10px 14px; font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: var(--shadow-md);
+    }
+    .float-badge.top-right { top: 48px; right: 30px; animation: bob 3s ease-in-out infinite; }
+    .float-badge.bottom-left { bottom: 60px; left: 28px; animation: bob 3s 1.5s ease-in-out infinite; }
+    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+
+    /* ─── MARQUEE STRIP ───────────────────────────────── */
+    .marquee-strip {
+      background: linear-gradient(90deg, #0c0f1a 0%, #111827 50%, #0c0f1a 100%);
+      padding: 14px 0; overflow: hidden;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+    }
+    .marquee-strip::before,
+    .marquee-strip::after {
+      content: '';
+      position: absolute; top: 0; bottom: 0; width: 80px; z-index: 2;
+      pointer-events: none;
+    }
+    .marquee-strip::before {
+      left: 0;
+      background: linear-gradient(90deg, #0c0f1a, transparent);
+    }
+    .marquee-strip::after {
+      right: 0;
+      background: linear-gradient(270deg, #0c0f1a, transparent);
+    }
+
+    .marquee-track {
+      display: flex; gap: 48px;
+      animation: marquee 28s linear infinite;
+      width: max-content;
+    }
+
+    .marquee-item {
+      font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: rgba(255,255,255,0.4);
+      white-space: nowrap; display: flex; align-items: center; gap: 10px;
+    }
+    .marquee-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--green-mid); flex-shrink: 0; }
+
+    @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    /* ─── STATS BAND ──────────────────────────────────── */
+    .stats-band {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--border);
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .stat-cell {
+      padding: 40px 36px;
+      border-right: 1px solid var(--border);
+      transition: background 0.22s;
+    }
+    .stat-cell:hover { background: var(--bg2); }
+    .stat-cell:last-child { border-right: none; }
+
+    .stat-num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 44px; font-weight: 800;
+      letter-spacing: -2px; color: var(--ink);
+      line-height: 1;
+    }
+    .stat-num em { color: var(--green); font-style: normal; }
+
+    .stat-label {
+      font-size: 13px; color: var(--muted);
+      margin-top: 8px; line-height: 1.4;
+    }
+
+    /* ─── SECTION BASE ────────────────────────────────── */
+    section { padding: 100px 48px; }
+
+    .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+      text-transform: uppercase; color: var(--green);
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 18px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; max-width: 40px; height: 1px;
+      background: var(--border-green);
+    }
+
+    h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(30px, 3.5vw, 48px);
+      font-weight: 800; letter-spacing: -1.5px;
+      line-height: 1.05;
+    }
+
+    /* ─── TOPICS GRID ─────────────────────────────────── */
+    .topics-section { background: var(--bg); }
+
+    .topics-header {
+      display: flex; justify-content: space-between;
+      align-items: flex-end; margin-bottom: 48px; flex-wrap: wrap; gap: 20px;
+    }
+
+    .topics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .topic-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px 24px;
+      text-decoration: none; color: inherit;
+      display: flex; flex-direction: column;
+      transition: all 0.22s;
+      box-shadow: var(--shadow-sm);
+    }
+    .topic-card:hover {
+      border-color: var(--border-green);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-3px);
+      background: var(--green-pale);
+    }
+
+    .tc-top {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; margin-bottom: 20px;
+    }
+
+    .tc-icon {
+      font-size: 32px; line-height: 1;
+    }
+
+    .tc-badge {
+      font-size: 9px; font-weight: 800; letter-spacing: 1px;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 5px;
+    }
+    .tc-badge.free { background: var(--green-light); color: var(--green); }
+    .tc-badge.premium { background: var(--amber-light); color: var(--amber); }
+
+    .tc-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 17px; font-weight: 700;
+      letter-spacing: -0.3px; margin-bottom: 8px; color: var(--ink);
+    }
+
+    .tc-desc { font-size: 13px; color: var(--muted); line-height: 1.6; flex: 1; margin-bottom: 20px; }
+
+    .tc-footer {
+      display: flex; justify-content: space-between;
+      align-items: center;
+    }
+
+    .tc-count {
+      font-size: 12px; font-weight: 700; color: var(--green);
+    }
+
+    .tc-arrow {
+      width: 28px; height: 28px; border-radius: 7px;
+      background: var(--green-light); color: var(--green);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; transition: all 0.18s;
+    }
+    .topic-card:hover .tc-arrow { background: var(--green); color: white; }
+
+    /* ─── URGENCY BAR ─────────────────────────────────── */
+    .urgency {
+      background: var(--ink);
+      padding: 20px 48px;
+      display: flex; align-items: center;
+      gap: 20px; flex-wrap: wrap;
+    }
+
+    .urgency-pill {
+      background: rgba(61,122,79,0.2); border: 1px solid rgba(61,122,79,0.3);
+      color: var(--green-mid); font-size: 11px; font-weight: 800;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 5px 12px; border-radius: 100px; white-space: nowrap;
+    }
+
+    .urgency-text { color: rgba(255,255,255,0.75); font-size: 14px; flex: 1; }
+    .urgency-text strong { color: white; }
+
+    .urgency-bar-wrap { display: flex; align-items: center; gap: 10px; }
+    .urgency-label { font-size: 12px; font-weight: 700; color: var(--amber); white-space: nowrap; }
+    .urgency-track { width: 80px; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; }
+    .urgency-fill { width: 37%; height: 100%; background: var(--amber); border-radius: 3px; }
+
+    .btn-urgency {
+      background: var(--green); color: white;
+      padding: 9px 20px; border-radius: 100px;
+      font-size: 13px; font-weight: 700;
+      text-decoration: none; white-space: nowrap;
+      transition: background 0.18s;
+    }
+    .btn-urgency:hover { background: var(--green-mid); }
+
+    /* ─── FOR WHOM ────────────────────────────────────── */
+    .for-section {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .for-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 16px; margin-top: 48px;
+    }
+
+    .for-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px 24px;
+      transition: all 0.22s;
+    }
+    .for-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+    .for-num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px; font-weight: 800; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--muted);
+      opacity: 0.4;
+      margin-bottom: 20px;
+    }
+
+    .for-icon { font-size: 36px; margin-bottom: 16px; display: block; }
+
+    .for-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 18px; font-weight: 700;
+      letter-spacing: -0.3px; margin-bottom: 10px;
+    }
+
+    .for-desc { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 18px; }
+
+    .for-tag {
+      display: inline-block;
+      background: var(--green-light); color: var(--green);
+      font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+      padding: 4px 12px; border-radius: 6px;
+    }
+
+    /* ─── COMPANIES ───────────────────────────────────── */
+    .companies-section { background: var(--bg); }
+
+    .companies-grid {
+      display: grid; grid-template-columns: repeat(8, 1fr);
+      gap: 12px; margin-top: 48px;
+    }
+
+    .co-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 22px 10px;
+      text-align: center; transition: all 0.22s;
+    }
+    .co-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border-green); }
+    .co-card.locked { opacity: 0.45; pointer-events: none; }
+
+    .co-logo { width: 48px; height: 48px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
+    .co-logo img { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; }
+    .co-logo .co-fallback { width: 40px; height: 40px; border-radius: 8px; background: var(--bg2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: var(--ink2); }
+    .co-name { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+    .co-count { font-size: 11px; color: var(--muted); }
+
+    /* ─── PREVIEW SECTION ─────────────────────────────── */
+    .preview-section {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .preview-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden;
+      max-width: 760px; box-shadow: var(--shadow-lg);
+      margin-top: 48px;
+    }
+
+    .preview-top { padding: 28px 32px 0; }
+
+    .preview-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .p-tag {
+      font-size: 10px; font-weight: 800; letter-spacing: 1px;
+      text-transform: uppercase; padding: 4px 10px; border-radius: 6px;
+    }
+    .p-tag.topic { background: var(--green-light); color: var(--green); }
+    .p-tag.hard  { background: #fde8e8; color: #c0392b; }
+    .p-tag.co    { background: var(--bg2); color: var(--muted); }
+
+    .preview-q {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 19px; font-weight: 700;
+      color: var(--ink); line-height: 1.4;
+      padding: 18px 32px 0;
+    }
+
+    .preview-answer { position: relative; }
+
+    .preview-alabel {
+      font-size: 10px; font-weight: 800; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--green);
+      padding: 16px 32px 8px;
+    }
+
+    .preview-blur {
+      padding: 0 32px 32px;
+      filter: blur(5px);
+      user-select: none; pointer-events: none;
+      font-size: 14px; color: var(--ink2); line-height: 1.8;
+    }
+
+    .preview-overlay {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.97) 40%);
+      padding: 24px; text-align: center;
+    }
+
+    .lock-icon { font-size: 32px; margin-bottom: 10px; }
+    .lock-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 20px; font-weight: 800;
+      letter-spacing: -0.5px; margin-bottom: 8px;
+    }
+    .lock-desc { font-size: 14px; color: var(--muted); margin-bottom: 20px; max-width: 340px; }
+    .lock-btn {
+      background: var(--green); color: white;
+      padding: 13px 28px; border-radius: 100px;
+      font-weight: 700; font-size: 14px;
+      text-decoration: none; transition: all 0.18s;
+    }
+    .lock-btn:hover { background: var(--green2); transform: translateY(-1px); }
+
+    /* ─── COMPARE TABLE ───────────────────────────────── */
+    .compare-section { background: var(--bg); }
+
+    .compare-wrap {
+      max-width: 680px;
+      border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden;
+      margin-top: 48px;
+    }
+
+    .compare-head {
+      display: grid; grid-template-columns: 1fr 130px 150px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chead-cell { padding: 20px 24px; }
+    .chead-cell.free-col { text-align: center; border-left: 1px solid var(--border); }
+    .chead-cell.premium-col { text-align: center; background: var(--green); }
+
+    .cplan { font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .premium-col .cplan { color: rgba(255,255,255,0.5); }
+
+    .cprice {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 26px; font-weight: 800;
+      letter-spacing: -1px; color: var(--ink);
+    }
+    .premium-col .cprice { color: white; }
+    .cprice span { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
+    .premium-col .cprice span { color: rgba(255,255,255,0.5); }
+
+    .compare-row {
+      display: grid; grid-template-columns: 1fr 130px 150px;
+      border-bottom: 1px solid var(--border); align-items: center;
+    }
+    .compare-row:last-child { border-bottom: none; }
+    .compare-row.alt { background: var(--bg2); }
+
+    .crow-feat { padding: 13px 24px; font-size: 14px; color: var(--ink2); }
+    .crow-val { padding: 13px 16px; text-align: center; font-size: 14px; color: var(--muted); border-left: 1px solid var(--border); }
+    .crow-val.yes { color: var(--green); font-weight: 700; background: rgba(61,122,79,0.04); }
+
+    .compare-foot {
+      display: grid; grid-template-columns: 1fr 130px 150px;
+      background: var(--bg2); padding: 16px 0;
+    }
+    .cfoot-btn {
+      display: block; text-align: center;
+      margin: 0 14px; padding: 11px;
+      border-radius: 100px; font-size: 13px;
+      font-weight: 700; text-decoration: none; transition: all 0.18s;
+    }
+    .cfoot-free { border: 1.5px solid var(--border); color: var(--ink); }
+    .cfoot-free:hover { border-color: var(--green); color: var(--green); }
+    .cfoot-premium { background: var(--green); color: white; }
+    .cfoot-premium:hover { background: var(--green2); }
+
+    /* ─── SHARED HELPERS ─────────────────────────────── */
+    .section-sub-sm {
+      font-size: 15px; color: var(--muted);
+      line-height: 1.7; margin-top: 8px;
+    }
+
+    /* ─── WHAT'S NEW ──────────────────────────────────── */
+    .whats-new-section {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .wn-header {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 20px;
+      flex-wrap: wrap; margin-bottom: 44px;
+    }
+    .cl-list { display: flex; flex-direction: column; gap: 0; }
+    .cl-item {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 0 24px;
+    }
+    .cl-left {
+      display: flex; flex-direction: column;
+      align-items: flex-end; padding-top: 2px;
+    }
+    .cl-date {
+      font-size: 12px; font-weight: 700;
+      color: var(--muted); white-space: nowrap;
+      padding-bottom: 8px;
+    }
+    .cl-line {
+      width: 1px; flex: 1;
+      background: var(--border);
+      margin-right: -1px;
+      min-height: 24px;
+    }
+    .cl-line.last { background: transparent; }
+    .cl-right {
+      padding-bottom: 32px;
+      border-left: 1px solid var(--border);
+      padding-left: 24px;
+      position: relative;
+    }
+    .cl-right::before {
+      content: '';
+      position: absolute;
+      left: -5px; top: 6px;
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      border: 2px solid var(--bg2);
+      box-shadow: 0 0 0 2px var(--border-green);
+    }
+    .cl-badge {
+      display: inline-block;
+      font-size: 9.5px; font-weight: 800;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 3px 9px; border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    .cl-badge.new     { background: var(--green); color: white; }
+    .cl-badge.updated { background: var(--amber-light); color: var(--amber); }
+    .cl-badge.added   { background: var(--green-light); color: var(--green); }
+    .cl-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 17px; font-weight: 700;
+      letter-spacing: -0.3px; color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .cl-desc {
+      font-size: 14px; color: var(--ink2);
+      line-height: 1.75; margin-bottom: 12px;
+      max-width: 620px;
+    }
+    .cl-tags { display: flex; gap: 7px; flex-wrap: wrap; }
+    .cl-tag {
+      font-size: 11px; font-weight: 600;
+      background: var(--bg3); color: var(--ink2);
+      padding: 3px 10px; border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    /* ─── HOW IT WORKS ────────────────────────────────── */
+    .how-section {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .how-header { margin-bottom: 48px; }
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .how-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px; padding: 28px 24px;
+      display: flex; flex-direction: column;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.22s;
+    }
+    .how-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border-green); }
+    .how-num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px; font-weight: 800;
+      letter-spacing: 2px; color: var(--muted);
+      opacity: 0.4; margin-bottom: 16px;
+    }
+    .how-icon-wrap {
+      font-size: 32px; line-height: 1;
+      margin-bottom: 16px;
+    }
+    .how-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 16px; font-weight: 700;
+      letter-spacing: -0.2px; color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .how-desc {
+      font-size: 13px; color: var(--muted);
+      line-height: 1.75; flex: 1; margin-bottom: 18px;
+    }
+    .how-example {
+      display: flex; flex-wrap: wrap;
+      gap: 5px; align-items: center;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .he-label {
+      font-size: 10px; font-weight: 700;
+      color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.5px; width: 100%;
+      margin-bottom: 4px;
+    }
+    .he-chip {
+      font-size: 11px; font-weight: 600;
+      background: var(--green-light); color: var(--green);
+      padding: 3px 9px; border-radius: 6px;
+      border: 1px solid var(--border-green);
+    }
+
+    /* ─── WHY DROIDLY ─────────────────────────────────── */
+    .why-section {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .why-header { margin-bottom: 44px; }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .why-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px; padding: 32px 28px;
+      display: flex; gap: 22px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.22s;
+    }
+    .why-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border-green); }
+    .why-icon-wrap {
+      font-size: 30px; flex-shrink: 0;
+      width: 52px; height: 52px;
+      background: var(--green-pale);
+      border-radius: 14px;
+      display: flex; align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-green);
+    }
+    .why-body { flex: 1; }
+    .why-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 17px; font-weight: 700;
+      letter-spacing: -0.3px; color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .why-desc {
+      font-size: 13.5px; color: var(--ink2);
+      line-height: 1.75; margin-bottom: 16px;
+    }
+    .why-desc code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; background: var(--bg3);
+      padding: 1px 6px; border-radius: 4px;
+      color: var(--green);
+    }
+    .why-vs { display: flex; flex-direction: column; gap: 5px; }
+    .why-vs-item {
+      font-size: 12.5px; font-weight: 500;
+      padding: 5px 10px; border-radius: 7px;
+    }
+    .why-vs-item.bad  { background: #fff5f5; color: #c53030; }
+    .why-vs-item.good { background: var(--green-pale); color: var(--green2); }
+
+    /* ─── EXPLAINER SECTION ──────────────────────────── */
+    .explainer-section {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .explainer-header-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .explainer-sub {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 36px;
+      max-width: 540px;
+    }
+
+    .explainer-nav {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .expl-nav-btn {
+      padding: 7px 16px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border);
+      background: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .expl-nav-btn:hover:not(:disabled) {
+      border-color: var(--green);
+      color: var(--green);
+    }
+    .expl-nav-btn.active {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+    .expl-nav-btn.coming {
+      opacity: 0.4;
+      cursor: default;
+      font-size: 12px;
+    }
+
+    .explainer-frame-wrap {
+      position: relative;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg), 0 0 0 1px var(--border);
+      background: #080b12;
+      max-width: 760px;
+      aspect-ratio: 16 / 9.6;
+    }
+
+    .explainer-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    .explainer-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      color: rgba(255,255,255,0.6);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.1);
+      pointer-events: none;
+    }
+
+    /* ─── COUNTER BAR ─────────────────────────────────── */
+    .counter-bar {
+      background:
+        radial-gradient(ellipse 80% 100% at 50% 0%, rgba(255,255,255,0.07) 0%, transparent 60%),
+        var(--green);
+      padding: 56px 48px;
+      position: relative; overflow: hidden;
+    }
+    .counter-bar::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+    .counter-inner {
+      display: flex; justify-content: center;
+      align-items: center; gap: 0;
+      max-width: 900px; margin: 0 auto;
+    }
+    .counter-item {
+      flex: 1; text-align: center;
+      padding: 0 32px; min-width: 140px;
+    }
+    .counter-num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 52px; font-weight: 800;
+      color: white; letter-spacing: -2px; line-height: 1;
+      display: inline;
+    }
+    .counter-suf {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 36px; font-weight: 800; color: white;
+    }
+    .counter-lbl {
+      display: block; font-size: 13px;
+      color: rgba(255,255,255,0.6); margin-top: 10px; letter-spacing: 0.2px;
+    }
+    .counter-div { width: 1px; height: 60px; background: rgba(255,255,255,0.15); }
+
+    /* ─── PRICING ─────────────────────────────────────── */
+    .pricing-section { background: var(--bg2); }
+
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 20px; max-width: 780px; margin-top: 48px;
+    }
+
+    .price-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 40px 36px;
+      transition: all 0.22s;
+    }
+    .price-card:hover { transform: translateY(-3px); }
+    .price-card.featured {
+      background: linear-gradient(145deg, #161b2e 0%, #0f1117 60%, #0d1a14 100%);
+      border-color: rgba(61,122,79,0.3);
+      box-shadow: 0 0 0 1px rgba(61,122,79,0.15), var(--shadow-lg);
+    }
+
+    .price-plan {
+      font-size: 10px; font-weight: 800; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 20px;
+    }
+    .price-card.featured .price-plan { color: rgba(255,255,255,0.35); }
+
+    .price-amount {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 50px; font-weight: 800;
+      letter-spacing: -2px; color: var(--ink); line-height: 1;
+    }
+    .price-card.featured .price-amount { color: white; }
+    .price-amount span { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 400; letter-spacing: 0; color: var(--muted); }
+    .price-card.featured .price-amount span { color: rgba(255,255,255,0.35); }
+
+    .price-desc {
+      font-size: 14px; color: var(--muted);
+      margin: 16px 0 28px; padding-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .price-card.featured .price-desc { border-color: rgba(255,255,255,0.08); }
+
+    .price-feats { list-style: none; }
+    .price-feats li {
+      font-size: 14px; color: var(--ink2);
+      padding: 8px 0; display: flex;
+      align-items: center; gap: 10px;
+    }
+    .price-card.featured .price-feats li { color: rgba(255,255,255,0.7); }
+    .price-feats li.off { opacity: 0.3; }
+
+    .chk { color: var(--green); font-weight: 700; font-size: 15px; }
+    .price-card.featured .chk { color: var(--green-mid); }
+
+    .price-btn {
+      display: block; text-align: center; margin-top: 32px;
+      padding: 14px 24px; border-radius: 100px;
+      font-size: 14px; font-weight: 700;
+      text-decoration: none; transition: all 0.18s;
+      border: 1.5px solid var(--border); color: var(--ink);
+    }
+    .price-btn:hover { border-color: var(--green); color: var(--green); }
+    .price-card.featured .price-btn {
+      background: var(--green); border-color: var(--green); color: white;
+    }
+    .price-card.featured .price-btn:hover { background: var(--green-mid); border-color: var(--green-mid); }
+
+    /* ─── TESTIMONIALS ────────────────────────────────── */
+    .testi-section { background: var(--bg); }
+
+    .testi-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-top: 48px;
+    }
+
+    .testi-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px 24px;
+      transition: all 0.22s;
+      box-shadow: var(--shadow-sm);
+    }
+    .testi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--border-green);
+    }
+
+    .testi-stars { color: #f59e0b; font-size: 13px; margin-bottom: 16px; letter-spacing: 1px; }
+
+    .testi-text {
+      font-size: 14px; color: var(--ink2); line-height: 1.75;
+      font-style: italic; margin-bottom: 20px;
+    }
+
+    .testi-author { display: flex; align-items: center; gap: 12px; }
+    .testi-av {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--green-light); border: 1.5px solid var(--border-green);
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .testi-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+    .testi-role { font-size: 12px; color: var(--muted); }
+
+    /* ─── CTA BAND ────────────────────────────────────── */
+    .cta-band {
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 110%, rgba(0,0,0,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.08) 0%, transparent 55%),
+        var(--green);
+      padding: 100px 48px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cta-band::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
+      background-size: 30px 30px;
+      pointer-events: none;
+    }
+    .cta-band h2 { color: white; }
+    .cta-sub { color: rgba(255,255,255,0.7); font-size: 17px; margin: 16px auto 44px; max-width: 440px; }
+
+    .btn-white {
+      background: white; color: var(--green);
+      padding: 17px 40px; border-radius: 12px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 16px; font-weight: 800;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 10px;
+      transition: all 0.2s;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0,0,0,0.2); }
+
+    .cta-trust {
+      margin-top: 28px; font-size: 13px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* ─── FOOTER ──────────────────────────────────────── */
+    footer {
+      padding: 32px 48px;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 12px;
+    }
+    .footer-copy { font-size: 13px; color: var(--muted); }
+
+    /* ─── MODAL ───────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(26,26,24,0.6);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--card); border-radius: 24px;
+      padding: 48px 40px; max-width: 440px; width: 90%;
+      text-align: center; position: relative;
+      transform: translateY(20px); transition: transform 0.3s;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.2);
+      border: 1px solid var(--border);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+
+    .modal-x {
+      position: absolute; top: 16px; right: 18px;
+      font-size: 20px; color: var(--muted); cursor: pointer;
+      background: none; border: none; transition: color 0.2s;
+    }
+    .modal-x:hover { color: var(--ink); }
+    .modal-icon { font-size: 48px; margin-bottom: 16px; }
+    .modal h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 26px; font-weight: 800;
+      letter-spacing: -0.5px; margin-bottom: 12px;
+    }
+    .modal p { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+
+    .modal-input {
+      width: 100%; padding: 13px 18px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: 15px;
+      color: var(--ink); background: var(--bg);
+      outline: none; margin-bottom: 12px; transition: border-color 0.2s;
+    }
+    .modal-input:focus { border-color: var(--green); }
+    .modal-input::placeholder { color: var(--muted); }
+
+    .modal-btn {
+      width: 100%; background: var(--green); color: white;
+      border: none; padding: 15px;
+      border-radius: 100px; font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: background 0.18s; margin-bottom: 12px;
+    }
+    .modal-btn:hover { background: var(--green2); }
+    .modal-note { font-size: 12px; color: var(--muted); }
+
+    /* ─── AUTH MODAL ─────────────────────────────────── */
+    .auth-overlay {
+      position: fixed; inset: 0; z-index: 9998;
+      background: rgba(15,17,23,0.55);
+      backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.28s ease;
+    }
+    .auth-overlay.open { opacity: 1; pointer-events: all; }
+
+    .auth-box {
+      background: var(--card);
+      border-radius: 24px;
+      width: 100%; max-width: 420px;
+      padding: 40px 36px 32px;
+      position: relative;
+      transform: translateY(18px) scale(0.98);
+      transition: transform 0.28s ease;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 0 0 1px var(--border);
+    }
+    .auth-overlay.open .auth-box { transform: translateY(0) scale(1); }
+
+    .auth-close {
+      position: absolute; top: 14px; right: 16px;
+      background: var(--bg2); border: none; cursor: pointer;
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: var(--muted);
+      transition: all 0.18s;
+    }
+    .auth-close:hover { background: var(--bg3); color: var(--ink); }
+
+    .auth-logo {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800; font-size: 18px; margin-bottom: 28px;
+    }
+    .auth-logo-mark { display: flex; align-items: center; }
+    .auth-logo-mark img { height: 28px; width: auto; display: block; object-fit: contain; }
+
+    /* Tabs */
+    .auth-tabs {
+      display: flex; gap: 0;
+      background: var(--bg2); border-radius: 10px;
+      padding: 4px; margin-bottom: 28px;
+    }
+    .auth-tab {
+      flex: 1; padding: 9px; border-radius: 7px; border: none;
+      background: none; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 600;
+      color: var(--muted); transition: all 0.18s;
+    }
+    .auth-tab.active {
+      background: var(--card); color: var(--ink);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    /* Fields */
+    .auth-field { margin-bottom: 14px; }
+    .auth-label {
+      display: block; font-size: 12px; font-weight: 700;
+      color: var(--ink2); margin-bottom: 6px; letter-spacing: 0.2px;
+    }
+    .auth-input {
+      width: 100%; padding: 12px 14px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: 15px;
+      color: var(--ink); background: var(--bg);
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .auth-input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(61,122,79,0.1);
+    }
+    .auth-input.error { border-color: #e53e3e; }
+    .auth-input::placeholder { color: var(--muted); }
+
+    .auth-pw-wrap { position: relative; }
+    .auth-pw-toggle {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      font-size: 15px; color: var(--muted);
+      transition: color 0.18s; padding: 4px;
+    }
+    .auth-pw-toggle:hover { color: var(--ink); }
+
+    .auth-error {
+      font-size: 12px; color: #e53e3e;
+      margin-top: 4px; display: none;
+    }
+    .auth-error.show { display: block; }
+
+    .auth-forgot {
+      font-size: 13px; color: var(--green); text-decoration: none;
+      float: right; font-weight: 500; transition: color 0.18s;
+      margin-top: -8px; margin-bottom: 14px; display: block; text-align: right;
+    }
+    .auth-forgot:hover { color: var(--green2); }
+
+    .auth-submit {
+      width: 100%; background: var(--green); color: white;
+      border: none; padding: 14px;
+      border-radius: 100px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s; letter-spacing: -0.2px;
+      margin-top: 4px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .auth-submit:hover { background: var(--green2); transform: translateY(-1px); }
+    .auth-submit:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
+
+    .auth-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 20px 0; color: var(--muted); font-size: 12px;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .auth-google {
+      width: 100%; background: var(--bg2); border: 1.5px solid var(--border);
+      padding: 12px; border-radius: 100px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      color: var(--ink); transition: all 0.18s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .auth-google:hover { border-color: var(--green); background: var(--green-pale); }
+
+    .auth-switch {
+      text-align: center; font-size: 13px;
+      color: var(--muted); margin-top: 20px;
+    }
+    .auth-switch a {
+      color: var(--green); text-decoration: none; font-weight: 600;
+    }
+    .auth-switch a:hover { text-decoration: underline; }
+
+    .auth-terms {
+      text-align: center; font-size: 11px;
+      color: var(--muted); margin-top: 14px; line-height: 1.6;
+    }
+    .auth-terms a { color: var(--muted); text-decoration: underline; }
+
+    /* ─── NAV USER AVATAR ────────────────────────────── */
+    .nav-user {
+      display: flex; align-items: center; gap: 8px;
+      position: relative; cursor: pointer;
+    }
+    .nav-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--green); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      border: 2px solid var(--border-green);
+      flex-shrink: 0; transition: box-shadow 0.18s;
+    }
+    .nav-user:hover .nav-avatar { box-shadow: 0 0 0 3px rgba(61,122,79,0.2); }
+    .nav-user-name {
+      font-size: 14px; font-weight: 600; color: var(--ink);
+      max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .nav-caret { font-size: 10px; color: var(--muted); }
+
+    .user-dropdown {
+      position: absolute; top: calc(100% + 10px); right: 0;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 8px;
+      box-shadow: var(--shadow-lg);
+      min-width: 180px; z-index: 999;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-6px);
+      transition: all 0.18s ease;
+    }
+    .nav-user:hover .user-dropdown,
+    .nav-user.open .user-dropdown {
+      opacity: 1; pointer-events: all; transform: translateY(0);
+    }
+    .user-dropdown-email {
+      padding: 8px 12px 10px;
+      font-size: 12px; color: var(--muted);
+      border-bottom: 1px solid var(--border); margin-bottom: 6px;
+      word-break: break-all;
+    }
+    .user-dropdown-item {
+      padding: 9px 12px; border-radius: 8px;
+      font-size: 14px; font-weight: 500; color: var(--ink2);
+      cursor: pointer; display: flex; align-items: center; gap: 8px;
+      transition: all 0.15s; text-decoration: none;
+    }
+    .user-dropdown-item:hover { background: var(--bg2); color: var(--ink); }
+    .user-dropdown-item.danger { color: #e53e3e; }
+    .user-dropdown-item.danger:hover { background: #fff0f0; color: #c53030; }
+
+    /* Toast notification */
+    .auth-toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--ink); color: white;
+      padding: 12px 22px; border-radius: 100px;
+      font-size: 14px; font-weight: 500;
+      display: flex; align-items: center; gap: 8px;
+      z-index: 99999; opacity: 0;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-lg);
+      white-space: nowrap;
+    }
+    .auth-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .auth-toast.success { background: var(--green); }
+    .auth-toast.error-toast { background: #e53e3e; }
+
+    /* ─── ANIMATIONS ──────────────────────────────────── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-1 { animation: fadeUp 0.65s 0.05s ease both; }
+    .fade-2 { animation: fadeUp 0.65s 0.15s ease both; }
+    .fade-3 { animation: fadeUp 0.65s 0.25s ease both; }
+    .fade-4 { animation: fadeUp 0.65s 0.35s ease both; }
+    .fade-5 { animation: fadeUp 0.65s 0.45s ease both; }
+
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ─── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .topics-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 900px) {
+      nav { padding: 0 20px; }
+      .nav-center { display: none; }
+
+      .hero { grid-template-columns: 1fr; }
+      .hero-left { padding: 40px 20px 48px; border-right: none; border-bottom: 1px solid var(--border); }
+      .hero-right { min-height: 380px; padding: 40px 20px; }
+
+      .stats-band { grid-template-columns: repeat(2, 1fr); }
+      .stat-cell:nth-child(even) { border-right: none; }
+      .stat-cell:nth-child(3), .stat-cell:nth-child(4) { border-top: 1px solid var(--border); }
+
+      section { padding: 70px 20px; }
+
+      .topics-grid { grid-template-columns: repeat(2, 1fr); }
+      .how-grid { grid-template-columns: repeat(2, 1fr); }
+      .why-grid { grid-template-columns: 1fr; }
+      .why-card { flex-direction: column; gap: 14px; }
+      .cl-item { grid-template-columns: 80px 1fr; gap: 0 16px; }
+      .companies-grid { grid-template-columns: repeat(4, 1fr); }
+      .testi-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .urgency { padding: 16px 20px; }
+      .counter-inner { flex-wrap: wrap; gap: 40px; }
+      .counter-div { display: none; }
+      footer { padding: 24px 20px; }
+      .how-grid { grid-template-columns: 1fr; }
+      .hero-proof { flex-wrap: wrap; gap: 16px; }
+      .wn-header { flex-direction: column; }
+      .topics-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="nav-center">
+    <a href="#topics" class="nav-link">Topics</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="#reviews" class="nav-link">Reviews</a>
+  </div>
+  <div class="nav-right" id="navRight">
+    <a href="#pricing" class="nav-pill" style="text-decoration:none; cursor:pointer;">⚡ Get Premium</a>
+    <!-- Logged-out state -->
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal('signin')" style="cursor:pointer; border:none; font-family:inherit;">Sign In</button>
+    <!-- Logged-in state (hidden by default) -->
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <a href="questions.html" class="user-dropdown-item">📚 My Questions</a>
+        <div class="user-dropdown-item danger" onclick="signOut()">🚪 Sign Out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" style="padding: 0;">
+
+  <!-- Left -->
+  <div class="hero-left">
+    <a href="#whats-new" class="announce-pill fade-1">
+      <span class="announce-new">New</span>
+      Micro Explainers — 30-second concept animations
+      <span class="announce-arrow">→</span>
+    </a>
+    <div class="eyebrow fade-2" style="margin-top: 24px;">Android Interview Prep · 2025–26</div>
+
+    <h1 class="fade-3">
+      The only prep<br>
+      site built for<br>
+      <span class="accent">Android devs.</span>
+    </h1>
+
+    <p class="hero-sub fade-4">
+      375 questions, real Kotlin code in every answer, and 10 system design deep-dives — structured by topic, difficulty, and company. Everything in one place.
+    </p>
+
+    <div class="hero-proof fade-5">
+      <div class="hero-proof-item">
+        <span class="hero-proof-num">375+</span>
+        <span class="hero-proof-label">Questions</span>
+      </div>
+      <div class="hero-proof-div"></div>
+      <div class="hero-proof-item">
+        <span class="hero-proof-num">14</span>
+        <span class="hero-proof-label">Topics</span>
+      </div>
+      <div class="hero-proof-div"></div>
+      <div class="hero-proof-item">
+        <span class="hero-proof-num">10</span>
+        <span class="hero-proof-label">System Designs</span>
+      </div>
+      <div class="hero-proof-div"></div>
+      <div class="hero-proof-item">
+        <span class="hero-proof-num">Free</span>
+        <span class="hero-proof-label">To start</span>
+      </div>
+    </div>
+
+    <div class="hero-ctas fade-5" style="animation-delay:0.4s">
+      <a href="#" onclick="goToQuestions(''); return false;" class="btn-primary">
+        Start Studying Free →
+      </a>
+      <a href="#how-it-works" class="btn-ghost">
+        See how it works
+      </a>
+    </div>
+
+    <div class="hero-trust fade-5" style="animation-delay:0.55s">
+      <div class="avatar-row">
+        <div class="av">👨</div>
+        <div class="av">👩</div>
+        <div class="av">🧑</div>
+        <div class="av">👨</div>
+        <div class="av" style="background:var(--bg3); font-size:11px; font-weight:700; color:var(--green);">2K+</div>
+      </div>
+      <div class="trust-text">
+        Trusted by <strong>2,000+ Android developers</strong> across India
+      </div>
+    </div>
+  </div>
+
+  <!-- Right (green panel) -->
+  <div class="hero-right">
+    <div class="hero-right-grid"></div>
+    <div class="hero-card fade-3">
+      <div class="hcard-top">
+        <span class="hcard-badge">Jetpack Compose</span>
+        <span class="hcard-diff">Medium</span>
+      </div>
+      <div class="hcard-q">
+        What is recomposition in Jetpack Compose and how do you optimise it?
+      </div>
+      <div class="hcard-code">
+        <span class="ln"><span class="c-cm">// ❌ Unstable — always recomposes</span></span>
+        <span class="ln"><span class="c-kw">@Composable</span></span>
+        <span class="ln"><span class="c-kw">fun </span><span class="c-fn">UserCard</span><span class="c-br">(</span>user: <span class="c-tp">User</span><span class="c-br">)</span> <span class="c-br">{</span></span>
+        <span class="ln">  <span class="c-fn">Text</span><span class="c-br">(</span>text = user.name<span class="c-br">)</span></span>
+        <span class="ln"><span class="c-br">}</span></span>
+        <span class="ln">&nbsp;</span>
+        <span class="ln"><span class="c-cm">// ✅ Stable — skips if unchanged</span></span>
+        <span class="ln"><span class="c-kw">@Stable</span></span>
+        <span class="ln"><span class="c-kw">data class </span><span class="c-tp">User</span><span class="c-br">(</span></span>
+        <span class="ln">  <span class="c-kw">val </span>name: <span class="c-tp">String</span></span>
+        <span class="ln"><span class="c-br">)</span></span>
+      </div>
+      <div class="hcard-btns">
+        <button class="hcard-btn">💡 Hint</button>
+        <button class="hcard-btn fill">View Answer</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-strip">
+  <div class="marquee-track">
+    <div class="marquee-item"><div class="marquee-dot"></div>Kotlin Language</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Jetpack Compose</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Coroutines & Flow</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Clean Architecture</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Dependency Injection</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Retrofit & OkHttp</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Room & DataStore</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>MVVM · MVI · MVP</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>System Design</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Hilt & Dagger</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Android Performance</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Google · Flipkart · Swiggy</div>
+    <!-- duplicate for seamless loop -->
+    <div class="marquee-item"><div class="marquee-dot"></div>Kotlin Language</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Jetpack Compose</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Coroutines & Flow</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Clean Architecture</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Dependency Injection</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Retrofit & OkHttp</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Room & DataStore</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>MVVM · MVI · MVP</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>System Design</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Hilt & Dagger</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Android Performance</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Google · Flipkart · Swiggy</div>
+  </div>
+</div>
+
+<!-- STATS BAND -->
+<div class="stats-band">
+  <div class="stat-cell reveal">
+    <div class="stat-num">375<em>+</em></div>
+    <div class="stat-label">Interview questions<br>across 7 topics</div>
+  </div>
+  <div class="stat-cell reveal">
+    <div class="stat-num">7</div>
+    <div class="stat-label">Core Android topics<br>fully covered</div>
+  </div>
+  <div class="stat-cell reveal">
+    <div class="stat-num">2K<em>+</em></div>
+    <div class="stat-label">Developers already<br>preparing with Droidly</div>
+  </div>
+  <div class="stat-cell reveal">
+    <div class="stat-num">92<em>%</em></div>
+    <div class="stat-label">Interview success<br>rate among users</div>
+  </div>
+</div>
+
+<!-- WHAT'S NEW -->
+<section id="whats-new" class="whats-new-section reveal">
+  <div class="wn-header">
+    <div>
+      <div class="section-label">Changelog</div>
+      <h2>What's <span style="color:var(--green)">new</span></h2>
+      <p class="section-sub-sm">We ship updates regularly. Here's what's been added recently.</p>
+    </div>
+    <a href="#" onclick="goToQuestions(''); return false;" class="btn-ghost" style="white-space:nowrap; align-self:flex-start; margin-top:8px;">Explore All Content →</a>
+  </div>
+  <div class="cl-list">
+
+    <div class="cl-item">
+      <div class="cl-left">
+        <div class="cl-date">Apr 2026</div>
+        <div class="cl-line"></div>
+      </div>
+      <div class="cl-right">
+        <div class="cl-badge new">New</div>
+        <div class="cl-title">Micro Explainers — 30-second animated concepts</div>
+        <div class="cl-desc">Watch Android concepts come alive: code types in, threads animate, cancellation flows. First up: Coroutines Lifecycle. Recomposition and Flow vs LiveData coming next.</div>
+        <div class="cl-tags">
+          <span class="cl-tag">Coroutines</span>
+          <span class="cl-tag">Recomposition</span>
+          <span class="cl-tag">Flow</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cl-item">
+      <div class="cl-left">
+        <div class="cl-date">Mar 2026</div>
+        <div class="cl-line"></div>
+      </div>
+      <div class="cl-right">
+        <div class="cl-badge updated">Updated</div>
+        <div class="cl-title">System Design — 10 full Android deep-dives</div>
+        <div class="cl-desc">Full breakdowns with architecture decisions, data flow diagrams, Kotlin code snippets, and 20 Q&As each. Covers Chat App, Image Loader, Ride Sharing, File Downloads, Push Notifications, and more.</div>
+        <div class="cl-tags">
+          <span class="cl-tag">Chat App</span>
+          <span class="cl-tag">Image Loader</span>
+          <span class="cl-tag">Ride Sharing</span>
+          <span class="cl-tag">+ 7 more</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cl-item">
+      <div class="cl-left">
+        <div class="cl-date">Jan 2026</div>
+        <div class="cl-line"></div>
+      </div>
+      <div class="cl-right">
+        <div class="cl-badge added">Added</div>
+        <div class="cl-title">Company-specific question tagging</div>
+        <div class="cl-desc">Questions now tagged by company. Know exactly what Google, Flipkart, Swiggy, PhonePe, CRED, and Zepto ask in their Android interviews — and focus there.</div>
+        <div class="cl-tags">
+          <span class="cl-tag">Google</span>
+          <span class="cl-tag">Flipkart</span>
+          <span class="cl-tag">Swiggy</span>
+          <span class="cl-tag">PhonePe</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cl-item">
+      <div class="cl-left">
+        <div class="cl-date">Nov 2025</div>
+        <div class="cl-line last"></div>
+      </div>
+      <div class="cl-right">
+        <div class="cl-badge added">Added</div>
+        <div class="cl-title">375+ questions — Kotlin 2.0, Android 15, Compose</div>
+        <div class="cl-desc">Expanded question bank covering Kotlin 2.0 features, Compose stability contracts, Hilt with KSP, Android 15 APIs, and updated Coroutines patterns. Every answer has a code example.</div>
+        <div class="cl-tags">
+          <span class="cl-tag">Kotlin 2.0</span>
+          <span class="cl-tag">Android 15</span>
+          <span class="cl-tag">Compose</span>
+          <span class="cl-tag">Hilt KSP</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- TOPICS -->
+<section id="topics" class="topics-section">
+  <div class="topics-header">
+    <div>
+      <div class="section-label">Question Bank</div>
+      <h2>375 questions across<br><span style="color:var(--green)">14 topics.</span></h2>
+      <p class="section-sub-sm" style="margin-top:10px; max-width:480px;">From Kotlin fundamentals to Android 15 APIs, Jetpack Compose internals, system design, and mock interviews. Free topics to get started — unlock everything with Premium.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
+      <a href="#" onclick="goToQuestions(''); return false;" class="btn-primary" style="padding:11px 24px; font-size:14px; border-radius:100px; box-shadow:none; margin:0;">Open Question Bank →</a>
+      <span style="font-size:12px; color:var(--muted);">2 topics free · Unlock all with Premium</span>
+    </div>
+  </div>
+
+  <div class="topics-grid">
+    <a href="#" onclick="goToQuestions('#android'); return false;" class="topic-card reveal">
+      <div class="tc-top">
+        <div class="tc-icon">🤖</div>
+        <span class="tc-badge free">Free</span>
+      </div>
+      <div class="tc-title">Android Domain</div>
+      <p class="tc-desc">Activity & Fragment lifecycle, Intents, Services, Permissions, BroadcastReceivers, and 2025 APIs.</p>
+      <div class="tc-footer">
+        <span class="tc-count">50 questions</span>
+        <div class="tc-arrow">→</div>
+      </div>
+    </a>
+
+    <a href="#" onclick="goToQuestions('#kotlin'); return false;" class="topic-card reveal">
+      <div class="tc-top">
+        <div class="tc-icon">🟣</div>
+        <span class="tc-badge free">Free</span>
+      </div>
+      <div class="tc-title">Kotlin Language</div>
+      <p class="tc-desc">Null safety, extension functions, sealed classes, coroutines, generics, and Kotlin 2.0 features.</p>
+      <div class="tc-footer">
+        <span class="tc-count">50 questions</span>
+        <div class="tc-arrow">→</div>
+      </div>
+    </a>
+
+    <a href="#" onclick="goToQuestions('#compose'); return false;" class="topic-card reveal">
+      <div class="tc-top">
+        <div class="tc-icon">🎨</div>
+        <span class="tc-badge premium">Premium</span>
+      </div>
+      <div class="tc-title">Jetpack Compose</div>
+      <p class="tc-desc">Recomposition, state hoisting, side effects, custom layouts, animations, and Compose internals.</p>
+      <div class="tc-footer">
+        <span class="tc-count">50 questions</span>
+        <div class="tc-arrow">→</div>
+      </div>
+    </a>
+
+    <a href="#" onclick="goToQuestions('#coroutines'); return false;" class="topic-card reveal">
+      <div class="tc-top">
+        <div class="tc-icon">⚡</div>
+        <span class="tc-badge premium">Premium</span>
+      </div>
+      <div class="tc-title">Coroutines & Flow</div>
+      <p class="tc-desc">Suspend functions, dispatchers, StateFlow, SharedFlow, channels, and structured concurrency.</p>
+      <div class="tc-footer">
+        <span class="tc-count">50 questions</span>
+        <div class="tc-arrow">→</div>
+      </div>
+    </a>
+
+    <a href="#" onclick="goToQuestions('#architecture'); return false;" class="topic-card reveal">
+      <div class="tc-top">
+        <div class="tc-icon">🏛️</div>
+        <span class="tc-badge premium">Premium</span>
+      </div>
+      <div class="tc-title">Architecture</div>
+      <p class="tc-desc">MVVM, MVI, Clean Architecture, multi-module apps, feature modules, and navigation patterns.</p>
+      <div class="tc-footer">
+        <span class="tc-count">50 questions</span>
+        <div class="tc-arrow">→</div>
+      </div>
+    </a>
+
+    <a href="#" onclick="goToQuestions('#di'); return false;" class="topic-card reveal">
+      <div class="tc-top">
+        <div class="tc-icon">💉</div>
+        <span class="tc-badge premium">Premium</span>
+      </div>
+      <div class="tc-title">Dependency Injection</div>
+      <p class="tc-desc">Hilt, Dagger 2, component scopes, multibindings, testing with DI, and KSP migration.</p>
+      <div class="tc-footer">
+        <span class="tc-count">75 questions</span>
+        <div class="tc-arrow">→</div>
+      </div>
+    </a>
+
+    <a href="#" onclick="goToQuestions('#networking'); return false;" class="topic-card reveal">
+      <div class="tc-top">
+        <div class="tc-icon">🌐</div>
+        <span class="tc-badge premium">Premium</span>
+      </div>
+      <div class="tc-title">Networking</div>
+      <p class="tc-desc">Retrofit, OkHttp, interceptors, token refresh, SSL pinning, REST vs GraphQL, and gRPC.</p>
+      <div class="tc-footer">
+        <span class="tc-count">50 questions</span>
+        <div class="tc-arrow">→</div>
+      </div>
+    </a>
+
+    <a href="#" onclick="goToQuestions('#storage'); return false;" class="topic-card reveal">
+      <div class="tc-top">
+        <div class="tc-icon">🗄️</div>
+        <span class="tc-badge premium">Premium</span>
+      </div>
+      <div class="tc-title">Data Storage</div>
+      <p class="tc-desc">Room, DataStore, SharedPreferences, migrations, encrypted storage, and offline strategies.</p>
+      <div class="tc-footer">
+        <span class="tc-count">40+ questions</span>
+        <div class="tc-arrow">→</div>
+      </div>
+    </a>
+
+    <a href="#" onclick="goToQuestions('#buildtools'); return false;" class="topic-card reveal">
+      <div class="tc-top">
+        <div class="tc-icon">🔧</div>
+        <span class="tc-badge premium">Premium</span>
+      </div>
+      <div class="tc-title">Build Tools</div>
+      <p class="tc-desc">Gradle, R8, ProGuard, APK vs AAB, build variants, flavors, and APK size reduction.</p>
+      <div class="tc-footer">
+        <span class="tc-count">40+ questions</span>
+        <div class="tc-arrow">→</div>
+      </div>
+    </a>
+
+    <a href="#" onclick="goToQuestions('#performance'); return false;" class="topic-card reveal">
+      <div class="tc-top">
+        <div class="tc-icon">🚀</div>
+        <span class="tc-badge premium">Premium</span>
+      </div>
+      <div class="tc-title">Performance</div>
+      <p class="tc-desc">Memory leaks, overdraw, ANR, startup time, and profiling with Android Studio tools.</p>
+      <div class="tc-footer">
+        <span class="tc-count">40+ questions</span>
+        <div class="tc-arrow">→</div>
+      </div>
+    </a>
+
+    <a href="#" onclick="goToQuestions('#sysdesign'); return false;" class="topic-card reveal">
+      <div class="tc-top">
+        <div class="tc-icon">🏗️</div>
+        <span class="tc-badge premium">Premium</span>
+      </div>
+      <div class="tc-title">System Design</div>
+      <p class="tc-desc">Design WhatsApp, Instagram, Uber for Android. Offline sync, scalability, architecture decisions.</p>
+      <div class="tc-footer">
+        <span class="tc-count">40+ questions</span>
+        <div class="tc-arrow">→</div>
+      </div>
+    </a>
+
+    <a href="#" onclick="goToQuestions('#hr'); return false;" class="topic-card reveal">
+      <div class="tc-top">
+        <div class="tc-icon">🤝</div>
+        <span class="tc-badge free">Free</span>
+      </div>
+      <div class="tc-title">HR &amp; Behavioural</div>
+      <p class="tc-desc">STAR method answers, conflict resolution, and leadership stories for Android developer roles.</p>
+      <div class="tc-footer">
+        <span class="tc-count">40+ questions</span>
+        <div class="tc-arrow">→</div>
+      </div>
+    </a>
+
+    <a href="#" onclick="goToQuestions('#hr'); return false;" class="topic-card reveal">
+      <div class="tc-top">
+        <div class="tc-icon">🎯</div>
+        <span class="tc-badge premium">Premium</span>
+      </div>
+      <div class="tc-title">Mock Interview</div>
+      <p class="tc-desc">Timed sessions simulating real Google, Flipkart, Swiggy interviews with full model answers.</p>
+      <div class="tc-footer">
+        <span class="tc-count">Unlimited (Premium)</span>
+        <div class="tc-arrow">→</div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- EXPLAINER SECTION -->
+<section class="explainer-section reveal">
+  <div class="section-label">Micro Explainers</div>
+  <div class="explainer-header-row">
+    <h2>Learn in <span style="color:var(--green)">30 seconds</span></h2>
+    <div class="explainer-nav">
+      <button class="expl-nav-btn active" onclick="loadExplainer('coroutines', this)">Coroutines</button>
+      <button class="expl-nav-btn" onclick="loadExplainer('recomposition', this)">Recomposition</button>
+      <button class="expl-nav-btn" onclick="loadExplainer('flow', this)">Flow vs LiveData</button>
+      <button class="expl-nav-btn coming" disabled>ViewModel ↗</button>
+    </div>
+  </div>
+  <p class="explainer-sub">Visual concept breakdowns — code animates in, key ideas highlight, takeaways pop. No video buffering.</p>
+  <div class="explainer-frame-wrap">
+    <iframe
+      id="explainerFrame"
+      src="explainer_coroutines.html"
+      class="explainer-frame"
+      frameborder="0"
+      scrolling="no"
+      title="Coroutines Lifecycle explainer">
+    </iframe>
+    <div class="explainer-badge">▶ Auto-playing</div>
+  </div>
+</section>
+
+<!-- URGENCY BANNER -->
+<div class="urgency">
+  <div class="urgency-pill">🔥 Early Bird</div>
+  <div class="urgency-text">Premium at <strong>₹299/mo</strong> instead of ₹599/mo. Price increases at 500 members.</div>
+  <div class="urgency-bar-wrap">
+    <span class="urgency-label">187 spots left</span>
+    <div class="urgency-track"><div class="urgency-fill"></div></div>
+  </div>
+  <a href="#pricing" class="btn-urgency">Claim Offer →</a>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works" class="how-section">
+  <div class="section-label">The Process</div>
+  <div class="how-header">
+    <h2>From scattered prep<br>to <span style="color:var(--green)">interview-ready</span></h2>
+    <p class="section-sub-sm">Most Android devs prepare with YouTube tabs, random blogs, and hope. Droidly gives you a structured path in one place.</p>
+  </div>
+  <div class="how-grid">
+
+    <div class="how-card reveal">
+      <div class="how-num">01</div>
+      <div class="how-icon-wrap"><span class="how-icon">🗺️</span></div>
+      <div class="how-title">Pick your weak spots</div>
+      <p class="how-desc">14 topics organised by difficulty. Start with Easy, work up to Hard. Every question is tagged by topic, level, and company — so you study what actually matters for your next interview.</p>
+      <div class="how-example">
+        <span class="he-label">Topics include</span>
+        <span class="he-chip">Kotlin</span>
+        <span class="he-chip">Compose</span>
+        <span class="he-chip">Coroutines</span>
+        <span class="he-chip">+11 more</span>
+      </div>
+    </div>
+
+    <div class="how-card reveal">
+      <div class="how-num">02</div>
+      <div class="how-icon-wrap"><span class="how-icon">💻</span></div>
+      <div class="how-title">Study with real Kotlin code</div>
+      <p class="how-desc">Every single answer comes with working Kotlin code, edge cases to watch out for, and a practical interview tip. Not theory. Not pseudocode. The actual pattern your interviewer expects.</p>
+      <div class="how-example">
+        <span class="he-label">Every answer has</span>
+        <span class="he-chip">Code snippet</span>
+        <span class="he-chip">Edge cases</span>
+        <span class="he-chip">Interview tip</span>
+      </div>
+    </div>
+
+    <div class="how-card reveal">
+      <div class="how-num">03</div>
+      <div class="how-icon-wrap"><span class="how-icon">🏗️</span></div>
+      <div class="how-title">Ace system design rounds</div>
+      <p class="how-desc">10 full Android system design breakdowns — the round most devs fail because no one prepares for it. Design a chat app, image loader, or ride-sharing system at the senior engineer level.</p>
+      <div class="how-example">
+        <span class="he-label">Designs include</span>
+        <span class="he-chip">Chat App</span>
+        <span class="he-chip">Image Loader</span>
+        <span class="he-chip">Uber Clone</span>
+      </div>
+    </div>
+
+    <div class="how-card reveal">
+      <div class="how-num">04</div>
+      <div class="how-icon-wrap"><span class="how-icon">🎯</span></div>
+      <div class="how-title">Know your target company</div>
+      <p class="how-desc">Questions tagged by company. Google loves Kotlin internals and Compose. Swiggy digs into performance and offline sync. Flipkart focuses on architecture. You'll know exactly what to focus on.</p>
+      <div class="how-example">
+        <span class="he-label">Companies covered</span>
+        <span class="he-chip">Google</span>
+        <span class="he-chip">Flipkart</span>
+        <span class="he-chip">Swiggy</span>
+        <span class="he-chip">PhonePe</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- COMPANIES -->
+<section class="companies-section">
+  <div class="section-label">Real Questions</div>
+  <h2>Asked at India's Top<br>Tech Companies</h2>
+
+  <div class="companies-grid">
+    <div class="co-card reveal">
+      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=google.com&sz=128" alt="Google" onerror="this.outerHTML='<span class=\'co-fallback\'>G</span>'"/></div>
+      <div class="co-name">Google</div>
+      <div class="co-count">42 questions</div>
+    </div>
+    <div class="co-card reveal">
+      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=flipkart.com&sz=128" alt="Flipkart" onerror="this.outerHTML='<span class=\'co-fallback\'>F</span>'"/></div>
+      <div class="co-name">Flipkart</div>
+      <div class="co-count">38 questions</div>
+    </div>
+    <div class="co-card reveal">
+      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=swiggy.com&sz=128" alt="Swiggy" onerror="this.outerHTML='<span class=\'co-fallback\'>S</span>'"/></div>
+      <div class="co-name">Swiggy</div>
+      <div class="co-count">31 questions</div>
+    </div>
+    <div class="co-card reveal">
+      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=zomato.com&sz=128" alt="Zomato" onerror="this.outerHTML='<span class=\'co-fallback\'>Z</span>'"/></div>
+      <div class="co-name">Zomato</div>
+      <div class="co-count">28 questions</div>
+    </div>
+    <div class="co-card reveal">
+      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=paytm.com&sz=128" alt="Paytm" onerror="this.outerHTML='<span class=\'co-fallback\'>P</span>'"/></div>
+      <div class="co-name">Paytm</div>
+      <div class="co-count">24 questions</div>
+    </div>
+    <div class="co-card reveal">
+      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=phonepe.com&sz=128" alt="PhonePe" onerror="this.outerHTML='<span class=\'co-fallback\'>Pe</span>'"/></div>
+      <div class="co-name">PhonePe</div>
+      <div class="co-count">22 questions</div>
+    </div>
+    <div class="co-card reveal">
+      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=cred.club&sz=128" alt="CRED" onerror="this.outerHTML='<span class=\'co-fallback\'>C</span>'"/></div>
+      <div class="co-name">CRED</div>
+      <div class="co-count">19 questions</div>
+    </div>
+    <div class="co-card reveal locked">
+      <div class="co-logo"><span class="co-fallback">🔒</span></div>
+      <div class="co-name">+12 more</div>
+      <div class="co-count">Premium only</div>
+    </div>
+  </div>
+</section>
+
+<!-- PREMIUM PREVIEW -->
+<section class="preview-section">
+  <div class="section-label">Premium Preview</div>
+  <h2>See What You're<br>Missing Out On</h2>
+
+  <div class="preview-card reveal">
+    <div class="preview-top">
+      <div class="preview-meta">
+        <span class="p-tag topic">🏗️ System Design</span>
+        <span class="p-tag hard">Hard</span>
+        <span class="p-tag co">Asked at Google</span>
+      </div>
+    </div>
+    <div class="preview-q">How would you design the WhatsApp messaging architecture for Android — including offline support, message delivery receipts, and media handling?</div>
+    <div class="preview-answer">
+      <div class="preview-alabel">💡 Answer</div>
+      <div class="preview-blur">
+        <p>The architecture should be built around a local-first approach with SQLite (via Room) as the single source of truth. Messages are first persisted locally, then synced to the server asynchronously using a background service...</p>
+        <p>For delivery receipts, implement a 3-state system: Sent (✓), Delivered (✓✓), Read (✓✓ blue). Each state change triggers a server event that's pushed via WebSocket to the sender...</p>
+        <p>Media handling should use a chunked upload strategy with resumable uploads. Store media locally with a unique hash to avoid duplicate downloads. Use WorkManager for background uploads...</p>
+      </div>
+      <div class="preview-overlay">
+        <div class="lock-icon">🔒</div>
+        <div class="lock-title">Premium Answer</div>
+        <p class="lock-desc">Get full answers with code snippets, diagrams, and interview tips for every question.</p>
+        <a href="#pricing" class="lock-btn">Unlock for ₹299/mo →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY DROIDLY -->
+<section class="why-section reveal">
+  <div class="section-label">Why Droidly</div>
+  <div class="why-header">
+    <h2>Built differently<br>for <span style="color:var(--green)">Android devs</span></h2>
+    <p class="section-sub-sm">Not another generic coding site. Every piece of content exists to help you clear an Android interview — nothing more, nothing less.</p>
+  </div>
+  <div class="why-grid">
+
+    <div class="why-card reveal">
+      <div class="why-icon-wrap">🎯</div>
+      <div class="why-body">
+        <div class="why-title">Android-only. No noise.</div>
+        <p class="why-desc">No DSA grind. No Java legacy. No generic OOP. Every question maps to what Android engineers are actually asked at Indian product companies in 2025–26.</p>
+        <div class="why-vs">
+          <div class="why-vs-item bad">❌ YouTube: hours of content, no structure</div>
+          <div class="why-vs-item good">✅ Droidly: exactly what interviewers ask</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="why-card reveal">
+      <div class="why-icon-wrap">💻</div>
+      <div class="why-body">
+        <div class="why-title">Kotlin code in every answer</div>
+        <p class="why-desc">Not pseudocode. Not "it depends." Real <code>viewModelScope.launch</code>, real <code>@Composable</code>, real <code>Flow.collect</code> — with syntax highlighting and edge cases called out.</p>
+        <div class="why-vs">
+          <div class="why-vs-item bad">❌ Blog posts: theory with no code</div>
+          <div class="why-vs-item good">✅ Droidly: copy-pasteable Kotlin answers</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="why-card reveal">
+      <div class="why-icon-wrap">🏗️</div>
+      <div class="why-body">
+        <div class="why-title">Android System Design — rare</div>
+        <p class="why-desc">Most platforms skip system design for Android. We have 10 full breakdowns: Image Loader, Chat App, Offline News, Ride Sharing — each with architecture decisions, trade-offs, and 20 Q&As.</p>
+        <div class="why-vs">
+          <div class="why-vs-item bad">❌ LeetCode: backend system design only</div>
+          <div class="why-vs-item good">✅ Droidly: mobile-first system design</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="why-card reveal">
+      <div class="why-icon-wrap">📈</div>
+      <div class="why-body">
+        <div class="why-title">Mapped to rounds &amp; difficulty</div>
+        <p class="why-desc">Questions tagged Easy → Medium → Hard, mapped to interview rounds. Freshers focus on Easy + Medium. Senior engineers go straight to Hard + System Design. No wasted prep time.</p>
+        <div class="why-vs">
+          <div class="why-vs-item bad">❌ Random articles: no difficulty signal</div>
+          <div class="why-vs-item good">✅ Droidly: know exactly what to study</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- COMPARE TABLE -->
+<section class="compare-section">
+  <div class="section-label">Compare Plans</div>
+  <h2>Free vs Premium —<br>Side by Side</h2>
+
+  <div class="compare-wrap reveal">
+    <div class="compare-head">
+      <div class="chead-cell"></div>
+      <div class="chead-cell free-col">
+        <div class="cplan">Free</div>
+        <div class="cprice">₹0</div>
+      </div>
+      <div class="chead-cell premium-col">
+        <div class="cplan">Premium</div>
+        <div class="cprice">₹299<span>/mo</span></div>
+      </div>
+    </div>
+    <div class="compare-row"><div class="crow-feat">Questions per topic</div><div class="crow-val">5</div><div class="crow-val yes">50+</div></div>
+    <div class="compare-row alt"><div class="crow-feat">Detailed code answers</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-row"><div class="crow-feat">Interview tips per question</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-row alt"><div class="crow-feat">Company-wise question sets</div><div class="crow-val">❌</div><div class="crow-val yes">✅ 20 companies</div></div>
+    <div class="compare-row"><div class="crow-feat">Mock interviews</div><div class="crow-val">2/month</div><div class="crow-val yes">Unlimited</div></div>
+    <div class="compare-row alt"><div class="crow-feat">System design deep dives</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-row"><div class="crow-feat">Progress tracking</div><div class="crow-val">Basic</div><div class="crow-val yes">Advanced</div></div>
+    <div class="compare-row alt"><div class="crow-feat">Completion certificate</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-foot">
+      <div></div>
+      <div><a href="#" onclick="goToQuestions(''); return false;" class="cfoot-btn cfoot-free">Start Free</a></div>
+      <div><a href="#pricing" class="cfoot-btn cfoot-premium">Go Premium →</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- COUNTER BAR -->
+<div class="counter-bar">
+  <div class="counter-inner">
+    <div class="counter-item">
+      <span class="counter-num" data-target="2347">0</span>
+      <span class="counter-lbl">Developers Prepared</span>
+    </div>
+    <div class="counter-div"></div>
+    <div class="counter-item">
+      <span class="counter-num" data-target="89">0</span><span class="counter-suf">%</span>
+      <span class="counter-lbl">Interview Success Rate</span>
+    </div>
+    <div class="counter-div"></div>
+    <div class="counter-item">
+      <span class="counter-num" data-target="375">0</span><span class="counter-suf">+</span>
+      <span class="counter-lbl">Questions &amp; Answers</span>
+    </div>
+    <div class="counter-div"></div>
+    <div class="counter-item">
+      <span class="counter-num" data-target="14">0</span>
+      <span class="counter-lbl">Topic Categories</span>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<section id="pricing" class="pricing-section">
+  <div class="section-label">Simple Pricing</div>
+  <h2>Start Free, Upgrade<br>When You're Ready</h2>
+
+  <div class="pricing-grid">
+    <div class="price-card reveal">
+      <div class="price-plan">Free Forever</div>
+      <div class="price-amount">₹0<span>/month</span></div>
+      <p class="price-desc">Perfect to explore the platform and get started</p>
+      <ul class="price-feats">
+        <li><span class="chk">✓</span> 50 questions across all topics</li>
+        <li><span class="chk">✓</span> Basic explanations</li>
+        <li><span class="chk">✓</span> 2 mock interviews/month</li>
+        <li><span class="chk">✓</span> Progress tracking</li>
+        <li class="off"><span>✗</span> Premium question bank</li>
+        <li class="off"><span>✗</span> Detailed code answers</li>
+      </ul>
+      <a href="#" onclick="goToQuestions(''); return false;" class="price-btn">Get Started Free</a>
+    </div>
+
+    <div class="price-card featured reveal">
+      <div class="price-plan">Premium</div>
+      <div class="price-amount" style="color:white">₹299<span style="color:rgba(255,255,255,0.35)">/month</span></div>
+      <p class="price-desc">Everything you need to crack top Android roles</p>
+      <ul class="price-feats">
+        <li><span class="chk">✓</span> 375+ questions unlocked</li>
+        <li><span class="chk">✓</span> Detailed code explanations</li>
+        <li><span class="chk">✓</span> Unlimited mock interviews</li>
+        <li><span class="chk">✓</span> System design deep dives</li>
+        <li><span class="chk">✓</span> Company-wise question sets</li>
+        <li><span class="chk">✓</span> Completion certificate</li>
+      </ul>
+      <a href="#" class="price-btn" onclick="showPremiumModal(); return false;">Start Premium — ₹299/mo</a>
+    </div>
+  </div>
+
+  <p style="margin-top: 18px; font-size: 13px; color: var(--muted);">
+    🎉 Annual plan available at ₹1,999/year — save ₹1,589
+  </p>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="reviews" class="testi-section">
+  <div class="section-label">Success Stories</div>
+  <h2>Developers Who Got<br>Their Dream Job</h2>
+
+  <div class="testi-grid">
+    <div class="testi-card reveal">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"The Jetpack Compose questions were exactly what Google asked me. Got an offer from Google Bangalore after 3 weeks of prep on Droidly."</p>
+      <div class="testi-author">
+        <div class="testi-av">👨</div>
+        <div>
+          <div class="testi-name">Rahul Sharma</div>
+          <div class="testi-role">Android Engineer @ Google</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="testi-card reveal">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"System design questions for Android are hard to find online. Droidly is the only platform that covers this properly. Helped me crack Swiggy."</p>
+      <div class="testi-author">
+        <div class="testi-av">👩</div>
+        <div>
+          <div class="testi-name">Priya Nair</div>
+          <div class="testi-role">Senior Android Dev @ Swiggy</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="testi-card reveal">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"Mock interviews gave me real confidence. The feedback pointed out exactly where I was going wrong. Worth every rupee."</p>
+      <div class="testi-author">
+        <div class="testi-av">🧑</div>
+        <div>
+          <div class="testi-name">Arjun Mehta</div>
+          <div class="testi-role">Android Dev @ Flipkart</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<div class="cta-band">
+  <h2 style="color:white;">Ready to Crack Your<br>Android Interview?</h2>
+  <p class="cta-sub">Join 2,000+ developers already preparing on Droidly. Start free — no credit card required.</p>
+  <a href="#" onclick="goToQuestions(''); return false;" class="btn-white">
+    Start Preparing Free
+    <span>→</span>
+  </a>
+  <div class="cta-trust">No credit card · Free forever plan · Cancel anytime</div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="footer-copy">© 2025 Droidly · Built for Android Developers · hello@droidly.in</div>
+</footer>
+
+<!-- MODAL -->
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="authOverlay" onclick="closeAuthOnBackdrop(event)">
+  <div class="auth-box" id="authBox">
+    <button class="auth-close" onclick="closeAuthModal()">✕</button>
+
+    <div class="auth-logo">
+      <div class="auth-logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+      Droidly
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabSignin" onclick="switchTab('signin')">Sign In</button>
+      <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Create Account</button>
+    </div>
+
+    <!-- SIGN IN FORM -->
+    <div id="formSignin">
+      <div class="auth-field">
+        <label class="auth-label" for="siEmail">Email address</label>
+        <input class="auth-input" type="email" id="siEmail" placeholder="you@example.com" autocomplete="email"/>
+        <div class="auth-error" id="siEmailErr">Please enter a valid email.</div>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="siPassword">Password</label>
+        <div class="auth-pw-wrap">
+          <input class="auth-input" type="password" id="siPassword" placeholder="Your password" autocomplete="current-password"/>
+          <button class="auth-pw-toggle" type="button" onclick="togglePw('siPassword', this)">👁</button>
+        </div>
+        <div class="auth-error" id="siPassErr">Incorrect email or password.</div>
+      </div>
+      <a href="#" class="auth-forgot" onclick="handleForgot(event)">Forgot password?</a>
+      <button class="auth-submit" id="siBtn" onclick="handleSignIn()">
+        Sign In →
+      </button>
+
+      <div class="auth-divider">or continue with</div>
+      <button class="auth-google" onclick="handleGoogleAuth()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="auth-switch">Don't have an account? <a href="#" onclick="switchTab('signup'); return false;">Create one free →</a></div>
+    </div>
+
+    <!-- SIGN UP FORM -->
+    <div id="formSignup" style="display:none;">
+      <div class="auth-field">
+        <label class="auth-label" for="suName">Full name</label>
+        <input class="auth-input" type="text" id="suName" placeholder="Priya Sharma" autocomplete="name"/>
+        <div class="auth-error" id="suNameErr">Please enter your name.</div>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="suEmail">Email address</label>
+        <input class="auth-input" type="email" id="suEmail" placeholder="you@example.com" autocomplete="email"/>
+        <div class="auth-error" id="suEmailErr">Please enter a valid email.</div>
+        <div class="auth-error" id="suEmailExistsErr">An account with this email already exists.</div>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="suPassword">Create password <span style="color:var(--muted);font-weight:400;">(min 6 chars)</span></label>
+        <div class="auth-pw-wrap">
+          <input class="auth-input" type="password" id="suPassword" placeholder="Choose a strong password" autocomplete="new-password"/>
+          <button class="auth-pw-toggle" type="button" onclick="togglePw('suPassword', this)">👁</button>
+        </div>
+        <div class="auth-error" id="suPassErr">Password must be at least 6 characters.</div>
+      </div>
+      <button class="auth-submit" id="suBtn" onclick="handleSignUp()">
+        Create Free Account →
+      </button>
+
+      <div class="auth-divider">or continue with</div>
+      <button class="auth-google" onclick="handleGoogleAuth()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="auth-terms">By signing up you agree to our <a href="#">Terms</a> & <a href="#">Privacy Policy</a>.</div>
+      <div class="auth-switch">Already have an account? <a href="#" onclick="switchTab('signin'); return false;">Sign in →</a></div>
+    </div>
+
+    <!-- Email verification state (shown after signup) -->
+    <div id="authVerifyState" style="display:none; text-align:center; padding: 8px 0;">
+      <div style="font-size:52px; margin-bottom:18px;">📧</div>
+      <h3 style="font-family:'Plus Jakarta Sans',sans-serif; font-size:22px; font-weight:800; letter-spacing:-0.5px; margin-bottom:10px;">Check your inbox!</h3>
+      <p style="font-size:14px; color:var(--muted); line-height:1.7; margin-bottom:6px;">We sent a verification link to</p>
+      <p style="font-size:14px; font-weight:700; color:var(--ink); margin-bottom:24px;" id="verifyEmailAddr"></p>
+      <p style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:24px;">Click the link in the email to activate your account. Check your spam folder if you don't see it.</p>
+      <button onclick="closeAuthModal()" style="width:100%; background:var(--green); color:white; border:none; padding:14px; border-radius:100px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; margin-bottom:14px;">Got it →</button>
+      <p style="font-size:13px; color:var(--muted);">Didn't receive it? <a href="#" id="resendEmail" onclick="resendVerification(); return false;" style="color:var(--green); font-weight:600; text-decoration:none;">Resend email</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="auth-toast" id="authToast"></div>
+
+<div class="modal-overlay" id="premiumModal" onclick="closePremiumModal(event)">
+  <div class="modal">
+    <button class="modal-x" onclick="document.getElementById('premiumModal').classList.remove('open'); document.body.style.overflow='';">✕</button>
+    <div class="modal-icon">🚀</div>
+    <h3>Premium is Coming Soon!</h3>
+    <p>We're putting the finishing touches on Premium. Drop your email and we'll notify you the moment it launches — with an <strong>early bird 50% discount</strong>.</p>
+    <input class="modal-input" type="email" id="premiumEmail" placeholder="your@email.com"/>
+    <button class="modal-btn" onclick="handlePremiumSignup()">Notify Me &amp; Get 50% Off →</button>
+    <div class="modal-note">🔒 No spam. Unsubscribe anytime.</div>
+  </div>
+</div>
+
+<script>
+  /* ═══════════════════════════════════════════════════
+     AUTH SYSTEM — Supabase (production-ready)
+     ═══════════════════════════════════════════════════ */
+
+  const SUPABASE_URL  = 'https://dquheflcmcppldrnckzf.supabase.co';
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ── Open / close modal ──────────────────────────────
+  function openAuthModal(tab = 'signin') {
+    switchTab(tab);
+    clearAuthErrors();
+    hideVerifyState();
+    document.getElementById('authOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      document.getElementById(tab === 'signin' ? 'siEmail' : 'suName')?.focus();
+    }, 300);
+  }
+  function closeAuthModal() {
+    document.getElementById('authOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+    hideVerifyState();
+  }
+  function closeAuthOnBackdrop(e) {
+    if (e.target === document.getElementById('authOverlay')) closeAuthModal();
+  }
+
+  // ── Tab switch ──────────────────────────────────────
+  function switchTab(tab) {
+    const isSI = tab === 'signin';
+    document.getElementById('tabSignin').classList.toggle('active', isSI);
+    document.getElementById('tabSignup').classList.toggle('active', !isSI);
+    document.getElementById('formSignin').style.display = isSI ? '' : 'none';
+    document.getElementById('formSignup').style.display = isSI ? 'none' : '';
+    clearAuthErrors();
+  }
+
+  // ── Error helpers ───────────────────────────────────
+  function showErr(id, inputId) {
+    document.getElementById(id)?.classList.add('show');
+    if (inputId) document.getElementById(inputId)?.classList.add('error');
+  }
+  function clearAuthErrors() {
+    ['siEmailErr','siPassErr','suNameErr','suEmailErr','suEmailExistsErr','suPassErr'].forEach(id => {
+      document.getElementById(id)?.classList.remove('show');
+    });
+    ['siEmail','siPassword','suName','suEmail','suPassword'].forEach(id => {
+      document.getElementById(id)?.classList.remove('error');
+    });
+  }
+
+  // ── Loading state ───────────────────────────────────
+  function setLoading(btnId, loading, defaultText) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.disabled = loading;
+    btn.innerHTML = loading
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.7s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Please wait…'
+      : defaultText;
+  }
+
+  // ── Password visibility toggle ──────────────────────
+  function togglePw(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    inp.type = inp.type === 'text' ? 'password' : 'text';
+    btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+  }
+
+  // ── Email verification state ────────────────────────
+  function showVerifyState(email) {
+    document.getElementById('formSignup').style.display = 'none';
+    document.getElementById('authVerifyState').style.display = '';
+    document.getElementById('verifyEmailAddr').textContent = email;
+    document.getElementById('resendEmail').dataset.email = email;
+  }
+  function hideVerifyState() {
+    const vs = document.getElementById('authVerifyState');
+    if (vs) vs.style.display = 'none';
+  }
+
+  // ── Sign In ─────────────────────────────────────────
+  async function handleSignIn() {
+    clearAuthErrors();
+    const email = document.getElementById('siEmail').value.trim();
+    const pass  = document.getElementById('siPassword').value;
+    let valid = true;
+
+    if (!email || !email.includes('@')) { showErr('siEmailErr','siEmail'); valid = false; }
+    if (!pass) { showErr('siPassErr','siPassword'); valid = false; }
+    if (!valid) return;
+
+    setLoading('siBtn', true, 'Sign In →');
+    const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
+    setLoading('siBtn', false, 'Sign In →');
+
+    if (error) {
+      if (error.message.toLowerCase().includes('email not confirmed')) {
+        showToast('📧 Please verify your email first — check your inbox!', 'error-toast');
+      } else {
+        showErr('siPassErr','siPassword');
+        document.getElementById('siPassErr').textContent = 'Incorrect email or password.';
+      }
+      return;
+    }
+
+    const name = data.user.user_metadata?.full_name || email.split('@')[0];
+    closeAuthModal();
+    updateNavForUser(data.user);
+    showToast('✓ Welcome back, ' + name.split(' ')[0] + '!', 'success');
+  }
+
+  // ── Sign Up ─────────────────────────────────────────
+  async function handleSignUp() {
+    clearAuthErrors();
+    const name  = document.getElementById('suName').value.trim();
+    const email = document.getElementById('suEmail').value.trim();
+    const pass  = document.getElementById('suPassword').value;
+    let valid = true;
+
+    if (!name)                           { showErr('suNameErr','suName');   valid = false; }
+    if (!email || !email.includes('@'))  { showErr('suEmailErr','suEmail'); valid = false; }
+    if (pass.length < 6)                 { showErr('suPassErr','suPassword'); valid = false; }
+    if (!valid) return;
+
+    setLoading('suBtn', true, 'Create Free Account →');
+    const { data, error } = await db.auth.signUp({
+      email,
+      password: pass,
+      options: { data: { full_name: name } }
+    });
+    setLoading('suBtn', false, 'Create Free Account →');
+
+    if (error) {
+      if (error.message.toLowerCase().includes('already registered') ||
+          error.message.toLowerCase().includes('already exists')) {
+        showErr('suEmailExistsErr','suEmail');
+      } else {
+        showToast(error.message, 'error-toast');
+      }
+      return;
+    }
+
+    // Session is null → email confirmation required
+    if (data.user && !data.session) {
+      showVerifyState(email);
+    } else if (data.session) {
+      // Email confirmation disabled in Supabase → logged in immediately
+      closeAuthModal();
+      updateNavForUser(data.user);
+      showToast('🎉 Welcome to Droidly, ' + name.split(' ')[0] + '!', 'success');
+    }
+  }
+
+  // ── Resend verification email ───────────────────────
+  async function resendVerification() {
+    const email = document.getElementById('resendEmail')?.dataset.email;
+    if (!email) return;
+    const { error } = await db.auth.resend({ type: 'signup', email });
+    showToast(error ? error.message : '📧 Verification email resent!', error ? 'error-toast' : 'success');
+  }
+
+  // ── Forgot password ─────────────────────────────────
+  async function handleForgot(e) {
+    e.preventDefault();
+    const email = document.getElementById('siEmail').value.trim();
+    if (!email || !email.includes('@')) { showErr('siEmailErr','siEmail'); return; }
+
+    const redirectTo = window.location.href.split('?')[0];
+    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo });
+    showToast(
+      error ? error.message : '📧 Password reset link sent to ' + email,
+      error ? 'error-toast' : 'success'
+    );
+  }
+
+  // ── Google OAuth ────────────────────────────────────
+  async function handleGoogleAuth() {
+    await db.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.href.split('?')[0] }
+    });
+  }
+
+  // ── Google OAuth ─────────────────────────────────────
+  async function handleGoogleAuth() {
+    const { error } = await db.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.href.split('?')[0].split('#')[0]
+      }
+    });
+    if (error) showToast('Google sign-in failed: ' + error.message, 'error');
+  }
+
+  // ── Sign Out ────────────────────────────────────────
+  async function signOut() {
+    await db.auth.signOut();
+    updateNavForUser(null);
+    showToast('You\'ve been signed out.', '');
+  }
+
+  // ── Auth gate: go to questions or prompt sign-in ────
+  let currentUser = null;
+  function goToQuestions(hash) {
+    if (currentUser) {
+      window.location.href = 'questions.html' + (hash || '');
+    } else {
+      openAuthModal('signin');
+    }
+  }
+
+  // ── Update nav UI ───────────────────────────────────
+  function updateNavForUser(user) {
+    currentUser = user;
+    const signInBtn   = document.getElementById('navSignInBtn');
+    const userMenu    = document.getElementById('navUserMenu');
+    const avatarEl    = document.getElementById('navAvatarInitial');
+    const userNameEl  = document.getElementById('navUserName');
+    const userEmailEl = document.getElementById('navUserEmail');
+
+    if (user) {
+      const name = user.user_metadata?.full_name || user.email.split('@')[0];
+      signInBtn.style.display  = 'none';
+      userMenu.style.display   = 'flex';
+      avatarEl.textContent     = name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+      userNameEl.textContent   = name.split(' ')[0];
+      userEmailEl.textContent  = user.email;
+    } else {
+      signInBtn.style.display = '';
+      userMenu.style.display  = 'none';
+    }
+  }
+
+  // ── Toast ───────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg, type) {
+    const t = document.getElementById('authToast');
+    t.textContent = msg;
+    t.className = 'auth-toast show' + (type ? ' ' + type : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+  }
+
+  // ── Init on load — restore session ──────────────────
+  (async function initAuth() {
+    // Listen for all auth state changes (login, logout, token refresh, password reset)
+    db.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        updateNavForUser(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        updateNavForUser(null);
+      } else if (event === 'PASSWORD_RECOVERY') {
+        // User came back from reset link — open modal so they can set new password
+        openAuthModal('signin');
+        showToast('Enter your new password below.', '');
+      }
+    });
+
+    // Check for existing session on page load
+    const { data: { session } } = await db.auth.getSession();
+    if (session) updateNavForUser(session.user);
+  })();
+
+  // Escape key for auth modal
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeAuthModal();
+      document.getElementById('navUserMenu')?.classList.remove('open');
+    }
+  });
+
+  // Click-toggle user dropdown (for mobile)
+  document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
+    this.classList.toggle('open');
+    e.stopPropagation();
+  });
+  document.addEventListener('click', function() {
+    document.getElementById('navUserMenu')?.classList.remove('open');
+  });
+
+  // Enter key submits forms
+  document.getElementById('siPassword')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSignIn();
+  });
+  document.getElementById('suPassword')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSignUp();
+  });
+
+  // Explainer tab switcher
+  const explainerMap = {
+    coroutines:    'explainer_coroutines.html',
+    recomposition: 'explainer_coroutines.html', // placeholder — build next
+    flow:          'explainer_coroutines.html', // placeholder — build next
+  };
+  function loadExplainer(key, btn) {
+    document.querySelectorAll('.expl-nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const frame = document.getElementById('explainerFrame');
+    frame.src = explainerMap[key] || 'explainer_coroutines.html';
+  }
+
+  function showPremiumModal() {
+    document.getElementById('premiumModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closePremiumModal(e) {
+    if (e.target === document.getElementById('premiumModal')) {
+      document.getElementById('premiumModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+  function handlePremiumSignup() {
+    const email = document.getElementById('premiumEmail').value;
+    const btn = document.querySelector('.modal-btn');
+    if (!email || !email.includes('@')) {
+      document.getElementById('premiumEmail').style.borderColor = '#c0392b';
+      return;
+    }
+    btn.textContent = "✓ You're on the list!";
+    btn.style.background = '#2d6a3f';
+    document.getElementById('premiumEmail').disabled = true;
+    setTimeout(() => {
+      document.getElementById('premiumModal').classList.remove('open');
+      document.body.style.overflow = '';
+      btn.textContent = 'Notify Me & Get 50% Off →';
+      btn.style.background = '';
+      document.getElementById('premiumEmail').disabled = false;
+      document.getElementById('premiumEmail').value = '';
+    }, 2500);
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.getElementById('premiumModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+
+  // Animated counters
+  const counterObs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      const target = parseInt(el.dataset.target);
+      const step = target / (1600 / 16);
+      let cur = 0;
+      const timer = setInterval(() => {
+        cur += step;
+        if (cur >= target) { cur = target; clearInterval(timer); }
+        el.textContent = Math.floor(cur).toLocaleString('en-IN');
+      }, 16);
+      counterObs.unobserve(el);
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('.counter-num').forEach(el => counterObs.observe(el));
+
+  // Scroll reveal
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        revealObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+</script>
+</body>
+</html>

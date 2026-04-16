@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Design an Image Loading Library — Android System Design | Droidly</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            #ffffff;
+      --bg-subtle:     #f9fafb;
+      --bg-green:      #e8f2ec;
+      --bg-blue:       #eff6ff;
+      --bg-amber:      #fffbeb;
+      --border:        #e5e7eb;
+      --border-green:  #6aad82;
+      --ink:           #111827;
+      --ink2:          #374151;
+      --muted:         #6b7280;
+      --muted2:        #9ca3af;
+      --accent:        #3d7a4f;
+      --accent-dark:   #2e6040;
+      --accent-light:  #4caf70;
+      --green:         #3d7a4f;
+      --green-light:   #e8f2ec;
+      --blue:          #2563eb;
+      --blue-light:    #dbeafe;
+      --amber:         #d97706;
+      --red:           #dc2626;
+      --red-light:     #fee2e2;
+      --code-bg:       #1e1e2e;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    .topnav {
+      position: sticky; top: 0; z-index: 900;
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      display: flex; align-items: center;
+      padding: 0 24px; gap: 16px;
+    }
+    .topnav-logo {
+      font-weight: 800; font-size: 16px; color: var(--ink);
+      text-decoration: none; display: flex; align-items: center; gap: 7px;
+    }
+    .topnav-logo-mark {
+      width: 28px; height: 28px; border-radius: 7px;
+      background: var(--accent); color: white;
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+    .topnav-crumb { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+    .topnav-crumb a { color: var(--muted); text-decoration: none; }
+    .topnav-crumb a:hover { color: var(--accent); }
+    .topnav-crumb .sep { color: var(--muted2); }
+    .topnav-crumb .current { color: var(--ink); font-weight: 500; }
+    .topnav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .btn-unlock {
+      background: var(--accent); color: white;
+      padding: 7px 16px; border-radius: 6px;
+      font-size: 13px; font-weight: 600; text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn-unlock:hover { background: var(--accent-dark); }
+
+    /* ── LAYOUT ── */
+    .page {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      max-width: 1080px;
+      margin: 0 auto;
+      min-height: calc(100vh - 56px);
+    }
+
+    .content {
+      padding: 40px 56px 100px 40px;
+      border-right: 1px solid var(--border);
+      min-width: 0;
+    }
+
+    /* ── ARTICLE HEADER ── */
+    .article-eyebrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; padding: 3px 9px; border-radius: 4px; }
+    .tag-topic { background: var(--bg-green); color: var(--accent); border: 1px solid var(--border-green); }
+    .tag-hard  { background: var(--red-light); color: var(--red); }
+    .tag-new   { background: var(--blue-light); color: var(--blue); }
+
+    .article-title { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2; color: var(--ink); margin-bottom: 14px; }
+    .article-desc  { font-size: 15px; color: var(--ink2); line-height: 1.7; max-width: 620px; margin-bottom: 28px; }
+    .article-meta-row {
+      display: flex; gap: 20px; flex-wrap: wrap;
+      padding: 14px 0; border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border); margin-bottom: 40px;
+    }
+    .meta-pill { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+    .meta-pill strong { color: var(--ink); font-weight: 600; }
+
+    /* ── HEADINGS ── */
+    .sec-h1 {
+      font-size: 24px; font-weight: 700; color: var(--ink); letter-spacing: -0.3px;
+      border-bottom: 2px solid var(--ink); padding-bottom: 6px;
+      margin-bottom: 20px; margin-top: 48px; display: inline-block;
+    }
+    .sec-h1:first-of-type { margin-top: 0; }
+    .sec-h2 { font-size: 18px; font-weight: 700; color: var(--ink); margin-top: 28px; margin-bottom: 12px; }
+
+    p { color: var(--ink2); margin-bottom: 14px; }
+    p:last-child { margin-bottom: 0; }
+    code {
+      font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
+      background: #1e1e2e; color: #89ddff; padding: 2px 6px; border-radius: 4px;
+    }
+    .content ol, .content ul { padding-left: 24px; margin-bottom: 14px; }
+    .content li { color: var(--ink2); margin-bottom: 8px; line-height: 1.65; }
+    .content li strong { color: var(--ink); }
+
+    /* ── REQUIREMENTS ── */
+    .req-label       { font-size: 13px; font-weight: 700; color: var(--ink); margin-top: 20px; margin-bottom: 8px; }
+    .req-scope-label { font-size: 13px; font-weight: 600; color: var(--muted); margin-top: 16px; margin-bottom: 6px; font-style: italic; }
+
+    /* ── DIAGRAM ── */
+    .diagram-wrap { margin: 24px 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: #fafafa; }
+    .diagram-caption {
+      text-align: center; font-size: 12.5px; color: var(--muted);
+      padding: 10px 16px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .zoom-icon { font-size: 16px; cursor: pointer; }
+
+    /* ── CODE BLOCK ── */
+    .code-block {
+      background: var(--code-bg); border-radius: 8px; padding: 20px 22px;
+      margin: 16px 0; font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px; line-height: 1.85; color: #cdd6f4; overflow-x: auto;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .cm { color: #6a7490; font-style: italic; }
+    .kw { color: #c792ea; }
+    .fn { color: #82aaff; }
+    .tp { color: #ffcb6b; }
+    .st { color: #c3e88d; }
+    .br { color: #89ddff; }
+    .nm { color: #f78c6c; }
+    .an { color: #ff757f; }
+
+    /* ── PATTERN / INFO / WARN BOXES ── */
+    .pattern-box {
+      background: var(--bg-green); border: 1px solid var(--border-green);
+      border-radius: 8px; padding: 16px 20px; margin: 20px 0;
+    }
+    .pattern-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .pattern-icon  { font-size: 16px; }
+    .pattern-title { font-size: 14px; font-weight: 700; color: var(--accent-dark); }
+    .pattern-box p { font-size: 13.5px; color: var(--ink2); margin-bottom: 12px; line-height: 1.65; }
+    .pattern-btn {
+      display: inline-block; background: var(--accent); color: white;
+      padding: 7px 16px; border-radius: 6px; font-size: 12.5px; font-weight: 600;
+      text-decoration: none; cursor: pointer; border: none; transition: background 0.15s;
+    }
+    .pattern-btn:hover { background: var(--accent-dark); }
+
+    .info-box {
+      background: var(--bg-blue); border: 1px solid var(--blue-light);
+      border-left: 3px solid var(--blue); border-radius: 6px; padding: 14px 18px; margin: 16px 0;
+    }
+    .info-box p { font-size: 13.5px; color: var(--ink2); margin: 0; }
+
+    .warn-box {
+      background: var(--bg-amber); border: 1px solid #fde68a;
+      border-left: 3px solid var(--amber); border-radius: 6px; padding: 14px 18px; margin: 16px 0;
+    }
+    .warn-box p { font-size: 13.5px; color: var(--ink2); margin: 0; }
+
+    /* ── DECISION TABLE ── */
+    .table-wrap { margin: 20px 0; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: var(--bg-subtle); text-align: left; padding: 9px 14px;
+      font-weight: 600; font-size: 12px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border);
+    }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--ink2); vertical-align: top; line-height: 1.5; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg-subtle); }
+    .chosen   { color: var(--green); font-weight: 600; }
+    .rejected { color: var(--muted); }
+    .strike   { text-decoration: line-through; color: var(--muted2); }
+
+    /* ── LEVEL CARDS ── */
+    .levels-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 20px 0; }
+    .level-card  { border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+    .level-card.mid    { border-top: 3px solid var(--blue); }
+    .level-card.senior { border-top: 3px solid var(--accent); }
+    .level-card.staff  { border-top: 3px solid var(--amber); }
+    .level-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+    .level-card.mid    .level-title { color: var(--blue); }
+    .level-card.senior .level-title { color: var(--accent); }
+    .level-card.staff  .level-title { color: var(--amber); }
+    .level-card ul { padding-left: 16px; margin: 0; }
+    .level-card li { font-size: 12.5px; color: var(--ink2); margin-bottom: 5px; }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+    /* ── FLOW DIAGRAM ── */
+    .flow-diagram { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 20px 0; background: var(--bg-subtle); }
+    .flow-row { display: grid; background: var(--ink); padding: 0; }
+    .flow-row.cols-6  { grid-template-columns: repeat(6,1fr); }
+    .flow-row.cols-5  { grid-template-columns: repeat(5,1fr); }
+    .flow-actor {
+      padding: 9px 4px; text-align: center;
+      font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9);
+      border-right: 1px solid rgba(255,255,255,0.08); letter-spacing: 0.3px;
+    }
+    .flow-actor:last-child { border-right: none; }
+    .actor-caller  { background: var(--accent); }
+    .actor-engine  { background: #2e6040; }
+    .actor-mem     { background: #92400e; }
+    .actor-disk    { background: #1d4ed8; }
+    .actor-net     { background: #5b21b6; }
+    .actor-decoder { background: #0f766e; }
+
+    .flow-step-row {
+      display: flex; align-items: center; padding: 10px 14px;
+      border-bottom: 1px solid var(--border); gap: 10px; background: white;
+    }
+    .flow-step-row.fs-hit  { background: #f0fdf4; }
+    .flow-step-row.fs-miss { background: #fef9f9; }
+    .flow-step-row.fs-ret  { background: #f0fdf4; }
+
+    .fs-label {
+      width: 22px; height: 22px; background: var(--accent); color: white;
+      border-radius: 50%; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .fs-miss .fs-label { background: #dc2626; }
+    .fs-ret  .fs-label { background: var(--accent); }
+
+    .fs-line { flex: 1; display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+    .fs-arrow { font-size: 16px; color: #374151; flex-shrink: 0; }
+    .fs-arrow.fs-left  { transform: scaleX(-1); display: inline-block; color: var(--accent); }
+    .fs-arrow.fs-red   { transform: scaleX(-1); display: inline-block; color: #dc2626; }
+    .fs-msg { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink); font-weight: 500; }
+    .fs-msg.fs-green { color: var(--accent); font-weight: 700; }
+
+    .flow-note { padding: 6px 14px 10px 48px; font-size: 13px; color: var(--muted); line-height: 1.6; border-bottom: 1px solid var(--border); background: white; }
+    .flow-note.fs-highlight { background: #f0fdf4; color: var(--ink2); font-weight: 500; }
+
+    /* ── IQ CARDS ── */
+    .iq-list { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .iq-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.18s; background: white; }
+    .iq-card:hover { border-color: var(--accent); }
+    .iq-card.open  { border-color: var(--accent); }
+    .iq-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; gap: 12px; user-select: none; }
+    .iq-left   { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .iq-num  { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; color: var(--accent); white-space: nowrap; background: var(--bg-green); padding: 3px 8px; border-radius: 5px; }
+    .iq-diff { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; white-space: nowrap; flex-shrink: 0; }
+    .iq-easy   { background: #dcfce7; color: #166534; }
+    .iq-medium { background: #fef9c3; color: #854d0e; }
+    .iq-hard   { background: #fee2e2; color: #991b1b; }
+    .iq-text   { font-size: 14px; font-weight: 500; color: var(--ink); line-height: 1.5; }
+    .iq-toggle { font-size: 16px; color: var(--muted); flex-shrink: 0; transition: transform 0.2s; }
+    .iq-card.open .iq-toggle { transform: rotate(180deg); color: var(--accent); }
+    .iq-answer { display: none; padding: 4px 18px 18px; border-top: 1px solid var(--border); background: var(--bg-subtle); }
+    .iq-card.open .iq-answer { display: block; }
+    .iq-answer p { font-size: 13.5px; color: var(--ink2); line-height: 1.8; margin-top: 12px; margin-bottom: 0; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { padding: 32px 20px; position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto; }
+    .reading-progress-wrap { margin-bottom: 24px; }
+    .rp-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted2); margin-bottom: 8px; }
+    .rp-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .rp-fill  { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.2s; }
+    .toc-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted2); margin-bottom: 12px; }
+    .toc-list  { list-style: none; }
+    .toc-item  { margin-bottom: 1px; }
+    .toc-item a {
+      display: block; font-size: 13px; color: var(--muted);
+      text-decoration: none; padding: 5px 8px 5px 10px;
+      border-left: 2px solid transparent; border-radius: 0 4px 4px 0; line-height: 1.4; transition: all 0.15s;
+    }
+    .toc-item a:hover { color: var(--ink); border-left-color: var(--border); }
+    .toc-item a.active { color: var(--accent); font-weight: 600; border-left-color: var(--accent); background: var(--bg-green); }
+    .toc-item.sub a { padding-left: 22px; font-size: 12.5px; }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .companies-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted2); margin-bottom: 10px; }
+    .company-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { font-size: 11.5px; font-weight: 500; color: var(--ink2); background: var(--bg-subtle); border: 1px solid var(--border); padding: 3px 9px; border-radius: 4px; }
+
+    /* ── CACHE TIER CARDS ── */
+    .cache-tiers { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 20px 0; }
+    .cache-tier {
+      border-radius: 10px; padding: 18px 16px;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+    .cache-tier.t1 { background: #f0fdf4; border-color: #6aad82; }
+    .cache-tier.t2 { background: #fefce8; border-color: #fcd34d; }
+    .cache-tier.t3 { background: #eff6ff; border-color: #93c5fd; }
+    .ct-badge { font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+    .t1 .ct-badge { color: var(--accent); }
+    .t2 .ct-badge { color: #92400e; }
+    .t3 .ct-badge { color: var(--blue); }
+    .ct-icon  { font-size: 28px; margin-bottom: 8px; display: block; }
+    .ct-title { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 5px; }
+    .ct-stat  { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+    .ct-stat strong { color: var(--ink2); font-weight: 600; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 800px) {
+      .page { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .content { padding: 24px 20px 60px; }
+      .levels-grid { grid-template-columns: 1fr; }
+      .cache-tiers { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <a href="androidprep_4.html" class="topnav-logo">
+    <div class="topnav-logo-mark">🤖</div>
+    Droidly
+  </a>
+  <span style="color:var(--muted2)">/</span>
+  <div class="topnav-crumb">
+    <a href="questions_37.html">Questions</a>
+    <span class="sep">›</span>
+    <a href="questions_37.html#sysdesign">System Design</a>
+    <span class="sep">›</span>
+    <span class="current">Image Loading Library</span>
+  </div>
+  <div class="topnav-right">
+    <a href="#" class="btn-unlock">Unlock Premium</a>
+  </div>
+</nav>
+
+<div class="page">
+<main class="content">
+
+  <!-- HEADER -->
+  <div class="article-eyebrow">
+    <span class="tag tag-topic">🏗️ System Design</span>
+    <span class="tag tag-hard">Hard</span>
+    <span class="tag tag-new">2025–26</span>
+  </div>
+  <h1 class="article-title">Design an Image Loading Library</h1>
+  <p class="article-desc">A complete mobile-first breakdown of how to build Coil or Glide from scratch — covering the 3-tier cache hierarchy, LRU eviction, Bitmap pooling, request deduplication, lifecycle awareness, and the full decode pipeline.</p>
+  <div class="article-meta-row">
+    <div class="meta-pill">⏱ <strong>45 min</strong> interview</div>
+    <div class="meta-pill">📖 <strong>~14 min</strong> read</div>
+    <div class="meta-pill">🎯 <strong>Senior / Staff+</strong></div>
+    <div class="meta-pill">🔥 Asked at <strong>Flipkart, CRED, Google</strong></div>
+  </div>
+
+  <!-- ── UNDERSTANDING ── -->
+  <div id="understanding">
+    <div class="sec-h1">Understanding the Problem</div>
+    <p>This question is deceptively hard. On the surface it sounds like "implement Glide" — but interviewers are really testing whether you understand <strong>memory management, cache design, concurrency, and Android lifecycle</strong> at a deep level. Start by scoping it carefully.</p>
+    <p>The key insight: loading an image is a 5-step pipeline — <strong>Request → Cache Check → Network Fetch → Decode → Display</strong>. Every design decision is about making this pipeline faster, cheaper, and safer.</p>
+
+    <div id="functional-req">
+      <div class="sec-h2">Functional Requirements</div>
+      <div class="req-label">Core Requirements</div>
+      <ol>
+        <li>Load an image from a URL and display it in an <code>ImageView</code> or Compose <code>AsyncImage</code></li>
+        <li>Cache images at two levels — memory (fast) and disk (persistent across launches)</li>
+        <li>Support placeholder images while loading and error images on failure</li>
+      </ol>
+      <div class="req-scope-label">Below the line (out of scope):</div>
+      <ol>
+        <li>Video / GIF support</li>
+        <li>Image transformations (blur, circle crop) — mention as extensible, not core</li>
+        <li>SVG / vector format support</li>
+        <li>Cross-fade animations between placeholder and result</li>
+      </ol>
+    </div>
+
+    <div id="nonfunctional-req">
+      <div class="sec-h2">Non-Functional Requirements</div>
+      <div class="req-label">Core Requirements</div>
+      <ol>
+        <li>Zero main thread blocking — all I/O and decode must happen on background threads</li>
+        <li>Memory efficient — no OOM crashes; Bitmap memory must stay bounded</li>
+        <li>Lifecycle aware — cancel in-flight requests when the view or Activity is destroyed</li>
+        <li>No duplicate network requests — if two views request the same URL simultaneously, fetch only once</li>
+      </ol>
+      <div class="req-scope-label">Below the line (out of scope):</div>
+      <ol>
+        <li>P99 latency guarantees (cache hit should be &lt;1ms, but we won't guarantee it contractually)</li>
+        <li>Cross-process image sharing</li>
+      </ol>
+    </div>
+
+    <div class="info-box"><p>A strong opening move: draw the 3-tier cache before anything else. It's the backbone of every image loading library and immediately signals you know the domain.</p></div>
+  </div>
+
+  <hr/>
+
+  <!-- ── SET UP ── -->
+  <div id="setup">
+    <div class="sec-h1">The Set Up</div>
+
+    <div id="cache-hierarchy">
+      <div class="sec-h2">The 3-Tier Cache Hierarchy</div>
+      <p>Every image loading library — Glide, Coil, Picasso, Fresco — is built around the same three-level cache. The library checks each level in order; on a miss it falls through to the next. The decision about what lives at each level is the most important design choice.</p>
+
+      <div class="cache-tiers">
+        <div class="cache-tier t1">
+          <div class="ct-badge">Tier 1</div>
+          <span class="ct-icon">⚡</span>
+          <div class="ct-title">Memory Cache</div>
+          <div class="ct-stat">Speed: <strong>&lt;1ms</strong></div>
+          <div class="ct-stat">Size: <strong>~15% of RAM</strong></div>
+          <div class="ct-stat">Eviction: <strong>LRU</strong></div>
+          <div class="ct-stat">Stores: <strong>decoded Bitmap</strong></div>
+        </div>
+        <div class="cache-tier t2">
+          <div class="ct-badge">Tier 2</div>
+          <span class="ct-icon">💾</span>
+          <div class="ct-title">Disk Cache</div>
+          <div class="ct-stat">Speed: <strong>~5–50ms</strong></div>
+          <div class="ct-stat">Size: <strong>~250MB</strong></div>
+          <div class="ct-stat">Eviction: <strong>LRU</strong></div>
+          <div class="ct-stat">Stores: <strong>compressed bytes</strong></div>
+        </div>
+        <div class="cache-tier t3">
+          <div class="ct-badge">Tier 3</div>
+          <span class="ct-icon">🌐</span>
+          <div class="ct-title">Network</div>
+          <div class="ct-stat">Speed: <strong>200ms–3s</strong></div>
+          <div class="ct-stat">Size: <strong>Unlimited</strong></div>
+          <div class="ct-stat">Eviction: <strong>N/A</strong></div>
+          <div class="ct-stat">Stores: <strong>origin server</strong></div>
+        </div>
+      </div>
+
+      <div class="pattern-box">
+        <div class="pattern-header"><span class="pattern-icon">🔷</span><span class="pattern-title">Why store decoded Bitmaps in memory but compressed bytes on disk?</span></div>
+        <p>Decoded Bitmaps are expensive to create (CPU cost for decompression) but fast to draw. Storing them in memory gives sub-millisecond display. But Bitmaps are large — a 1080×1920 ARGB_8888 image is 8MB. Disk cache stores the compressed JPEG/PNG bytes instead (~100KB), which is 80× smaller. On a disk cache hit, you still pay the decode cost, but you avoid the network round-trip. This is the right trade-off for mobile.</p>
+        <button class="pattern-btn">Learn This Pattern</button>
+      </div>
+    </div>
+
+    <div id="core-entities">
+      <div class="sec-h2">Core Components</div>
+      <p>Before drawing the architecture, align on the six components you'll be designing:</p>
+      <ol>
+        <li><strong>ImageLoader</strong> — the public API entry point. Accepts a request and orchestrates the pipeline.</li>
+        <li><strong>MemoryCache</strong> — an LRU map of <code>CacheKey → Bitmap</code>. Size-bounded by system RAM.</li>
+        <li><strong>DiskCache</strong> — an LRU file store (using <code>DiskLruCache</code>). Stores compressed image bytes keyed by URL hash.</li>
+        <li><strong>Fetcher</strong> — downloads bytes from the network using OkHttp. Handles HTTP caching headers.</li>
+        <li><strong>Decoder</strong> — converts raw bytes into a <code>Bitmap</code> using <code>BitmapFactory</code>. Handles downsampling to target size.</li>
+        <li><strong>BitmapPool</strong> — a pool of reusable <code>Bitmap</code> objects to reduce GC pressure. Glide's killer feature.</li>
+      </ol>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ── HLD ── -->
+  <div id="high-level">
+    <div class="sec-h1">High-Level Design</div>
+
+    <div id="hl-architecture">
+      <div class="sec-h2">1) The Request Pipeline</div>
+      <p>Every <code>load(url)</code> call flows through this pipeline. The key rule: <strong>check cheapest source first, fall through to expensive sources only on a miss.</strong></p>
+
+      <div class="diagram-wrap">
+        <div style="background:#fff; padding:28px 16px;">
+          <svg viewBox="0 0 700 380" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter,sans-serif" font-size="12.5">
+            <defs>
+              <marker id="pa" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#374151"/></marker>
+              <marker id="pg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#3d7a4f"/></marker>
+              <marker id="pr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#dc2626"/></marker>
+            </defs>
+
+            <!-- Caller -->
+            <rect x="10" y="20" width="140" height="44" rx="8" fill="#3d7a4f"/>
+            <text x="80" y="37" text-anchor="middle" fill="white" font-weight="700">Caller</text>
+            <text x="80" y="55" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10.5">imageLoader.load(url)</text>
+
+            <!-- arrow right -->
+            <line x1="150" y1="42" x2="195" y2="42" stroke="#374151" stroke-width="1.5" marker-end="url(#pa)"/>
+
+            <!-- ImageLoader / Engine -->
+            <rect x="197" y="20" width="150" height="44" rx="8" fill="#f1f3f5" stroke="#d1d5db"/>
+            <text x="272" y="37" text-anchor="middle" fill="#374151" font-weight="700">ImageLoader</text>
+            <text x="272" y="55" text-anchor="middle" fill="#6b7280" font-size="10.5">Engine + Lifecycle</text>
+
+            <!-- arrow down from ImageLoader -->
+            <line x1="272" y1="64" x2="272" y2="88" stroke="#374151" stroke-width="1.5" marker-end="url(#pa)"/>
+            <text x="280" y="80" font-size="10" fill="#6b7280">check()</text>
+
+            <!-- MemoryCache -->
+            <rect x="197" y="90" width="150" height="44" rx="8" fill="#f0fdf4" stroke="#6aad82" stroke-width="1.5"/>
+            <text x="272" y="107" text-anchor="middle" fill="#2e6040" font-weight="700">Memory Cache</text>
+            <text x="272" y="123" text-anchor="middle" fill="#3d7a4f" font-size="10.5">LRU · ~15% RAM</text>
+
+            <!-- HIT path: memory → target -->
+            <line x1="347" y1="112" x2="560" y2="112" stroke="#3d7a4f" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#pg)"/>
+            <text x="450" y="106" text-anchor="middle" font-size="10" fill="#3d7a4f" font-weight="600">HIT → Bitmap</text>
+
+            <!-- MISS path: down to disk -->
+            <line x1="272" y1="134" x2="272" y2="158" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#pr)"/>
+            <text x="280" y="150" font-size="10" fill="#dc2626">MISS</text>
+
+            <!-- DiskCache -->
+            <rect x="197" y="160" width="150" height="44" rx="8" fill="#fefce8" stroke="#fcd34d" stroke-width="1.5"/>
+            <text x="272" y="177" text-anchor="middle" fill="#92400e" font-weight="700">Disk Cache</text>
+            <text x="272" y="193" text-anchor="middle" fill="#92400e" font-size="10.5">DiskLruCache · ~250MB</text>
+
+            <!-- HIT path: disk → decoder -->
+            <line x1="347" y1="182" x2="420" y2="182" stroke="#374151" stroke-width="1.5" marker-end="url(#pa)"/>
+            <text x="382" y="175" text-anchor="middle" font-size="10" fill="#374151">HIT→bytes</text>
+
+            <!-- Decoder -->
+            <rect x="422" y="160" width="130" height="44" rx="8" fill="#f0fdfa" stroke="#5eead4" stroke-width="1.5"/>
+            <text x="487" y="177" text-anchor="middle" fill="#0f766e" font-weight="700">Decoder</text>
+            <text x="487" y="193" text-anchor="middle" fill="#0f766e" font-size="10.5">BitmapFactory + pool</text>
+
+            <!-- Decoder → Target (disk hit) -->
+            <line x1="552" y1="182" x2="580" y2="182" stroke="#3d7a4f" stroke-width="2" marker-end="url(#pg)"/>
+
+            <!-- MISS: down to network fetcher -->
+            <line x1="272" y1="204" x2="272" y2="228" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#pr)"/>
+            <text x="280" y="220" font-size="10" fill="#dc2626">MISS</text>
+
+            <!-- Fetcher -->
+            <rect x="197" y="230" width="150" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+            <text x="272" y="247" text-anchor="middle" fill="#1d4ed8" font-weight="700">Fetcher</text>
+            <text x="272" y="263" text-anchor="middle" fill="#1d4ed8" font-size="10.5">OkHttp · network call</text>
+
+            <!-- Fetcher → Disk Cache (write) -->
+            <path d="M197,252 Q140,252 140,182 Q140,112 197,112" fill="none" stroke="#374151" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#pa)"/>
+            <text x="118" y="188" font-size="10" fill="#374151" transform="rotate(-90,118,188)">write bytes</text>
+
+            <!-- Fetcher → Decoder -->
+            <line x1="347" y1="252" x2="422" y2="210" stroke="#374151" stroke-width="1.5" marker-end="url(#pa)"/>
+            <text x="390" y="237" font-size="10" fill="#374151" transform="rotate(-35,390,237)">raw bytes</text>
+
+            <!-- Decoder → MemoryCache (write) -->
+            <path d="M487,160 Q487,130 347,118" fill="none" stroke="#374151" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#pa)"/>
+            <text x="430" y="133" font-size="10" fill="#374151" transform="rotate(-15,430,133)">write Bitmap</text>
+
+            <!-- Target (ImageView / Compose) -->
+            <rect x="562" y="90" width="128" height="136" rx="8" fill="#3d7a4f"/>
+            <text x="626" y="148" text-anchor="middle" fill="white" font-weight="700" font-size="13">Target</text>
+            <text x="626" y="167" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10.5">ImageView</text>
+            <text x="626" y="182" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10.5">or Compose</text>
+
+            <!-- BitmapPool -->
+            <rect x="422" y="290" width="130" height="40" rx="8" fill="#fdf4ff" stroke="#e879f9" stroke-width="1.5"/>
+            <text x="487" y="308" text-anchor="middle" fill="#701a75" font-weight="700">BitmapPool</text>
+            <text x="487" y="322" text-anchor="middle" fill="#701a75" font-size="10.5">Recycle · reuse</text>
+
+            <!-- Decoder ↔ BitmapPool -->
+            <line x1="487" y1="204" x2="487" y2="290" stroke="#701a75" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#pa)"/>
+            <text x="496" y="248" font-size="10" fill="#701a75">borrow/return</text>
+
+            <!-- Legend -->
+            <g transform="translate(10,345)">
+              <line x1="0" y1="8" x2="24" y2="8" stroke="#374151" stroke-width="1.5"/>
+              <text x="28" y="12" font-size="10" fill="#6b7280">Pipeline flow</text>
+              <line x1="110" y1="8" x2="134" y2="8" stroke="#3d7a4f" stroke-width="2"/>
+              <text x="138" y="12" font-size="10" fill="#3d7a4f">Cache HIT → display</text>
+              <line x1="265" y1="8" x2="289" y2="8" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,2"/>
+              <text x="293" y="12" font-size="10" fill="#dc2626">Cache MISS → fallthrough</text>
+            </g>
+          </svg>
+        </div>
+        <div class="diagram-caption">Image Loading Pipeline — check cheapest tier first <span class="zoom-icon">🔍</span></div>
+      </div>
+    </div>
+
+    <hr/>
+
+    <div id="hl-memory-cache">
+      <div class="sec-h2">2) Memory Cache — LRU with Size Bounds</div>
+      <p>The memory cache is an <strong>LRU (Least Recently Used) map</strong> bounded by total Bitmap byte size (not count). Android's <code>LruCache</code> provides this out of the box. The typical sizing is 15% of the available app heap.</p>
+
+      <pre class="code-block"><span class="cm">// ─── MemoryCache ───────────────────────────────────────────────</span>
+
+<span class="kw">class</span> <span class="tp">MemoryCache</span>(maxSizeBytes: <span class="tp">Int</span>) {
+
+    <span class="kw">private val</span> lruCache = <span class="kw">object</span> : <span class="tp">LruCache</span>&lt;<span class="tp">CacheKey</span>, <span class="tp">Bitmap</span>&gt;(maxSizeBytes) {
+        <span class="kw">override fun</span> <span class="fn">sizeOf</span>(key: <span class="tp">CacheKey</span>, bitmap: <span class="tp">Bitmap</span>): <span class="tp">Int</span> =
+            bitmap.<span class="fn">byteCount</span>  <span class="cm">// size in bytes, not count!</span>
+
+        <span class="kw">override fun</span> <span class="fn">entryRemoved</span>(evicted: <span class="tp">Boolean</span>, key: <span class="tp">CacheKey</span>,
+                                   old: <span class="tp">Bitmap</span>, new: <span class="tp">Bitmap</span>?) {
+            <span class="kw">if</span> (evicted) bitmapPool.<span class="fn">put</span>(old)  <span class="cm">// recycle into pool, don't GC it</span>
+        }
+    }
+
+    <span class="kw">fun</span> <span class="fn">get</span>(key: <span class="tp">CacheKey</span>): <span class="tp">Bitmap</span>? = lruCache.<span class="fn">get</span>(key)
+    <span class="kw">fun</span> <span class="fn">put</span>(key: <span class="tp">CacheKey</span>, bitmap: <span class="tp">Bitmap</span>) = lruCache.<span class="fn">put</span>(key, bitmap)
+
+    <span class="cm">// Sizing: use ~15% of available heap</span>
+    <span class="kw">companion object</span> {
+        <span class="kw">fun</span> <span class="fn">defaultSize</span>(): <span class="tp">Int</span> {
+            <span class="kw">val</span> memClass = (context.<fn>getSystemService</fn>(<span class="tp">ActivityManager</span>::<span class="kw">class</span>.java)
+                .<fn>memoryClass</fn>)  <span class="cm">// in MB</span>
+            <span class="kw">return</span> (memClass * <span class="nm">1024</span> * <span class="nm">1024</span>) / <span class="nm">7</span>  <span class="cm">// ~14% of heap</span>
+        }
+    }
+}</pre>
+
+      <div class="warn-box"><p>⚠️ <strong>Common mistake:</strong> Sizing the cache by <em>count</em> (e.g. "hold 50 images") is wrong — a thumbnail is 10KB and a full-screen image is 8MB. Always size by total bytes. Glide, Coil, and Picasso all do this.</p></div>
+    </div>
+
+    <hr/>
+
+    <div id="hl-bitmap-pool">
+      <div class="sec-h2">3) BitmapPool — Eliminating GC Pressure</div>
+      <p>When the memory cache evicts a Bitmap, instead of letting the GC collect it, <strong>recycle it into a pool</strong>. The next decode operation can borrow a same-sized Bitmap from the pool and decode directly into it using <code>BitmapFactory.Options.inBitmap</code>. This eliminates the most expensive GC pauses in image-heavy apps.</p>
+
+      <pre class="code-block"><span class="cm">// Decode with inBitmap to reuse memory from the pool</span>
+
+<span class="kw">fun</span> <span class="fn">decode</span>(bytes: <span class="tp">ByteArray</span>, targetWidth: <span class="tp">Int</span>, targetHeight: <span class="tp">Int</span>): <span class="tp">Bitmap</span> {
+    <span class="kw">val</span> options = <span class="tp">BitmapFactory</span>.<span class="tp">Options</span>()
+
+    <span class="cm">// Pass 1: measure dimensions without allocating</span>
+    options.inJustDecodeBounds = <span class="kw">true</span>
+    <span class="tp">BitmapFactory</span>.<span class="fn">decodeByteArray</span>(bytes, <span class="nm">0</span>, bytes.size, options)
+
+    <span class="cm">// Calculate inSampleSize to avoid loading full-res into memory</span>
+    options.inSampleSize = <span class="fn">calculateSampleSize</span>(options, targetWidth, targetHeight)
+    options.inJustDecodeBounds = <span class="kw">false</span>
+
+    <span class="cm">// Try to borrow a reusable Bitmap from pool</span>
+    options.inMutable = <span class="kw">true</span>
+    options.inBitmap = bitmapPool.<span class="fn">get</span>(
+        options.outWidth / options.inSampleSize,
+        options.outHeight / options.inSampleSize,
+        options.outConfig ?: <span class="tp">Bitmap</span>.<span class="tp">Config</span>.ARGB_8888
+    )  <span class="cm">// may be null — BitmapFactory allocates fresh if so</span>
+
+    <span class="cm">// Pass 2: actual decode, reusing pool Bitmap if available</span>
+    <span class="kw">return</span> <span class="tp">BitmapFactory</span>.<span class="fn">decodeByteArray</span>(bytes, <span class="nm">0</span>, bytes.size, options)
+}</pre>
+
+      <div class="pattern-box">
+        <div class="pattern-header"><span class="pattern-icon">🔷</span><span class="pattern-title">Pattern: inSampleSize Downsampling</span></div>
+        <p>Loading a 4K photo into a 200×200 thumbnail slot without downsampling wastes 200× the memory. Always calculate <code>inSampleSize</code> based on the target view dimensions before decoding. A value of 2 halves each dimension (quarter the pixels); 4 gives one-sixteenth the pixels. Coil does this automatically — it's one of the core reasons it outperforms naive implementations.</p>
+        <button class="pattern-btn">Learn This Pattern</button>
+      </div>
+    </div>
+
+    <hr/>
+
+    <div id="hl-dedup">
+      <div class="sec-h2">4) Request Deduplication</div>
+      <p>In a RecyclerView with 50 cells loading the same avatar image simultaneously, a naive implementation fires 50 network requests for the same URL. The fix: maintain a <strong>map of in-flight requests keyed by URL</strong>. If a second request arrives for the same URL, attach it to the existing in-flight job rather than starting a new one.</p>
+
+      <pre class="code-block"><span class="cm">// Engine — deduplicates concurrent requests for the same key</span>
+
+<span class="kw">class</span> <span class="tp">Engine</span> {
+    <span class="kw">private val</span> activeRequests = <span class="tp">ConcurrentHashMap</span>&lt;<span class="tp">CacheKey</span>, <span class="tp">Deferred</span>&lt;<span class="tp">Bitmap</span>&gt;&gt;()
+
+    <span class="kw">suspend fun</span> <span class="fn">load</span>(key: <span class="tp">CacheKey</span>, request: <span class="tp">ImageRequest</span>): <span class="tp">Bitmap</span> {
+        <span class="cm">// Memory cache hit — return immediately</span>
+        memoryCache.<span class="fn">get</span>(key)?.<span class="fn">let</span> { <span class="kw">return</span> it }
+
+        <span class="cm">// Deduplicate: attach to existing job if already in-flight</span>
+        <span class="kw">return</span> activeRequests.<fn>getOrPut</fn>(key) {
+            coroutineScope.<fn>async</fn>(Dispatchers.IO) {
+                <span class="kw">try</span> {
+                    <span class="kw">val</span> bitmap = <span class="fn">fetchDecodeSave</span>(key, request)
+                    memoryCache.<fn>put</fn>(key, bitmap)
+                    bitmap
+                } <span class="kw">finally</span> {
+                    activeRequests.<fn>remove</fn>(key)  <span class="cm">// clean up when done</span>
+                }
+            }
+        }.<fn>await</fn>()
+    }
+}</pre>
+    </div>
+
+    <hr/>
+
+    <div id="hl-lifecycle">
+      <div class="sec-h2">5) Lifecycle Awareness — Cancelling Requests</div>
+      <p>If a user scrolls past a cell before its image loads, the in-flight request must be cancelled to avoid wasting bandwidth and updating a view that's now off screen (or recycled to show a different item). The solution: tie each request to the target's lifecycle using a <code>LifecycleObserver</code> or Compose's <code>DisposableEffect</code>.</p>
+
+      <pre class="code-block"><span class="cm">// ─── Cancellation tied to View lifecycle ──────────────────────</span>
+
+<span class="kw">fun</span> <span class="tp">ImageView</span>.<span class="fn">load</span>(url: <span class="tp">String</span>, imageLoader: <span class="tp">ImageLoader</span>) {
+    <span class="cm">// Cancel any previous request on this view</span>
+    <span class="fn">getTag</span>(<span class="tp">R</span>.id.image_loader_tag)?.<span class="kw">let</span> { (it <span class="kw">as</span>? <span class="tp">Job</span>)?.<fn>cancel</fn>() }
+
+    <span class="kw">val</span> job = imageLoader.coroutineScope.<fn>launch</fn> {
+        <span class="kw">val</span> bitmap = imageLoader.<fn>execute</fn>(<span class="tp">ImageRequest</span>(url, <span class="kw">this</span>@load))
+        <span class="cm">// Switch to Main thread to update the view</span>
+        <fn>withContext</fn>(Dispatchers.Main) {
+            <span class="fn">setImageBitmap</span>(bitmap)
+        }
+    }
+
+    <span class="cm">// Store job reference on the view — RecyclerView reuse cancels old job</span>
+    <fn>setTag</fn>(<span class="tp">R</span>.id.image_loader_tag, job)
+}
+
+<span class="cm">// ─── Compose version ───────────────────────────────────────────</span>
+<span class="an">@Composable</span>
+<span class="kw">fun</span> <span class="fn">AsyncImage</span>(url: <span class="tp">String</span>, ...) {
+    <span class="kw">var</span> bitmap <span class="kw">by</span> <span class="fn">remember</span> { <span class="fn">mutableStateOf</span>&lt;<span class="tp">Bitmap</span>?&gt;(<span class="kw">null</span>) }
+    <span class="fn">LaunchedEffect</span>(url) {  <span class="cm">// re-launches when URL changes; cancels previous</span>
+        bitmap = imageLoader.<fn>execute</fn>(<span class="tp">ImageRequest</span>(url))
+    }
+    bitmap?.<span class="kw">let</span> { <span class="tp">Image</span>(it.<fn>asImageBitmap</fn>(), ...) }
+}</pre>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ── LLD ── -->
+  <div id="lld">
+    <div class="sec-h1">Low-Level Design</div>
+    <p>Three precise flows that interviewers drill into. Be able to draw and explain each one.</p>
+
+    <!-- Whiteboard -->
+    <div id="lld-whiteboard">
+      <div class="sec-h2">Whiteboard Overview</div>
+      <p>Draw this in the first 5 minutes. It shows the full request lifecycle — happy path (memory hit), disk hit, and full network miss — on a single diagram.</p>
+
+      <div class="diagram-wrap">
+        <div style="background:#fff; padding:28px 16px;">
+          <svg viewBox="0 0 720 340" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter,sans-serif" font-size="12">
+            <defs>
+              <marker id="wa" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#374151"/></marker>
+              <marker id="wg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#3d7a4f"/></marker>
+              <marker id="wr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#dc2626"/></marker>
+            </defs>
+
+            <!-- Caller -->
+            <rect x="10" y="140" width="100" height="36" rx="7" fill="#3d7a4f"/>
+            <text x="60" y="155" text-anchor="middle" fill="white" font-weight="700" font-size="11">Caller</text>
+            <text x="60" y="169" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10">ImageView</text>
+
+            <!-- Arrow to Engine -->
+            <line x1="110" y1="158" x2="150" y2="158" stroke="#374151" stroke-width="1.5" marker-end="url(#wa)"/>
+            <text x="130" y="151" text-anchor="middle" font-size="9.5" fill="#6b7280">load(url)</text>
+
+            <!-- Engine -->
+            <rect x="152" y="132" width="110" height="52" rx="7" fill="#f1f3f5" stroke="#d1d5db"/>
+            <text x="207" y="153" text-anchor="middle" fill="#374151" font-weight="700">Engine</text>
+            <text x="207" y="168" text-anchor="middle" fill="#6b7280" font-size="10">dedup + dispatch</text>
+            <text x="207" y="179" text-anchor="middle" fill="#6b7280" font-size="10">Dispatchers.IO</text>
+
+            <!-- Engine → Memory Cache -->
+            <line x1="262" y1="158" x2="305" y2="100" stroke="#374151" stroke-width="1.5" marker-end="url(#wa)"/>
+            <text x="276" y="122" font-size="9.5" fill="#6b7280" transform="rotate(-35,276,122)">check</text>
+
+            <!-- Memory Cache -->
+            <rect x="307" y="76" width="120" height="48" rx="7" fill="#f0fdf4" stroke="#6aad82" stroke-width="1.5"/>
+            <text x="367" y="96" text-anchor="middle" fill="#2e6040" font-weight="700">Memory Cache</text>
+            <text x="367" y="113" text-anchor="middle" fill="#3d7a4f" font-size="10">LRU · decoded Bitmap</text>
+
+            <!-- HIT from memory -->
+            <line x1="307" y1="100" x2="110" y2="145" stroke="#3d7a4f" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#wg)"/>
+            <text x="195" y="116" font-size="9.5" fill="#3d7a4f" font-weight="600" transform="rotate(25,195,116)">HIT → Bitmap direct</text>
+
+            <!-- Engine → Disk Cache -->
+            <line x1="262" y1="175" x2="305" y2="200" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#wr)"/>
+            <text x="276" y="195" font-size="9.5" fill="#dc2626" transform="rotate(25,276,195)">MISS→check</text>
+
+            <!-- Disk Cache -->
+            <rect x="307" y="198" width="120" height="48" rx="7" fill="#fefce8" stroke="#fcd34d" stroke-width="1.5"/>
+            <text x="367" y="218" text-anchor="middle" fill="#92400e" font-weight="700">Disk Cache</text>
+            <text x="367" y="234" text-anchor="middle" fill="#92400e" font-size="10">DiskLruCache · bytes</text>
+
+            <!-- Disk HIT → Decoder -->
+            <line x1="427" y1="222" x2="475" y2="222" stroke="#374151" stroke-width="1.5" marker-end="url(#wa)"/>
+            <text x="450" y="215" text-anchor="middle" font-size="9.5" fill="#374151">HIT→bytes</text>
+
+            <!-- Decoder -->
+            <rect x="477" y="200" width="115" height="44" rx="7" fill="#f0fdfa" stroke="#5eead4" stroke-width="1.5"/>
+            <text x="535" y="219" text-anchor="middle" fill="#0f766e" font-weight="700">Decoder</text>
+            <text x="535" y="234" text-anchor="middle" fill="#0f766e" font-size="10">BitmapFactory + pool</text>
+
+            <!-- Decoder → write Memory Cache -->
+            <path d="M535,200 Q535,100 430,100" fill="none" stroke="#374151" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#wa)"/>
+            <text x="510" y="145" font-size="9.5" fill="#374151" transform="rotate(-72,510,145)">write Bitmap</text>
+
+            <!-- Decoder → Target -->
+            <line x1="592" y1="222" x2="635" y2="178" stroke="#3d7a4f" stroke-width="2" marker-end="url(#wg)"/>
+            <text x="620" y="205" font-size="9.5" fill="#3d7a4f" font-weight="600" transform="rotate(-55,620,205)">setImageBitmap</text>
+
+            <!-- Disk MISS → Fetcher -->
+            <line x1="367" y1="246" x2="367" y2="282" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#wr)"/>
+            <text x="375" y="268" font-size="9.5" fill="#dc2626">MISS</text>
+
+            <!-- Fetcher -->
+            <rect x="307" y="284" width="120" height="44" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+            <text x="367" y="303" text-anchor="middle" fill="#1d4ed8" font-weight="700">Fetcher</text>
+            <text x="367" y="318" text-anchor="middle" fill="#1d4ed8" font-size="10">OkHttp network call</text>
+
+            <!-- Fetcher → write disk -->
+            <path d="M307,306 Q240,306 240,222 Q240,180 307,220" fill="none" stroke="#374151" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#wa)"/>
+            <text x="220" y="260" font-size="9.5" fill="#374151" transform="rotate(-90,220,260)">write bytes</text>
+
+            <!-- Fetcher → Decoder -->
+            <line x1="427" y1="306" x2="477" y2="244" stroke="#374151" stroke-width="1.5" marker-end="url(#wa)"/>
+            <text x="460" y="278" font-size="9.5" fill="#374151" transform="rotate(-55,460,278)">raw bytes</text>
+
+            <!-- Target -->
+            <rect x="635" y="140" width="75" height="76" rx="7" fill="#3d7a4f"/>
+            <text x="672" y="175" text-anchor="middle" fill="white" font-weight="700">Target</text>
+            <text x="672" y="192" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10">ImageView</text>
+
+            <!-- BitmapPool -->
+            <rect x="477" y="284" width="115" height="36" rx="7" fill="#fdf4ff" stroke="#e879f9" stroke-width="1.5"/>
+            <text x="535" y="300" text-anchor="middle" fill="#701a75" font-weight="700">BitmapPool</text>
+            <text x="535" y="313" text-anchor="middle" fill="#701a75" font-size="10">borrow / return</text>
+
+            <!-- Decoder ↔ BitmapPool -->
+            <line x1="535" y1="244" x2="535" y2="284" stroke="#701a75" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#wa)"/>
+
+            <!-- Legend -->
+            <g transform="translate(10,10)">
+              <line x1="0" y1="8" x2="24" y2="8" stroke="#374151" stroke-width="1.5"/>
+              <text x="28" y="13" font-size="10" fill="#6b7280">Pipeline</text>
+              <line x1="88" y1="8" x2="112" y2="8" stroke="#3d7a4f" stroke-width="2"/>
+              <text x="116" y="13" font-size="10" fill="#3d7a4f">Cache HIT</text>
+              <line x1="188" y1="8" x2="212" y2="8" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,2"/>
+              <text x="216" y="13" font-size="10" fill="#dc2626">Cache MISS</text>
+              <line x1="296" y1="8" x2="320" y2="8" stroke="#374151" stroke-width="1.5" stroke-dasharray="4,2"/>
+              <text x="324" y="13" font-size="10" fill="#6b7280">Write back</text>
+            </g>
+          </svg>
+        </div>
+        <div class="diagram-caption">Full Whiteboard — Memory Hit / Disk Hit / Network Miss paths <span class="zoom-icon">🔍</span></div>
+      </div>
+    </div>
+
+    <!-- Flow 1: Full Load -->
+    <div id="lld-load-flow">
+      <div class="sec-h2">Flow 1 — Full Image Load (Network Miss)</div>
+      <p>The worst-case path: nothing in any cache. This covers every component in the system.</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row cols-6">
+          <div class="flow-actor actor-caller">Caller</div>
+          <div class="flow-actor actor-engine">Engine</div>
+          <div class="flow-actor actor-mem">Mem Cache</div>
+          <div class="flow-actor actor-disk">Disk Cache</div>
+          <div class="flow-actor actor-net">Fetcher</div>
+          <div class="flow-actor actor-decoder">Decoder</div>
+        </div>
+
+        <div class="flow-step-row">
+          <div class="fs-label">1</div>
+          <div class="fs-line"><span class="fs-arrow">→</span><span class="fs-msg">imageLoader.load(url, targetView)</span></div>
+        </div>
+        <div class="flow-note">Caller invokes the public API. Engine builds a <code>CacheKey</code> from URL + target dimensions (e.g. 200×200). Without dimensions, a 400×400 and a 200×200 decode of the same URL would incorrectly share a cache entry.</div>
+
+        <div class="flow-step-row">
+          <div class="fs-label">2</div>
+          <div class="fs-line"><span class="fs-arrow">→</span><span class="fs-msg">memoryCache.get(key) → null</span></div>
+        </div>
+        <div class="flow-note fs-highlight">Memory cache miss. Key was not found — either first load or was evicted. Time elapsed: &lt;1ms.</div>
+
+        <div class="flow-step-row fs-miss">
+          <div class="fs-label">3</div>
+          <div class="fs-line"><span class="fs-arrow">→</span><span class="fs-msg">diskCache.get(urlHash) → null</span></div>
+        </div>
+        <div class="flow-note">Disk cache miss. Check if a file exists for the URL hash. No file found. Time elapsed: ~5ms.</div>
+
+        <div class="flow-step-row fs-miss">
+          <div class="fs-label">4</div>
+          <div class="fs-line"><span class="fs-arrow">→</span><span class="fs-msg">okHttpClient.get(url) → ResponseBody</span></div>
+        </div>
+        <div class="flow-note">Network fetch on <code>Dispatchers.IO</code>. OkHttp respects HTTP caching headers (ETag, Cache-Control). Response body streamed — not fully buffered — into the disk cache write stream.</div>
+
+        <div class="flow-step-row">
+          <div class="fs-label">5</div>
+          <div class="fs-line"><span class="fs-arrow">→</span><span class="fs-msg">diskCache.put(urlHash, bytes)</span></div>
+        </div>
+        <div class="flow-note">Bytes written to disk cache atomically (write to temp file, rename on completion). Future requests get a disk hit without re-fetching.</div>
+
+        <div class="flow-step-row">
+          <div class="fs-label">6</div>
+          <div class="fs-line"><span class="fs-arrow">→</span><span class="fs-msg">decoder.decode(bytes, targetW, targetH)</span></div>
+        </div>
+        <div class="flow-note">Two-pass decode: pass 1 reads only the image header to get dimensions (<code>inJustDecodeBounds</code>). Calculates <code>inSampleSize</code>. Borrows a reusable Bitmap from <code>BitmapPool</code>. Pass 2 decodes into that Bitmap.</div>
+
+        <div class="flow-step-row fs-ret">
+          <div class="fs-label">7</div>
+          <div class="fs-line"><span class="fs-arrow fs-left">←</span><span class="fs-msg fs-green">Bitmap returned to Engine</span></div>
+        </div>
+        <div class="flow-note">Decoder returns the decoded Bitmap. Engine writes it to the memory cache for future hits.</div>
+
+        <div class="flow-step-row fs-ret">
+          <div class="fs-label">8</div>
+          <div class="fs-line"><span class="fs-arrow fs-left">←</span><span class="fs-msg fs-green">withContext(Main) { view.setImageBitmap(bitmap) }</span></div>
+        </div>
+        <div class="flow-note fs-highlight">Switch to main thread. Check that the target view's tag still matches this request (view may have been recycled). If it matches, set the Bitmap. If not, drop silently.</div>
+      </div>
+    </div>
+
+    <!-- Flow 2: Memory HIT -->
+    <div id="lld-cache-hit">
+      <div class="sec-h2">Flow 2 — Memory Cache Hit (Best Case)</div>
+      <p>The happy path — the same image was loaded recently and the Bitmap is still in memory.</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row cols-5">
+          <div class="flow-actor actor-caller">Caller</div>
+          <div class="flow-actor actor-engine">Engine</div>
+          <div class="flow-actor actor-mem">Mem Cache</div>
+          <div class="flow-actor actor-engine">Engine</div>
+          <div class="flow-actor actor-caller">Caller (View)</div>
+        </div>
+
+        <div class="flow-step-row fs-hit">
+          <div class="fs-label">1</div>
+          <div class="fs-line"><span class="fs-arrow">→</span><span class="fs-msg">imageLoader.load(url, targetView)</span></div>
+        </div>
+        <div class="flow-note">Same call as before. Engine builds the same <code>CacheKey</code>.</div>
+
+        <div class="flow-step-row fs-hit">
+          <div class="fs-label">2</div>
+          <div class="fs-line"><span class="fs-arrow">→</span><span class="fs-msg">memoryCache.get(key) → Bitmap ✓</span></div>
+        </div>
+        <div class="flow-note fs-highlight">Cache HIT. Returns the decoded Bitmap immediately. No disk I/O, no network, no decode. Time: &lt;1ms.</div>
+
+        <div class="flow-step-row fs-hit">
+          <div class="fs-label">3</div>
+          <div class="fs-line"><span class="fs-arrow fs-left">←</span><span class="fs-msg fs-green">withContext(Main) { view.setImageBitmap(bitmap) }</span></div>
+        </div>
+        <div class="flow-note fs-highlight">Bitmap set on the view. From a RecyclerView scroll perspective, the image appears before the next frame — no flicker, no placeholder flash.</div>
+      </div>
+    </div>
+
+    <!-- Flow 3: LRU Eviction -->
+    <div id="lld-eviction">
+      <div class="sec-h2">Flow 3 — LRU Eviction &amp; BitmapPool Recycling</div>
+      <p>When the memory cache is full and a new Bitmap needs to be inserted, the LRU entry is evicted. Critically, this evicted Bitmap is <em>not</em> handed to the GC — it goes into the BitmapPool for reuse.</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row cols-5">
+          <div class="flow-actor actor-engine">Engine</div>
+          <div class="flow-actor actor-mem">Mem Cache (full)</div>
+          <div class="flow-actor actor-decoder">BitmapPool</div>
+          <div class="flow-actor actor-decoder">Decoder</div>
+          <div class="flow-actor actor-mem">Mem Cache</div>
+        </div>
+
+        <div class="flow-step-row">
+          <div class="fs-label">1</div>
+          <div class="fs-line"><span class="fs-arrow">→</span><span class="fs-msg">memoryCache.put(newKey, newBitmap)</span></div>
+        </div>
+        <div class="flow-note">Engine tries to write a newly decoded Bitmap into the memory cache. Cache is at capacity (e.g. 32MB).</div>
+
+        <div class="flow-step-row fs-miss">
+          <div class="fs-label">2</div>
+          <div class="fs-line"><span class="fs-arrow">→</span><span class="fs-msg">LruCache evicts leastRecentlyUsed → Bitmap(800×600)</span></div>
+        </div>
+        <div class="flow-note"><code>LruCache.entryRemoved()</code> callback fires with the evicted Bitmap. Instead of calling <code>bitmap.recycle()</code> and waiting for GC, we pass it to BitmapPool.</div>
+
+        <div class="flow-step-row">
+          <div class="fs-label">3</div>
+          <div class="fs-line"><span class="fs-arrow">→</span><span class="fs-msg">bitmapPool.put(evictedBitmap)</span></div>
+        </div>
+        <div class="flow-note fs-highlight">BitmapPool stores the Bitmap keyed by (width, height, config). It's now available for the next decode of an image with matching dimensions. Zero GC pressure.</div>
+
+        <div class="flow-step-row fs-hit">
+          <div class="fs-label">4</div>
+          <div class="fs-line"><span class="fs-arrow fs-left">←</span><span class="fs-msg fs-green">bitmapPool.get(800, 600, ARGB_8888) → Bitmap</span></div>
+        </div>
+        <div class="flow-note">Next decode requesting an 800×600 Bitmap gets the pooled instance. <code>BitmapFactory.Options.inBitmap</code> is set to this instance — the decoder writes directly into the existing allocation.</div>
+
+        <div class="flow-step-row fs-ret">
+          <div class="fs-label">5</div>
+          <div class="fs-line"><span class="fs-arrow">→</span><span class="fs-msg">memoryCache.put(nextKey, reusedBitmap)</span></div>
+        </div>
+        <div class="flow-note fs-highlight">The reused Bitmap, now containing the new image's pixels, is stored in memory cache. The cycle continues with zero new heap allocations for the decode step.</div>
+      </div>
+
+      <div class="pattern-box">
+        <div class="pattern-header"><span class="pattern-icon">🔷</span><span class="pattern-title">Pattern: Separate Active vs Cached References</span></div>
+        <p>Glide maintains two memory tiers: an <strong>Active Resources</strong> map (WeakReferences to Bitmaps currently shown on screen) and the LRU MemoryCache. When a view releases a Bitmap (scrolled off screen), it moves from Active Resources to the LRU cache. This prevents a displayed Bitmap from being evicted just because it's LRU — a subtle but important correctness detail.</p>
+        <button class="pattern-btn">Learn This Pattern</button>
+      </div>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ── DEEP DIVES ── -->
+  <div id="deep-dives">
+    <div class="sec-h1">Potential Deep Dives</div>
+
+    <div id="dd-gif">
+      <div class="sec-h2">1) How would you support animated GIFs?</div>
+      <p>GIFs are a sequence of frames. Store the raw GIF bytes in the disk cache (same as JPEG). On decode, use Android's <code>ImageDecoder</code> API (API 28+) or a custom frame decoder for older versions. The result is not a <code>Bitmap</code> but an <code>AnimatedImageDrawable</code> or a <code>Movie</code> object. The Target interface needs to accept <code>Drawable</code> instead of just <code>Bitmap</code>. Memory cost is frames × frame_size — apply strict size limits for GIF cache entries.</p>
+    </div>
+
+    <div id="dd-transform">
+      <div class="sec-h2">2) How do you add image transformations (circle crop, blur)?</div>
+      <p>Add a <code>Transformation</code> interface to the pipeline: <code>fun transform(pool: BitmapPool, input: Bitmap): Bitmap</code>. Each transformation is applied after decode, before caching. Include the transformation class name in the <code>CacheKey</code> — a circle-cropped and a plain version of the same URL must be separate cache entries. Transformations can borrow from and return to the BitmapPool to stay allocation-free.</p>
+    </div>
+
+    <div id="dd-placeholder">
+      <div class="sec-h2">3) How do placeholders and error images work?</div>
+      <p>Placeholders are set synchronously on the main thread before the async pipeline starts — they must be resource IDs, not URLs (no async loading for placeholders). When the pipeline completes (success or error), replace the placeholder with the result on the main thread. Use a <code>CrossFadeDrawable</code> to animate the transition. Error drawables follow the same pattern but are set in the catch block.</p>
+    </div>
+
+    <div id="dd-headers">
+      <div class="sec-h2">4) How do you handle HTTP caching headers?</div>
+      <p>OkHttp handles this automatically if you configure it with a cache directory. For <code>Cache-Control: max-age=3600</code>, OkHttp serves from its HTTP cache without hitting the network. Your disk cache and OkHttp's cache serve different purposes — OkHttp caches compressed bytes with HTTP semantics (ETag, conditional GET); your disk cache is optimised for offline access with LRU eviction. You can use both in tandem or let OkHttp's cache replace your disk cache for simpler setups.</p>
+    </div>
+
+    <div id="dd-preload">
+      <div class="sec-h2">5) How would you implement preloading for a RecyclerView?</div>
+      <p>Use <code>RecyclerView.addOnScrollListener</code> to detect scroll direction and velocity. When the user is scrolling down, prefetch the next N item URLs that are about to enter the viewport. Issue <code>imageLoader.preload(url, targetSize)</code> — which runs the full pipeline (fetch + decode + cache) without setting the result on any view. When the cell actually comes into view, it gets a memory cache hit. Coil calls this <code>MemoryCache.prefetch()</code>; Glide has a <code>ListPreloader</code> helper.</p>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ── LEVELS ── -->
+  <div id="expectations">
+    <div class="sec-h1">What is Expected at Each Level</div>
+    <div class="levels-grid">
+      <div class="level-card mid">
+        <div class="level-title">Mid-level</div>
+        <ul>
+          <li>2-tier cache (memory + disk) explained</li>
+          <li>LRU eviction policy understood</li>
+          <li>No main-thread blocking</li>
+          <li>Placeholder + error image support</li>
+          <li>Can describe inSampleSize downsampling</li>
+        </ul>
+      </div>
+      <div class="level-card senior">
+        <div class="level-title">Senior</div>
+        <ul>
+          <li>BitmapPool and inBitmap reuse</li>
+          <li>Request deduplication with in-flight map</li>
+          <li>Lifecycle-aware cancellation</li>
+          <li>CacheKey includes target dimensions</li>
+          <li>Active Resources vs LRU distinction</li>
+        </ul>
+      </div>
+      <div class="level-card staff">
+        <div class="level-title">Staff+</div>
+        <ul>
+          <li>Transformation pipeline design</li>
+          <li>RecyclerView prefetching strategy</li>
+          <li>GIF / animated drawable support</li>
+          <li>OkHttp HTTP cache vs disk cache trade-offs</li>
+          <li>Custom target types beyond ImageView</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ── INTERVIEW QUESTIONS ── -->
+  <div id="interview-qs">
+    <div class="sec-h1">20 Must-Know Interview Questions</div>
+    <p>The most frequently asked follow-ups in real Image Loading Library design interviews. Know each one cold.</p>
+
+    <div class="iq-list">
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q1</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">What are the three tiers of cache in an image loading library and what does each store?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p><strong>Tier 1 — Memory Cache:</strong> stores decoded <code>Bitmap</code> objects in RAM. Sub-millisecond access. Sized to ~15% of app heap. Evicts via LRU. <strong>Tier 2 — Disk Cache:</strong> stores compressed image bytes (JPEG/PNG) as files. 5–50ms access. Sized to ~250MB. Evicts via LRU across files. <strong>Tier 3 — Network:</strong> the origin server. 200ms–3s. Unlimited but costs bandwidth. The library checks each tier in order — memory first, then disk, then network — and writes the result back to cheaper tiers on a miss.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q2</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">Why do we store decoded Bitmaps in memory cache but compressed bytes in disk cache?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Decoded Bitmaps are large but fast to display — a 1080×1920 ARGB_8888 image is 8MB. Keeping them decoded in memory means zero CPU cost on repeated display. But 8MB per image means the memory cache can only hold ~4 images at this size before OOM. Disk cache stores the original compressed JPEG (~100KB) — 80× smaller — so you can cache hundreds of images without filling the disk. The trade-off: disk hits still pay the decode CPU cost, but save the network round-trip.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q3</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">What is LRU eviction and why is it the right policy for image caches?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>LRU (Least Recently Used) evicts the item that was accessed furthest back in time. For image caches, it works because temporal locality holds — if you viewed an image recently, you're likely to view it again soon (e.g. scrolling a list up and down). The alternative, FIFO, would evict images in insertion order regardless of access recency. Android's <code>LruCache</code> uses a <code>LinkedHashMap</code> with <code>accessOrder = true</code> — on every get/put, the accessed entry moves to the tail. Eviction picks the head (least recently used).</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q4</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">What is a BitmapPool and why does Glide use it?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>A BitmapPool is a collection of recycled <code>Bitmap</code> objects grouped by (width, height, config). When the memory cache evicts a Bitmap, instead of letting it be GC'd, it's placed in the pool. The next decode that needs a Bitmap of the same size borrows from the pool and sets it as <code>BitmapFactory.Options.inBitmap</code> — the decoder writes new pixels directly into the existing allocation. The benefit: zero heap allocation for the decode, eliminating GC pauses. In a RecyclerView scrolling 10 images/second, this prevents the GC from triggering every few frames and causing jank.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q5</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">What is inSampleSize and why is it critical for memory efficiency?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p><code>inSampleSize</code> is a <code>BitmapFactory.Options</code> field that downsamples an image during decode. A value of 2 halves each dimension (¼ the pixels); 4 gives 1/16 the pixels. Without it, loading a 4K photo (16MB decoded) into a 100×100 thumbnail wastes 640× the memory. The correct flow: (1) Set <code>inJustDecodeBounds = true</code> and decode to get image dimensions without allocating pixels. (2) Calculate the minimum <code>inSampleSize</code> that produces an output ≥ target dimensions. (3) Set <code>inJustDecodeBounds = false</code> and decode at that sample size. Every production library does this.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q6</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How do you handle request deduplication when 50 RecyclerView cells load the same avatar URL simultaneously?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Maintain a <code>ConcurrentHashMap&lt;CacheKey, Deferred&lt;Bitmap&gt;&gt;</code> of in-flight requests. When a second request arrives for the same URL+dimensions, check the map — if a <code>Deferred</code> already exists, call <code>.await()</code> on it instead of starting a new coroutine. All 50 cells share one network request and one decode. Use <code>getOrPut</code> atomically to avoid races. Clean up the entry in a <code>finally</code> block so the next independent load after completion doesn't incorrectly reuse a finished <code>Deferred</code>.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q7</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How do you cancel an image request when a RecyclerView cell is recycled?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Store the coroutine <code>Job</code> as a tag on the target view: <code>view.setTag(R.id.image_loader_tag, job)</code>. When a new request starts on the same view, retrieve the old tag and call <code>job.cancel()</code> before launching the new one. In a RecyclerView, <code>onBindViewHolder</code> calls <code>load(url)</code> — which always cancels the previous job on that view instance. In Compose, use <code>LaunchedEffect(url)</code> — it automatically cancels and re-launches whenever the URL key changes. No manual cancellation code needed.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q8</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">Why does the CacheKey include target dimensions, not just the URL?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>The same URL loaded into a 100×100 thumbnail and a 1080×1080 full-screen view produces two different decoded Bitmaps. If you keyed only by URL, the 1080×1080 Bitmap would be returned for the 100×100 slot — wasting 100× the memory. Conversely, the 100×100 Bitmap would look pixelated in the full-screen view. The correct key is <code>CacheKey(url, width, height, config, transformations)</code>. This means the same URL can have multiple entries in the memory cache, each optimised for a specific target size.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q9</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">What happens when the app receives an onTrimMemory() callback?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Android calls <code>onTrimMemory(level)</code> on the Application when the system is under memory pressure. The image loader should register a <code>ComponentCallbacks2</code> listener and respond proportionally: <code>TRIM_MEMORY_UI_HIDDEN</code> → clear the memory cache (app is backgrounded, no UI needs images). <code>TRIM_MEMORY_RUNNING_CRITICAL</code> → clear memory cache + BitmapPool. <code>TRIM_MEMORY_COMPLETE</code> → clear everything. Not responding to these callbacks is a common source of OOM kills when the app is backgrounded — Android may kill the process if you're holding large Bitmap allocations unnecessarily.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q10</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">What is the "Active Resources" pattern in Glide? Why is it separate from the LRU cache?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Glide maintains a separate <code>ActiveResources</code> map of <code>WeakReference&lt;Bitmap&gt;</code> for images currently displayed on screen. The problem it solves: if image A is displayed in a large list and the LRU cache fills up with other images, image A could be evicted — but it's still being drawn! When the view releases the Bitmap (scrolled off screen), it moves from Active Resources to the LRU cache. When it's needed again, the LRU cache returns it without any re-decode. This two-layer approach means on-screen images are never evicted, while off-screen images compete fairly for LRU space.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q11</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How would you make the library testable?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Design every component behind an interface: <code>ImageCache</code>, <code>DiskCache</code>, <code>Fetcher</code>, <code>Decoder</code>, <code>BitmapPool</code>. In tests, inject fake implementations. For the Fetcher, use <code>MockWebServer</code> to serve test images. Test the Engine's deduplication with a slow fake Fetcher that uses a <code>Semaphore</code> — fire 10 concurrent requests and assert only one fetch happens. Test LRU eviction by inserting entries until capacity is exceeded and asserting the oldest entry is gone. Test lifecycle cancellation by calling <code>job.cancel()</code> mid-fetch and asserting no view update occurs.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q12</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How does the disk cache handle concurrent writes to the same key?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Use an <strong>atomic write pattern</strong>: write to a temp file (<code>key.tmp</code>), then rename to the final path (<code>key</code>) when complete. File rename is atomic on POSIX systems. This prevents a concurrent reader from seeing a partially written file. <code>DiskLruCache</code> (used by OkHttp and Glide) implements this pattern. Additionally, use a per-key lock (<code>ConcurrentHashMap&lt;String, Mutex&gt;</code>) to prevent two coroutines from fetching and writing the same key simultaneously — only one should win, the other should wait and then get a cache hit.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q13</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How do you support loading images from sources other than URLs (e.g. file path, resource ID, content URI)?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Define a <code>Fetcher</code> interface with a type parameter: <code>interface Fetcher&lt;T&gt; { suspend fun fetch(data: T): ByteArray }</code>. Register fetchers per source type in a <code>FetcherRegistry</code>: <code>HttpFetcher</code> for URLs, <code>FileFetcher</code> for file paths, <code>ResourceFetcher</code> for R.drawable IDs, <code>ContentUriFetcher</code> for content:// URIs. The Engine inspects the request's data type and delegates to the matching fetcher. This is exactly how Coil's <code>Fetcher</code> SPI works — you can also register custom fetchers for proprietary data sources without modifying the library.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q14</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How would you implement prefetching for a RecyclerView scrolling at high speed?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Use a <code>RecyclerView.OnScrollListener</code> to detect scroll direction and calculate which items will enter the viewport. Call <code>imageLoader.preload(url, size)</code> for the next 3–5 items — this runs the full pipeline (fetch → decode → cache) without attaching to any view. Use a lower-priority coroutine dispatcher for preloads so they don't compete with visible-item loads. Cancel preloads when scroll direction reverses. Coil's <code>Preloader</code> and Glide's <code>RecyclerViewPreloader</code> implement this. The result: near-instant image display as items scroll into view, reducing the blank-placeholder window from ~200ms to near zero.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q15</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How does Coil differ from Glide architecturally?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Key differences: (1) <strong>Coroutines-first:</strong> Coil is built entirely on Kotlin coroutines; Glide uses Java threads + callbacks, making Coil's lifecycle cancellation cleaner. (2) <strong>OkHttp integration:</strong> Coil uses OkHttp natively and defers to OkHttp's HTTP cache, avoiding a separate disk cache layer. Glide manages its own disk cache. (3) <strong>No static singleton by default:</strong> Coil encourages injecting a custom <code>ImageLoader</code> instance, making it more testable. (4) <strong>Compose-first API:</strong> Coil has first-class <code>AsyncImage</code> composable; Glide added Compose support later. (5) Coil is newer and smaller in APK size (~3MB vs Glide's ~5MB).</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q16</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How do image transformations (circle crop, rounded corners) affect caching?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Transformations must be included in the <code>CacheKey</code>. A circle-cropped version and the original of the same URL are different Bitmaps and must be stored separately. The key typically includes a hash of the transformation class name and parameters. For disk cache, you have a choice: cache the transformed or untransformed bytes. Caching untransformed bytes is more space-efficient (one file serves multiple transformations), but you always pay the transform CPU cost on disk hits. Caching transformed Bitmaps in memory is the right call — memory hits are free, and memory cache entries are per-transformation anyway.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q17</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How would you handle image loading in a Compose LazyColumn with 10,000 items?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Key patterns: (1) Use <code>AsyncImage</code> with a <code>rememberAsyncImagePainter</code> — Compose's <code>LaunchedEffect</code> handles cancellation automatically when the composable leaves composition. (2) Set explicit <code>contentScale</code> and <code>size</code> modifiers so the library can downscale to exactly the render size. (3) Enable <code>allowHardware = false</code> only if you need to draw on Canvas — hardware Bitmaps are faster for display. (4) Use <code>ImageLoader</code> with a generous memory cache (more items are in the composition tree simultaneously than in a View RecyclerView). (5) Consider <code>Coil.imageLoader</code> as a singleton — creating a new <code>ImageLoader</code> per composable defeats the shared cache.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q18</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How do you handle images that are too large to fit in the disk cache?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Two approaches: (1) <strong>Size-based eviction:</strong> If a single image is larger than the disk cache max size, skip writing it to disk cache entirely — it would evict everything else. Check the content-length header before writing and skip if it exceeds a threshold (e.g. 10MB). (2) <strong>Streaming decode:</strong> For very large images (panoramas, high-res photos), stream decode them using <code>BitmapRegionDecoder</code> instead of loading the full bytes into memory. Decode only the visible region. This is how photo viewer apps like Google Photos handle extremely large images without OOM.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q19</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How would you measure and benchmark the library's performance?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Three layers: (1) <strong>Microbenchmarks</strong> — use <code>androidx.benchmark</code> to measure <code>decode(bytes)</code> time, <code>memoryCache.get(key)</code> latency, and LRU eviction throughput in isolation. (2) <strong>Macro benchmarks</strong> — use <code>MacrobenchmarkRule</code> to measure scroll frame rate (jank %) in a RecyclerView with your library vs Coil vs Glide on real devices. (3) <strong>Memory profiling</strong> — use Android Profiler to compare heap allocations during a 30-second scroll session. A well-implemented BitmapPool should show near-zero Bitmap allocations after the first pass through the list. Track GC events per second as the primary signal of pool effectiveness.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left"><span class="iq-num">Q20</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">If you were starting this library today, what would you design differently than Glide?</span></div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer"><p>Strong Staff+ answer: (1) <strong>Coroutines-native from day one</strong> — Glide's Java callback model makes coroutine integration awkward. Design the Engine as a suspend function chain from the start. (2) <strong>Delegate HTTP caching to OkHttp</strong> — maintaining a custom disk cache alongside OkHttp's HTTP cache creates complexity and potential inconsistency. Let OkHttp own the byte cache; own only the decoded Bitmap cache. (3) <strong>Compose as the primary target</strong> — design the Target interface as a composable state holder, not an ImageView wrapper. (4) <strong>KMP-ready data layer</strong> — the cache key, LRU logic, and decoder interface could be Kotlin Multiplatform, sharing code with an iOS SwiftUI image loader.</p></div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="reading-progress-wrap">
+    <div class="rp-label">Reading Progress</div>
+    <div class="rp-track"><div class="rp-fill" id="rpFill"></div></div>
+  </div>
+
+  <div class="toc-label">On This Page</div>
+  <ul class="toc-list">
+    <li class="toc-item"><a href="#understanding" id="toc-understanding">Understanding the Problem</a></li>
+    <li class="toc-item sub"><a href="#functional-req" id="toc-functional-req">Functional Requirements</a></li>
+    <li class="toc-item sub"><a href="#nonfunctional-req" id="toc-nonfunctional-req">Non-Functional Requirements</a></li>
+
+    <li class="toc-item"><a href="#setup" id="toc-setup">The Set Up</a></li>
+    <li class="toc-item sub"><a href="#cache-hierarchy" id="toc-cache-hierarchy">3-Tier Cache Hierarchy</a></li>
+    <li class="toc-item sub"><a href="#core-entities" id="toc-core-entities">Core Components</a></li>
+
+    <li class="toc-item"><a href="#high-level" id="toc-high-level">High-Level Design</a></li>
+    <li class="toc-item sub"><a href="#hl-architecture" id="toc-hl-architecture">1) Request Pipeline</a></li>
+    <li class="toc-item sub"><a href="#hl-memory-cache" id="toc-hl-memory-cache">2) Memory Cache (LRU)</a></li>
+    <li class="toc-item sub"><a href="#hl-bitmap-pool" id="toc-hl-bitmap-pool">3) BitmapPool</a></li>
+    <li class="toc-item sub"><a href="#hl-dedup" id="toc-hl-dedup">4) Request Deduplication</a></li>
+    <li class="toc-item sub"><a href="#hl-lifecycle" id="toc-hl-lifecycle">5) Lifecycle Awareness</a></li>
+
+    <li class="toc-item"><a href="#lld" id="toc-lld">Low-Level Design</a></li>
+    <li class="toc-item sub"><a href="#lld-whiteboard" id="toc-lld-whiteboard">Whiteboard Overview</a></li>
+    <li class="toc-item sub"><a href="#lld-load-flow" id="toc-lld-load-flow">Flow 1 — Network Miss</a></li>
+    <li class="toc-item sub"><a href="#lld-cache-hit" id="toc-lld-cache-hit">Flow 2 — Memory Hit</a></li>
+    <li class="toc-item sub"><a href="#lld-eviction" id="toc-lld-eviction">Flow 3 — LRU Eviction</a></li>
+
+    <li class="toc-item"><a href="#deep-dives" id="toc-deep-dives">Potential Deep Dives</a></li>
+    <li class="toc-item sub"><a href="#dd-gif">1) GIF support</a></li>
+    <li class="toc-item sub"><a href="#dd-transform">2) Transformations</a></li>
+    <li class="toc-item sub"><a href="#dd-placeholder">3) Placeholders</a></li>
+    <li class="toc-item sub"><a href="#dd-headers">4) HTTP caching</a></li>
+    <li class="toc-item sub"><a href="#dd-preload">5) Prefetching</a></li>
+
+    <li class="toc-item"><a href="#expectations" id="toc-expectations">What is Expected at</a></li>
+    <li class="toc-item"><a href="#interview-qs" id="toc-interview-qs">20 Interview Questions</a></li>
+  </ul>
+
+  <div class="sidebar-divider"></div>
+  <div class="companies-label">Asked at</div>
+  <div class="company-chips">
+    <span class="chip">Flipkart</span>
+    <span class="chip">CRED</span>
+    <span class="chip">Google</span>
+    <span class="chip">Swiggy</span>
+    <span class="chip">Meesho</span>
+  </div>
+</aside>
+</div>
+
+<script>
+  function toggleIQ(card) {
+    const isOpen = card.classList.contains('open');
+    document.querySelectorAll('.iq-card.open').forEach(c => c.classList.remove('open'));
+    if (!isOpen) card.classList.add('open');
+  }
+
+  const rpFill = document.getElementById('rpFill');
+  window.addEventListener('scroll', () => {
+    const pct = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
+    rpFill.style.width = Math.min(pct, 100) + '%';
+  }, { passive: true });
+
+  const sections = [
+    'understanding','functional-req','nonfunctional-req',
+    'setup','cache-hierarchy','core-entities',
+    'high-level','hl-architecture','hl-memory-cache','hl-bitmap-pool','hl-dedup','hl-lifecycle',
+    'lld','lld-whiteboard','lld-load-flow','lld-cache-hit','lld-eviction',
+    'deep-dives','dd-gif','dd-transform','dd-placeholder','dd-headers','dd-preload',
+    'expectations','interview-qs'
+  ];
+  const tocLinks = {};
+  sections.forEach(id => { tocLinks[id] = document.getElementById('toc-' + id); });
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        Object.values(tocLinks).forEach(l => l && l.classList.remove('active'));
+        const link = tocLinks[entry.target.id];
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-15% 0px -70% 0px' });
+
+  sections.forEach(id => { const el = document.getElementById(id); if (el) observer.observe(el); });
+</script>
+</body>
+</html>
