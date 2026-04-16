@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Design an E-commerce Product Listing — Droidly</title>
+<style>
+  :root {
+    --accent: #3d7a4f; --accent-dark: #2e6040;
+    --bg-green: #e8f2ec; --border-green: #6aad82;
+    --bg: #ffffff; --bg-secondary: #f8f9fa;
+    --text: #1a1a1a; --text-muted: #6b7280;
+    --border: #e5e7eb; --radius: 12px;
+    --sidebar-w: 260px;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.7; }
+  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0%; z-index: 1000; transition: width 0.1s linear; }
+  .topnav { position: sticky; top: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 0 32px; height: 52px; display: flex; align-items: center; gap: 8px; z-index: 100; font-size: 14px; }
+  .topnav a { color: var(--text-muted); text-decoration: none; }
+  .topnav a:hover { color: var(--accent); }
+  .topnav .sep { color: var(--border); }
+  .page-wrap { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr var(--sidebar-w); gap: 48px; padding: 48px 24px; align-items: start; }
+  .article h1 { font-size: 2rem; font-weight: 800; line-height: 1.2; border-bottom: 3px solid var(--text); padding-bottom: 12px; margin-bottom: 20px; }
+  .article-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 32px; }
+  .tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tag-topic { background: var(--bg-green); color: var(--accent-dark); }
+  .tag-medium { background: #fef3c7; color: #92400e; }
+  .tag-year { background: var(--bg-secondary); color: var(--text-muted); border: 1px solid var(--border); }
+  .meta-item { font-size: 13px; color: var(--text-muted); }
+  .article h2 { font-size: 1.35rem; font-weight: 700; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); scroll-margin-top: 80px; }
+  .article h3 { font-size: 1.1rem; font-weight: 700; margin: 28px 0 12px; color: var(--accent-dark); }
+  .article p { margin-bottom: 14px; }
+  .article ul { margin: 10px 0 16px 20px; }
+  .article ul li { margin-bottom: 6px; }
+  .article strong { font-weight: 700; }
+  .callout { border: 1px solid var(--border-green); background: var(--bg-green); border-radius: var(--radius); padding: 20px 24px; margin: 24px 0; }
+  .callout-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+  .callout p { margin-bottom: 0; font-size: 15px; }
+  .callout-cta { display: inline-block; margin-top: 12px; background: var(--accent); color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none; }
+  .info-box { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: var(--radius); padding: 16px 20px; margin: 16px 0; }
+  .info-box .info-label { font-weight: 700; font-size: 13px; color: #0369a1; margin-bottom: 6px; }
+  .req-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .req-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .req-box h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 12px; }
+  .req-box ul { margin-left: 16px; }
+  .req-box ul li { font-size: 14px; margin-bottom: 6px; }
+  .comp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+  .comp-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+  .comp-icon { font-size: 1.6rem; margin-bottom: 8px; }
+  .comp-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .comp-sub { font-size: 12px; color: var(--text-muted); }
+  /* page type cards */
+  .page-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
+  .page-card { border-radius: 10px; padding: 14px; text-align: center; border: 1.5px solid var(--border); background: var(--bg-secondary); }
+  .page-card .page-icon { font-size: 1.4rem; margin-bottom: 6px; }
+  .page-card .page-name { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .page-card .page-sub { font-size: 11px; color: var(--text-muted); }
+  pre { background: #0f1117; color: #e2e8f0; border-radius: 10px; padding: 20px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 16px 0; tab-size: 2; }
+  code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
+  .kw { color: #c792ea; } .fn { color: #82aaff; } .cl { color: #ffcb6b; }
+  .cm { color: #546e7a; font-style: italic; } .st { color: #c3e88d; }
+  .nm { color: #f78c6c; } .an { color: #89ddff; }
+  .diagram-wrap { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 20px 0; overflow-x: auto; text-align: center; }
+  .diagram-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+  .flow-wrap { margin: 24px 0; }
+  .flow-title { font-weight: 700; font-size: 15px; padding: 10px 16px; background: var(--bg-green); border-radius: 8px 8px 0 0; border: 1px solid var(--border-green); border-bottom: none; color: var(--accent-dark); }
+  .flow-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); overflow: hidden; }
+  .flow-table th { padding: 10px 14px; font-size: 12px; font-weight: 700; text-align: left; letter-spacing: 0.5px; }
+  .th-ui   { background: #dcfce7; color: #166534; }
+  .th-vm   { background: #d1fae5; color: #065f46; }
+  .th-repo { background: #dbeafe; color: #1e40af; }
+  .th-room { background: #fef3c7; color: #92400e; }
+  .th-api  { background: #f3e8ff; color: #6b21a8; }
+  .th-cache{ background: #ede9fe; color: #5b21b6; }
+  .th-search{ background: #fee2e2; color: #991b1b; }
+  .flow-table td { padding: 10px 14px; font-size: 13px; vertical-align: top; border-top: 1px solid var(--border); }
+  .flow-table tr:nth-child(even) td { background: var(--bg-secondary); }
+  .step-num { font-weight: 700; color: var(--accent); margin-right: 6px; }
+  .decision-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  .decision-table th { background: var(--bg-green); color: var(--accent-dark); padding: 10px 14px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .decision-table td { padding: 10px 14px; border-top: 1px solid var(--border); }
+  .decision-table tr:nth-child(even) td { background: var(--bg-secondary); }
+  .check { color: #16a34a; font-weight: 700; }
+  .cross { color: #dc2626; font-weight: 700; }
+  .chosen-row td { background: #f0fdf4 !important; font-weight: 600; }
+  .levels-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+  .level-card { border-radius: var(--radius); border: 1px solid var(--border); padding: 18px; }
+  .level-mid { border-top: 3px solid #60a5fa; }
+  .level-senior { border-top: 3px solid var(--accent); }
+  .level-staff { border-top: 3px solid #a855f7; }
+  .level-badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .level-mid .level-badge { color: #2563eb; }
+  .level-senior .level-badge { color: var(--accent); }
+  .level-staff .level-badge { color: #9333ea; }
+  .level-card ul { margin-left: 16px; }
+  .level-card ul li { font-size: 13px; margin-bottom: 5px; }
+  .iq-wrap { margin: 20px 0; }
+  .iq-card { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+  .iq-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; cursor: pointer; user-select: none; background: var(--bg-secondary); }
+  .iq-header:hover { background: #f0fdf4; }
+  .iq-q { font-size: 14px; font-weight: 600; flex: 1; padding-right: 12px; }
+  .iq-meta { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .iq-diff { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .diff-easy { background: #dcfce7; color: #166534; }
+  .diff-medium { background: #fef3c7; color: #92400e; }
+  .diff-hard { background: #fee2e2; color: #991b1b; }
+  .iq-chevron { font-size: 16px; color: var(--text-muted); transition: transform 0.2s; }
+  .iq-card.open .iq-chevron { transform: rotate(180deg); }
+  .iq-body { display: none; padding: 16px 18px; border-top: 1px solid var(--border); font-size: 14px; line-height: 1.7; background: #fff; }
+  .iq-card.open .iq-body { display: block; }
+  .iq-body ul { margin-left: 18px; margin-bottom: 10px; }
+  .iq-body li { margin-bottom: 5px; }
+  .sidebar { position: sticky; top: 72px; }
+  .sidebar-inner { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .sidebar-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 14px; }
+  .toc-item { display: block; padding: 6px 10px; border-radius: 6px; text-decoration: none; font-size: 13px; color: var(--text-muted); margin-bottom: 2px; border-left: 2px solid transparent; transition: all 0.15s; }
+  .toc-item:hover { color: var(--accent); background: var(--bg-green); }
+  .toc-item.active { color: var(--accent); border-left-color: var(--accent); background: var(--bg-green); font-weight: 600; }
+  .sidebar-progress { margin-bottom: 16px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .progress-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.2s; }
+  .sidebar-divider { height: 1px; background: var(--border); margin: 16px 0; }
+  .sidebar-companies { display: flex; flex-wrap: wrap; gap: 6px; }
+  .co-chip { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: var(--bg-green); color: var(--accent-dark); border: 1px solid var(--border-green); }
+  @media (max-width: 900px) {
+    .page-wrap { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .req-grid, .levels-grid, .comp-grid, .page-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="progress-bar"></div>
+<nav class="topnav">
+  <a href="androidprep_4.html">🤖 Droidly</a>
+  <span class="sep">›</span>
+  <a href="questions_37.html">Questions</a>
+  <span class="sep">›</span>
+  <a href="questions_37.html#topic-sysdesign">System Design</a>
+  <span class="sep">›</span>
+  <span style="color:var(--text)">E-commerce Product Listing</span>
+</nav>
+
+<div class="page-wrap">
+<article class="article">
+
+  <h1>Design an E-commerce Product Listing</h1>
+  <div class="article-meta">
+    <span class="tag tag-topic">System Design</span>
+    <span class="tag tag-medium">Medium</span>
+    <span class="tag tag-year">2025–26</span>
+    <span class="meta-item">⏱ 40–50 min</span>
+    <span class="meta-item">📱 Android Focus</span>
+  </div>
+
+  <!-- ══════════ 1. PROBLEM ══════════ -->
+  <h2 id="s-problem">1. Understanding the Problem</h2>
+
+  <p>Design the Android client for the product listing flow of an e-commerce app like Flipkart, Amazon, or Meesho — covering the home feed, category browsing, search with filters, product detail page (PDP), cart, and wishlist. The defining challenges are <strong>heterogeneous UI layouts</strong> (banners, carousels, grids), <strong>instant search with debounce</strong>, <strong>multi-select filters</strong>, and <strong>optimistic cart updates</strong> with offline queuing.</p>
+
+  <div class="callout">
+    <div class="callout-label">📌 Pattern: Server-Driven UI</div>
+    <p>Top e-commerce apps use <strong>Server-Driven UI (SDUI)</strong>: the server returns a JSON layout descriptor that the client renders generically. This lets the backend A/B test new home screen widgets, banners, and carousels without an app release. The client maps component types to ViewHolders — it never hard-codes the home page structure.</p>
+    <a class="callout-cta" href="#">Learn This Pattern →</a>
+  </div>
+
+  <div class="req-grid">
+    <div class="req-box">
+      <h4>✅ Functional Requirements</h4>
+      <ul>
+        <li>Home feed: banners, deal carousels, category grid (SDUI)</li>
+        <li>Category / search listing: paginated product grid</li>
+        <li>Filters: price range, brand, rating, discount — multi-select</li>
+        <li>Sort: relevance, price asc/desc, popularity</li>
+        <li>Product Detail Page (PDP): images, specs, reviews, variants</li>
+        <li>Add to cart / wishlist with optimistic update</li>
+        <li>Cart badge count live in toolbar</li>
+        <li>Search with suggestions and history</li>
+      </ul>
+    </div>
+    <div class="req-box">
+      <h4>⚙️ Non-Functional Requirements</h4>
+      <ul>
+        <li><strong>Listing load:</strong> &lt;800 ms on 4G</li>
+        <li><strong>Search response:</strong> suggestions within 200 ms of debounce</li>
+        <li><strong>Images:</strong> Thumbnail first, full-res on expand</li>
+        <li><strong>Scroll:</strong> 60 fps on a 2-column product grid</li>
+        <li><strong>Offline:</strong> Wishlist and cart readable without network</li>
+        <li><strong>Cart sync:</strong> Queue offline add-to-cart, sync on reconnect</li>
+        <li><strong>Price freshness:</strong> PDP re-fetches price on resume (flash sales)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <div class="info-label">💡 Clarifying Questions to Ask</div>
+    <ul>
+      <li>Is the home feed server-driven or hardcoded? (SDUI vs fixed layout)</li>
+      <li>Is search client-side (local Room) or server-side (Elasticsearch)?</li>
+      <li>Should cart/wishlist work offline?</li>
+      <li>Is checkout / payment in scope?</li>
+    </ul>
+  </div>
+
+  <!-- ══════════ 2. SET UP ══════════ -->
+  <h2 id="s-setup">2. The Set Up</h2>
+
+  <h3>The Four Key Screens</h3>
+  <div class="page-grid">
+    <div class="page-card">
+      <div class="page-icon">🏠</div>
+      <div class="page-name">Home Feed</div>
+      <div class="page-sub">SDUI · Banner carousel · Deal sections</div>
+    </div>
+    <div class="page-card">
+      <div class="page-icon">🔍</div>
+      <div class="page-name">Listing / Search</div>
+      <div class="page-sub">2-col grid · Paging 3 · Filters</div>
+    </div>
+    <div class="page-card">
+      <div class="page-icon">📦</div>
+      <div class="page-name">Product Detail</div>
+      <div class="page-sub">Image gallery · Variants · Reviews</div>
+    </div>
+    <div class="page-card">
+      <div class="page-icon">🛒</div>
+      <div class="page-name">Cart / Wishlist</div>
+      <div class="page-sub">Optimistic updates · Offline Room cache</div>
+    </div>
+  </div>
+
+  <h3>Core Components</h3>
+  <div class="comp-grid">
+    <div class="comp-card">
+      <div class="comp-icon">📋</div>
+      <div class="comp-name">ConcatAdapter / SDUI</div>
+      <div class="comp-sub">Heterogeneous home feed sections</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">📄</div>
+      <div class="comp-name">Paging 3</div>
+      <div class="comp-sub">Infinite product grid with filters</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">🗄️</div>
+      <div class="comp-name">Room DB</div>
+      <div class="comp-sub">Cart · Wishlist · Search history</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">🖼️</div>
+      <div class="comp-name">Coil</div>
+      <div class="comp-sub">Thumbnail + full-res progressive load</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">⚙️</div>
+      <div class="comp-name">WorkManager</div>
+      <div class="comp-sub">Offline cart sync queue</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">🌐</div>
+      <div class="comp-name">Retrofit + OkHttp</div>
+      <div class="comp-sub">REST API + HTTP response cache</div>
+    </div>
+  </div>
+
+  <!-- ══════════ 3. HLD ══════════ -->
+  <h2 id="s-hld">3. High-Level Design</h2>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">Architecture Overview — E-commerce Client</div>
+    <svg width="720" height="380" viewBox="0 0 720 380" font-family="Segoe UI, sans-serif" font-size="12">
+
+      <!-- UI -->
+      <rect x="10" y="20" width="155" height="100" rx="10" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+      <text x="87" y="46" text-anchor="middle" font-weight="700" fill="#166534">UI Layer</text>
+      <text x="87" y="63" text-anchor="middle" fill="#166534" font-size="11">HomeFragment (SDUI)</text>
+      <text x="87" y="78" text-anchor="middle" fill="#166534" font-size="11">ListingFragment (grid)</text>
+      <text x="87" y="93" text-anchor="middle" fill="#166534" font-size="11">PdpFragment</text>
+      <text x="87" y="108" text-anchor="middle" fill="#166534" font-size="11">CartFragment</text>
+
+      <!-- ViewModels -->
+      <rect x="10" y="150" width="155" height="70" rx="10" fill="#d1fae5" stroke="#6ee7b7" stroke-width="1.5"/>
+      <text x="87" y="175" text-anchor="middle" font-weight="700" fill="#065f46">ViewModels</text>
+      <text x="87" y="192" text-anchor="middle" fill="#065f46" font-size="11">HomeVM · ListingVM</text>
+      <text x="87" y="207" text-anchor="middle" fill="#065f46" font-size="11">CartVM · SearchVM</text>
+
+      <!-- Repositories -->
+      <rect x="10" y="250" width="155" height="55" rx="10" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+      <text x="87" y="275" text-anchor="middle" font-weight="700" fill="#1e40af">Repositories</text>
+      <text x="87" y="292" text-anchor="middle" fill="#1e40af" font-size="11">ProductRepo · CartRepo</text>
+
+      <!-- Arrows left column -->
+      <line x1="87" y1="120" x2="87" y2="150" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ae)"/>
+      <line x1="87" y1="220" x2="87" y2="250" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ae)"/>
+
+      <!-- Room -->
+      <rect x="220" y="250" width="155" height="80" rx="10" fill="#fef3c7" stroke="#fde047" stroke-width="1.5"/>
+      <text x="297" y="278" text-anchor="middle" font-weight="700" fill="#854d0e">Room DB</text>
+      <text x="297" y="295" text-anchor="middle" fill="#854d0e" font-size="11">cart · wishlist</text>
+      <text x="297" y="310" text-anchor="middle" fill="#854d0e" font-size="11">search_history · action_queue</text>
+
+      <!-- REST API -->
+      <rect x="430" y="20" width="160" height="100" rx="10" fill="#f3e8ff" stroke="#c084fc" stroke-width="1.5"/>
+      <text x="510" y="48" text-anchor="middle" font-weight="700" fill="#6b21a8">REST API</text>
+      <text x="510" y="65" text-anchor="middle" fill="#6b21a8" font-size="11">GET /home (SDUI)</text>
+      <text x="510" y="80" text-anchor="middle" fill="#6b21a8" font-size="11">GET /products?q=&filter=</text>
+      <text x="510" y="95" text-anchor="middle" fill="#6b21a8" font-size="11">GET /product/{id}</text>
+      <text x="510" y="110" text-anchor="middle" fill="#6b21a8" font-size="11">POST /cart · POST /wishlist</text>
+
+      <!-- Search API -->
+      <rect x="430" y="145" width="160" height="55" rx="10" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
+      <text x="510" y="170" text-anchor="middle" font-weight="700" fill="#991b1b">Search API</text>
+      <text x="510" y="187" text-anchor="middle" fill="#991b1b" font-size="11">Elasticsearch / Typesense</text>
+
+      <!-- CDN -->
+      <rect x="430" y="225" width="160" height="55" rx="10" fill="#fef3c7" stroke="#fde047" stroke-width="1.5"/>
+      <text x="510" y="250" text-anchor="middle" font-weight="700" fill="#854d0e">CDN</text>
+      <text x="510" y="267" text-anchor="middle" fill="#854d0e" font-size="11">Product images · thumbnails</text>
+
+      <!-- WorkManager -->
+      <rect x="220" y="150" width="155" height="55" rx="10" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5"/>
+      <text x="297" y="175" text-anchor="middle" font-weight="700" fill="#5b21b6">WorkManager</text>
+      <text x="297" y="192" text-anchor="middle" fill="#5b21b6" font-size="11">SyncCartWorker</text>
+
+      <!-- Arrows -->
+      <line x1="165" y1="275" x2="220" y2="275" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ae)"/>
+      <line x1="165" y1="178" x2="220" y2="178" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ae)"/>
+      <line x1="375" y1="275" x2="430" y2="70" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ae)"/>
+      <line x1="375" y1="178" x2="430" y2="172" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ae)"/>
+      <!-- UI → CDN (images) -->
+      <path d="M 87 120 Q 87 355 430 252" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ae)"/>
+      <!-- Repo → API -->
+      <line x1="165" y1="275" x2="430" y2="70" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,4" opacity="0.4"/>
+
+      <!-- SSoT label -->
+      <rect x="218" y="340" width="160" height="26" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+      <text x="298" y="357" text-anchor="middle" font-size="11" fill="#166534" font-weight="700">⭐ Room = Cart/Wishlist SSoT</text>
+
+      <defs>
+        <marker id="ae" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <h3>Server-Driven UI (SDUI) — Home Feed Response</h3>
+  <pre><code><span class="cm">// Server returns a list of typed components — client renders generically</span>
+{
+  <span class="st">"components"</span>: [
+    { <span class="st">"type"</span>: <span class="st">"BANNER_CAROUSEL"</span>, <span class="st">"items"</span>: [{ <span class="st">"imageUrl"</span>: <span class="st">"..."</span>, <span class="st">"deepLink"</span>: <span class="st">"app://sale/diwali"</span> }] },
+    { <span class="st">"type"</span>: <span class="st">"SECTION_HEADER"</span>, <span class="st">"title"</span>: <span class="st">"Deal of the Day"</span>, <span class="st">"timer"</span>: <span class="nm">1714291200</span> },
+    { <span class="st">"type"</span>: <span class="st">"PRODUCT_HORIZONTAL_SCROLL"</span>, <span class="st">"products"</span>: [ ... ] },
+    { <span class="st">"type"</span>: <span class="st">"CATEGORY_GRID"</span>, <span class="st">"columns"</span>: <span class="nm">4</span>, <span class="st">"categories"</span>: [ ... ] },
+    { <span class="st">"type"</span>: <span class="st">"PRODUCT_GRID"</span>, <span class="st">"title"</span>: <span class="st">"Recommended for You"</span>, <span class="st">"products"</span>: [ ... ] }
+  ]
+}</code></pre>
+
+  <p>The client's <code>HomeAdapter</code> maps each <code>type</code> string to a distinct ViewHolder. New component types released by the server gracefully degrade if the client doesn't know them — handled with an <code>UNKNOWN</code> fallback ViewHolder that renders nothing.</p>
+
+  <h3>Listing Filter State</h3>
+  <p>Filters are composable and cumulative. Model them as a <strong>sealed class</strong> or a data class that the ViewModel holds as a <code>StateFlow</code>. Every filter change creates a new <code>FilterState</code> and triggers a Paging 3 refresh:</p>
+  <pre><code><span class="kw">data class</span> <span class="cl">FilterState</span>(
+    <span class="kw">val</span> query: <span class="cl">String</span> = <span class="st">""</span>,
+    <span class="kw">val</span> sortBy: <span class="cl">SortOption</span> = <span class="cl">SortOption</span>.RELEVANCE,
+    <span class="kw">val</span> priceMin: <span class="cl">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> priceMax: <span class="cl">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> brands: <span class="cl">Set</span>&lt;<span class="cl">String</span>&gt; = <span class="fn">emptySet</span>(),
+    <span class="kw">val</span> minRating: <span class="cl">Float</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> discountMin: <span class="cl">Int</span>? = <span class="kw">null</span>
+)
+
+<span class="cm">// In ViewModel: any filter change resets pagination</span>
+<span class="kw">val</span> filterState = <span class="cl">MutableStateFlow</span>(<span class="cl">FilterState</span>())
+
+<span class="kw">val</span> products = filterState
+    .<span class="fn">debounce</span>(<span class="nm">300</span>)              <span class="cm">// wait for user to finish typing/selecting</span>
+    .<span class="fn">flatMapLatest</span> { filters ->
+        <span class="fn">Pager</span>(<span class="cl">PagingConfig</span>(pageSize = <span class="nm">20</span>)) {
+            <span class="cl">ProductPagingSource</span>(api, filters)
+        }.<span class="fn">flow</span>
+    }
+    .<span class="fn">cachedIn</span>(viewModelScope)</code></pre>
+
+  <!-- ══════════ 4. LLD ══════════ -->
+  <h2 id="s-lld">4. Low-Level Design</h2>
+
+  <h3>Whiteboard: Product Listing Full Pipeline</h3>
+  <div class="diagram-wrap">
+    <div class="diagram-title">Listing Page — Search + Filter + Paginate</div>
+    <svg width="720" height="410" viewBox="0 0 720 410" font-family="Segoe UI, sans-serif" font-size="12">
+      <!-- Headers -->
+      <rect x="0"   y="0" width="110" height="38" rx="6" fill="#dcfce7"/>
+      <text x="55"  y="24" text-anchor="middle" font-weight="700" fill="#166534" font-size="11">ListingFragment</text>
+      <rect x="120" y="0" width="120" height="38" rx="6" fill="#d1fae5"/>
+      <text x="180" y="24" text-anchor="middle" font-weight="700" fill="#065f46" font-size="11">ListingViewModel</text>
+      <rect x="250" y="0" width="120" height="38" rx="6" fill="#ede9fe"/>
+      <text x="310" y="24" text-anchor="middle" font-weight="700" fill="#5b21b6" font-size="11">PagingSource</text>
+      <rect x="380" y="0" width="130" height="38" rx="6" fill="#fee2e2"/>
+      <text x="445" y="24" text-anchor="middle" font-weight="700" fill="#991b1b" font-size="11">Search API</text>
+      <rect x="520" y="0" width="190" height="38" rx="6" fill="#dcfce7"/>
+      <text x="615" y="24" text-anchor="middle" font-weight="700" fill="#166534" font-size="11">RecyclerView + DiffUtil</text>
+
+      <!-- Step 1 -->
+      <rect x="0" y="55" width="110" height="44" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+      <text x="55" y="74" text-anchor="middle" font-weight="700" fill="#166534">1</text>
+      <text x="55" y="89" text-anchor="middle" fill="#166534" font-size="10">User types "shoes"</text>
+      <line x1="110" y1="77" x2="120" y2="77" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#af)"/>
+
+      <!-- Step 2 -->
+      <rect x="120" y="55" width="120" height="44" rx="6" fill="#d1fae5" stroke="#6ee7b7"/>
+      <text x="180" y="74" text-anchor="middle" font-weight="700" fill="#065f46">2</text>
+      <text x="180" y="89" text-anchor="middle" fill="#065f46" font-size="10">filterState.update(query=shoes)</text>
+      <text x="180" y="97" text-anchor="middle" fill="#065f46" font-size="9">debounce 300 ms</text>
+
+      <!-- Step 3 -->
+      <rect x="250" y="55" width="120" height="44" rx="6" fill="#ede9fe" stroke="#c4b5fd"/>
+      <text x="310" y="74" text-anchor="middle" font-weight="700" fill="#5b21b6">3</text>
+      <text x="310" y="89" text-anchor="middle" fill="#5b21b6" font-size="10">flatMapLatest → new Pager</text>
+      <line x1="240" y1="77" x2="250" y2="77" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#af)"/>
+
+      <!-- Step 4 -->
+      <rect x="380" y="55" width="130" height="44" rx="6" fill="#fee2e2" stroke="#fca5a5"/>
+      <text x="445" y="74" text-anchor="middle" font-weight="700" fill="#991b1b">4</text>
+      <text x="445" y="89" text-anchor="middle" fill="#991b1b" font-size="10">GET /products?q=shoes&page=0</text>
+      <line x1="370" y1="77" x2="380" y2="77" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#af)"/>
+
+      <!-- Step 5 results back -->
+      <rect x="250" y="125" width="120" height="44" rx="6" fill="#ede9fe" stroke="#c4b5fd"/>
+      <text x="310" y="144" text-anchor="middle" font-weight="700" fill="#5b21b6">5</text>
+      <text x="310" y="159" text-anchor="middle" fill="#5b21b6" font-size="10">Returns LoadResult.Page</text>
+      <line x1="445" y1="99" x2="445" y2="147" stroke="#94a3b8" stroke-width="1.5"/>
+      <line x1="445" y1="147" x2="370" y2="147" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#af)"/>
+
+      <!-- Step 6 PagingData emitted -->
+      <rect x="120" y="195" width="120" height="44" rx="6" fill="#d1fae5" stroke="#6ee7b7"/>
+      <text x="180" y="214" text-anchor="middle" font-weight="700" fill="#065f46">6</text>
+      <text x="180" y="229" text-anchor="middle" fill="#065f46" font-size="10">Emits PagingData&lt;Product&gt;</text>
+      <line x1="250" y1="147" x2="240" y2="217" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#af)"/>
+
+      <!-- Step 7 RV renders -->
+      <rect x="520" y="195" width="190" height="44" rx="6" fill="#dcfce7" stroke="#86efac"/>
+      <text x="615" y="214" text-anchor="middle" font-weight="700" fill="#166534">7</text>
+      <text x="615" y="229" text-anchor="middle" fill="#166534" font-size="10">DiffUtil → smooth grid insert</text>
+      <line x1="240" y1="217" x2="520" y2="217" stroke="#22c55e" stroke-width="2" marker-end="url(#af)"/>
+
+      <!-- Step 8 user adds filter -->
+      <rect x="0" y="275" width="110" height="44" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+      <text x="55" y="294" text-anchor="middle" font-weight="700" fill="#166534">8</text>
+      <text x="55" y="309" text-anchor="middle" fill="#166534" font-size="10">Taps "Nike" brand filter</text>
+      <line x1="110" y1="297" x2="120" y2="217" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#af)"/>
+      <text x="160" y="258" text-anchor="middle" fill="#6b7280" font-size="10">filterState → brands += Nike</text>
+      <text x="160" y="270" text-anchor="middle" fill="#6b7280" font-size="10">→ flatMapLatest cancels old Pager</text>
+      <text x="160" y="282" text-anchor="middle" fill="#6b7280" font-size="10">→ new Pager with brand=Nike</text>
+
+      <!-- Step 9 prefetch next page -->
+      <rect x="0" y="350" width="710" height="40" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+      <text x="355" y="373" text-anchor="middle" font-weight="700" fill="#166534" font-size="12">9 — Paging auto-APPEND: next page fetched 5 items before scroll reaches end</text>
+
+      <defs>
+        <marker id="af" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <h3>Flow 1: Search with Debounce + Suggestions</h3>
+  <div class="flow-wrap">
+    <div class="flow-title">Flow 1 — Search: debounce prevents API spam; suggestions merge local history + server</div>
+    <table class="flow-table">
+      <thead>
+        <tr>
+          <th class="th-ui"    style="width:20%">SearchBar (UI)</th>
+          <th class="th-vm"    style="width:25%">SearchViewModel</th>
+          <th class="th-room"  style="width:22%">Room (search_history)</th>
+          <th class="th-search"style="width:33%">Search API</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="step-num">1</span>User types "nikes" (typo) — each keystroke emitted to ViewModel</td>
+          <td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="step-num">2</span><code>queryFlow.debounce(300ms)</code> — waits for typing to pause</td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="step-num">3</span>Query both sources in parallel via <code>combine()</code></td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td></td><td></td>
+          <td><span class="step-num">4</span><code>SELECT * FROM search_history WHERE query LIKE 'nike%' LIMIT 3</code></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td><td></td><td></td>
+          <td><span class="step-num">5</span>GET /suggest?q=nikes → [<code>"nike shoes"</code>, <code>"nike air max"</code>] (with fuzzy match)</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="step-num">6</span>Merge: history (labelled 🕐) appears first, then server suggestions</td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td><span class="step-num">7</span>Suggestion dropdown shown. User taps "nike air max"</td>
+          <td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td></td><td></td>
+          <td><span class="step-num">8</span>INSERT "nike air max" into <code>search_history</code> (upsert with timestamp)</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="step-num">9</span><code>filterState.update(query="nike air max")</code> → Paging refresh</td>
+          <td></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Flow 2: Add to Cart (Optimistic + Offline Queue)</h3>
+  <div class="flow-wrap">
+    <div class="flow-title">Flow 2 — Cart: instant UI, background API, offline queue if no internet</div>
+    <table class="flow-table">
+      <thead>
+        <tr>
+          <th class="th-ui"   style="width:20%">PDP / Listing UI</th>
+          <th class="th-vm"   style="width:22%">CartViewModel</th>
+          <th class="th-room" style="width:25%">Room (cart table)</th>
+          <th class="th-api"  style="width:18%">Cart API</th>
+          <th class="th-cache"style="width:15%">WorkManager</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="step-num">1</span>User taps "Add to Cart" → button shows spinner momentarily</td>
+          <td></td><td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="step-num">2</span>Optimistic: immediately increment cart badge count in StateFlow</td>
+          <td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td></td><td></td>
+          <td><span class="step-num">3</span>INSERT into <code>cart</code> (productId, qty, addedAt, syncStatus=PENDING)</td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td><span class="step-num">4</span>Cart badge updates reactively from Room Flow — user sees it immediately</td>
+          <td></td><td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td></td><td></td><td></td>
+          <td><span class="step-num">5a ✓ Online:</span> POST /cart {productId, qty} → success</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td><td></td>
+          <td><span class="step-num">5b ✓</span>UPDATE syncStatus=SYNCED</td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td></td><td></td><td></td>
+          <td><span class="step-num">6a ✗ Offline:</span> POST fails with IOException</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td><td></td><td></td><td></td>
+          <td><span class="step-num">6b</span>Enqueue SyncCartWorker (CONNECTED constraint) — retries when online</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="step-num">7 ✗ Server error:</span> rollback — DELETE from Room, decrement badge, show Snackbar</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Flow 3: Product Detail Page (PDP) Load</h3>
+  <div class="flow-wrap">
+    <div class="flow-title">Flow 3 — PDP: stale-while-revalidate for fast open; live price on resume</div>
+    <table class="flow-table">
+      <thead>
+        <tr>
+          <th class="th-ui"   style="width:20%">PdpFragment</th>
+          <th class="th-vm"   style="width:22%">PdpViewModel</th>
+          <th class="th-cache"style="width:25%">OkHttp Cache / Room</th>
+          <th class="th-api"  style="width:33%">Product API</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="step-num">1</span>User taps product card → navigate with productId</td>
+          <td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="step-num">2</span>Check OkHttp disk cache for <code>/product/{id}</code></td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td></td><td></td>
+          <td><span class="step-num">3</span>Cache hit: return stale data immediately (max-age=5min)</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><span class="step-num">4</span>Render product immediately from cache — images, title, specs</td>
+          <td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td></td><td></td><td></td>
+          <td><span class="step-num">5</span>Background revalidation: GET /product/{id} with If-None-Match ETag</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="step-num">6</span>Fresh data arrives → update only the price/stock badge (not full reload)</td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="step-num">7 onResume:</span> Always re-fetch price + stock (flash sales change price every minute)</td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td><span class="step-num">8</span>Progressive image: thumbnail loads first, full-res replaces on complete</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Key Code: SDUI Home Adapter</h3>
+  <pre><code><span class="cm">// One adapter handles all component types — new types from server need no app update</span>
+<span class="kw">class</span> <span class="cl">HomeAdapter</span> : <span class="cl">RecyclerView</span>.<span class="cl">Adapter</span>&lt;<span class="cl">RecyclerView</span>.<span class="cl">ViewHolder</span>&gt;() {
+
+    <span class="kw">private val</span> items = <span class="fn">mutableListOf</span>&lt;<span class="cl">HomeComponent</span>&gt;()
+
+    <span class="kw">override fun</span> <span class="fn">getItemViewType</span>(position: <span class="cl">Int</span>) = <span class="kw">when</span> (items[position]) {
+        <span class="kw">is</span> <span class="cl">HomeComponent</span>.<span class="cl">BannerCarousel</span>         -> <span class="cl">VIEW_TYPE_BANNER</span>
+        <span class="kw">is</span> <span class="cl">HomeComponent</span>.<span class="cl">SectionHeader</span>           -> <span class="cl">VIEW_TYPE_HEADER</span>
+        <span class="kw">is</span> <span class="cl">HomeComponent</span>.<span class="cl">ProductHorizontalScroll</span>  -> <span class="cl">VIEW_TYPE_H_SCROLL</span>
+        <span class="kw">is</span> <span class="cl">HomeComponent</span>.<span class="cl">CategoryGrid</span>            -> <span class="cl">VIEW_TYPE_CAT_GRID</span>
+        <span class="kw">is</span> <span class="cl">HomeComponent</span>.<span class="cl">ProductGrid</span>             -> <span class="cl">VIEW_TYPE_PROD_GRID</span>
+        <span class="kw">is</span> <span class="cl">HomeComponent</span>.<span class="cl">Unknown</span>                -> <span class="cl">VIEW_TYPE_UNKNOWN</span>
+    }
+
+    <span class="kw">override fun</span> <span class="fn">onCreateViewHolder</span>(parent: <span class="cl">ViewGroup</span>, viewType: <span class="cl">Int</span>) = <span class="kw">when</span> (viewType) {
+        <span class="cl">VIEW_TYPE_BANNER</span>    -> <span class="cl">BannerCarouselVH</span>.<span class="fn">from</span>(parent)
+        <span class="cl">VIEW_TYPE_H_SCROLL</span>  -> <span class="cl">HorizontalScrollVH</span>.<span class="fn">from</span>(parent)
+        <span class="cl">VIEW_TYPE_CAT_GRID</span>  -> <span class="cl">CategoryGridVH</span>.<span class="fn">from</span>(parent)
+        <span class="cl">VIEW_TYPE_PROD_GRID</span> -> <span class="cl">ProductGridVH</span>.<span class="fn">from</span>(parent)
+        <span class="kw">else</span>                -> <span class="cl">UnknownVH</span>.<span class="fn">from</span>(parent)  <span class="cm">// graceful degradation</span>
+    }
+}
+
+<span class="cm">// JSON deserialization: polymorphic based on "type" field</span>
+<span class="kw">sealed class</span> <span class="cl">HomeComponent</span> {
+    <span class="kw">data class</span> <span class="cl">BannerCarousel</span>(<span class="kw">val</span> items: <span class="cl">List</span>&lt;<span class="cl">BannerItem</span>&gt;) : <span class="cl">HomeComponent</span>()
+    <span class="kw">data class</span> <span class="cl">SectionHeader</span>(<span class="kw">val</span> title: <span class="cl">String</span>, <span class="kw">val</span> timerEpoch: <span class="cl">Long</span>?) : <span class="cl">HomeComponent</span>()
+    <span class="kw">data class</span> <span class="cl">ProductHorizontalScroll</span>(<span class="kw">val</span> products: <span class="cl">List</span>&lt;<span class="cl">Product</span>&gt;) : <span class="cl">HomeComponent</span>()
+    <span class="kw">data class</span> <span class="cl">ProductGrid</span>(<span class="kw">val</span> title: <span class="cl">String</span>, <span class="kw">val</span> products: <span class="cl">List</span>&lt;<span class="cl">Product</span>&gt;) : <span class="cl">HomeComponent</span>()
+    <span class="kw">object</span> <span class="cl">Unknown</span> : <span class="cl">HomeComponent</span>()        <span class="cm">// unknown server type → render nothing</span>
+}</code></pre>
+
+  <h3>Key Code: ProductPagingSource with Filters</h3>
+  <pre><code><span class="kw">class</span> <span class="cl">ProductPagingSource</span>(
+    <span class="kw">private val</span> api: <span class="cl">ProductApi</span>,
+    <span class="kw">private val</span> filters: <span class="cl">FilterState</span>
+) : <span class="cl">PagingSource</span>&lt;<span class="cl">Int</span>, <span class="cl">Product</span>&gt;() {
+
+    <span class="kw">override suspend fun</span> <span class="fn">load</span>(params: <span class="cl">LoadParams</span>&lt;<span class="cl">Int</span>&gt;): <span class="cl">LoadResult</span>&lt;<span class="cl">Int</span>, <span class="cl">Product</span>&gt; {
+        <span class="kw">val</span> page = params.key ?: <span class="nm">0</span>
+        <span class="kw">return try</span> {
+            <span class="kw">val</span> response = api.<span class="fn">getProducts</span>(
+                query     = filters.query,
+                sortBy    = filters.sortBy.apiKey,
+                priceMin  = filters.priceMin,
+                priceMax  = filters.priceMax,
+                brands    = filters.brands.<span class="fn">joinToString</span>(<span class="st">","</span>),
+                minRating = filters.minRating,
+                page      = page,
+                size      = params.loadSize
+            )
+            <span class="cl">LoadResult</span>.<span class="cl">Page</span>(
+                data     = response.products,
+                prevKey  = <span class="kw">if</span> (page == <span class="nm">0</span>) <span class="kw">null</span> <span class="kw">else</span> page - <span class="nm">1</span>,
+                nextKey  = <span class="kw">if</span> (response.hasMore) page + <span class="nm">1</span> <span class="kw">else</span> <span class="kw">null</span>
+            )
+        } <span class="kw">catch</span> (e: <span class="cl">Exception</span>) {
+            <span class="cl">LoadResult</span>.<span class="cl">Error</span>(e)
+        }
+    }
+
+    <span class="cm">// Invalidate when filter changes — Paging re-creates the source</span>
+    <span class="kw">override fun</span> <span class="fn">getRefreshKey</span>(state: <span class="cl">PagingState</span>&lt;<span class="cl">Int</span>, <span class="cl">Product</span>&gt;) = <span class="kw">null</span>
+}</code></pre>
+
+  <!-- ══════════ 5. DEEP DIVES ══════════ -->
+  <h2 id="s-deep">5. Potential Deep Dives</h2>
+
+  <h3>Product Image — Progressive Loading</h3>
+  <p>Product images follow a two-phase load: (1) <strong>Tiny thumbnail</strong> (e.g., 20×20 blurred placeholder from the API response as a base64 string) renders instantly; (2) The full product image loads via Coil and cross-fades in when ready. On the PDP image gallery, pre-fetch adjacent images (left/right) while the user views the current one using headless Coil requests. Use a <code>ViewPager2</code> with <code>offscreenPageLimit = 1</code> so adjacent pages stay in memory.</p>
+
+  <div class="callout">
+    <div class="callout-label">📌 Pattern: Stale-While-Revalidate</div>
+    <p>Serve product details from OkHttp disk cache instantly, then silently refresh in the background. The user sees content immediately. The UI only updates the price/stock badge when fresh data arrives — not the whole page — preventing a jarring full reload.</p>
+    <a class="callout-cta" href="#">Learn This Pattern →</a>
+  </div>
+
+  <h3>Cart Badge — Global State</h3>
+  <p>The cart item count must be visible across all screens (toolbar badge). Model it as a <strong>SharedViewModel</strong> scoped to the Activity, not individual Fragments. The <code>CartViewModel</code> exposes a <code>cartCount: StateFlow&lt;Int&gt;</code> derived from <code>Room.observeCartCount()</code>. Every Fragment accesses it via <code>activityViewModels&lt;CartViewModel&gt;()</code>. The badge auto-updates across the whole app when any screen adds/removes a cart item — zero event bus or broadcast receiver needed.</p>
+
+  <h3>Filter Bottom Sheet</h3>
+  <p>Use a <code>BottomSheetDialogFragment</code> with a custom layout for multi-select brand chips, a RangeSlider for price, and star rating buttons. When the user taps "Apply", build a new <code>FilterState</code> and pass it back via a <code>setFragmentResult</code>. The ListingFragment receives it and calls <code>listingViewModel.applyFilters(newState)</code>, which updates the <code>filterState</code> Flow, triggering <code>flatMapLatest</code> to cancel the old Pager and start fresh. Show a filter badge count on the filter button (e.g., "Filter (3)") to indicate active filters.</p>
+
+  <h3>Deep Link Navigation</h3>
+  <p>E-commerce apps receive deep links from notifications, WhatsApp shares, and web browsers. Example: <code>app://product/B08P3LGQKR</code> or <code>https://store.com/product/B08P3LGQKR</code>. Configure these in the Manifest with <code>&lt;intent-filter&gt;</code> and <code>&lt;nav-graph&gt;</code> deep links. The Navigation Component resolves the deep link to the correct Fragment with the correct arguments. Handle the case where the user is not logged in — redirect to login first, then return to the deep-linked product after authentication.</p>
+
+  <h3>Recently Viewed Products</h3>
+  <p>Store recently viewed product IDs in Room's <code>recently_viewed</code> table (capped at 20 rows via a trigger or manual eviction). On the Home screen, include a "Recently Viewed" horizontal scroll section that reads from Room reactively. Update on every PDP open: <code>INSERT OR REPLACE INTO recently_viewed (id, viewedAt) VALUES (?, ?)</code>. This feature works completely offline.</p>
+
+  <!-- ══════════ 6. EXPECTED ══════════ -->
+  <h2 id="s-levels">6. What is Expected at Each Level</h2>
+  <div class="levels-grid">
+    <div class="level-card level-mid">
+      <div class="level-badge">🔵 Mid-Level</div>
+      <ul>
+        <li>RecyclerView with product grid (2 columns)</li>
+        <li>Loads images with Coil/Glide</li>
+        <li>Basic search with API call on text change</li>
+        <li>Cart stored locally in Room</li>
+        <li>Handles config changes in ViewModel</li>
+        <li>Basic filter passed as query params</li>
+      </ul>
+    </div>
+    <div class="level-card level-senior">
+      <div class="level-badge">🟢 Senior</div>
+      <ul>
+        <li>SDUI home feed with unknown type fallback</li>
+        <li>Paging 3 + flatMapLatest for filter-aware pagination</li>
+        <li>Search debounce + merge local history + server</li>
+        <li>Optimistic cart with rollback on error</li>
+        <li>WorkManager for offline cart sync queue</li>
+        <li>Stale-while-revalidate for PDP</li>
+        <li>Cart badge as Activity-scoped SharedViewModel</li>
+      </ul>
+    </div>
+    <div class="level-card level-staff">
+      <div class="level-badge">🟣 Staff+</div>
+      <ul>
+        <li>Full SDUI rendering engine with versioning</li>
+        <li>A/B testing home layouts via server config</li>
+        <li>Client-side price update via SSE (flash sale)</li>
+        <li>Product image CDN with blurhash thumbnails</li>
+        <li>Search ranking: pinned results, sponsored items</li>
+        <li>Analytics instrumentation: product impressions, add-to-cart funnel</li>
+        <li>Accessibility: content descriptions, custom touch targets for price</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════ 7. Q&A ══════════ -->
+  <h2 id="s-qa">7. Interview Questions</h2>
+  <div class="iq-wrap">
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">1. What is Server-Driven UI (SDUI) and why do e-commerce apps use it?</span>
+        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>SDUI means the server returns a layout descriptor (JSON with component types and data) rather than just raw data. The app renders components dynamically based on the <code>type</code> field. Benefits: (1) <strong>No app update needed</strong> to change the home page layout — add a new banner, reorder sections, or run a seasonal sale layout by changing only the server response; (2) <strong>A/B testing</strong>: serve different layouts to different user segments; (3) <strong>Personalisation</strong>: the home feed can be different per user based on purchase history. The client's responsibility is rendering any valid component type correctly and gracefully degrading unknown types.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">2. How do you handle a new component type that the app doesn't know about?</span>
+        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>During JSON deserialization, use a polymorphic deserializer (e.g., Gson's <code>RuntimeTypeAdapterFactory</code> or Kotlin Serialization's <code>@JsonClassDiscriminator</code>). When the <code>type</code> field is unrecognised, map it to an <code>Unknown</code> sealed class variant. In the adapter's <code>getItemViewType</code>, the <code>Unknown</code> variant returns a special view type. The <code>UnknownViewHolder</code> inflates a <code>View.GONE</code> layout — it renders nothing, occupying zero height. This prevents a crash while leaving a no-op placeholder. Alternatively, use <code>@JsonAdapter</code> with a fallback null and filter nulls before binding.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">3. Why use flatMapLatest when the user changes a filter?</span>
+        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p><code>flatMapLatest</code> cancels the previous coroutine/flow when a new value arrives on the upstream flow. If the user changes the sort from "Price: Low to High" to "Popularity" while a page fetch is in-flight, <code>flatMapLatest</code> cancels the old Pager and its pending HTTP requests, then starts a fresh Pager with the new filter. Using <code>flatMap</code> (without Latest) would let both Pagers run concurrently — the results of the old filter could arrive after the new filter's results and overwrite them, showing the wrong products. Combined with <code>debounce</code> on the filter flow, this ensures only one API call fires per user interaction.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">4. How do you implement search debounce correctly?</span>
+        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Expose the search text as a <code>MutableStateFlow&lt;String&gt;</code> in the ViewModel. In the Fragment, collect text changes from the <code>SearchView</code> or <code>EditText</code> and call <code>viewModel.onQueryChanged(text)</code>. In the ViewModel: <code>queryFlow.debounce(300).distinctUntilChanged().flatMapLatest { query -> searchApi.suggest(query) }</code>. <code>debounce(300)</code> waits 300 ms after the last keystroke before emitting. <code>distinctUntilChanged()</code> skips re-running if the user typed then deleted the same letter. <code>flatMapLatest</code> cancels the in-flight suggestion API call if the user types again before it completes.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">5. How do you keep the cart badge count in sync across all screens?</span>
+        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Scope a <code>CartViewModel</code> to the Activity (not individual Fragments): <code>val cartVm: CartViewModel by activityViewModels()</code>. It exposes a <code>cartCount: StateFlow&lt;Int&gt;</code> backed by a Room query: <code>SELECT COUNT(*) FROM cart</code> returning a <code>Flow&lt;Int&gt;</code>. Every Fragment and the Activity's toolbar observe this same Flow. When any Fragment adds/removes a cart item and Room updates, the Flow emits and every observer receives the new count simultaneously — no event bus, no broadcast, no manual notification. The ViewModel survives Fragment transactions and navigation, keeping state consistent throughout the session.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">6. How does optimistic cart update work and what happens on rollback?</span>
+        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>On "Add to Cart" tap: (1) Immediately INSERT the item into Room with <code>syncStatus=PENDING</code>; (2) The cart badge count updates reactively from Room — user sees it increment instantly; (3) Fire <code>POST /cart</code> in a background coroutine. On API success: UPDATE <code>syncStatus=SYNCED</code>. On API failure (4xx/network error): DELETE the item from Room — the badge decrements back, and show a Snackbar "Failed to add to cart. Retry?". For offline: keep the PENDING row in Room and enqueue a WorkManager job. The key insight is that the source of truth for the count is always Room — the API just keeps the server in sync.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">7. How do you implement a 2-column staggered product grid?</span>
+        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Use <code>StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)</code> for product grids where image heights vary (portrait vs landscape products). For uniform-height cards, use <code>GridLayoutManager(context, 2)</code>. With Paging 3, the <code>PagingDataAdapter</code> works with both. For the header row (filter bar, sort chips), set the header ViewHolder to span both columns: in GridLayoutManager, override <code>setSpanSizeLookup</code> returning 2 for the header position. In StaggeredGrid, call <code>params.isFullSpan = true</code> in <code>onBindViewHolder</code> for header items.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">8. How do you handle price changes during flash sales on the PDP?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Three layers: (1) <strong>onResume re-fetch</strong>: the PDP ViewModel calls <code>fetchLivePrice(productId)</code> every time the screen is resumed. This covers users who left the PDP and came back. (2) <strong>Short max-age</strong>: set <code>Cache-Control: max-age=60</code> on the price endpoint — OkHttp serves cache for 60 s, then revalidates. (3) <strong>SSE push (advanced)</strong>: for true flash sales, the server sends a price update via Server-Sent Events on the <code>/product/{id}/live</code> endpoint — the client updates the price badge in real-time. On "Add to Cart", always hit the price API one last time to confirm the current price and show a "Price changed" dialog if it differs from what the user saw.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">9. How do you implement product image zoom on the PDP?</span>
+        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Use a <code>ViewPager2</code> for the image gallery (swipe between images). For pinch-to-zoom within each image, use <code>PhotoView</code> library (wraps ImageView with matrix-based pan/zoom) or implement a custom <code>ScaleGestureDetector</code>. Double-tap toggles between fit-to-screen and 2x zoom. The zoomed ImageView intercepts touch events, so configure <code>viewPager2.isUserInputEnabled = false</code> when the image is zoomed (zoom > 1.0) to prevent accidental page swipes while panning. When zoom resets to 1.0, re-enable swipe.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">10. How do you track product impressions (which items were seen in the list)?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Use <code>RecyclerView.addOnScrollListener</code> to detect when items become visible. Alternatively, attach a <code>VisibilityTracker</code> that uses each ViewHolder's <code>itemView.getGlobalVisibleRect()</code> to compute visibility percentage on scroll settle. An item is "impressed" when ≥50% visible for ≥1 second. Collect impression events in a batch list in the ViewModel. Flush the batch to analytics API every 30 s or on <code>Fragment.onStop</code>. Don't fire one API call per impression — batch them: <code>POST /impressions [{productId, position, rankScore, timestamp}]</code>. This data feeds the search ranking and recommendation models server-side.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">11. How do you show a "Back in stock" notification for a wishlisted product?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>When the user wishlists an out-of-stock product, send <code>POST /wishlist {productId, notifyOnRestock: true}</code>. The server subscribes the user's FCM token to the product's restock topic. When stock is replenished, the server sends an FCM data message with <code>{type: "RESTOCK", productId: "XYZ", productName: "Nike Air Max"}</code>. The <code>FirebaseMessagingService.onMessageReceived()</code> handler builds and shows a notification with a PendingIntent deep-linking to the PDP. On the client Room side, update the product's <code>inStock</code> flag so the Wishlist screen shows updated availability without an extra API call.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">12. How would you implement product variant selection (size, colour)?</span>
+        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>The product API returns a <code>variants</code> map: <code>{size: [S, M, L, XL], colour: [Red, Blue]}</code> with a <code>variantMatrix</code> mapping combinations to availability and price. Render each dimension as a horizontally scrollable chip group. Selected chips are highlighted. On selection, look up the combination in the variant matrix to: (1) update the displayed price; (2) grey out unavailable combinations; (3) update the product image if colour changed (each colour has a separate image array); (4) update the <code>skuId</code> passed to the cart API. If a combination is out of stock, show "Notify Me" instead of "Add to Cart".</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">13. How does OkHttp's disk cache help with product listing performance?</span>
+        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Configure OkHttp with a disk cache: <code>OkHttpClient.Builder().cache(Cache(cacheDir, 20L * 1024 * 1024)).build()</code>. The server sets <code>Cache-Control: max-age=300</code> on product listing responses. OkHttp stores the response and serves it from disk for 5 minutes without hitting the network. When the user navigates back to the same category, the listing appears instantly. After max-age expires, OkHttp revalidates using the <code>ETag</code> header — if unchanged, the server returns 304 and OkHttp serves from cache again. This is the HTTP-layer equivalent of offline-first for read-only data where Room isn't needed.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">14. How do you handle the "Add to Cart" button state during an in-flight request?</span>
+        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Model button state as a sealed class: <code>CartButtonState { Idle | Loading | InCart | Error }</code>. On tap: set state to <code>Loading</code> → disable button, show spinner. On success: set to <code>InCart</code> → show "Go to Cart" with green background. On error: set to <code>Error</code> → show "Retry" with red background, re-enable button. The ViewModel exposes this as a <code>StateFlow&lt;CartButtonState&gt;</code>. Because we write to Room optimistically before the API call, the cart badge updates immediately regardless of the button state. The button state only reflects the API sync status — it's a cosmetic indicator, not the source of truth for cart contents.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">15. How would you implement infinite scroll with header + filter chips + product grid?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Use <code>ConcatAdapter</code> merging three adapters: (1) <code>SortFilterAdapter</code> — a single-item adapter showing the sort bar and active filter chips; (2) <code>PagingDataAdapter</code> — the infinite product grid; (3) <code>LoadStateAdapter</code> — the loading footer. Set <code>GridLayoutManager.SpanSizeLookup</code>: the header spans all 2 columns (<code>spanSize=2</code>), product cards span 1 each. When filter chips are tapped, update <code>FilterState</code> in the ViewModel → <code>flatMapLatest</code> creates a new PagingDataAdapter source → the RecyclerView resets to the top smoothly. The header adapter is not recreated — only the product adapter refreshes.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">16. How do you test the ProductPagingSource?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Use Paging 3's <code>TestPager</code>: <code>val pager = TestPager(PagingConfig(pageSize=20), ProductPagingSource(fakeApi, filters))</code>. Call <code>pager.refresh()</code> and assert the returned <code>LoadResult.Page</code> contains the expected products. Call <code>pager.append()</code> to test pagination. For the filter integration test: create a <code>FakeProductApi</code> that checks the query parameters match the <code>FilterState</code>. Test error paths by having the fake API throw an exception and assert <code>LoadResult.Error</code>. For the ViewModel's <code>flatMapLatest</code>: use <code>Turbine</code> to collect Flow emissions and assert the correct PagingData is emitted after each filter change.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">17. How would you implement "Compare products" across multiple PDPs?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>A comparison tray is a global floating widget visible across screens. Model the comparison list as an Activity-scoped <code>CompareViewModel</code> with a <code>StateFlow&lt;List&lt;Product&gt;&gt;</code> (max 3 items). Each PDP has a "Compare" checkbox that writes to/from this ViewModel. A persistent bottom tray Fragment (added to the Activity layout, not per-Fragment) observes the CompareViewModel and shows thumbnails of selected products. On "Compare Now": navigate to a dedicated <code>CompareFragment</code> that renders a scrollable table mapping spec names → values across the selected products. Specs are fetched in parallel with <code>async { api.getProduct(id) }.await()</code> for each product.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">18. How do you handle a 429 Too Many Requests from the search API?</span>
+        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>The search API has rate limits because Elasticsearch queries are expensive. Defense layers: (1) <strong>Debounce</strong> (already in place) — 300 ms delay prevents keystroke-per-request; (2) <strong>OkHttp Authenticator / Interceptor</strong>: on 429, read the <code>Retry-After</code> header and delay the retry accordingly; (3) <strong>OkHttp cache</strong>: for the same query + filters, serve from cache for 60 s before re-hitting the server; (4) <strong>Exponential backoff</strong> in Retrofit: on 429, use Kotlin's <code>delay()</code> before retry. For the PagingSource: return <code>LoadResult.Error</code> on 429 — Paging shows the retry button via <code>LoadStateAdapter</code>, letting the user manually retry rather than hammering the server.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">19. How would you personalise the home feed per user?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Send the user's auth token with <code>GET /home</code>. The server's personalisation engine uses purchase history, browsing history, and segment data to build the SDUI response with personalised product IDs and section ordering. The client renders it generically — it doesn't know it's personalised. For cache strategy: personalised home pages must have a user-specific cache key (include user ID in the URL or cache key), so user A's cached home page isn't served to user B on a shared device. Set a shorter <code>max-age</code> (e.g., 5 minutes) for personalised responses vs 30 minutes for non-personalised category pages.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">20. How do you make the product listing accessible for screen reader users?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Key accessibility requirements for product cards: (1) <strong>Content description</strong>: <code>imageView.contentDescription = "Nike Air Max, ₹5,999, 4.3 stars, 30% off"</code> — merge all card info into one meaningful description so TalkBack reads it in one swipe rather than announcing each element separately; (2) <strong>Import for accessibility</strong>: set <code>card.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES</code>; (3) <strong>Minimum touch target</strong>: 48dp × 48dp for Add to Cart and Wishlist buttons — use <code>TouchDelegate</code> or padding to expand small icons; (4) <strong>Price changes</strong>: use <code>ViewCompat.setAccessibilityLiveRegion(priceView, ACCESSIBILITY_LIVE_REGION_POLITE)</code> so TalkBack announces price updates without interrupting ongoing speech.</p>
+      </div>
+    </div>
+
+  </div>
+
+</article>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-inner">
+    <div class="sidebar-progress">
+      <div class="progress-label"><span>Reading progress</span><span id="pct">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="pfill" style="width:0%"></div></div>
+    </div>
+    <div class="sidebar-title">On This Page</div>
+    <a class="toc-item" href="#s-problem">1. Understanding the Problem</a>
+    <a class="toc-item" href="#s-setup">2. The Set Up</a>
+    <a class="toc-item" href="#s-hld">3. High-Level Design</a>
+    <a class="toc-item" href="#s-lld">4. Low-Level Design</a>
+    <a class="toc-item" href="#s-deep">5. Deep Dives</a>
+    <a class="toc-item" href="#s-levels">6. Expected at Each Level</a>
+    <a class="toc-item" href="#s-qa">7. Interview Questions</a>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-title">Asked At</div>
+    <div class="sidebar-companies">
+      <span class="co-chip">Flipkart</span>
+      <span class="co-chip">Meesho</span>
+      <span class="co-chip">Amazon</span>
+      <span class="co-chip">Myntra</span>
+      <span class="co-chip">CRED</span>
+    </div>
+    <div class="sidebar-divider"></div>
+    <a href="questions_37.html#topic-sysdesign" style="font-size:13px; color:var(--accent); text-decoration:none;">← All System Design</a>
+  </div>
+</aside>
+</div>
+
+<script>
+  window.addEventListener('scroll', () => {
+    const doc = document.documentElement;
+    const pct = Math.round((doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100) || 0;
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('pfill').style.width = pct + '%';
+    document.getElementById('pct').textContent = pct + '%';
+    const sections = ['s-problem','s-setup','s-hld','s-lld','s-deep','s-levels','s-qa'];
+    let active = sections[0];
+    for (const id of sections) {
+      const el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top < 120) active = id;
+    }
+    document.querySelectorAll('.toc-item').forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + active);
+    });
+  });
+  function toggleIQ(header) {
+    const card = header.closest('.iq-card');
+    const isOpen = card.classList.contains('open');
+    document.querySelectorAll('.iq-card.open').forEach(c => c.classList.remove('open'));
+    if (!isOpen) card.classList.add('open');
+  }
+</script>
+</body>
+</html>

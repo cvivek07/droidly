@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Design a Ride-Sharing App — Droidly</title>
+<style>
+  :root {
+    --accent: #3d7a4f;
+    --accent-dark: #2e6040;
+    --bg-green: #e8f2ec;
+    --border-green: #6aad82;
+    --bg: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --text: #1a1a1a;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --radius: 12px;
+    --sidebar-w: 260px;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.7; }
+
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: var(--accent); width: 0%; z-index: 1000;
+    transition: width 0.1s linear;
+  }
+
+  .topnav {
+    position: sticky; top: 0; background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(8px); border-bottom: 1px solid var(--border);
+    padding: 0 32px; height: 52px; display: flex; align-items: center;
+    gap: 8px; z-index: 100; font-size: 14px;
+  }
+  .topnav a { color: var(--text-muted); text-decoration: none; }
+  .topnav a:hover { color: var(--accent); }
+  .topnav .sep { color: var(--border); }
+
+  .page-wrap {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr var(--sidebar-w);
+    gap: 48px; padding: 48px 24px; align-items: start;
+  }
+
+  .article h1 {
+    font-size: 2rem; font-weight: 800; line-height: 1.2;
+    border-bottom: 3px solid var(--text); padding-bottom: 12px; margin-bottom: 20px;
+  }
+  .article-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 32px; }
+  .tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tag-topic { background: var(--bg-green); color: var(--accent-dark); }
+  .tag-hard { background: #fee2e2; color: #991b1b; }
+  .tag-year { background: var(--bg-secondary); color: var(--text-muted); border: 1px solid var(--border); }
+  .meta-item { font-size: 13px; color: var(--text-muted); }
+
+  .article h2 { font-size: 1.35rem; font-weight: 700; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); scroll-margin-top: 80px; }
+  .article h3 { font-size: 1.1rem; font-weight: 700; margin: 28px 0 12px; color: var(--accent-dark); }
+  .article p { margin-bottom: 14px; }
+  .article ul { margin: 10px 0 16px 20px; }
+  .article ul li { margin-bottom: 6px; }
+  .article strong { font-weight: 700; }
+
+  .callout { border: 1px solid var(--border-green); background: var(--bg-green); border-radius: var(--radius); padding: 20px 24px; margin: 24px 0; }
+  .callout-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+  .callout p { margin-bottom: 0; font-size: 15px; }
+  .callout-cta { display: inline-block; margin-top: 12px; background: var(--accent); color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none; }
+
+  .info-box { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: var(--radius); padding: 16px 20px; margin: 16px 0; }
+  .info-box .info-label { font-weight: 700; font-size: 13px; color: #0369a1; margin-bottom: 6px; }
+
+  .req-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .req-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .req-box h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 12px; }
+  .req-box ul { margin-left: 16px; }
+  .req-box ul li { font-size: 14px; margin-bottom: 6px; }
+
+  .comp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+  .comp-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+  .comp-icon { font-size: 1.6rem; margin-bottom: 8px; }
+  .comp-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .comp-sub { font-size: 12px; color: var(--text-muted); }
+
+  /* State machine */
+  .state-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 20px 0; }
+  .state-chip { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+  .s-idle { background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1; }
+  .s-searching { background: #fef3c7; color: #92400e; border: 1.5px solid #fcd34d; }
+  .s-found { background: #dbeafe; color: #1e40af; border: 1.5px solid #93c5fd; }
+  .s-enroute { background: #ede9fe; color: #5b21b6; border: 1.5px solid #c4b5fd; }
+  .s-arrived { background: #dcfce7; color: #166534; border: 1.5px solid #86efac; }
+  .s-intrip { background: var(--bg-green); color: var(--accent-dark); border: 1.5px solid var(--border-green); }
+  .s-done { background: #f0fdf4; color: #166534; border: 1.5px solid #86efac; }
+  .s-fail { background: #fee2e2; color: #991b1b; border: 1.5px solid #fca5a5; }
+  .state-arrow { font-size: 18px; color: var(--text-muted); }
+
+  pre { background: #0f1117; color: #e2e8f0; border-radius: 10px; padding: 20px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 16px 0; tab-size: 2; }
+  code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
+  .kw { color: #c792ea; } .fn { color: #82aaff; } .cl { color: #ffcb6b; }
+  .cm { color: #546e7a; font-style: italic; } .st { color: #c3e88d; }
+  .nm { color: #f78c6c; } .an { color: #89ddff; }
+
+  .diagram-wrap { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 20px 0; overflow-x: auto; text-align: center; }
+  .diagram-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+
+  .flow-wrap { margin: 24px 0; }
+  .flow-title { font-weight: 700; font-size: 15px; padding: 10px 16px; background: var(--bg-green); border-radius: 8px 8px 0 0; border: 1px solid var(--border-green); border-bottom: none; color: var(--accent-dark); }
+  .flow-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); border-radius: 0 0 8px 8px; overflow: hidden; }
+  .flow-table th { padding: 10px 14px; font-size: 12px; font-weight: 700; text-align: left; letter-spacing: 0.5px; }
+  .th-ui { background: #dcfce7; color: #166534; }
+  .th-vm { background: #d1fae5; color: #065f46; }
+  .th-repo { background: #dbeafe; color: #1e40af; }
+  .th-loc { background: #fef3c7; color: #92400e; }
+  .th-ws  { background: #ede9fe; color: #5b21b6; }
+  .th-api { background: #f3e8ff; color: #6b21a8; }
+  .th-srv { background: #fee2e2; color: #991b1b; }
+  .flow-table td { padding: 10px 14px; font-size: 13px; vertical-align: top; border-top: 1px solid var(--border); }
+  .flow-table tr:nth-child(even) td { background: var(--bg-secondary); }
+  .step-num { font-weight: 700; color: var(--accent); margin-right: 6px; }
+
+  .decision-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  .decision-table th { background: var(--bg-green); color: var(--accent-dark); padding: 10px 14px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .decision-table td { padding: 10px 14px; border-top: 1px solid var(--border); }
+  .decision-table tr:nth-child(even) td { background: var(--bg-secondary); }
+  .check { color: #16a34a; font-weight: 700; }
+  .cross { color: #dc2626; font-weight: 700; }
+  .chosen-row td { background: #f0fdf4 !important; font-weight: 600; }
+
+  .levels-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+  .level-card { border-radius: var(--radius); border: 1px solid var(--border); padding: 18px; }
+  .level-mid { border-top: 3px solid #60a5fa; }
+  .level-senior { border-top: 3px solid var(--accent); }
+  .level-staff { border-top: 3px solid #a855f7; }
+  .level-badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .level-mid .level-badge { color: #2563eb; }
+  .level-senior .level-badge { color: var(--accent); }
+  .level-staff .level-badge { color: #9333ea; }
+  .level-card ul { margin-left: 16px; }
+  .level-card ul li { font-size: 13px; margin-bottom: 5px; }
+
+  .iq-wrap { margin: 20px 0; }
+  .iq-card { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+  .iq-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; cursor: pointer; user-select: none; background: var(--bg-secondary); }
+  .iq-header:hover { background: #f0fdf4; }
+  .iq-q { font-size: 14px; font-weight: 600; flex: 1; padding-right: 12px; }
+  .iq-meta { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .iq-diff { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .diff-easy { background: #dcfce7; color: #166534; }
+  .diff-medium { background: #fef3c7; color: #92400e; }
+  .diff-hard { background: #fee2e2; color: #991b1b; }
+  .iq-chevron { font-size: 16px; color: var(--text-muted); transition: transform 0.2s; }
+  .iq-card.open .iq-chevron { transform: rotate(180deg); }
+  .iq-body { display: none; padding: 16px 18px; border-top: 1px solid var(--border); font-size: 14px; line-height: 1.7; background: #fff; }
+  .iq-card.open .iq-body { display: block; }
+  .iq-body ul { margin-left: 18px; margin-bottom: 10px; }
+  .iq-body li { margin-bottom: 5px; }
+
+  .sidebar { position: sticky; top: 72px; }
+  .sidebar-inner { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .sidebar-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 14px; }
+  .toc-item { display: block; padding: 6px 10px; border-radius: 6px; text-decoration: none; font-size: 13px; color: var(--text-muted); margin-bottom: 2px; border-left: 2px solid transparent; transition: all 0.15s; }
+  .toc-item:hover { color: var(--accent); background: var(--bg-green); }
+  .toc-item.active { color: var(--accent); border-left-color: var(--accent); background: var(--bg-green); font-weight: 600; }
+  .sidebar-progress { margin-bottom: 16px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .progress-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.2s; }
+  .sidebar-divider { height: 1px; background: var(--border); margin: 16px 0; }
+  .sidebar-companies { display: flex; flex-wrap: wrap; gap: 6px; }
+  .co-chip { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: var(--bg-green); color: var(--accent-dark); border: 1px solid var(--border-green); }
+
+  @media (max-width: 900px) {
+    .page-wrap { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .req-grid, .levels-grid, .comp-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<nav class="topnav">
+  <a href="androidprep_4.html">🤖 Droidly</a>
+  <span class="sep">›</span>
+  <a href="questions_37.html">Questions</a>
+  <span class="sep">›</span>
+  <a href="questions_37.html#topic-sysdesign">System Design</a>
+  <span class="sep">›</span>
+  <span style="color:var(--text)">Ride-sharing App</span>
+</nav>
+
+<div class="page-wrap">
+<article class="article">
+
+  <h1>Design a Ride-Sharing App (Ola / Uber)</h1>
+  <div class="article-meta">
+    <span class="tag tag-topic">System Design</span>
+    <span class="tag tag-hard">Hard</span>
+    <span class="tag tag-year">2025–26</span>
+    <span class="meta-item">⏱ 45–60 min</span>
+    <span class="meta-item">📱 Android Focus</span>
+  </div>
+
+  <!-- ══════════ 1. PROBLEM ══════════ -->
+  <h2 id="s-problem">1. Understanding the Problem</h2>
+
+  <p>Design the Android <strong>rider-side</strong> client of a ride-sharing app like Ola or Uber. This means: entering a destination, getting a fare estimate, booking a ride, tracking the driver in real time on a map, and following the trip through to payment. The interviewer may also ask about the <strong>driver-side</strong> app — flag which side you're designing early.</p>
+
+  <div class="callout">
+    <div class="callout-label">📌 Pattern: Real-Time Location Streaming</div>
+    <p>The defining challenge is <strong>live driver position updates</strong> at low latency. The choice of transport protocol (WebSocket vs polling vs SSE) and how you animate the marker on the map without jank defines the entire architecture.</p>
+    <a class="callout-cta" href="#">Learn This Pattern →</a>
+  </div>
+
+  <div class="req-grid">
+    <div class="req-box">
+      <h4>✅ Functional Requirements (Rider App)</h4>
+      <ul>
+        <li>Enter pickup (auto-detected via GPS) and destination</li>
+        <li>Show fare estimate and available ride types (Mini, Sedan, Auto)</li>
+        <li>Book a ride; show driver matching progress</li>
+        <li>Live driver location on map with ETA</li>
+        <li>Trip state transitions: Driver en-route → Arrived → In-trip → Completed</li>
+        <li>In-trip turn-by-turn route polyline on map</li>
+        <li>Post-trip: receipt, rating, payment summary</li>
+      </ul>
+    </div>
+    <div class="req-box">
+      <h4>⚙️ Non-Functional Requirements</h4>
+      <ul>
+        <li><strong>Location precision:</strong> GPS update every 3–5 s on driver side</li>
+        <li><strong>Map latency:</strong> Driver marker moves smoothly, &lt;1 s lag</li>
+        <li><strong>Battery:</strong> Minimise GPS drain on rider side (coarser interval)</li>
+        <li><strong>Reconnection:</strong> WebSocket auto-reconnects on network switch</li>
+        <li><strong>Offline:</strong> Graceful degradation — last known driver position shown</li>
+        <li><strong>Background:</strong> Driver app posts location via Foreground Service</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <div class="info-label">💡 Clarifying Questions to Ask</div>
+    <ul>
+      <li>Rider-side or driver-side (or both)? Start with rider.</li>
+      <li>Should we design the matching algorithm server-side?</li>
+      <li>Payment integration in scope?</li>
+      <li>In-trip chat / SOS button required?</li>
+    </ul>
+  </div>
+
+  <!-- ══════════ 2. SET UP ══════════ -->
+  <h2 id="s-setup">2. The Set Up</h2>
+
+  <h3>Trip State Machine</h3>
+  <p>The entire app is driven by a <strong>TripState sealed class</strong>. Every screen and action is a function of the current state:</p>
+
+  <div class="state-row">
+    <span class="state-chip s-idle">IDLE</span>
+    <span class="state-arrow">→</span>
+    <span class="state-chip s-searching">SEARCHING</span>
+    <span class="state-arrow">→</span>
+    <span class="state-chip s-found">DRIVER_FOUND</span>
+    <span class="state-arrow">→</span>
+    <span class="state-chip s-enroute">DRIVER_EN_ROUTE</span>
+    <span class="state-arrow">→</span>
+    <span class="state-chip s-arrived">DRIVER_ARRIVED</span>
+    <span class="state-arrow">→</span>
+    <span class="state-chip s-intrip">IN_TRIP</span>
+    <span class="state-arrow">→</span>
+    <span class="state-chip s-done">COMPLETED</span>
+  </div>
+  <div class="state-row" style="margin-top:-8px;">
+    <span style="font-size:12px; color:var(--text-muted)">Any state</span>
+    <span class="state-arrow">→</span>
+    <span class="state-chip s-fail">CANCELLED / FAILED</span>
+  </div>
+
+  <h3>Core Components</h3>
+  <div class="comp-grid">
+    <div class="comp-card">
+      <div class="comp-icon">📍</div>
+      <div class="comp-name">FusedLocation API</div>
+      <div class="comp-sub">Pickup detection, GPS updates</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">🗺️</div>
+      <div class="comp-name">Google Maps SDK</div>
+      <div class="comp-sub">Map, markers, route polyline</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">🔌</div>
+      <div class="comp-name">WebSocket (OkHttp)</div>
+      <div class="comp-sub">Real-time driver position</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">🔔</div>
+      <div class="comp-name">Foreground Service</div>
+      <div class="comp-sub">Driver GPS + WS in background</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">🌐</div>
+      <div class="comp-name">Retrofit + OkHttp</div>
+      <div class="comp-sub">Booking, pricing, ETA APIs</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">🗄️</div>
+      <div class="comp-name">Room DB</div>
+      <div class="comp-sub">Trip history, saved places</div>
+    </div>
+  </div>
+
+  <!-- ══════════ 3. HLD ══════════ -->
+  <h2 id="s-hld">3. High-Level Design</h2>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">Architecture Overview — Rider App</div>
+    <svg width="720" height="360" viewBox="0 0 720 360" font-family="Segoe UI, sans-serif" font-size="13">
+      <!-- UI -->
+      <rect x="10" y="20" width="160" height="80" rx="10" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+      <text x="90" y="50" text-anchor="middle" font-weight="700" fill="#166534">UI Layer</text>
+      <text x="90" y="68" text-anchor="middle" fill="#166534" font-size="11">HomeFragment (map)</text>
+      <text x="90" y="83" text-anchor="middle" fill="#166534" font-size="11">BookingFragment · TripFragment</text>
+
+      <!-- ViewModel -->
+      <rect x="10" y="130" width="160" height="60" rx="10" fill="#d1fae5" stroke="#6ee7b7" stroke-width="1.5"/>
+      <text x="90" y="157" text-anchor="middle" font-weight="700" fill="#065f46">TripViewModel</text>
+      <text x="90" y="174" text-anchor="middle" fill="#065f46" font-size="11">StateFlow&lt;TripState&gt;</text>
+
+      <!-- Repository -->
+      <rect x="10" y="220" width="160" height="60" rx="10" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+      <text x="90" y="247" text-anchor="middle" font-weight="700" fill="#1e40af">TripRepository</text>
+      <text x="90" y="264" text-anchor="middle" fill="#1e40af" font-size="11">Orchestrates all sources</text>
+
+      <!-- Arrows left column -->
+      <line x1="90" y1="100" x2="90" y2="130" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="90" y1="190" x2="90" y2="220" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a3)"/>
+
+      <!-- WebSocket Manager -->
+      <rect x="220" y="130" width="155" height="60" rx="10" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5"/>
+      <text x="297" y="157" text-anchor="middle" font-weight="700" fill="#5b21b6">WebSocket Manager</text>
+      <text x="297" y="174" text-anchor="middle" fill="#5b21b6" font-size="11">Driver location events</text>
+
+      <!-- Location Manager -->
+      <rect x="220" y="220" width="155" height="60" rx="10" fill="#fef3c7" stroke="#fde047" stroke-width="1.5"/>
+      <text x="297" y="247" text-anchor="middle" font-weight="700" fill="#854d0e">Location Manager</text>
+      <text x="297" y="264" text-anchor="middle" fill="#854d0e" font-size="11">FusedLocationProviderClient</text>
+
+      <!-- REST API -->
+      <rect x="220" y="20" width="155" height="80" rx="10" fill="#f3e8ff" stroke="#c084fc" stroke-width="1.5"/>
+      <text x="297" y="50" text-anchor="middle" font-weight="700" fill="#6b21a8">REST API</text>
+      <text x="297" y="67" text-anchor="middle" fill="#6b21a8" font-size="11">POST /book · GET /estimate</text>
+      <text x="297" y="82" text-anchor="middle" fill="#6b21a8" font-size="11">GET /route · POST /cancel</text>
+
+      <!-- Server -->
+      <rect x="430" y="20" width="150" height="150" rx="10" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
+      <text x="505" y="50" text-anchor="middle" font-weight="700" fill="#991b1b">Backend Server</text>
+      <text x="505" y="70" text-anchor="middle" fill="#991b1b" font-size="11">Matching Engine</text>
+      <text x="505" y="87" text-anchor="middle" fill="#991b1b" font-size="11">Geo-spatial queries</text>
+      <text x="505" y="104" text-anchor="middle" fill="#991b1b" font-size="11">WS: pushes driver LatLng</text>
+      <text x="505" y="121" text-anchor="middle" fill="#991b1b" font-size="11">State machine (server)</text>
+      <text x="505" y="138" text-anchor="middle" fill="#991b1b" font-size="11">Payment service</text>
+      <text x="505" y="155" text-anchor="middle" fill="#991b1b" font-size="11">Maps / Route API</text>
+
+      <!-- Driver App -->
+      <rect x="430" y="200" width="150" height="70" rx="10" fill="#fef9c3" stroke="#fde047" stroke-width="1.5"/>
+      <text x="505" y="228" text-anchor="middle" font-weight="700" fill="#713f12">Driver App</text>
+      <text x="505" y="246" text-anchor="middle" fill="#713f12" font-size="11">Foreground Service</text>
+      <text x="505" y="262" text-anchor="middle" fill="#713f12" font-size="11">GPS → WS → Server</text>
+
+      <!-- Maps SDK -->
+      <rect x="590" y="280" width="120" height="50" rx="10" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5"/>
+      <text x="650" y="305" text-anchor="middle" font-weight="700" fill="#0369a1" font-size="12">Maps SDK</text>
+      <text x="650" y="320" text-anchor="middle" fill="#0369a1" font-size="10">Marker · Polyline</text>
+
+      <!-- Room -->
+      <rect x="590" y="200" width="120" height="60" rx="10" fill="#fef3c7" stroke="#fde047" stroke-width="1.5"/>
+      <text x="650" y="228" text-anchor="middle" font-weight="700" fill="#854d0e" font-size="12">Room DB</text>
+      <text x="650" y="244" text-anchor="middle" fill="#854d0e" font-size="10">trip_history</text>
+      <text x="650" y="258" text-anchor="middle" fill="#854d0e" font-size="10">saved_places</text>
+
+      <!-- Connection lines -->
+      <line x1="170" y1="250" x2="220" y2="250" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="170" y1="165" x2="220" y2="165" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="170" y1="60" x2="220" y2="60" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a3)"/>
+
+      <line x1="375" y1="60" x2="430" y2="60" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="375" y1="165" x2="430" y2="130" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#a3)"/>
+
+      <line x1="505" y1="200" x2="505" y2="170" stroke="#94a3b8" stroke-width="1.5"/>
+      <line x1="580" y1="235" x2="590" y2="235" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a3)"/>
+
+      <!-- UI to Maps -->
+      <path d="M 90 100 Q 90 320 590 305" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#a3)"/>
+
+      <defs>
+        <marker id="a3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <h3>Transport Protocol: Why WebSocket?</h3>
+  <table class="decision-table">
+    <thead>
+      <tr><th>Option</th><th>Latency</th><th>Battery</th><th>Bi-directional</th><th>Best for</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>HTTP Polling (every 2s)</td><td class="cross">High (2s)</td><td class="cross">Bad</td><td class="cross">✗</td><td>Simple dashboards</td></tr>
+      <tr><td>Long Polling</td><td>~1s</td><td>Medium</td><td class="cross">✗</td><td>Chat (legacy)</td></tr>
+      <tr><td>SSE (Server-Sent Events)</td><td class="check">Low</td><td class="check">Good</td><td class="cross">✗</td><td>Push-only feeds</td></tr>
+      <tr class="chosen-row"><td>🏆 WebSocket (OkHttp)</td><td class="check">Very Low</td><td class="check">Good</td><td class="check">✓</td><td>Live location tracking</td></tr>
+      <tr><td>gRPC streaming</td><td class="check">Very Low</td><td class="check">Good</td><td class="check">✓</td><td>Internal microservices</td></tr>
+    </tbody>
+  </table>
+
+  <p>WebSocket wins because the rider app also needs to <strong>send</strong> events to the server (cancel, chat message, SOS), making bi-directional communication necessary. SSE is receive-only.</p>
+
+  <!-- ══════════ 4. LLD ══════════ -->
+  <h2 id="s-lld">4. Low-Level Design</h2>
+
+  <h3>Whiteboard: Full Rider Trip Pipeline</h3>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">Rider Trip — End-to-End Flow</div>
+    <svg width="720" height="480" viewBox="0 0 720 480" font-family="Segoe UI, sans-serif" font-size="12">
+      <!-- Column headers -->
+      <rect x="0"   y="0" width="120" height="38" rx="6" fill="#dcfce7"/>
+      <text x="60"  y="24" text-anchor="middle" font-weight="700" fill="#166534" font-size="11">HomeFragment</text>
+
+      <rect x="130" y="0" width="130" height="38" rx="6" fill="#d1fae5"/>
+      <text x="195" y="24" text-anchor="middle" font-weight="700" fill="#065f46" font-size="11">TripViewModel</text>
+
+      <rect x="270" y="0" width="120" height="38" rx="6" fill="#dbeafe"/>
+      <text x="330" y="24" text-anchor="middle" font-weight="700" fill="#1e40af" font-size="11">TripRepository</text>
+
+      <rect x="400" y="0" width="130" height="38" rx="6" fill="#ede9fe"/>
+      <text x="465" y="24" text-anchor="middle" font-weight="700" fill="#5b21b6" font-size="11">WebSocket Mgr</text>
+
+      <rect x="540" y="0" width="170" height="38" rx="6" fill="#fee2e2"/>
+      <text x="625" y="24" text-anchor="middle" font-weight="700" fill="#991b1b" font-size="11">Server / REST API</text>
+
+      <!-- Step 1 -->
+      <rect x="0" y="55" width="120" height="40" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+      <text x="60" y="73" text-anchor="middle" font-weight="700" fill="#166534">1</text>
+      <text x="60" y="87" text-anchor="middle" fill="#166534" font-size="10">GPS pickup detected</text>
+      <line x1="120" y1="75" x2="130" y2="75" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a4)"/>
+
+      <!-- Step 2 -->
+      <rect x="130" y="55" width="130" height="40" rx="6" fill="#d1fae5" stroke="#6ee7b7"/>
+      <text x="195" y="73" text-anchor="middle" font-weight="700" fill="#065f46">2</text>
+      <text x="195" y="87" text-anchor="middle" fill="#065f46" font-size="10">requestFareEstimate()</text>
+      <line x1="260" y1="75" x2="270" y2="75" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a4)"/>
+
+      <!-- Step 3 -->
+      <rect x="270" y="55" width="120" height="40" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+      <text x="330" y="73" text-anchor="middle" font-weight="700" fill="#1e40af">3</text>
+      <text x="330" y="87" text-anchor="middle" fill="#1e40af" font-size="10">GET /estimate</text>
+      <line x1="390" y1="75" x2="540" y2="75" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a4)"/>
+
+      <!-- Step 4 fare back -->
+      <rect x="0" y="115" width="120" height="40" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+      <text x="60" y="133" text-anchor="middle" font-weight="700" fill="#166534">4</text>
+      <text x="60" y="147" text-anchor="middle" fill="#166534" font-size="10">Show fare options</text>
+      <line x1="610" y1="95" x2="610" y2="135" stroke="#22c55e" stroke-width="1.5"/>
+      <line x1="610" y1="135" x2="120" y2="135" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a4)"/>
+      <text x="370" y="128" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="600">fare options response</text>
+
+      <!-- Step 5 book -->
+      <rect x="130" y="175" width="130" height="40" rx="6" fill="#d1fae5" stroke="#6ee7b7"/>
+      <text x="195" y="193" text-anchor="middle" font-weight="700" fill="#065f46">5</text>
+      <text x="195" y="207" text-anchor="middle" fill="#065f46" font-size="10">bookRide(rideType)</text>
+      <line x1="260" y1="195" x2="270" y2="195" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a4)"/>
+
+      <!-- Step 6 -->
+      <rect x="270" y="175" width="120" height="40" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+      <text x="330" y="193" text-anchor="middle" font-weight="700" fill="#1e40af">6</text>
+      <text x="330" y="207" text-anchor="middle" fill="#1e40af" font-size="10">POST /book → tripId</text>
+      <line x1="390" y1="195" x2="540" y2="195" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a4)"/>
+
+      <!-- Step 7 WS connect -->
+      <rect x="400" y="255" width="130" height="40" rx="6" fill="#ede9fe" stroke="#c4b5fd"/>
+      <text x="465" y="273" text-anchor="middle" font-weight="700" fill="#5b21b6">7</text>
+      <text x="465" y="287" text-anchor="middle" fill="#5b21b6" font-size="10">Connect WS(tripId)</text>
+      <line x1="540" y1="215" x2="540" y2="275" stroke="#94a3b8" stroke-width="1.5"/>
+      <line x1="540" y1="275" x2="530" y2="275" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a4)"/>
+
+      <!-- Step 8 state events -->
+      <rect x="130" y="315" width="130" height="40" rx="6" fill="#d1fae5" stroke="#6ee7b7"/>
+      <text x="195" y="333" text-anchor="middle" font-weight="700" fill="#065f46">8</text>
+      <text x="195" y="347" text-anchor="middle" fill="#065f46" font-size="10">emit TripState changes</text>
+      <line x1="400" y1="275" x2="260" y2="335" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#a4)"/>
+      <text x="310" y="298" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="600">WS frames: DRIVER_FOUND,</text>
+      <text x="310" y="310" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="600">location updates, state changes</text>
+
+      <!-- Step 9 animate marker -->
+      <rect x="0" y="315" width="120" height="40" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+      <text x="60" y="333" text-anchor="middle" font-weight="700" fill="#166534">9</text>
+      <text x="60" y="347" text-anchor="middle" fill="#166534" font-size="10">Animate driver marker</text>
+      <line x1="130" y1="335" x2="120" y2="335" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a4)"/>
+
+      <!-- Step 10 complete -->
+      <rect x="270" y="395" width="260" height="40" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+      <text x="400" y="413" text-anchor="middle" font-weight="700" fill="#166534">10</text>
+      <text x="400" y="427" text-anchor="middle" fill="#166534" font-size="10">COMPLETED event → WS close → show receipt</text>
+
+      <line x1="60" y1="355" x2="60" y2="415" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <line x1="60" y1="415" x2="270" y2="415" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a4)"/>
+
+      <defs>
+        <marker id="a4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <h3>Flow 1: Booking & Driver Matching</h3>
+  <div class="flow-wrap">
+    <div class="flow-title">Flow 1 — From "Book" tap to driver marker appearing on map</div>
+    <table class="flow-table">
+      <thead>
+        <tr>
+          <th class="th-ui" style="width:18%">HomeFragment</th>
+          <th class="th-vm" style="width:22%">TripViewModel</th>
+          <th class="th-repo" style="width:25%">TripRepository</th>
+          <th class="th-ws" style="width:20%">WS Manager</th>
+          <th class="th-srv" style="width:15%">Server</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="step-num">1</span>User taps "Confirm Ride" → <code>viewModel.bookRide(rideType)</code></td>
+          <td></td><td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="step-num">2</span>Sets state to <code>TripState.SEARCHING</code> → UI shows spinner</td>
+          <td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td></td><td></td>
+          <td><span class="step-num">3</span><code>POST /book</code> → receives <code>tripId</code></td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td></td><td></td>
+          <td><span class="step-num">4</span>Opens <code>wss://api.app.com/trips/{tripId}</code></td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td></td><td></td><td></td>
+          <td><span class="step-num">5</span>WebSocket connected; auth header sent in handshake</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td><td></td><td></td><td></td>
+          <td><span class="step-num">6</span>Server runs geo-spatial matching; finds nearest driver</td>
+        </tr>
+        <tr>
+          <td></td><td></td><td></td>
+          <td><span class="step-num">7</span>WS frame: <code>{type:"DRIVER_FOUND", driver:{name, photo, plate, rating, lat, lng}}</code></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="step-num">8</span>State → <code>DRIVER_FOUND</code>; emits driver info to UI</td>
+          <td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td><span class="step-num">9</span>Driver card animates up from bottom; map adds driver marker</td>
+          <td></td><td></td><td></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Flow 2: Live Driver Location (EN_ROUTE)</h3>
+  <div class="flow-wrap">
+    <div class="flow-title">Flow 2 — Real-time driver marker animation while driver approaches</div>
+    <table class="flow-table">
+      <thead>
+        <tr>
+          <th class="th-ui" style="width:20%">Map (HomeFragment)</th>
+          <th class="th-vm" style="width:22%">TripViewModel</th>
+          <th class="th-ws" style="width:25%">WebSocket Manager</th>
+          <th class="th-loc" style="width:18%">Driver App</th>
+          <th class="th-srv" style="width:15%">Server</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td><td></td><td></td>
+          <td><span class="step-num">1</span>FusedLocation fires every 3s → Foreground Service</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td><td></td><td></td><td></td>
+          <td><span class="step-num">2</span>Driver WS pushes <code>{lat, lng, bearing}</code> to server</td>
+        </tr>
+        <tr>
+          <td></td><td></td>
+          <td><span class="step-num">3</span>Server fans out <code>LOCATION_UPDATE</code> frame to rider WS</td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="step-num">4</span>Parses frame → updates <code>driverLocation: StateFlow&lt;LatLng&gt;</code></td>
+          <td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td><span class="step-num">5</span>Fragment collects Flow → calls <code>animateMarker(from, to, bearing)</code></td>
+          <td></td><td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td><span class="step-num">6</span>ValueAnimator interpolates lat/lng over 1 s; marker moves smoothly with rotation</td>
+          <td></td><td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td></td><td></td>
+          <td><span class="step-num">7</span>WS frame <code>ETA_UPDATE</code> → UI shows "Driver arrives in X min"</td>
+          <td></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Flow 3: Trip Completion & Receipt</h3>
+  <div class="flow-wrap">
+    <div class="flow-title">Flow 3 — IN_TRIP → COMPLETED state, WebSocket teardown, receipt screen</div>
+    <table class="flow-table">
+      <thead>
+        <tr>
+          <th class="th-ui" style="width:20%">TripFragment</th>
+          <th class="th-vm" style="width:25%">TripViewModel</th>
+          <th class="th-ws" style="width:25%">WebSocket Manager</th>
+          <th class="th-repo" style="width:15%">Room DB</th>
+          <th class="th-srv" style="width:15%">Server</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td><td></td><td></td><td></td>
+          <td><span class="step-num">1</span>Driver marks trip complete → server triggers billing</td>
+        </tr>
+        <tr>
+          <td></td><td></td>
+          <td><span class="step-num">2</span>WS frame: <code>{type:"TRIP_COMPLETED", fare, duration, distance, paymentMethod}</code></td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="step-num">3</span>State → <code>COMPLETED</code>; stores trip in Room</td>
+          <td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td></td><td></td><td></td>
+          <td><span class="step-num">4</span>INSERT trip_history (tripId, fare, route, timestamp)</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td><td></td>
+          <td><span class="step-num">5</span>Close WebSocket cleanly (code 1000)</td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td><span class="step-num">6</span>Navigate to ReceiptFragment; show fare breakdown + rating prompt</td>
+          <td></td><td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td><span class="step-num">7</span>User submits rating → <code>POST /rate</code> in background coroutine</td>
+          <td></td><td></td><td></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Key Code: WebSocket Manager with Auto-Reconnect</h3>
+  <pre><code><span class="kw">class</span> <span class="cl">WebSocketManager</span> @<span class="cl">Inject</span> <span class="kw">constructor</span>(<span class="kw">private val</span> client: <span class="cl">OkHttpClient</span>) {
+
+    <span class="kw">private val</span> _events = <span class="cl">MutableSharedFlow</span>&lt;<span class="cl">TripEvent</span>&gt;()
+    <span class="kw">val</span> events: <span class="cl">SharedFlow</span>&lt;<span class="cl">TripEvent</span>&gt; = _events
+
+    <span class="kw">private var</span> webSocket: <span class="cl">WebSocket</span>? = <span class="kw">null</span>
+    <span class="kw">private var</span> reconnectDelay = <span class="nm">1000L</span>   <span class="cm">// start 1 s, max 30 s</span>
+
+    <span class="kw">fun</span> <span class="fn">connect</span>(tripId: <span class="cl">String</span>, token: <span class="cl">String</span>) {
+        <span class="kw">val</span> req = <span class="cl">Request</span>.<span class="cl">Builder</span>()
+            .<span class="fn">url</span>(<span class="st">"wss://api.rideapp.com/trips/$tripId"</span>)
+            .<span class="fn">addHeader</span>(<span class="st">"Authorization"</span>, <span class="st">"Bearer $token"</span>)
+            .<span class="fn">build</span>()
+        webSocket = client.<span class="fn">newWebSocket</span>(req, <span class="fn">buildListener</span>(tripId, token))
+    }
+
+    <span class="kw">private fun</span> <span class="fn">buildListener</span>(tripId: <span class="cl">String</span>, token: <span class="cl">String</span>) = <span class="kw">object</span> : <span class="cl">WebSocketListener</span>() {
+
+        <span class="kw">override fun</span> <span class="fn">onMessage</span>(ws: <span class="cl">WebSocket</span>, text: <span class="cl">String</span>) {
+            <span class="kw">val</span> event = <span class="fn">parseEvent</span>(text)   <span class="cm">// sealed class TripEvent</span>
+            _events.<span class="fn">tryEmit</span>(event)
+            reconnectDelay = <span class="nm">1000L</span>           <span class="cm">// reset backoff on healthy message</span>
+        }
+
+        <span class="kw">override fun</span> <span class="fn">onFailure</span>(ws: <span class="cl">WebSocket</span>, t: <span class="cl">Throwable</span>, r: <span class="cl">Response</span>?) {
+            <span class="cm">// Exponential backoff reconnect</span>
+            <span class="cl">CoroutineScope</span>(<span class="cl">Dispatchers</span>.IO).<span class="fn">launch</span> {
+                <span class="fn">delay</span>(reconnectDelay)
+                reconnectDelay = (reconnectDelay * <span class="nm">2</span>).<span class="fn">coerceAtMost</span>(<span class="nm">30_000L</span>)
+                <span class="fn">connect</span>(tripId, token)
+            }
+        }
+
+        <span class="kw">override fun</span> <span class="fn">onClosed</span>(ws: <span class="cl">WebSocket</span>, code: <span class="cl">Int</span>, reason: <span class="cl">String</span>) {
+            <span class="kw">if</span> (code != <span class="nm">1000</span>) <span class="fn">connect</span>(tripId, token) <span class="cm">// abnormal close → reconnect</span>
+        }
+    }
+
+    <span class="kw">fun</span> <span class="fn">send</span>(msg: <span class="cl">String</span>) = webSocket?.<span class="fn">send</span>(msg)
+    <span class="kw">fun</span> <span class="fn">disconnect</span>() { webSocket?.<span class="fn">close</span>(<span class="nm">1000</span>, <span class="st">"trip_complete"</span>) }
+}</code></pre>
+
+  <h3>Key Code: Smooth Driver Marker Animation</h3>
+  <pre><code><span class="cm">// Interpolate marker position over 1 second for fluid movement</span>
+<span class="kw">fun</span> <span class="fn">animateMarker</span>(
+    marker: <span class="cl">Marker</span>,
+    from: <span class="cl">LatLng</span>, to: <span class="cl">LatLng</span>, bearing: <span class="cl">Float</span>
+) {
+    <span class="kw">val</span> animator = <span class="cl">ValueAnimator</span>.<span class="fn">ofFloat</span>(<span class="nm">0f</span>, <span class="nm">1f</span>).<span class="fn">apply</span> {
+        duration = <span class="nm">1000</span>
+        interpolator = <span class="cl">LinearInterpolator</span>()
+        <span class="fn">addUpdateListener</span> { anim ->
+            <span class="kw">val</span> t = anim.animatedValue <span class="kw">as</span> <span class="cl">Float</span>
+            <span class="kw">val</span> lat = from.latitude  + t * (to.latitude  - from.latitude)
+            <span class="kw">val</span> lng = from.longitude + t * (to.longitude - from.longitude)
+            marker.position = <span class="cl">LatLng</span>(lat, lng)
+            marker.rotation = bearing
+        }
+    }
+    animator.<span class="fn">start</span>()
+}
+
+<span class="cm">// Camera follows driver smoothly (only when user hasn't manually panned)</span>
+<span class="kw">private var</span> userPanned = <span class="kw">false</span>
+
+<span class="kw">fun</span> <span class="fn">onDriverLocationUpdate</span>(location: <span class="cl">DriverLocation</span>) {
+    <span class="fn">animateMarker</span>(driverMarker, currentLatLng, location.latLng, location.bearing)
+    currentLatLng = location.latLng
+    <span class="kw">if</span> (!userPanned) {
+        map.<span class="fn">animateCamera</span>(<span class="cl">CameraUpdateFactory</span>.<span class="fn">newLatLng</span>(location.latLng))
+    }
+}</code></pre>
+
+  <h3>Key Code: Driver Foreground Service (Driver App)</h3>
+  <pre><code><span class="cm">// Driver app — continuous location upload even when app is backgrounded</span>
+<span class="kw">class</span> <span class="cl">LocationForegroundService</span> : <span class="cl">Service</span>() {
+
+    <span class="kw">private val</span> fusedClient by <span class="fn">lazy</span> {
+        <span class="cl">LocationServices</span>.<span class="fn">getFusedLocationProviderClient</span>(<span class="kw">this</span>)
+    }
+
+    <span class="kw">override fun</span> <span class="fn">onStartCommand</span>(intent: <span class="cl">Intent</span>?, flags: <span class="cl">Int</span>, startId: <span class="cl">Int</span>): <span class="cl">Int</span> {
+        <span class="fn">startForeground</span>(<span class="nm">NOTIF_ID</span>, <span class="fn">buildNotification</span>(<span class="st">"Trip in progress"</span>))
+
+        <span class="kw">val</span> req = <span class="cl">LocationRequest</span>.<span class="fn">Builder</span>(<span class="cl">Priority</span>.PRIORITY_HIGH_ACCURACY, <span class="nm">3000L</span>)
+            .<span class="fn">setMinUpdateIntervalMillis</span>(<span class="nm">2000L</span>)  <span class="cm">// at most every 2 s</span>
+            .<span class="fn">build</span>()
+
+        fusedClient.<span class="fn">requestLocationUpdates</span>(req, locationCallback, mainLooper)
+        <span class="kw">return</span> <span class="cl">START_STICKY</span>  <span class="cm">// system restarts if killed</span>
+    }
+
+    <span class="kw">private val</span> locationCallback = <span class="kw">object</span> : <span class="cl">LocationCallback</span>() {
+        <span class="kw">override fun</span> <span class="fn">onLocationResult</span>(result: <span class="cl">LocationResult</span>) {
+            result.lastLocation?.<span class="fn">let</span> { loc ->
+                webSocketManager.<span class="fn">send</span>(
+                    <span class="cl">Json</span>.<span class="fn">encodeToString</span>(<span class="cl">LocationUpdate</span>(loc.latitude, loc.longitude, loc.bearing))
+                )
+            }
+        }
+    }
+
+    <span class="kw">override fun</span> <span class="fn">onDestroy</span>() {
+        fusedClient.<span class="fn">removeLocationUpdates</span>(locationCallback)
+        <span class="kw">super</span>.<span class="fn">onDestroy</span>()
+    }
+}</code></pre>
+
+  <!-- ══════════ 5. DEEP DIVES ══════════ -->
+  <h2 id="s-deep">5. Potential Deep Dives</h2>
+
+  <h3>Battery Optimisation on Rider Side</h3>
+  <p>The rider doesn't need GPS at full accuracy while waiting. Use a coarse interval (<code>PRIORITY_BALANCED_POWER_ACCURACY</code>, every 30 s) to keep the pickup pin updated. Only switch to <code>PRIORITY_HIGH_ACCURACY</code> when the driver is &lt;500 m away (detected via WS ETA). This can cut GPS battery drain by 60% during the wait phase.</p>
+
+  <h3>Handling Network Switch (4G → Wi-Fi)</h3>
+  <p>When the network changes, OkHttp detects the connection drop and calls <code>onFailure</code>. The WebSocketManager's exponential backoff re-connects using the new interface. Because the server keeps trip state, the new WS session receives the current <code>TripState</code> and recent location in the first server frame — no state loss. Observe <code>ConnectivityManager.registerDefaultNetworkCallback</code> to proactively reconnect on network available.</p>
+
+  <div class="callout">
+    <div class="callout-label">📌 Pattern: Exponential Backoff with Jitter</div>
+    <p>Add random jitter to reconnect delays: <code>delay = min(baseDelay * 2^attempt, maxDelay) + random(0..1000ms)</code>. Without jitter, thousands of clients that lost connection simultaneously all retry at the same moment — thundering herd. Jitter spreads the load.</p>
+    <a class="callout-cta" href="#">Learn This Pattern →</a>
+  </div>
+
+  <h3>Offline Graceful Degradation</h3>
+  <p>If connectivity drops mid-trip: (1) the map freezes on the last known driver position, (2) a "Reconnecting…" banner appears, (3) the UI stays in the current <code>TripState</code>. When reconnected, the WS resumes and sends the latest state — the client reconciles. If the trip completed while offline, the WS frame is delivered on reconnect and the app transitions to receipt screen.</p>
+
+  <h3>ETA & Route Polyline</h3>
+  <p>The server provides the route as an encoded polyline string (Google Polyline Algorithm). Decode it on the client with <code>PolyUtil.decode(encodedPath)</code> from the Maps SDK utility library. Draw it as a <code>Polyline</code> on the map. As the driver moves, remove segments the driver has passed by comparing driver LatLng to polyline points.</p>
+
+  <h3>Surge Pricing Display</h3>
+  <p>The <code>/estimate</code> response includes a <code>surgeMultiplier</code> (e.g., <code>1.8x</code>) and a <code>surgeExpiresAt</code> timestamp. Show a countdown timer on the fare card: <code>CountDownTimer(surgeExpiresAt - now)</code>. If the user waits past expiry without booking, re-fetch the estimate. This creates urgency without a dark pattern — the fare genuinely may change.</p>
+
+  <h3>Trip History (Room)</h3>
+  <p>Store completed trips in Room for offline access to receipts. The <code>trip_history</code> table stores: <code>tripId, pickupAddress, destinationAddress, fare, duration, distance, driverName, rating, timestamp</code>. Synced lazily — if the app was offline at completion, sync via a <code>WorkManager</code> job that calls <code>GET /trips/{tripId}</code> when online.</p>
+
+  <!-- ══════════ 6. EXPECTED ══════════ -->
+  <h2 id="s-levels">6. What is Expected at Each Level</h2>
+
+  <div class="levels-grid">
+    <div class="level-card level-mid">
+      <div class="level-badge">🔵 Mid-Level</div>
+      <ul>
+        <li>Knows FusedLocationProviderClient basics</li>
+        <li>Can show a map with a marker</li>
+        <li>Understands polling vs WebSocket at a high level</li>
+        <li>Implements trip states as simple enum</li>
+        <li>Fetches routes from API and draws polyline</li>
+        <li>Handles basic permission flow for location</li>
+      </ul>
+    </div>
+    <div class="level-card level-senior">
+      <div class="level-badge">🟢 Senior</div>
+      <ul>
+        <li>Full WebSocket lifecycle with auto-reconnect + backoff</li>
+        <li>Smooth marker animation with ValueAnimator + bearing</li>
+        <li>State machine: sealed class + StateFlow in ViewModel</li>
+        <li>Foreground Service for driver GPS</li>
+        <li>Network change detection → WS reconnect</li>
+        <li>Offline degradation with last known state</li>
+        <li>Battery-adaptive location intervals</li>
+      </ul>
+    </div>
+    <div class="level-card level-staff">
+      <div class="level-badge">🟣 Staff+</div>
+      <ul>
+        <li>Dead reckoning: predict driver position between WS frames</li>
+        <li>Jitter in reconnect to avoid thundering herd</li>
+        <li>Dual WebSocket (one for trip, one for chat/SOS)</li>
+        <li>Location spoofing detection strategy</li>
+        <li>Map tile caching for offline areas</li>
+        <li>Client-side A/B testing of ETA display</li>
+        <li>Frame-rate adaptive animation on low-end devices</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════ 7. Q&A ══════════ -->
+  <h2 id="s-qa">7. Interview Questions</h2>
+  <div class="iq-wrap">
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">1. Why use WebSocket over HTTP polling for driver location updates?</span>
+        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>HTTP polling fires a request every N seconds regardless of whether the driver has moved. This wastes battery, generates unnecessary network traffic, and introduces latency equal to the poll interval. WebSocket establishes a persistent connection — the server pushes updates only when the driver's position changes. The rider gets sub-second location updates with less battery and bandwidth use. Additionally, WebSocket is bi-directional, allowing the rider to send cancel or chat messages on the same connection.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">2. How do you keep the driver marker moving smoothly rather than jumping?</span>
+        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>The server sends a location update every ~3 seconds. If the marker teleported to the new position, the user would see it jump. Instead, use a <strong>ValueAnimator</strong> that runs for 1 second and interpolates the marker's <code>LatLng</code> from the previous position to the new one — creating smooth motion. Set <code>marker.rotation = bearing</code> on each animation frame so the car icon points in the direction of travel. If a new update arrives before the animation completes, cancel the old animator and start a new one from the current interpolated position.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">3. What is a Foreground Service and why does the driver app need one?</span>
+        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Android aggressively kills background processes to save battery. A <strong>Foreground Service</strong> keeps the app process alive by showing a persistent notification. For the driver app, this is mandatory: GPS must continue sending location to the server even when the driver switches to navigation or music apps. <code>startForeground(notifId, notification)</code> promotes the service, making it immune to background kill. The service must request <code>ACCESS_BACKGROUND_LOCATION</code> permission on Android 10+ and declare <code>foregroundServiceType="location"</code> in the manifest.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">4. How do you design the trip state machine on the client?</span>
+        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Use a <strong>sealed class</strong> with data per state. The ViewModel exposes a <code>StateFlow&lt;TripState&gt;</code>. The Fragment <code>collect</code>s it and renders the correct UI for each state — no conditional spaghetti. Transitions are triggered by WebSocket events: <code>DRIVER_FOUND</code> moves from <code>SEARCHING</code> to <code>DRIVER_FOUND</code>. Illegal transitions (e.g., jumping from <code>IDLE</code> to <code>IN_TRIP</code>) are rejected — the state only advances via a <code>reduce(currentState, event)</code> function, making it predictable and testable.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">5. How does the app handle a WebSocket disconnection mid-trip?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>The WebSocketManager's <code>onFailure</code> callback detects the drop. The reconnect logic uses <strong>exponential backoff with jitter</strong>: 1 s, 2 s, 4 s, ... capped at 30 s. Adding random jitter (±500 ms) prevents thundering herd if thousands of riders disconnect simultaneously. On reconnect, the server sends the current trip state and last known driver location in the first frame — the client reconciles and resumes smoothly. Meanwhile, the UI shows a "Reconnecting…" overlay and the driver marker stays at its last position, freezing rather than disappearing.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">6. How do you get the user's current location for the pickup pin?</span>
+        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Use <code>FusedLocationProviderClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY)</code> for a one-shot location (no continuous updates needed just for pickup). After requesting the necessary permissions (<code>ACCESS_FINE_LOCATION</code>), this returns the last known high-accuracy fix or acquires a fresh one. Reverse-geocode the coordinates to a human-readable address using <code>Geocoder</code> or the Maps Geocoding API. Show a draggable pin — moving the pin updates the address in real time via reverse-geocoding on drag end.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">7. How do you draw and update the route polyline on the map?</span>
+        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>The booking API or a separate <code>GET /route</code> call returns an encoded polyline string. Decode it with <code>PolyUtil.decode(encodedPolyline)</code> (Maps SDK utility). Draw it with <code>map.addPolyline(PolylineOptions().addAll(points).color(Color.BLUE).width(8f))</code>. As the driver moves, clip completed segments: find the closest polyline point to the driver's current LatLng and remove all preceding points. Update the displayed polyline with the remaining points. This shows the remaining route getting shorter as the driver approaches.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">8. How do you minimise battery usage on the rider's device during a trip?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>The rider's GPS serves only two purposes: (1) detect initial pickup location (one-shot), (2) optionally track if the rider walks to a different pickup spot. For real-time tracking the <strong>driver's</strong> GPS is used, not the rider's. So: (1) After confirming the ride, stop continuous GPS updates on the rider side entirely. (2) Use <code>PRIORITY_BALANCED_POWER_ACCURACY</code> for the pre-booking pickup pin (network/Wi-Fi location, much cheaper than GPS). (3) Only the WS connection consumes power during the trip — OkHttp keeps it alive with periodic pings, which is far cheaper than GPS polling.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">9. How would you implement the "Cancel Ride" button safely?</span>
+        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Cancel is a sensitive action — accidental taps cost money (cancellation fee after driver accepts). Implement a two-step confirmation: tap "Cancel" → bottom sheet with cancellation policy + "Confirm Cancel" button. On confirm: (1) <code>POST /cancel {tripId, reason}</code> via Retrofit; (2) Send a <code>CANCEL</code> frame on the WebSocket (faster server notification); (3) Handle the server response: if cancellation fee applies, show a confirmation dialog before committing. If offline, enqueue cancellation with WorkManager — but show the user that the cancellation is pending, not confirmed.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">10. What happens if the rider app is killed mid-trip and reopened?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>On launch, the app checks for an active trip: <code>GET /trips/active</code>. If one exists, it restores the last <code>TripState</code>, reconnects the WebSocket with the stored <code>tripId</code> (persisted in SharedPreferences or Room), and navigates directly to the TripFragment — skipping the home screen. The server sends the current state and recent driver location on WS connect, so the map and ETA resume correctly. FCM push notifications also help: if the app is killed and the trip completes, the rider receives a notification with a deep link to the receipt screen.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">11. How would you design the location permissions flow?</span>
+        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Rider app requires only <code>ACCESS_FINE_LOCATION</code> (foreground) for the pickup pin. Request it contextually when the user opens the app — not on first launch. Use the Activity Result API: <code>registerForActivityResult(RequestPermission)</code>. If denied: show a rational explanation ("We need location to detect your pickup"), then re-request. If permanently denied: deep-link to Settings. Driver app additionally requires <code>ACCESS_BACKGROUND_LOCATION</code> (Android 10+), which must be requested separately and after the foreground permission. Show a clear UI explaining why background access is needed before showing the system dialog.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">12. How do you test the WebSocket Manager in unit tests?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Use OkHttp's <code>MockWebServer</code> with WebSocket support. Create a fake <code>WebSocketServer</code> that enqueues messages. In tests: (1) Start MockWebServer; (2) Call <code>wsManager.connect(tripId)</code>; (3) Have the server send test frames (DRIVER_FOUND, LOCATION_UPDATE); (4) Assert the <code>events</code> SharedFlow emitted the correct <code>TripEvent</code> values. For reconnect tests: close the WebSocket from the server side with a non-1000 code and assert the manager re-connects after backoff. Use <code>TestCoroutineDispatcher</code> to control time in backoff tests.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">13. How would you handle the case where two rides are booked simultaneously?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>This is primarily a server concern, but the client should defend against it too: (1) Disable the "Book" button immediately on tap and set it to a loading state — prevent double-taps. (2) If the server returns a <code>409 Conflict</code> (active trip already exists), navigate to the active trip screen rather than showing an error. (3) On app launch, always check <code>GET /trips/active</code> — if one exists from a previous session, restore it instead of showing the booking flow. The ViewModel holds the active <code>tripId</code> in a <code>StateFlow</code>; the repository rejects new booking attempts if <code>tripId != null</code>.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">14. Why use FusedLocationProviderClient instead of the GPS LocationManager directly?</span>
+        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p><code>FusedLocationProviderClient</code> (Google Play Services) fuses GPS, Wi-Fi, cell tower, and accelerometer data to provide the most accurate location using the least power. It shares the GPS hardware across apps — if Google Maps is already using GPS, FusedLocation can piggyback on that fix for free. It also automatically selects the best provider. Raw <code>LocationManager</code> requires manually choosing GPS vs Network provider, handling provider availability, and doesn't benefit from Play Services optimisations. The only case to use raw <code>LocationManager</code> is on devices without Play Services (e.g., Chinese OEM devices, LineageOS).</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">15. How would you implement an SOS / emergency feature during a trip?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>SOS requires guaranteed delivery: (1) Send a <code>SOS</code> frame on the existing WebSocket for immediate server notification; (2) Simultaneously call <code>POST /sos {tripId, lat, lng}</code> via Retrofit as a backup in case WS is down; (3) Share live location with emergency contacts via SMS using <code>SmsManager</code> (no permission needed for pre-saved contacts); (4) Optionally deep-link to the native dialler with the emergency number pre-filled. The SOS button should be a single large tap — no confirmation dialog. However, include a 5-second countdown with a cancel option to handle accidental taps.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">16. How do you detect if the driver has arrived at the pickup point?</span>
+        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Arrival detection is <strong>server-side</strong>: the server compares the driver's GPS coordinates to the pickup LatLng using a geo-fence (e.g., within 50 metres). When the driver enters the geo-fence, the server transitions the trip to <code>DRIVER_ARRIVED</code> and pushes a WS event. The client reacts by: (1) transitioning to the ARRIVED state; (2) showing "Your driver has arrived" notification (via NotificationManager); (3) starting a 5-minute waiting timer; (4) showing the "Start Trip" button on the driver's app. Never do geo-fence detection client-side — GPS can be spoofed.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">17. How would you implement fare splitting between multiple riders?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-zebra-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Fare split is a social coordination problem: (1) The primary rider initiates a split request with a list of contact phone numbers and their share percentage; (2) Server sends each contact a deep link (SMS/WhatsApp) to accept the split; (3) Each accepting rider authenticates and links their payment method; (4) The primary rider sees a real-time status of who has accepted (WebSocket event or polling); (5) At trip completion, the server charges each rider's method for their share. On the client: the split screen is a separate Fragment reachable during <code>SEARCHING</code> or <code>DRIVER_FOUND</code> states. The primary rider can cancel any pending split before the trip starts.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">18. What is dead reckoning and should you use it here?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Dead reckoning is predicting the current position from the last known position + speed + heading + elapsed time, without a new GPS fix. Between WS location frames (every 3 s), you can predict where the driver is: <code>newLat = lat + speed * cos(bearing) * dt</code>. This makes the marker appear to move continuously even without a new server update. It's useful for Staff+ answers but has risks: if the driver stops or turns, the prediction diverges until the next real update corrects it. A simpler approach (used in production) is the smooth interpolation with ValueAnimator over the update interval — visually equivalent without the physics.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">19. How would you make the app work in low-connectivity areas?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Several layers: (1) <strong>Map tile caching</strong>: pre-cache the user's city map tiles using Google Maps' offline maps feature or Mapbox offline packs. (2) <strong>Trip data caching</strong>: once a ride is booked, cache the route polyline and driver info locally in Room — the user can still see the route even offline. (3) <strong>WS reconnect with backoff</strong>: aggressively reconnect but with jitter to avoid hammering a congested cell tower. (4) <strong>Graceful UI</strong>: show the last known driver position with a timestamp ("Last updated 30s ago") rather than hiding the map. (5) <strong>SMS fallback</strong>: show the driver's phone number so the rider can call directly if the app loses connectivity.</p>
+      </div>
+    </div>
+
+    <div class="iq-card">
+      <div class="iq-header" onclick="toggleIQ(this)">
+        <span class="iq-q">20. How do you prevent location spoofing on the driver app?</span>
+        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
+      </div>
+      <div class="iq-body">
+        <p>Location spoofing (fake GPS apps) is a real fraud vector in ride-sharing. Client-side mitigations: (1) Check <code>Location.isFromMockProvider()</code> (API 18) — reject locations with <code>isMock = true</code>; (2) On API 31+, check <code>Location.isMock</code>; (3) Enable SafetyNet / Play Integrity API attestation — devices running mock provider apps often fail the integrity check. Server-side (more robust): (1) Speed sanity checks — if the driver "moves" 5 km in 1 second, reject the location; (2) Cross-reference with telco cell tower location — if GPS says Mumbai but cell towers say Delhi, flag as suspicious; (3) Route adherence — if the driver deviates massively from the assigned route, alert the operations team.</p>
+      </div>
+    </div>
+
+  </div><!-- /.iq-wrap -->
+
+</article>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-inner">
+    <div class="sidebar-progress">
+      <div class="progress-label"><span>Reading progress</span><span id="pct">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="pfill" style="width:0%"></div></div>
+    </div>
+    <div class="sidebar-title">On This Page</div>
+    <a class="toc-item" href="#s-problem">1. Understanding the Problem</a>
+    <a class="toc-item" href="#s-setup">2. The Set Up</a>
+    <a class="toc-item" href="#s-hld">3. High-Level Design</a>
+    <a class="toc-item" href="#s-lld">4. Low-Level Design</a>
+    <a class="toc-item" href="#s-deep">5. Deep Dives</a>
+    <a class="toc-item" href="#s-levels">6. Expected at Each Level</a>
+    <a class="toc-item" href="#s-qa">7. Interview Questions</a>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-title">Asked At</div>
+    <div class="sidebar-companies">
+      <span class="co-chip">Ola</span>
+      <span class="co-chip">Uber</span>
+      <span class="co-chip">Rapido</span>
+      <span class="co-chip">Swiggy</span>
+      <span class="co-chip">Dunzo</span>
+    </div>
+    <div class="sidebar-divider"></div>
+    <a href="questions_37.html#topic-sysdesign" style="font-size:13px; color:var(--accent); text-decoration:none;">← All System Design</a>
+  </div>
+</aside>
+
+</div>
+
+<script>
+  window.addEventListener('scroll', () => {
+    const doc = document.documentElement;
+    const pct = Math.round((doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100) || 0;
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('pfill').style.width = pct + '%';
+    document.getElementById('pct').textContent = pct + '%';
+    const sections = ['s-problem','s-setup','s-hld','s-lld','s-deep','s-levels','s-qa'];
+    let active = sections[0];
+    for (const id of sections) {
+      const el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top < 120) active = id;
+    }
+    document.querySelectorAll('.toc-item').forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + active);
+    });
+  });
+
+  function toggleIQ(header) {
+    const card = header.closest('.iq-card');
+    const isOpen = card.classList.contains('open');
+    document.querySelectorAll('.iq-card.open').forEach(c => c.classList.remove('open'));
+    if (!isOpen) card.classList.add('open');
+  }
+</script>
+</body>
+</html>
