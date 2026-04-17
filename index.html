@@ -1902,7 +1902,7 @@
     <a href="#" onclick="goToQuestions('#compose'); return false;" class="topic-card reveal">
       <div class="tc-top">
         <div class="tc-icon">🎨</div>
-        <span class="tc-badge premium">Premium</span>
+
       </div>
       <div class="tc-title">Jetpack Compose</div>
       <p class="tc-desc">Recomposition, state hoisting, side effects, custom layouts, animations, and Compose internals.</p>
@@ -1915,7 +1915,7 @@
     <a href="#" onclick="goToQuestions('#coroutines'); return false;" class="topic-card reveal">
       <div class="tc-top">
         <div class="tc-icon">⚡</div>
-        <span class="tc-badge premium">Premium</span>
+
       </div>
       <div class="tc-title">Coroutines & Flow</div>
       <p class="tc-desc">Suspend functions, dispatchers, StateFlow, SharedFlow, channels, and structured concurrency.</p>
@@ -1928,7 +1928,7 @@
     <a href="#" onclick="goToQuestions('#architecture'); return false;" class="topic-card reveal">
       <div class="tc-top">
         <div class="tc-icon">🏛️</div>
-        <span class="tc-badge premium">Premium</span>
+
       </div>
       <div class="tc-title">Architecture</div>
       <p class="tc-desc">MVVM, MVI, Clean Architecture, multi-module apps, feature modules, and navigation patterns.</p>
@@ -1941,7 +1941,7 @@
     <a href="#" onclick="goToQuestions('#di'); return false;" class="topic-card reveal">
       <div class="tc-top">
         <div class="tc-icon">💉</div>
-        <span class="tc-badge premium">Premium</span>
+
       </div>
       <div class="tc-title">Dependency Injection</div>
       <p class="tc-desc">Hilt, Dagger 2, component scopes, multibindings, testing with DI, and KSP migration.</p>
@@ -1954,7 +1954,7 @@
     <a href="#" onclick="goToQuestions('#networking'); return false;" class="topic-card reveal">
       <div class="tc-top">
         <div class="tc-icon">🌐</div>
-        <span class="tc-badge premium">Premium</span>
+
       </div>
       <div class="tc-title">Networking</div>
       <p class="tc-desc">Retrofit, OkHttp, interceptors, token refresh, SSL pinning, REST vs GraphQL, and gRPC.</p>
@@ -1967,7 +1967,7 @@
     <a href="#" onclick="goToQuestions('#storage'); return false;" class="topic-card reveal">
       <div class="tc-top">
         <div class="tc-icon">🗄️</div>
-        <span class="tc-badge premium">Premium</span>
+
       </div>
       <div class="tc-title">Data Storage</div>
       <p class="tc-desc">Room, DataStore, SharedPreferences, migrations, encrypted storage, and offline strategies.</p>
@@ -1980,7 +1980,7 @@
     <a href="#" onclick="goToQuestions('#buildtools'); return false;" class="topic-card reveal">
       <div class="tc-top">
         <div class="tc-icon">🔧</div>
-        <span class="tc-badge premium">Premium</span>
+
       </div>
       <div class="tc-title">Build Tools</div>
       <p class="tc-desc">Gradle, R8, ProGuard, APK vs AAB, build variants, flavors, and APK size reduction.</p>
@@ -1993,7 +1993,7 @@
     <a href="#" onclick="goToQuestions('#performance'); return false;" class="topic-card reveal">
       <div class="tc-top">
         <div class="tc-icon">🚀</div>
-        <span class="tc-badge premium">Premium</span>
+
       </div>
       <div class="tc-title">Performance</div>
       <p class="tc-desc">Memory leaks, overdraw, ANR, startup time, and profiling with Android Studio tools.</p>
@@ -2787,14 +2787,6 @@
       error ? error.message : '📧 Password reset link sent to ' + email,
       error ? 'error-toast' : 'success'
     );
-  }
-
-  // ── Google OAuth ────────────────────────────────────
-  async function handleGoogleAuth() {
-    await db.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.href.split('?')[0] }
-    });
   }
 
   // ── Google OAuth ─────────────────────────────────────
