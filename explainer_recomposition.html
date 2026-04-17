@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Recomposition — Droidly Explainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #080b12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: 'DM Sans', sans-serif;
+  padding: 24px;
+}
+
+.explainer {
+  width: 100%;
+  max-width: 700px;
+  aspect-ratio: 16 / 9.6;
+  background: #0d1117;
+  border-radius: 22px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 40px 100px rgba(0,0,0,0.6),
+    0 0 80px rgba(61,122,79,0.06);
+}
+
+.progress-track {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; background: rgba(255,255,255,0.07); z-index: 100;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2d6a3f, #4caf70, #82e0a0);
+  width: 0%; transition: width 0.08s linear;
+  border-radius: 0 2px 2px 0;
+}
+
+.top-bar {
+  position: absolute; top: 0; left: 0; right: 0;
+  padding: 14px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  z-index: 20;
+  background: linear-gradient(to bottom, rgba(13,17,23,0.9) 0%, transparent 100%);
+}
+.brand {
+  display: flex; align-items: center; gap: 7px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px; font-weight: 800;
+  color: rgba(255,255,255,0.4); letter-spacing: -0.3px;
+}
+.brand-mark {
+  width: 22px; height: 22px; background: #3d7a4f;
+  border-radius: 6px; display: flex; align-items: center;
+  justify-content: center; font-size: 11px;
+}
+.topic-chip {
+  font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
+  text-transform: uppercase; color: #4caf70;
+  background: rgba(61,122,79,0.12);
+  border: 1px solid rgba(76,175,112,0.2);
+  padding: 4px 11px; border-radius: 100px;
+}
+
+.scene {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; padding: 52px 32px 36px;
+  transition: opacity 0.55s ease;
+  pointer-events: none;
+}
+.scene.active { opacity: 1; pointer-events: all; }
+
+/* INTRO */
+.intro-wrap { text-align: center; }
+.intro-eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 10px; font-weight: 800; letter-spacing: 2px;
+  text-transform: uppercase; color: #4caf70; margin-bottom: 18px;
+}
+.intro-eyebrow::before { content: ''; width: 20px; height: 2px; background: #4caf70; border-radius: 2px; }
+.intro-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(36px, 6vw, 52px); font-weight: 800;
+  color: white; line-height: 1.05; letter-spacing: -2.5px; margin-bottom: 16px;
+}
+.intro-title .accent {
+  background: linear-gradient(135deg, #4caf70, #82e0a0);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.intro-sub { font-size: 14px; color: rgba(255,255,255,0.35); font-weight: 400; letter-spacing: 0.2px; }
+.intro-timer {
+  display: inline-block; margin-top: 20px;
+  font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  padding: 5px 14px; border-radius: 100px; letter-spacing: 0.3px;
+}
+
+/* CODE CARD */
+.code-card {
+  background: #161b2e; border-radius: 14px; overflow: hidden; width: 100%;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 16px 40px rgba(0,0,0,0.4);
+}
+.code-titlebar {
+  background: #1c2240; padding: 10px 14px;
+  display: flex; align-items: center; gap: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.wdot { width: 10px; height: 10px; border-radius: 50%; }
+.wdot.r { background: #ff5f57; } .wdot.y { background: #febc2e; } .wdot.g { background: #28c840; }
+.code-fname { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: rgba(255,255,255,0.25); margin-left: 6px; }
+.code-body { padding: 11px 18px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.75; color: #cdd6f4; }
+.kw  { color: #c792ea; } .cls { color: #ffcb6b; } .fn { color: #82aaff; }
+.cm  { color: #4a5568; font-style: italic; } .str { color: #c3e88d; } .nm { color: #f78c6c; }
+.an  { color: #89ddff; }
+
+.code-line {
+  display: block; white-space: pre;
+  opacity: 0; transform: translateY(3px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.code-line.show { opacity: 1; transform: translateY(0); }
+.code-line.hl {
+  background: rgba(76,175,112,0.1);
+  border-left: 2px solid #4caf70;
+  padding-left: 6px; margin-left: -8px; padding-right: 6px;
+  border-radius: 0 4px 4px 0;
+}
+.code-line.hl-red {
+  background: rgba(255,80,80,0.08);
+  border-left: 2px solid #ff5f57;
+  padding-left: 6px; margin-left: -8px; padding-right: 6px;
+  border-radius: 0 4px 4px 0;
+}
+
+.annot-row { display: flex; gap: 10px; margin-top: 8px; }
+.annot-card {
+  flex: 1; background: white; border-radius: 11px; padding: 10px 13px;
+  font-family: 'DM Sans', sans-serif; position: relative;
+  opacity: 0; transform: translateY(8px) scale(0.95);
+  transition: all 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.06);
+}
+.annot-card.show { opacity: 1; transform: translateY(0) scale(1); }
+.annot-arrow-up {
+  position: absolute; top: -6px; left: 20px;
+  width: 12px; height: 12px; background: white;
+  transform: rotate(45deg); border-radius: 2px;
+  box-shadow: -2px -2px 4px rgba(0,0,0,0.06);
+}
+.annot-tag { font-size: 9.5px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #3d7a4f; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
+.annot-tag.red { color: #c53030; }
+.annot-text { font-size: 11.5px; font-weight: 500; color: #1a202c; line-height: 1.5; }
+
+/* COMPARISON GRID (scene 3) */
+.cmp-wrap { width: 100%; max-width: 560px; }
+.cmp-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px; font-weight: 800; color: white;
+  letter-spacing: -0.3px; margin-bottom: 12px;
+  opacity: 0; transform: translateY(8px); transition: all 0.4s ease;
+}
+.cmp-title.show { opacity: 1; transform: translateY(0); }
+.cmp-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 8px;
+  opacity: 0; transform: translateY(6px);
+  transition: all 0.4s ease;
+}
+.cmp-row.show { opacity: 1; transform: translateY(0); }
+.cmp-box {
+  background: #161b2e; border-radius: 11px; padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.cmp-box.bad { border-color: rgba(255,80,80,0.25); background: rgba(255,80,80,0.05); }
+.cmp-box.good { border-color: rgba(76,175,112,0.3); background: rgba(61,122,79,0.07); }
+.cmp-label {
+  font-size: 9.5px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 6px; font-family: 'JetBrains Mono', monospace;
+}
+.cmp-label.red { color: #ff8080; }
+.cmp-label.green { color: #4caf70; }
+.cmp-content { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #cdd6f4; line-height: 1.7; }
+
+/* TAKEAWAYS */
+.takeaways-wrap { width: 100%; max-width: 520px; }
+.tk-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 18px; font-weight: 800; color: white;
+  letter-spacing: -0.5px; margin-bottom: 16px;
+  opacity: 0; transform: translateY(8px); transition: all 0.4s ease;
+}
+.tk-title.show { opacity: 1; transform: translateY(0); }
+.tk-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 16px; background: #161b2e; border-radius: 11px;
+  margin-bottom: 9px; border: 1px solid rgba(255,255,255,0.05);
+  opacity: 0; transform: translateX(-10px); transition: all 0.45s ease;
+}
+.tk-item.show { opacity: 1; transform: translateX(0); }
+.tk-icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+.tk-text { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.55; }
+.tk-text strong { color: #4caf70; font-weight: 700; }
+
+/* BOTTOM */
+.bottom-bar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 0 20px 14px;
+  display: flex; align-items: center; justify-content: space-between; z-index: 20;
+}
+.live-dot { display: flex; align-items: center; gap: 6px; }
+.pulse {
+  width: 6px; height: 6px; border-radius: 50%; background: #4caf70;
+  animation: pulse-anim 1.5s ease-in-out infinite;
+}
+@keyframes pulse-anim { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.4; transform:scale(0.75); } }
+.timer-txt { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: rgba(255,255,255,0.2); }
+.scene-indicator { display: flex; gap: 5px; }
+.scene-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.12); transition: all 0.3s; }
+.scene-dot.on { background: #4caf70; width: 16px; border-radius: 3px; }
+.replay-btn {
+  position: absolute; bottom: 20px; right: 20px;
+  background: rgba(61,122,79,0.15); border: 1px solid rgba(76,175,112,0.3);
+  color: #4caf70; padding: 8px 18px; border-radius: 100px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; opacity: 0; transform: translateY(4px); transition: all 0.35s ease;
+  z-index: 50; letter-spacing: -0.2px;
+}
+.replay-btn:hover { background: rgba(61,122,79,0.28); transform: translateY(0) scale(1.04); }
+.replay-btn.show { opacity: 1; transform: translateY(0); }
+
+.s2-layout, .s3-layout, .s4-layout { width: 100%; max-width: 580px; display: flex; flex-direction: column; gap: 0; }
+</style>
+</head>
+<body>
+<div class="explainer" id="explainer">
+
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="top-bar">
+    <div class="brand"><div class="brand-mark">🤖</div> Droidly</div>
+    <div class="topic-chip">Jetpack Compose</div>
+  </div>
+
+  <!-- SCENE 1: INTRO -->
+  <div class="scene" id="s1">
+    <div class="intro-wrap">
+      <div class="intro-eyebrow">30-second explainer</div>
+      <div class="intro-title">Recom<span class="accent">position</span></div>
+      <div class="intro-sub">Why Compose re-runs your function — and how to stop it</div>
+      <div class="intro-timer">▶ Auto-playing</div>
+    </div>
+  </div>
+
+  <!-- SCENE 2: What triggers recomposition -->
+  <div class="scene" id="s2">
+    <div class="s2-layout">
+      <div class="code-card">
+        <div class="code-titlebar">
+          <div class="wdot r"></div><div class="wdot y"></div><div class="wdot g"></div>
+          <span class="code-fname">CounterScreen.kt</span>
+        </div>
+        <div class="code-body">
+          <span class="code-line" id="l1"><span class="an">@Composable</span></span>
+          <span class="code-line" id="l2"><span class="kw">fun</span> <span class="fn">CounterScreen</span>() {</span>
+          <span class="code-line hl" id="l3">  <span class="kw">var</span> count <span class="kw">by</span> <span class="fn">remember</span> { <span class="fn">mutableStateOf</span>(<span class="nm">0</span>) }</span>
+          <span class="code-line" id="l4">  <span class="cm">// ↑ state change triggers recomposition</span></span>
+          <span class="code-line" id="l5">  <span class="fn">Text</span>(text = <span class="str">"Count: $count"</span>)</span>
+          <span class="code-line" id="l6">  <span class="fn">Button</span>(onClick = { count++ }) {</span>
+          <span class="code-line" id="l7">    <span class="fn">Text</span>(<span class="str">"Increment"</span>)</span>
+          <span class="code-line" id="l8">  }</span>
+          <span class="code-line" id="l9">}</span>
+        </div>
+      </div>
+      <div class="annot-row">
+        <div class="annot-card" id="ca1">
+          <div class="annot-arrow-up"></div>
+          <div class="annot-tag">mutableStateOf</div>
+          <div class="annot-text">Compose observes this — any write triggers a re-run of this composable</div>
+        </div>
+        <div class="annot-card" id="ca2">
+          <div class="annot-arrow-up"></div>
+          <div class="annot-tag">remember { }</div>
+          <div class="annot-text">Survives recompositions — without it, state resets to 0 every time</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENE 3: Unstable vs Stable -->
+  <div class="scene" id="s3">
+    <div class="cmp-wrap">
+      <div class="cmp-title" id="ctitle">Stable vs Unstable types</div>
+      <div class="cmp-row" id="cr1">
+        <div class="cmp-box bad">
+          <div class="cmp-label red">❌ Unstable</div>
+          <div class="cmp-content"><span class="kw">data class</span> <span class="cls">User</span>(<br>  <span class="kw">val</span> items: <span class="cls">List</span>&lt;<span class="cls">String</span>&gt;<br>)<br><span class="cm">// List is unstable!</span><br><span class="cm">// Always recomposes</span></div>
+        </div>
+        <div class="cmp-box good">
+          <div class="cmp-label green">✅ Stable</div>
+          <div class="cmp-content"><span class="kw">data class</span> <span class="cls">User</span>(<br>  <span class="kw">val</span> items: <span class="cls">ImmutableList</span>&lt;<span class="cls">String</span>&gt;<br>)<br><span class="cm">// Immutable = stable</span><br><span class="cm">// Skips if unchanged</span></div>
+        </div>
+      </div>
+      <div class="cmp-row" id="cr2">
+        <div class="cmp-box bad">
+          <div class="cmp-label red">❌ Lambda creates new ref</div>
+          <div class="cmp-content"><span class="fn">Button</span>(onClick = { <span class="fn">doIt</span>() })<br><span class="cm">// new lambda each time</span></div>
+        </div>
+        <div class="cmp-box good">
+          <div class="cmp-label green">✅ Stable reference</div>
+          <div class="cmp-content"><span class="kw">val</span> onClick = <span class="fn">remember</span> { { <span class="fn">doIt</span>() } }<br><span class="fn">Button</span>(onClick = onClick)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENE 4: key() and derivedStateOf -->
+  <div class="scene" id="s4">
+    <div class="s4-layout">
+      <div class="code-card">
+        <div class="code-titlebar">
+          <div class="wdot r"></div><div class="wdot y"></div><div class="wdot g"></div>
+          <span class="code-fname">OptimisedList.kt</span>
+        </div>
+        <div class="code-body">
+          <span class="code-line" id="p1"><span class="cm">// derivedStateOf — only recomposes when result changes</span></span>
+          <span class="code-line hl" id="p2"><span class="kw">val</span> isValid <span class="kw">by</span> <span class="fn">remember</span> {</span>
+          <span class="code-line hl" id="p3">  <span class="fn">derivedStateOf</span> { text.length > <span class="nm">3</span> }</span>
+          <span class="code-line" id="p4">}</span>
+          <span class="code-line" id="p5"> </span>
+          <span class="code-line" id="p6"><span class="cm">// key() — forces recomposition with new identity</span></span>
+          <span class="code-line" id="p7">items.<span class="fn">forEach</span> { item -></span>
+          <span class="code-line hl" id="p8">  <span class="fn">key</span>(item.id) { <span class="fn">ItemRow</span>(item) }</span>
+          <span class="code-line" id="p9">}</span>
+        </div>
+      </div>
+      <div class="annot-row">
+        <div class="annot-card" id="pa1">
+          <div class="annot-arrow-up"></div>
+          <div class="annot-tag">derivedStateOf</div>
+          <div class="annot-text">Recomposes only when the derived value flips — not on every keystroke</div>
+        </div>
+        <div class="annot-card" id="pa2">
+          <div class="annot-arrow-up"></div>
+          <div class="annot-tag">key(item.id)</div>
+          <div class="annot-text">Tells Compose which item is which — prevents mismatched reuse in lists</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENE 5: Takeaways -->
+  <div class="scene" id="s5">
+    <div class="takeaways-wrap">
+      <div class="tk-title" id="tktitle">Key Takeaways 🎓</div>
+      <div class="tk-item" id="tk1">
+        <div class="tk-icon">🔄</div>
+        <div class="tk-text"><strong>State change</strong> is the only trigger — Compose only reruns functions that read changed state</div>
+      </div>
+      <div class="tk-item" id="tk2">
+        <div class="tk-icon">⚡</div>
+        <div class="tk-text">Use <strong>stable types</strong> (data classes, ImmutableList) so Compose can skip unchanged composables</div>
+      </div>
+      <div class="tk-item" id="tk3">
+        <div class="tk-icon">🎯</div>
+        <div class="tk-text"><strong>derivedStateOf</strong> for computed values, <strong>key()</strong> for list items — both reduce unnecessary recompositions</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="live-dot">
+      <div class="pulse"></div>
+      <span class="timer-txt" id="timerTxt">0:00</span>
+    </div>
+    <div class="scene-indicator">
+      <div class="scene-dot" id="sd1"></div>
+      <div class="scene-dot" id="sd2"></div>
+      <div class="scene-dot" id="sd3"></div>
+      <div class="scene-dot" id="sd4"></div>
+      <div class="scene-dot" id="sd5"></div>
+    </div>
+  </div>
+
+  <button class="replay-btn" id="replayBtn" onclick="startAnimation()">↺ Replay</button>
+
+</div>
+
+<script>
+const TOTAL_S = 36;
+let rafId, startTime, running = false;
+
+const SCENES = [
+  ['s1', 0,    3.5,  0],
+  ['s2', 3.5,  14.5, 1],
+  ['s3', 14.5, 23.5, 2],
+  ['s4', 23.5, 31,   3],
+  ['s5', 31,   36,   4],
+];
+
+const EVENTS = [
+  // Scene 2
+  { id: 'l1', t: 4.0,  cls: 'show' },
+  { id: 'l2', t: 4.5,  cls: 'show' },
+  { id: 'l3', t: 5.1,  cls: 'show' },
+  { id: 'l4', t: 5.7,  cls: 'show' },
+  { id: 'l5', t: 6.4,  cls: 'show' },
+  { id: 'l6', t: 7.1,  cls: 'show' },
+  { id: 'l7', t: 7.7,  cls: 'show' },
+  { id: 'l8', t: 8.2,  cls: 'show' },
+  { id: 'l9', t: 8.7,  cls: 'show' },
+  { id: 'ca1', t: 9.8, cls: 'show' },
+  { id: 'ca2', t: 11.3,cls: 'show' },
+
+  // Scene 3
+  { id: 'ctitle', t: 15.0, cls: 'show' },
+  { id: 'cr1',    t: 15.8, cls: 'show' },
+  { id: 'cr2',    t: 19.0, cls: 'show' },
+
+  // Scene 4
+  { id: 'p1', t: 24.0, cls: 'show' },
+  { id: 'p2', t: 24.5, cls: 'show' },
+  { id: 'p3', t: 25.0, cls: 'show' },
+  { id: 'p4', t: 25.5, cls: 'show' },
+  { id: 'p5', t: 25.8, cls: 'show' },
+  { id: 'p6', t: 26.1, cls: 'show' },
+  { id: 'p7', t: 26.6, cls: 'show' },
+  { id: 'p8', t: 27.2, cls: 'show' },
+  { id: 'p9', t: 27.8, cls: 'show' },
+  { id: 'pa1', t: 28.5,cls: 'show' },
+  { id: 'pa2', t: 29.8,cls: 'show' },
+
+  // Scene 5
+  { id: 'tktitle', t: 31.4, cls: 'show' },
+  { id: 'tk1',     t: 32.0, cls: 'show' },
+  { id: 'tk2',     t: 33.0, cls: 'show' },
+  { id: 'tk3',     t: 34.0, cls: 'show' },
+  { id: 'replayBtn', t: 35.2, cls: 'show' },
+];
+
+function reset() {
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('timerTxt').textContent = '0:00';
+  SCENES.forEach(([id]) => document.getElementById(id)?.classList.remove('active'));
+  EVENTS.forEach(({ id, cls }) => document.getElementById(id)?.classList.remove(cls));
+  for (let i = 1; i <= 5; i++) document.getElementById('sd' + i)?.classList.remove('on');
+}
+
+function tick(ts) {
+  if (!running) return;
+  if (!startTime) startTime = ts;
+  const elapsed = (ts - startTime) / 1000;
+  document.getElementById('progressFill').style.width = Math.min((elapsed / TOTAL_S) * 100, 100) + '%';
+  const sec = Math.floor(Math.min(elapsed, TOTAL_S));
+  document.getElementById('timerTxt').textContent = '0:' + String(sec).padStart(2, '0');
+  SCENES.forEach(([id, start, end, dotIdx]) => {
+    document.getElementById(id)?.classList.toggle('active', elapsed >= start && elapsed < end);
+    document.getElementById('sd' + (dotIdx + 1))?.classList.toggle('on', elapsed >= start && elapsed < end);
+  });
+  EVENTS.forEach(({ id, t, cls }) => { if (elapsed >= t) document.getElementById(id)?.classList.add(cls); });
+  if (elapsed < TOTAL_S) { rafId = requestAnimationFrame(tick); } else { running = false; }
+}
+
+function startAnimation() {
+  if (rafId) cancelAnimationFrame(rafId);
+  reset(); running = true; startTime = null;
+  rafId = requestAnimationFrame(tick);
+}
+
+window.addEventListener('load', () => setTimeout(startAnimation, 600));
+</script>
+</body>
+</html>

@@ -215,7 +215,7 @@
     h1 {
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 800;
-      font-size: clamp(40px, 4.5vw, 66px);
+      font-size: clamp(36px, 3.8vw, 58px);
       line-height: 1.02; letter-spacing: -2px;
       color: var(--ink);
     }
@@ -294,11 +294,25 @@
 
     .avatar-row { display: flex; }
     .av {
-      width: 34px; height: 34px; border-radius: 50%;
-      border: 2px solid var(--bg);
-      background: var(--green);
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2px solid #ffffff;
+      margin-left: -10px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .av:first-child { margin-left: 0; }
+    .av img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+    }
+    .av-count {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2px solid #ffffff;
+      margin-left: -10px;
+      background: var(--bg3);
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px; margin-left: -9px;
+      font-size: 10px; font-weight: 700; color: var(--green);
+      flex-shrink: 0;
     }
     .av:first-child { margin-left: 0; }
 
@@ -1159,17 +1173,33 @@
 
     /* ─── TESTIMONIALS ────────────────────────────────── */
     .testi-section { background: var(--bg); }
+    .testi-scroll-wrap { position: relative; }
+    .testi-arrow {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      z-index: 10; width: 40px; height: 40px; border-radius: 50%;
+      background: white; border: 1.5px solid var(--border);
+      box-shadow: var(--shadow-md); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: var(--ink); transition: all 0.18s;
+      line-height: 1;
+    }
+    .testi-arrow:hover { background: var(--green); color: white; border-color: var(--green); transform: translateY(-50%) scale(1.08); }
+    .testi-arrow-prev { left: -20px; }
+    .testi-arrow-next { right: -20px; }
 
     .testi-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 16px; margin-top: 48px;
+      display: flex; overflow-x: auto; gap: 16px; margin-top: 48px;
+      padding-bottom: 12px; scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
     }
+    .testi-grid::-webkit-scrollbar { display: none; }
+    .testi-grid { -ms-overflow-style: none; scrollbar-width: none; }
 
     .testi-card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: 16px; padding: 28px 24px;
-      transition: all 0.22s;
-      box-shadow: var(--shadow-sm);
+      transition: all 0.22s; box-shadow: var(--shadow-sm);
+      flex-shrink: 0; width: 300px; scroll-snap-align: start;
     }
     .testi-card:hover {
       transform: translateY(-2px);
@@ -1186,10 +1216,11 @@
 
     .testi-author { display: flex; align-items: center; gap: 12px; }
     .testi-av {
-      width: 40px; height: 40px; border-radius: 50%;
-      background: var(--green-light); border: 1.5px solid var(--border-green);
-      display: flex; align-items: center; justify-content: center; font-size: 18px;
+      width: 42px; height: 42px; border-radius: 50%;
+      border: 2px solid var(--border-green);
+      flex-shrink: 0; overflow: hidden;
     }
+    .testi-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .testi-name { font-size: 14px; font-weight: 700; color: var(--ink); }
     .testi-role { font-size: 12px; color: var(--muted); }
 
@@ -1548,7 +1579,7 @@
       .why-card { flex-direction: column; gap: 14px; }
       .cl-item { grid-template-columns: 80px 1fr; gap: 0 16px; }
       .companies-grid { grid-template-columns: repeat(4, 1fr); }
-      .testi-grid { grid-template-columns: 1fr; }
+      .testi-card { width: 270px; }
       .pricing-grid { grid-template-columns: 1fr; }
       .urgency { padding: 16px 20px; }
       .counter-inner { flex-wrap: wrap; gap: 40px; }
@@ -1605,9 +1636,7 @@
     <div class="eyebrow fade-2" style="margin-top: 24px;">Android Interview Prep · 2025–26</div>
 
     <h1 class="fade-3">
-      The only prep<br>
-      site built for<br>
-      <span class="accent">Android devs.</span>
+      Everything you need to crack your next <span class="accent">Android interview.</span>
     </h1>
 
     <p class="hero-sub fade-4">
@@ -1638,7 +1667,7 @@
 
     <div class="hero-ctas fade-5" style="animation-delay:0.4s">
       <a href="#" onclick="goToQuestions(''); return false;" class="btn-primary">
-        Start Studying Free →
+        Start Preparing →
       </a>
       <a href="#how-it-works" class="btn-ghost">
         See how it works
@@ -1647,11 +1676,11 @@
 
     <div class="hero-trust fade-5" style="animation-delay:0.55s">
       <div class="avatar-row">
-        <div class="av">👨</div>
-        <div class="av">👩</div>
-        <div class="av">🧑</div>
-        <div class="av">👨</div>
-        <div class="av" style="background:var(--bg3); font-size:11px; font-weight:700; color:var(--green);">2K+</div>
+        <div class="av"><img src="https://i.pravatar.cc/72?img=11" alt="Developer"/></div>
+        <div class="av"><img src="https://i.pravatar.cc/72?img=47" alt="Developer"/></div>
+        <div class="av"><img src="https://i.pravatar.cc/72?img=32" alt="Developer"/></div>
+        <div class="av"><img src="https://i.pravatar.cc/72?img=25" alt="Developer"/></div>
+        <div class="av-count">2K+</div>
       </div>
       <div class="trust-text">
         Trusted by <strong>2,000+ Android developers</strong> across India
@@ -1727,19 +1756,19 @@
 <div class="stats-band">
   <div class="stat-cell reveal">
     <div class="stat-num">375<em>+</em></div>
-    <div class="stat-label">Interview questions<br>across 7 topics</div>
+    <div class="stat-label">Expert questions with<br>real Kotlin code examples</div>
   </div>
   <div class="stat-cell reveal">
-    <div class="stat-num">7</div>
-    <div class="stat-label">Core Android topics<br>fully covered</div>
+    <div class="stat-num">10<em>+</em></div>
+    <div class="stat-label">System design cases<br>built for Android interviews</div>
   </div>
   <div class="stat-cell reveal">
     <div class="stat-num">2K<em>+</em></div>
-    <div class="stat-label">Developers already<br>preparing with Droidly</div>
+    <div class="stat-label">Android devs already<br>preparing with Droidly</div>
   </div>
   <div class="stat-cell reveal">
-    <div class="stat-num">92<em>%</em></div>
-    <div class="stat-label">Interview success<br>rate among users</div>
+    <div class="stat-num">100<em>%</em></div>
+    <div class="stat-label">Free forever — no<br>account needed</div>
   </div>
 </div>
 
@@ -1835,11 +1864,11 @@
     <div>
       <div class="section-label">Question Bank</div>
       <h2>375 questions across<br><span style="color:var(--green)">14 topics.</span></h2>
-      <p class="section-sub-sm" style="margin-top:10px; max-width:480px;">From Kotlin fundamentals to Android 15 APIs, Jetpack Compose internals, system design, and mock interviews. Free topics to get started — unlock everything with Premium.</p>
+      <p class="section-sub-sm" style="margin-top:10px; max-width:480px;">From Kotlin fundamentals to Android 15 APIs, Jetpack Compose, and architecture — all 375+ Q&amp;A questions are free, forever. Upgrade only if you want System Design deep dives or Mock Interviews.</p>
     </div>
     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
       <a href="#" onclick="goToQuestions(''); return false;" class="btn-primary" style="padding:11px 24px; font-size:14px; border-radius:100px; box-shadow:none; margin:0;">Open Question Bank →</a>
-      <span style="font-size:12px; color:var(--muted);">2 topics free · Unlock all with Premium</span>
+      <span style="font-size:12px; color:var(--muted);">All Q&amp;A free, no account needed · System Design &amp; Mock Interviews are Premium</span>
     </div>
   </div>
 
@@ -1847,7 +1876,7 @@
     <a href="#" onclick="goToQuestions('#android'); return false;" class="topic-card reveal">
       <div class="tc-top">
         <div class="tc-icon">🤖</div>
-        <span class="tc-badge free">Free</span>
+
       </div>
       <div class="tc-title">Android Domain</div>
       <p class="tc-desc">Activity & Fragment lifecycle, Intents, Services, Permissions, BroadcastReceivers, and 2025 APIs.</p>
@@ -1860,7 +1889,7 @@
     <a href="#" onclick="goToQuestions('#kotlin'); return false;" class="topic-card reveal">
       <div class="tc-top">
         <div class="tc-icon">🟣</div>
-        <span class="tc-badge free">Free</span>
+
       </div>
       <div class="tc-title">Kotlin Language</div>
       <p class="tc-desc">Null safety, extension functions, sealed classes, coroutines, generics, and Kotlin 2.0 features.</p>
@@ -1990,7 +2019,7 @@
     <a href="#" onclick="goToQuestions('#hr'); return false;" class="topic-card reveal">
       <div class="tc-top">
         <div class="tc-icon">🤝</div>
-        <span class="tc-badge free">Free</span>
+
       </div>
       <div class="tc-title">HR &amp; Behavioural</div>
       <p class="tc-desc">STAR method answers, conflict resolution, and leadership stories for Android developer roles.</p>
@@ -2190,8 +2219,8 @@
       </div>
       <div class="preview-overlay">
         <div class="lock-icon">🔒</div>
-        <div class="lock-title">Premium Answer</div>
-        <p class="lock-desc">Get full answers with code snippets, diagrams, and interview tips for every question.</p>
+        <div class="lock-title">System Design — Premium</div>
+        <p class="lock-desc">Full architecture breakdown, trade-off analysis, and interviewer evaluation criteria. Only in Premium.</p>
         <a href="#pricing" class="lock-btn">Unlock for ₹299/mo →</a>
       </div>
     </div>
@@ -2275,13 +2304,13 @@
         <div class="cprice">₹299<span>/mo</span></div>
       </div>
     </div>
-    <div class="compare-row"><div class="crow-feat">Questions per topic</div><div class="crow-val">5</div><div class="crow-val yes">50+</div></div>
-    <div class="compare-row alt"><div class="crow-feat">Detailed code answers</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
-    <div class="compare-row"><div class="crow-feat">Interview tips per question</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
-    <div class="compare-row alt"><div class="crow-feat">Company-wise question sets</div><div class="crow-val">❌</div><div class="crow-val yes">✅ 20 companies</div></div>
-    <div class="compare-row"><div class="crow-feat">Mock interviews</div><div class="crow-val">2/month</div><div class="crow-val yes">Unlimited</div></div>
-    <div class="compare-row alt"><div class="crow-feat">System design deep dives</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
-    <div class="compare-row"><div class="crow-feat">Progress tracking</div><div class="crow-val">Basic</div><div class="crow-val yes">Advanced</div></div>
+    <div class="compare-row"><div class="crow-feat">All 375+ interview Q&amp;As</div><div class="crow-val yes">✅</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-row alt"><div class="crow-feat">Code answers for every question</div><div class="crow-val yes">✅</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-row"><div class="crow-feat">HR &amp; Behavioural section</div><div class="crow-val yes">✅</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-row alt"><div class="crow-feat">System Design cases (10+)</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-row"><div class="crow-feat">Mock interview sessions</div><div class="crow-val">❌</div><div class="crow-val yes">✅ Unlimited</div></div>
+    <div class="compare-row alt"><div class="crow-feat">Model answers &amp; eval criteria</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-row"><div class="crow-feat">Company-wise question sets</div><div class="crow-val">❌</div><div class="crow-val yes">✅ 20 companies</div></div>
     <div class="compare-row alt"><div class="crow-feat">Completion certificate</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
     <div class="compare-foot">
       <div></div>
@@ -2325,28 +2354,28 @@
     <div class="price-card reveal">
       <div class="price-plan">Free Forever</div>
       <div class="price-amount">₹0<span>/month</span></div>
-      <p class="price-desc">Perfect to explore the platform and get started</p>
+      <p class="price-desc">Everything you need to prepare — no credit card required</p>
       <ul class="price-feats">
-        <li><span class="chk">✓</span> 50 questions across all topics</li>
-        <li><span class="chk">✓</span> Basic explanations</li>
-        <li><span class="chk">✓</span> 2 mock interviews/month</li>
-        <li><span class="chk">✓</span> Progress tracking</li>
-        <li class="off"><span>✗</span> Premium question bank</li>
-        <li class="off"><span>✗</span> Detailed code answers</li>
+        <li><span class="chk">✓</span> 375+ interview questions, fully unlocked</li>
+        <li><span class="chk">✓</span> Code answers for every question</li>
+        <li><span class="chk">✓</span> All 11 Q&amp;A topic categories</li>
+        <li><span class="chk">✓</span> HR &amp; Behavioural section</li>
+        <li class="off"><span>✗</span> System Design cases</li>
+        <li class="off"><span>✗</span> Mock interview sessions</li>
       </ul>
-      <a href="#" onclick="goToQuestions(''); return false;" class="price-btn">Get Started Free</a>
+      <a href="#" onclick="goToQuestions(''); return false;" class="price-btn">Start Preparing Free</a>
     </div>
 
     <div class="price-card featured reveal">
       <div class="price-plan">Premium</div>
       <div class="price-amount" style="color:white">₹299<span style="color:rgba(255,255,255,0.35)">/month</span></div>
-      <p class="price-desc">Everything you need to crack top Android roles</p>
+      <p class="price-desc">For the rounds that actually separate good candidates from great ones</p>
       <ul class="price-feats">
-        <li><span class="chk">✓</span> 375+ questions unlocked</li>
-        <li><span class="chk">✓</span> Detailed code explanations</li>
-        <li><span class="chk">✓</span> Unlimited mock interviews</li>
-        <li><span class="chk">✓</span> System design deep dives</li>
-        <li><span class="chk">✓</span> Company-wise question sets</li>
+        <li><span class="chk">✓</span> Everything in Free</li>
+        <li><span class="chk">✓</span> 10+ System Design case studies</li>
+        <li><span class="chk">✓</span> Unlimited mock interview sessions</li>
+        <li><span class="chk">✓</span> Model answers with evaluation criteria</li>
+        <li><span class="chk">✓</span> Company-wise question sets (20 cos)</li>
         <li><span class="chk">✓</span> Completion certificate</li>
       </ul>
       <a href="#" class="price-btn" onclick="showPremiumModal(); return false;">Start Premium — ₹299/mo</a>
@@ -2363,12 +2392,14 @@
   <div class="section-label">Success Stories</div>
   <h2>Developers Who Got<br>Their Dream Job</h2>
 
-  <div class="testi-grid">
+  <div class="testi-scroll-wrap">
+  <button class="testi-arrow testi-arrow-prev" onclick="scrollTesti(-1)" aria-label="Previous">&#8592;</button>
+  <div class="testi-grid" id="testiGrid">
     <div class="testi-card reveal">
       <div class="testi-stars">★★★★★</div>
       <p class="testi-text">"The Jetpack Compose questions were exactly what Google asked me. Got an offer from Google Bangalore after 3 weeks of prep on Droidly."</p>
       <div class="testi-author">
-        <div class="testi-av">👨</div>
+        <div class="testi-av"><img src="https://i.pravatar.cc/84?img=11" alt="Rahul Sharma"/></div>
         <div>
           <div class="testi-name">Rahul Sharma</div>
           <div class="testi-role">Android Engineer @ Google</div>
@@ -2378,9 +2409,9 @@
 
     <div class="testi-card reveal">
       <div class="testi-stars">★★★★★</div>
-      <p class="testi-text">"System design questions for Android are hard to find online. Droidly is the only platform that covers this properly. Helped me crack Swiggy."</p>
+      <p class="testi-text">"System design for Android is impossible to find online. Droidly is the only platform that covers it properly. Helped me crack Swiggy."</p>
       <div class="testi-author">
-        <div class="testi-av">👩</div>
+        <div class="testi-av"><img src="https://i.pravatar.cc/84?img=47" alt="Priya Nair"/></div>
         <div>
           <div class="testi-name">Priya Nair</div>
           <div class="testi-role">Senior Android Dev @ Swiggy</div>
@@ -2392,13 +2423,63 @@
       <div class="testi-stars">★★★★★</div>
       <p class="testi-text">"Mock interviews gave me real confidence. The feedback pointed out exactly where I was going wrong. Worth every rupee."</p>
       <div class="testi-author">
-        <div class="testi-av">🧑</div>
+        <div class="testi-av"><img src="https://i.pravatar.cc/84?img=57" alt="Arjun Mehta"/></div>
         <div>
           <div class="testi-name">Arjun Mehta</div>
           <div class="testi-role">Android Dev @ Flipkart</div>
         </div>
       </div>
     </div>
+
+    <div class="testi-card reveal">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"The Coroutines & Flow section is ridiculously good. I'd been confused about StateFlow vs SharedFlow for months — cleared it up in one sitting."</p>
+      <div class="testi-author">
+        <div class="testi-av"><img src="https://i.pravatar.cc/84?img=60" alt="Karthik Rajan"/></div>
+        <div>
+          <div class="testi-name">Karthik Rajan</div>
+          <div class="testi-role">Android Lead @ PhonePe</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="testi-card reveal">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"Architecture and DI questions nailed my Meesho interviews. The MVVM vs MVI breakdown alone is worth bookmarking forever."</p>
+      <div class="testi-author">
+        <div class="testi-av"><img src="https://i.pravatar.cc/84?img=45" alt="Sneha Joshi"/></div>
+        <div>
+          <div class="testi-name">Sneha Joshi</div>
+          <div class="testi-role">SDE-2 Android @ Meesho</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="testi-card reveal">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"I was skeptical about another prep site. Then I saw the question depth — actual code, actual trade-offs. Cleared Zepto's senior round on the first try."</p>
+      <div class="testi-author">
+        <div class="testi-av"><img src="https://i.pravatar.cc/84?img=22" alt="Aditya Kumar"/></div>
+        <div>
+          <div class="testi-name">Aditya Kumar</div>
+          <div class="testi-role">Mobile Engineer @ Zepto</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="testi-card reveal">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"The HR & Behavioural section surprised me the most. STAR-method answers mapped to Android roles — something no other platform does."</p>
+      <div class="testi-author">
+        <div class="testi-av"><img src="https://i.pravatar.cc/84?img=38" alt="Divya Patel"/></div>
+        <div>
+          <div class="testi-name">Divya Patel</div>
+          <div class="testi-role">Android Developer @ CRED</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button class="testi-arrow testi-arrow-next" onclick="scrollTesti(1)" aria-label="Next">&#8594;</button>
   </div>
 </section>
 
@@ -2734,6 +2815,12 @@
     showToast('You\'ve been signed out.', '');
   }
 
+  // ── Testimonials scroll arrows ───────────────────────
+  function scrollTesti(dir) {
+    const grid = document.getElementById('testiGrid');
+    grid.scrollBy({ left: dir * 332, behavior: 'smooth' });
+  }
+
   // ── Auth gate: go to questions or prompt sign-in ────
   let currentUser = null;
   function goToQuestions(hash) {
@@ -2824,8 +2911,8 @@
   // Explainer tab switcher
   const explainerMap = {
     coroutines:    'explainer_coroutines.html',
-    recomposition: 'explainer_coroutines.html', // placeholder — build next
-    flow:          'explainer_coroutines.html', // placeholder — build next
+    recomposition: 'explainer_recomposition.html',
+    flow:          'explainer_flow.html',
   };
   function loadExplainer(key, btn) {
     document.querySelectorAll('.expl-nav-btn').forEach(b => b.classList.remove('active'));
