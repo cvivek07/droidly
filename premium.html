@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Droidly Premium — Unlock Everything</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #ffffff;
+      --bg2:          #f4f6f9;
+      --bg3:          #eaecf0;
+      --card:         #ffffff;
+      --ink:          #0f1117;
+      --ink2:         #374151;
+      --muted:        #6b7280;
+      --green:        #3d7a4f;
+      --green2:       #2e6040;
+      --green-mid:    #4caf70;
+      --green-light:  #e8f2ec;
+      --green-pale:   #f0f8f2;
+      --amber:        #c47d2e;
+      --amber-light:  #fdf3e3;
+      --border:       rgba(15,17,23,0.08);
+      --border-green: rgba(61,122,79,0.2);
+      --shadow-sm:    0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+      --shadow-md:    0 4px 16px rgba(0,0,0,0.07), 0 2px 6px rgba(0,0,0,0.04);
+      --shadow-lg:    0 12px 40px rgba(0,0,0,0.09), 0 4px 12px rgba(0,0,0,0.05);
+      --shadow-green: 0 8px 32px rgba(61,122,79,0.22);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.18;
+    }
+
+    * { position: relative; z-index: 1; }
+
+    /* ─── NAV ─────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      background: rgba(255,255,255,0.90);
+      backdrop-filter: blur(20px) saturate(1.6);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04);
+    }
+    nav::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--green2), var(--green-mid), var(--green));
+      z-index: 1;
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--ink);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800; font-size: 20px; letter-spacing: -0.5px;
+    }
+    .logo-mark { display: flex; align-items: center; flex-shrink: 0; }
+    .logo-mark img { height: 32px; width: auto; display: block; object-fit: contain; }
+
+    .nav-center { display: flex; gap: 4px; align-items: center; }
+
+    .nav-link {
+      color: var(--muted); text-decoration: none;
+      font-size: 14px; font-weight: 500;
+      padding: 7px 14px; border-radius: 8px;
+      transition: all 0.18s;
+    }
+    .nav-link:hover { color: var(--ink); background: var(--bg2); }
+    .nav-link.active { color: var(--green); background: var(--green-pale); }
+
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+
+    .btn-nav {
+      background: var(--ink); color: var(--bg);
+      padding: 9px 22px; border-radius: 100px;
+      font-size: 14px; font-weight: 600;
+      text-decoration: none; letter-spacing: -0.2px;
+      transition: all 0.18s; border: none; cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-nav:hover { background: var(--green); transform: translateY(-1px); }
+
+    /* ─── PAGE WRAPPER ────────────────────────────────── */
+    .page {
+      padding-top: 68px;
+      min-height: 100vh;
+    }
+
+    /* ─── HERO SECTION ────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 60px;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% 0%, rgba(61,122,79,0.07) 0%, transparent 65%),
+        #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: relative; overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 0;
+      background-image: radial-gradient(circle, rgba(61,122,79,0.09) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(ellipse 80% 100% at 50% 0%, black 0%, transparent 75%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--green-pale);
+      border: 1px solid var(--border-green);
+      border-radius: 100px;
+      padding: 5px 14px 5px 6px;
+      font-size: 12px; font-weight: 600; color: var(--green);
+      margin-bottom: 20px;
+    }
+    .hero-badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green-mid);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .hero h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      color: var(--ink);
+      margin-bottom: 16px;
+    }
+    .hero h1 .accent {
+      background: linear-gradient(135deg, var(--green2), var(--green-mid));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 18px; color: var(--muted); max-width: 520px;
+      margin: 0 auto 40px; line-height: 1.6;
+    }
+
+    /* ─── PRICING CARD ────────────────────────────────── */
+    .pricing-wrap {
+      padding: 64px 24px 80px;
+      display: flex; justify-content: center;
+    }
+
+    .pricing-card {
+      width: 100%; max-width: 480px;
+      background: var(--card);
+      border: 1.5px solid var(--border-green);
+      border-radius: 24px;
+      box-shadow: var(--shadow-green);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .pricing-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--green2), var(--green-mid), var(--green));
+    }
+
+    .pricing-header {
+      padding: 36px 40px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--green-pale);
+    }
+
+    .plan-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    .plan-name {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
+      color: var(--ink); margin-bottom: 4px;
+    }
+
+    .plan-desc {
+      font-size: 14px; color: var(--muted); margin-bottom: 24px;
+    }
+
+    .plan-price {
+      display: flex; align-items: flex-end; gap: 4px;
+    }
+    .price-currency {
+      font-size: 22px; font-weight: 700; color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .price-amount {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 56px; font-weight: 800; letter-spacing: -3px;
+      color: var(--ink); line-height: 1;
+    }
+    .price-period {
+      font-size: 14px; color: var(--muted); margin-bottom: 8px;
+    }
+
+    .pricing-body {
+      padding: 28px 40px 36px;
+    }
+
+    .features-list {
+      list-style: none; margin-bottom: 28px;
+    }
+
+    .features-list li {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px; color: var(--ink2);
+    }
+    .features-list li:last-child { border-bottom: none; }
+
+    .feat-icon {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--green-light);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .feat-icon svg {
+      width: 12px; height: 12px; stroke: var(--green); stroke-width: 2.5;
+      fill: none;
+    }
+
+    /* ─── CTA BUTTON ──────────────────────────────────── */
+    .btn-pay {
+      width: 100%;
+      background: var(--green);
+      color: white;
+      border: none; cursor: pointer;
+      padding: 16px 24px;
+      border-radius: 14px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 16px; font-weight: 700; letter-spacing: -0.3px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(61,122,79,0.3);
+    }
+    .btn-pay:hover { background: var(--green2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(61,122,79,0.35); }
+    .btn-pay:active { transform: translateY(0); }
+    .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-pay-sub {
+      text-align: center; margin-top: 12px;
+      font-size: 12px; color: var(--muted);
+    }
+
+    /* ─── LOGIN PROMPT ────────────────────────────────── */
+    .login-prompt {
+      text-align: center; padding: 8px 0;
+    }
+    .login-prompt p { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+    .btn-signin {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--ink); color: white;
+      padding: 12px 28px; border-radius: 100px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      border: none; font-family: inherit;
+      transition: all 0.18s; text-decoration: none;
+    }
+    .btn-signin:hover { background: var(--green); transform: translateY(-1px); }
+
+    /* ─── ALREADY PREMIUM ─────────────────────────────── */
+    .already-premium {
+      text-align: center; padding: 16px 0;
+    }
+    .premium-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--green-light); color: var(--green);
+      border: 1px solid var(--border-green);
+      padding: 10px 20px; border-radius: 100px;
+      font-size: 14px; font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .already-premium p { font-size: 14px; color: var(--muted); }
+    .already-premium a { color: var(--green); font-weight: 600; text-decoration: none; }
+    .already-premium a:hover { text-decoration: underline; }
+
+    /* ─── TRUST ROW ───────────────────────────────────── */
+    .trust-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 24px; flex-wrap: wrap;
+      padding: 0 24px 72px;
+      margin-top: -12px;
+    }
+    .trust-item {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 13px; color: var(--muted);
+    }
+    .trust-item svg {
+      width: 15px; height: 15px; stroke: var(--green); stroke-width: 2;
+      fill: none; flex-shrink: 0;
+    }
+
+    /* ─── FAQ SECTION ─────────────────────────────────── */
+    .faq-section {
+      max-width: 600px; margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    .faq-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+      text-align: center; margin-bottom: 28px; color: var(--ink);
+    }
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .faq-q {
+      width: 100%; background: none; border: none; cursor: pointer;
+      padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: inherit; font-size: 15px; font-weight: 600;
+      color: var(--ink); text-align: left;
+      transition: background 0.15s;
+    }
+    .faq-q:hover { background: var(--bg2); }
+    .faq-q svg { flex-shrink: 0; transition: transform 0.2s; stroke: var(--muted); }
+    .faq-item.open .faq-q svg { transform: rotate(180deg); }
+    .faq-a {
+      display: none; padding: 0 20px 16px;
+      font-size: 14px; color: var(--muted); line-height: 1.7;
+      border-top: 1px solid var(--border);
+    }
+    .faq-item.open .faq-a { display: block; }
+
+    /* ─── FOOTER ──────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-brand {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px; font-weight: 700; color: var(--ink);
+    }
+    .footer-copy { font-size: 13px; color: var(--muted); }
+
+    /* ─── TOAST ───────────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+      padding: 14px 20px; border-radius: 12px;
+      font-size: 14px; font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      display: flex; align-items: center; gap: 10px;
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-width: 340px;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; pointer-events: all; }
+    .toast.success { background: var(--green); color: white; }
+    .toast.error { background: #dc2626; color: white; }
+    .toast.info { background: var(--ink); color: white; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width: 640px) {
+      nav { padding: 0 20px; }
+      .pricing-header, .pricing-body { padding-left: 24px; padding-right: 24px; }
+      footer { padding: 24px 20px; flex-direction: column; align-items: flex-start; }
+      .trust-row { gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ─────────────────────────────────────────────── -->
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly" onerror="this.style.display='none'"/></div>
+    Droidly
+  </a>
+  <div class="nav-center">
+    <a href="index.html#topics"   class="nav-link">Topics</a>
+    <a href="index.html#reviews"  class="nav-link">Reviews</a>
+    <a href="premium.html"        class="nav-link active">Premium</a>
+  </div>
+  <div class="nav-right">
+    <span id="navUserName" style="display:none; font-size:14px; font-weight:500; color:var(--ink2);"></span>
+    <button class="btn-nav" id="navAuthBtn" onclick="handleNavAuth()">Sign In</button>
+  </div>
+</nav>
+
+<!-- ─── PAGE ─────────────────────────────────────────────── -->
+<div class="page">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Limited time offer
+    </div>
+    <h1>Crack your Android<br/>interview with <span class="accent">Droidly Premium</span></h1>
+    <p class="hero-sub">Get unlimited access to all system design deep-dives, explainers, mock questions, and more — built specifically for Android engineers.</p>
+  </section>
+
+  <!-- PRICING CARD -->
+  <section class="pricing-wrap">
+    <div class="pricing-card">
+      <div class="pricing-header">
+        <div class="plan-label">Premium Plan</div>
+        <div class="plan-name">All Access</div>
+        <div class="plan-desc">Everything you need to land your next Android role</div>
+        <div class="plan-price">
+          <span class="price-currency">₹</span>
+          <span class="price-amount">499</span>
+          <span class="price-period">&nbsp;/ month</span>
+        </div>
+      </div>
+
+      <div class="pricing-body">
+        <ul class="features-list">
+          <li>
+            <span class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span><strong>All System Design deep-dives</strong> — Instagram feed, chat, ride-sharing, and more</span>
+          </li>
+          <li>
+            <span class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span><strong>All Explainer articles</strong> — Coroutines, image loading, offline-first, and more</span>
+          </li>
+          <li>
+            <span class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span><strong>Full question bank</strong> — 200+ curated Android interview questions with answers</span>
+          </li>
+          <li>
+            <span class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span><strong>New content every week</strong> — Stay up to date with the latest Android ecosystem</span>
+          </li>
+          <li>
+            <span class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span><strong>Cancel anytime</strong> — No lock-in, no questions asked</span>
+          </li>
+        </ul>
+
+        <!-- CTA: changes based on auth state -->
+        <div id="ctaArea">
+          <!-- Shows loading initially, replaced by JS -->
+          <div style="text-align:center; padding: 12px 0; color: var(--muted); font-size:14px;">Loading…</div>
+        </div>
+
+        <p class="btn-pay-sub" id="paySubText" style="display:none;">
+          Secured by Razorpay &nbsp;·&nbsp; UPI, cards, netbanking accepted
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST SIGNALS -->
+  <div class="trust-row">
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Payments secured by Razorpay
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Instant access after payment
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      Cancel anytime
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <section class="faq-section">
+    <div class="faq-title">Frequently asked questions</div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What do I get with Premium?
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="faq-a">You get unlimited access to all system design case studies, explainer articles, and the full interview question bank. New content is added every week.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        How does billing work?
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="faq-a">You're billed ₹499 every month. You can cancel at any time from your account settings — your access continues until the end of the billing period.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What payment methods are accepted?
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="faq-a">All major UPI apps (GPay, PhonePe, Paytm), credit/debit cards (Visa, Mastercard, RuPay), and netbanking are accepted via Razorpay.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Can I get a refund?
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="faq-a">If you're not satisfied within the first 7 days, reach out and we'll process a full refund — no questions asked.</div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ─── FOOTER ────────────────────────────────────────────── -->
+<footer>
+  <span class="footer-brand">Droidly</span>
+  <span class="footer-copy">© 2025 Droidly. All rights reserved.</span>
+</footer>
+
+<!-- ─── TOAST ─────────────────────────────────────────────── -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── Config ───────────────────────────────────────────────
+  const SUPABASE_URL = 'https://dquheflcmcppldrnckzf.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ── Replace this with your real Razorpay Key ID ──────────
+  const RAZORPAY_KEY_ID = 'YOUR_RAZORPAY_KEY_ID';
+
+  const PLAN = { amount: 49900, currency: 'INR', name: 'Droidly Premium', description: 'All Access — Monthly' };
+
+  let currentUser = null;
+
+  // ── Toast ────────────────────────────────────────────────
+  function showToast(msg, type = 'info') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3800);
+  }
+
+  // ── FAQ toggle ───────────────────────────────────────────
+  function toggleFaq(btn) {
+    btn.closest('.faq-item').classList.toggle('open');
+  }
+
+  // ── Render CTA based on auth + premium state ─────────────
+  function renderCTA(user, isPremium) {
+    const area = document.getElementById('ctaArea');
+    const subText = document.getElementById('paySubText');
+
+    if (!user) {
+      // Not signed in
+      subText.style.display = 'none';
+      area.innerHTML = `
+        <div class="login-prompt">
+          <p>Sign in to get started</p>
+          <button class="btn-signin" onclick="redirectToSignIn()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            Sign in to continue
+          </button>
+        </div>`;
+    } else if (isPremium) {
+      // Already premium
+      subText.style.display = 'none';
+      area.innerHTML = `
+        <div class="already-premium">
+          <div class="premium-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            You're already on Premium
+          </div>
+          <p>Enjoy unlimited access. <a href="index.html">Go back to learning →</a></p>
+        </div>`;
+    } else {
+      // Signed in, not premium
+      subText.style.display = 'block';
+      area.innerHTML = `
+        <button class="btn-pay" id="payBtn" onclick="startPayment()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Get Premium — ₹499/month
+        </button>`;
+    }
+  }
+
+  // ── Nav update ───────────────────────────────────────────
+  function updateNav(user) {
+    const btn = document.getElementById('navAuthBtn');
+    const name = document.getElementById('navUserName');
+    if (user) {
+      const display = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account';
+      name.textContent = display;
+      name.style.display = '';
+      btn.textContent = 'Sign Out';
+    } else {
+      name.style.display = 'none';
+      btn.textContent = 'Sign In';
+    }
+  }
+
+  function handleNavAuth() {
+    if (currentUser) {
+      db.auth.signOut().then(() => {
+        currentUser = null;
+        updateNav(null);
+        renderCTA(null, false);
+        showToast('Signed out', 'info');
+      });
+    } else {
+      redirectToSignIn();
+    }
+  }
+
+  function redirectToSignIn() {
+    // Go to index.html which has the auth modal, pass return URL
+    window.location.href = 'index.html?return=premium';
+  }
+
+  // ── Check if user has premium ────────────────────────────
+  async function checkPremium(userId) {
+    // Query your subscriptions table — adjust table/column names as needed
+    const { data, error } = await db
+      .from('subscriptions')
+      .select('status')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .maybeSingle();
+    return !error && data !== null;
+  }
+
+  // ── Razorpay payment flow ────────────────────────────────
+  async function startPayment() {
+    if (!currentUser) { redirectToSignIn(); return; }
+
+    const btn = document.getElementById('payBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.7s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Processing…';
+    }
+
+    const options = {
+      key: RAZORPAY_KEY_ID,
+      amount: PLAN.amount,          // in paise (49900 = ₹499)
+      currency: PLAN.currency,
+      name: 'Droidly',
+      description: PLAN.description,
+      image: 'assets/logo.png',
+      prefill: {
+        email: currentUser.email,
+        name: currentUser.user_metadata?.full_name || '',
+      },
+      theme: { color: '#3d7a4f' },
+
+      handler: async function(response) {
+        // Payment successful — save to Supabase
+        await handlePaymentSuccess(response);
+      },
+
+      modal: {
+        ondismiss: function() {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Get Premium — ₹499/month';
+          }
+        }
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.on('payment.failed', function(response) {
+      showToast('Payment failed: ' + (response.error?.description || 'Please try again'), 'error');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Get Premium — ₹499/month';
+      }
+    });
+
+    rzp.open();
+  }
+
+  // ── Handle successful payment ────────────────────────────
+  async function handlePaymentSuccess(response) {
+    try {
+      // Save subscription record to Supabase
+      // NOTE: In production, do this server-side after verifying the payment signature
+      const { error } = await db.from('subscriptions').upsert({
+        user_id: currentUser.id,
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_order_id:   response.razorpay_order_id   || null,
+        razorpay_signature:  response.razorpay_signature  || null,
+        status: 'active',
+        plan: 'premium_monthly',
+        amount: 499,
+        currency: 'INR',
+        created_at: new Date().toISOString(),
+      });
+
+      if (error) throw error;
+
+      showToast('🎉 Welcome to Droidly Premium!', 'success');
+      setTimeout(() => renderCTA(currentUser, true), 1000);
+
+    } catch (err) {
+      console.error('Error saving subscription:', err);
+      // Payment went through but DB save failed — still show success, handle manually
+      showToast('Payment received! Contact support if access is delayed.', 'info');
+    }
+  }
+
+  // ── Boot ─────────────────────────────────────────────────
+  async function init() {
+    const { data: { session } } = await db.auth.getSession();
+    currentUser = session?.user ?? null;
+    updateNav(currentUser);
+
+    if (currentUser) {
+      const isPremium = await checkPremium(currentUser.id);
+      renderCTA(currentUser, isPremium);
+    } else {
+      renderCTA(null, false);
+    }
+
+    // Listen for auth changes
+    db.auth.onAuthStateChange(async (_event, session) => {
+      currentUser = session?.user ?? null;
+      updateNav(currentUser);
+      if (currentUser) {
+        const isPremium = await checkPremium(currentUser.id);
+        renderCTA(currentUser, isPremium);
+      } else {
+        renderCTA(null, false);
+      }
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>
