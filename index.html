@@ -1604,10 +1604,9 @@
     <a href="#topics" class="nav-link">Topics</a>
     <a href="#pricing" class="nav-link">Pricing</a>
     <a href="#reviews" class="nav-link">Reviews</a>
-    <a href="premium.html" class="nav-link" style="color:var(--green); font-weight:600;">✦ Premium</a>
   </div>
   <div class="nav-right" id="navRight">
-    <a href="#pricing" class="nav-pill" style="text-decoration:none; cursor:pointer;">⚡ Get Premium</a>
+    <a href="premium.html" class="nav-pill" style="text-decoration:none; cursor:pointer;">⚡ Get Premium</a>
     <!-- Logged-out state -->
     <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal('signin')" style="cursor:pointer; border:none; font-family:inherit;">Sign In</button>
     <!-- Logged-in state (hidden by default) -->
@@ -1694,28 +1693,29 @@
     <div class="hero-right-grid"></div>
     <div class="hero-card fade-3">
       <div class="hcard-top">
-        <span class="hcard-badge">Jetpack Compose</span>
-        <span class="hcard-diff">Medium</span>
+        <span class="hcard-badge">Coroutines & Flow</span>
+        <span class="hcard-diff">Hard</span>
       </div>
       <div class="hcard-q">
-        What is recomposition in Jetpack Compose and how do you optimise it?
+        Your checkout screen calls 3 APIs in parallel. If any one fails, cancel the rest and show an error. How do you implement this?
       </div>
       <div class="hcard-code">
-        <span class="ln"><span class="c-cm">// ❌ Unstable — always recomposes</span></span>
-        <span class="ln"><span class="c-kw">@Composable</span></span>
-        <span class="ln"><span class="c-kw">fun </span><span class="c-fn">UserCard</span><span class="c-br">(</span>user: <span class="c-tp">User</span><span class="c-br">)</span> <span class="c-br">{</span></span>
-        <span class="ln">  <span class="c-fn">Text</span><span class="c-br">(</span>text = user.name<span class="c-br">)</span></span>
-        <span class="ln"><span class="c-br">}</span></span>
+        <span class="ln"><span class="c-cm">// ❌ Sequential — slow, no cancellation</span></span>
+        <span class="ln"><span class="c-kw">val </span>user    = fetchUser()<span class="c-br">()</span></span>
+        <span class="ln"><span class="c-kw">val </span>cart    = fetchCart()<span class="c-br">()</span></span>
+        <span class="ln"><span class="c-kw">val </span>address = fetchAddress()<span class="c-br">()</span></span>
         <span class="ln">&nbsp;</span>
-        <span class="ln"><span class="c-cm">// ✅ Stable — skips if unchanged</span></span>
-        <span class="ln"><span class="c-kw">@Stable</span></span>
-        <span class="ln"><span class="c-kw">data class </span><span class="c-tp">User</span><span class="c-br">(</span></span>
-        <span class="ln">  <span class="c-kw">val </span>name: <span class="c-tp">String</span></span>
-        <span class="ln"><span class="c-br">)</span></span>
+        <span class="ln"><span class="c-cm">// ✅ Parallel + fails fast on any error</span></span>
+        <span class="ln"><span class="c-kw">val </span><span class="c-br">(</span>user<span class="c-br">,</span> cart<span class="c-br">,</span> address<span class="c-br">)</span> = coroutineScope <span class="c-br">{</span></span>
+        <span class="ln">  <span class="c-kw">val </span>u = async <span class="c-br">{</span> fetchUser() <span class="c-br">}</span></span>
+        <span class="ln">  <span class="c-kw">val </span>c = async <span class="c-br">{</span> fetchCart() <span class="c-br">}</span></span>
+        <span class="ln">  <span class="c-kw">val </span>a = async <span class="c-br">{</span> fetchAddress() <span class="c-br">}</span></span>
+        <span class="ln">  Triple<span class="c-br">(</span>u.await()<span class="c-br">,</span> c.await()<span class="c-br">,</span> a.await()<span class="c-br">)</span></span>
+        <span class="ln"><span class="c-br">}</span></span>
       </div>
       <div class="hcard-btns">
         <button class="hcard-btn">💡 Hint</button>
-        <button class="hcard-btn fill">View Answer</button>
+        <button class="hcard-btn fill" onclick="handleViewAnswer()">View Answer</button>
       </div>
     </div>
 
@@ -2175,11 +2175,6 @@
       <div class="co-count">28 questions</div>
     </div>
     <div class="co-card reveal">
-      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=paytm.com&sz=128" alt="Paytm" onerror="this.outerHTML='<span class=\'co-fallback\'>P</span>'"/></div>
-      <div class="co-name">Paytm</div>
-      <div class="co-count">24 questions</div>
-    </div>
-    <div class="co-card reveal">
       <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=phonepe.com&sz=128" alt="PhonePe" onerror="this.outerHTML='<span class=\'co-fallback\'>Pe</span>'"/></div>
       <div class="co-name">PhonePe</div>
       <div class="co-count">22 questions</div>
@@ -2188,6 +2183,11 @@
       <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=cred.club&sz=128" alt="CRED" onerror="this.outerHTML='<span class=\'co-fallback\'>C</span>'"/></div>
       <div class="co-name">CRED</div>
       <div class="co-count">19 questions</div>
+    </div>
+    <div class="co-card reveal">
+      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=meesho.com&sz=128" alt="Meesho" onerror="this.outerHTML='<span class=\'co-fallback\'>M</span>'"/></div>
+      <div class="co-name">Meesho</div>
+      <div class="co-count">18 questions</div>
     </div>
     <div class="co-card reveal locked">
       <div class="co-logo"><span class="co-fallback">🔒</span></div>
@@ -2222,7 +2222,7 @@
         <div class="lock-icon">🔒</div>
         <div class="lock-title">System Design — Premium</div>
         <p class="lock-desc">Full architecture breakdown, trade-off analysis, and interviewer evaluation criteria. Only in Premium.</p>
-        <a href="#pricing" class="lock-btn">Unlock for ₹299/mo →</a>
+        <a href="premium.html" class="lock-btn">Unlock for ₹299/mo →</a>
       </div>
     </div>
   </div>
@@ -2316,35 +2316,11 @@
     <div class="compare-foot">
       <div></div>
       <div><a href="#" onclick="goToQuestions(''); return false;" class="cfoot-btn cfoot-free">Start Free</a></div>
-      <div><a href="#pricing" class="cfoot-btn cfoot-premium">Go Premium →</a></div>
+      <div><a href="premium.html" class="cfoot-btn cfoot-premium">Get Premium →</a></div>
     </div>
   </div>
 </section>
 
-<!-- COUNTER BAR -->
-<div class="counter-bar">
-  <div class="counter-inner">
-    <div class="counter-item">
-      <span class="counter-num" data-target="2347">0</span>
-      <span class="counter-lbl">Developers Prepared</span>
-    </div>
-    <div class="counter-div"></div>
-    <div class="counter-item">
-      <span class="counter-num" data-target="89">0</span><span class="counter-suf">%</span>
-      <span class="counter-lbl">Interview Success Rate</span>
-    </div>
-    <div class="counter-div"></div>
-    <div class="counter-item">
-      <span class="counter-num" data-target="375">0</span><span class="counter-suf">+</span>
-      <span class="counter-lbl">Questions &amp; Answers</span>
-    </div>
-    <div class="counter-div"></div>
-    <div class="counter-item">
-      <span class="counter-num" data-target="14">0</span>
-      <span class="counter-lbl">Topic Categories</span>
-    </div>
-  </div>
-</div>
 
 <!-- PRICING -->
 <section id="pricing" class="pricing-section">
@@ -2379,13 +2355,10 @@
         <li><span class="chk">✓</span> Company-wise question sets (20 cos)</li>
         <li><span class="chk">✓</span> Completion certificate</li>
       </ul>
-      <a href="#" class="price-btn" onclick="showPremiumModal(); return false;">Start Premium — ₹299/mo</a>
+      <a href="premium.html" class="price-btn">Get Premium — ₹299/mo</a>
     </div>
   </div>
 
-  <p style="margin-top: 18px; font-size: 13px; color: var(--muted);">
-    🎉 Annual plan available at ₹1,999/year — save ₹1,589
-  </p>
 </section>
 
 <!-- TESTIMONIALS -->
@@ -2791,6 +2764,19 @@
   }
 
   // ── Google OAuth ─────────────────────────────────────
+  // ── View Answer (hero card) ─────────────────────────
+  function handleViewAnswer() {
+    db.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        // Logged in — go to the coroutines question on questions page
+        window.location.href = 'questions.html?topic=coroutines';
+      } else {
+        // Not logged in — open sign in modal
+        openAuthModal('signin');
+      }
+    });
+  }
+
   async function handleGoogleAuth() {
     const { error } = await db.auth.signInWithOAuth({
       provider: 'google',

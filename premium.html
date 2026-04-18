@@ -443,7 +443,7 @@
         <div class="plan-desc">Everything you need to land your next Android role</div>
         <div class="plan-price">
           <span class="price-currency">₹</span>
-          <span class="price-amount">499</span>
+          <span class="price-amount">299</span>
           <span class="price-period">&nbsp;/ month</span>
         </div>
       </div>
@@ -518,7 +518,7 @@
         How does billing work?
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
-      <div class="faq-a">You're billed ₹499 every month. You can cancel at any time from your account settings — your access continues until the end of the billing period.</div>
+      <div class="faq-a">You're billed ₹299 every month. You can cancel at any time from your account settings — your access continues until the end of the billing period.</div>
     </div>
 
     <div class="faq-item">
@@ -558,7 +558,7 @@
   // ── Replace this with your real Razorpay Key ID ──────────
   const RAZORPAY_KEY_ID = 'YOUR_RAZORPAY_KEY_ID';
 
-  const PLAN = { amount: 49900, currency: 'INR', name: 'Droidly Premium', description: 'All Access — Monthly' };
+  const PLAN = { amount: 29900, currency: 'INR', name: 'Droidly Premium', description: 'All Access — Monthly' };
 
   let currentUser = null;
 
@@ -608,7 +608,7 @@
       area.innerHTML = `
         <button class="btn-pay" id="payBtn" onclick="startPayment()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          Get Premium — ₹499/month
+          Get Premium — ₹299/month
         </button>`;
     }
   }
@@ -670,7 +670,7 @@
 
     const options = {
       key: RAZORPAY_KEY_ID,
-      amount: PLAN.amount,          // in paise (49900 = ₹499)
+      amount: PLAN.amount,          // in paise (29900 = ₹299)
       currency: PLAN.currency,
       name: 'Droidly',
       description: PLAN.description,
@@ -690,7 +690,7 @@
         ondismiss: function() {
           if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Get Premium — ₹499/month';
+            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Get Premium — ₹299/month';
           }
         }
       }
@@ -701,7 +701,7 @@
       showToast('Payment failed: ' + (response.error?.description || 'Please try again'), 'error');
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Get Premium — ₹499/month';
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Get Premium — ₹299/month';
       }
     });
 
@@ -720,7 +720,7 @@
         razorpay_signature:  response.razorpay_signature  || null,
         status: 'active',
         plan: 'premium_monthly',
-        amount: 499,
+        amount: 299,
         currency: 'INR',
         created_at: new Date().toISOString(),
       });
