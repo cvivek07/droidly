@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Droidly — Android Interview Prep</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -33,7 +33,7 @@
     body {
       background: var(--bg);
       color: var(--ink);
-      font-family: 'Inter', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 15px;
       line-height: 1.6;
       min-height: 100vh;
@@ -41,18 +41,27 @@
 
     /* ── NAV ─────────────────────────────────────────── */
     nav {
-      position: sticky; top: 0; z-index: 200;
-      height: 60px;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      height: 68px;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 32px;
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(20px);
+      padding: 0 48px;
+      background: rgba(255,255,255,0.90);
+      backdrop-filter: blur(20px) saturate(1.6);
       border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04);
+    }
+    nav::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--green2), var(--green-mid), var(--green));
+      z-index: 1;
     }
     .logo {
       display: flex; align-items: center; gap: 10px;
       text-decoration: none; color: var(--ink);
-      font-weight: 700; font-size: 18px; letter-spacing: -0.3px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800; font-size: 20px; letter-spacing: -0.5px;
     }
     .logo-mark {
       display: flex; align-items: center; flex-shrink: 0;
@@ -79,6 +88,7 @@
     /* ── PAGE HEADER ─────────────────────────────────── */
     .page-header {
       padding: 48px 32px 32px;
+      margin-top: 68px;
       border-bottom: 1px solid var(--border);
       background: linear-gradient(160deg, #e8f2ec 0%, #ffffff 60%);
     }
@@ -117,13 +127,25 @@
 
     /* ── TABS ─────────────────────────────────────────── */
     .tabs-wrapper {
-      position: sticky; top: 60px; z-index: 100;
+      position: sticky; top: 68px; z-index: 100;
       background: rgba(255,255,255,0.95);
       backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
-      padding: 0 32px;
+      padding: 0;
+      display: flex; align-items: center;
     }
-    .tabs { display: flex; gap: 2px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
+    .tabs-arrow {
+      flex-shrink: 0; width: 36px; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: none; background: rgba(255,255,255,0.95);
+      color: var(--muted); font-size: 16px;
+      transition: all 0.18s; z-index: 2;
+      padding: 0 6px;
+    }
+    .tabs-arrow:hover { color: var(--ink); background: var(--bg2); }
+    .tabs-arrow.left { border-right: 1px solid var(--border); }
+    .tabs-arrow.right { border-left: 1px solid var(--border); }
+    .tabs { display: flex; gap: 2px; overflow-x: auto; padding: 10px 16px; scrollbar-width: none; flex: 1; }
     .tabs::-webkit-scrollbar { display: none; }
     .tab {
       padding: 8px 16px; border-radius: 8px;
@@ -472,7 +494,7 @@
   </a>
   <div class="nav-right">
     <div class="nav-stat"><span>375</span> Questions</div>
-    <a href="#" class="nav-cta">✦ Go Premium</a>
+    <a href="premium.html" class="nav-cta">⚡ Get Premium</a>
   </div>
 </nav>
 
@@ -507,7 +529,8 @@
 </div>
 
 <div class="tabs-wrapper">
-  <div class="tabs">
+  <button class="tabs-arrow left" onclick="scrollTabs(-1)" aria-label="Scroll left">&#8249;</button>
+  <div class="tabs" id="tabsScroll">
     <div class="tab active" onclick="switchTopic('android', event)">🤖 Android <span class="tab-count">50</span></div>
     <div class="tab" onclick="switchTopic('kotlin', event)">🟣 Kotlin <span class="tab-count">50</span></div>
     <div class="tab" onclick="switchTopic('compose', event)">🎨 Compose <span class="tab-count">50</span></div>
@@ -519,8 +542,11 @@
     <div class="tab" onclick="switchTopic('buildtools', event)">🔧 Build Tools <span class="tab-count">50</span></div>
     <div class="tab" onclick="switchTopic('performance', event)">🚀 Performance <span class="tab-count">50</span></div>
     <div class="tab" onclick="switchTopic('hr', event)">🤝 HR &amp; Behavioural <span class="tab-count">25</span></div>
+    <div class="tab" onclick="switchTopic('testing', event)">🧪 Testing <span class="tab-count">30</span></div>
+    <div class="tab" onclick="switchTopic('security', event)">🔒 Security <span class="tab-count">20</span></div>
     <div class="tab" onclick="switchTopic('sysdesign', event)">🏗️ System Design <span class="tab-count">10</span></div>
   </div>
+  <button class="tabs-arrow right" onclick="scrollTabs(1)" aria-label="Scroll right">&#8250;</button>
 </div>
 
 <div class="main">
@@ -25299,6 +25325,11 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
         `).join('')}
       </div>
     `;
+  }
+
+  function scrollTabs(dir) {
+    const tabs = document.getElementById('tabsScroll');
+    tabs.scrollBy({ left: dir * 200, behavior: 'smooth' });
   }
 
   function switchTopic(topic, event) {
