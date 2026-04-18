@@ -8837,7 +8837,7 @@ viewModelScope.<span class="fn">launch</span> {
         </div>
       </div>
 
-      <div class="q-card" onclick="toggleCard(this, event)">
+      <div class="q-card" id="q-coroutines-parallel" onclick="toggleCard(this, event)">
         <div class="q-card-header"><div><div class="q-meta"><span class="q-number">Q25</span><span class="q-diff diff-hard">Hard</span><span class="q-tag">🎯 Scenario</span></div><div class="q-text">Scenario: Your app makes 3 API calls — user, orders, and recommendations. Some can run in parallel. How do you structure this?</div></div><div class="q-toggle">▾</div></div>
         <div class="q-answer"><div class="answer-label">Answer</div><p class="answer-text">This is a classic concurrency design question. The correct structure depends on dependencies between calls — independent calls should be parallel, dependent calls sequential.</p>
           <pre class="code-block"><span class="cm">// Scenario: user (needed) → orders (needs userId) → recommendations (independent)</span>
@@ -25338,8 +25338,12 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
   const validTopics = ['android', 'kotlin', 'compose', 'coroutines', 'architecture', 'di', 'networking', 'storage', 'buildtools', 'performance', 'hr', 'sysdesign'];
 
   function init() {
+    const params     = new URLSearchParams(window.location.search);
+    const topicParam = params.get('topic');
     const hash = window.location.hash.replace('#', '');
-    const initTopic = validTopics.includes(hash) ? hash : 'android';
+    const initTopic  = validTopics.includes(topicParam) ? topicParam
+                     : validTopics.includes(hash) ? hash
+                     : 'android';
     currentTopic = initTopic;
 
     // Activate correct tab
@@ -25352,6 +25356,18 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
     const initSection = document.getElementById('topic-' + initTopic);
     if (initSection) initSection.classList.add('active');
     buildSidebar(initTopic);
+
+    // Scroll to and auto-open a specific card if hash points to one
+    const cardId = window.location.hash.replace('#', '');
+    if (cardId && !validTopics.includes(cardId)) {
+      setTimeout(() => {
+        const card = document.getElementById(cardId);
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (!card.classList.contains('open')) card.click();
+        }
+      }, 350);
+    }
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

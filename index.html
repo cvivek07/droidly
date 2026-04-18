@@ -1713,8 +1713,11 @@
         <span class="ln">  Triple<span class="c-br">(</span>u.await()<span class="c-br">,</span> c.await()<span class="c-br">,</span> a.await()<span class="c-br">)</span></span>
         <span class="ln"><span class="c-br">}</span></span>
       </div>
+      <div id="hcard-hint" style="display:none; background:var(--amber-light); border:1px solid rgba(196,125,46,0.2); border-radius:10px; padding:10px 14px; font-size:13px; color:var(--amber); line-height:1.5; margin-bottom:10px;">
+        💡 Think about which calls are <strong>independent</strong> vs <strong>dependent</strong>. Independent calls can run with <code>async { }</code> inside a <code>coroutineScope { }</code> — if any one throws, the scope cancels the rest automatically.
+      </div>
       <div class="hcard-btns">
-        <button class="hcard-btn">💡 Hint</button>
+        <button class="hcard-btn" onclick="toggleHint()">💡 Hint</button>
         <button class="hcard-btn fill" onclick="handleViewAnswer()">View Answer</button>
       </div>
     </div>
@@ -2764,12 +2767,18 @@
   }
 
   // ── Google OAuth ─────────────────────────────────────
+  // ── Hint toggle (hero card) ──────────────────────────
+  function toggleHint() {
+    const hint = document.getElementById('hcard-hint');
+    hint.style.display = hint.style.display === 'none' ? 'block' : 'none';
+  }
+
   // ── View Answer (hero card) ─────────────────────────
   function handleViewAnswer() {
     db.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        // Logged in — go to the coroutines question on questions page
-        window.location.href = 'questions.html?topic=coroutines';
+        // Logged in — go directly to the parallel API calls question, open it
+        window.location.href = 'questions.html?topic=coroutines#q-coroutines-parallel';
       } else {
         // Not logged in — open sign in modal
         openAuthModal('signin');
