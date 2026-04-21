@@ -5108,7 +5108,7 @@ webView.webViewRenderProcessClient = <span class="kw">object</span> : <span clas
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Kotlin's type system distinguishes between nullable and non-nullable types at compile time, eliminating most NullPointerExceptions before your code even runs.</p>
+          <p class="answer-text">Null safety is arguably Kotlin's single biggest improvement over Java. Tony Hoare — who invented null references — called it his "billion dollar mistake." In Android specifically, NullPointerException is the #1 cause of app crashes in production. Kotlin solves this at the type system level: every type is either nullable (String?) or non-nullable (String), and the compiler enforces that you handle the null case before using a nullable value. This means most NPEs are compile-time errors in Kotlin, not runtime crashes. The four operators — ?, ?., ?:, and !! — are the vocabulary for working safely with nullable values, and understanding them deeply is fundamental to writing idiomatic Kotlin.</p>
           <pre class="code-block"><span class="cm">// Non-nullable — compiler guarantees never null</span>
 <span class="kw">var</span> name: <span class="tp">String</span> = <span class="str">"Rahul"</span>
 name = <span class="kw">null</span>  <span class="cm">// ❌ Compile error</span>
@@ -5141,13 +5141,16 @@ name?.<span class="fn">let</span> { nonNullName ->
     <span class="fn">println</span>(name.<span class="fn">length</span>) <span class="cm">// name is smart-cast to String</span>
 }</pre>
           <ul class="answer-points">
-            <li><strong>?</strong> — nullable type; value can be null</li>
-            <li><strong>?.</strong> — safe call; skips operation if null, returns null</li>
-            <li><strong>?:</strong> — Elvis; returns right side if left side is null</li>
-            <li><strong>!!</strong> — force unwrap; throws KotlinNullPointerException if null — avoid in production</li>
-            <li><strong>let</strong> — executes lambda only when value is non-null; smart-casts inside block</li>
+            <li><strong>? (nullable type):</strong> Declares that a variable can hold null. <code>String</code> = never null; <code>String?</code> = can be null. The compiler won't let you call methods on a String? without handling the null case first — trying to do so is a compile error, not a runtime crash.</li>
+            <li><strong>?. (safe call):</strong> Calls a method or accesses a property only if the receiver is non-null. If it is null, the entire expression returns null instead of throwing NPE. Chain them: <code>user?.address?.city</code> returns null if any part is null, without any crashes.</li>
+            <li><strong>?: (Elvis operator):</strong> Provides a default value when the expression on the left is null. <code>val name = user?.name ?: "Guest"</code> — if user or name is null, "Guest" is used. On the right side of ?: you can also use return or throw: <code>val id = user?.id ?: throw IllegalStateException("No user")</code>.</li>
+            <li><strong>!! (non-null assertion):</strong> Forces a nullable type to non-nullable. Throws KotlinNullPointerException if the value IS null. Use it ONLY when you are 100% certain the value cannot be null and the type system can't prove it. In practice, !! is a code smell — if you find yourself using it often, rethink your design. It's essentially opting back into Java's NPE behavior.</li>
+            <li><strong>let for null checks:</strong> <code>value?.let { /* it = non-null value */ }</code> executes the block only when value is non-null. Inside the block, <code>it</code> is smart-cast to non-nullable. This is the idiomatic way to do null-conditional operations without if (value != null) checks.</li>
+            <li><strong>Smart casts:</strong> After an <code>if (value != null)</code> check, Kotlin automatically smart-casts value to non-nullable within the if block — no explicit cast needed. Works with is checks too: <code>if (shape is Circle) { shape.radius }</code> — shape is auto-cast to Circle.</li>
+            <li><strong>Platform types (Java interop):</strong> When calling Java code, Kotlin can't know if a value is null or not — these are "platform types" (shown as String! in IDE). They bypass null safety. Always annotate Java code with @Nullable/@NonNull, or add null checks when consuming Java APIs in Kotlin.</li>
+            <li><strong>lateinit var:</strong> Declares a non-nullable var that will be initialized before first use. Avoids null-checking a property that is guaranteed to be set by the framework (e.g., ViewBinding). Access before initialization throws UninitializedPropertyAccessException. Check with <code>::property.isInitialized</code>.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>!! should be a code smell — if you're using it, you either have a design flaw or need a null check. Interviewers specifically look for whether you know when NOT to use !!.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The most impressive answer explains WHY Kotlin has null safety (NPE is Android's #1 crash cause), then walks through operators in order of safety: ?. is always safe, ?: is always safe, !! is a smell. The killer follow-up: 'When would you use !!' — answer: almost never, only when calling unannotated Java APIs where you're certain of non-null. Also mention platform types from Java interop — most candidates don't know about this gap in null safety.</p></div>
         </div></div>
       </div>
 
@@ -5162,7 +5165,7 @@ name?.<span class="fn">let</span> { nonNullName ->
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Kotlin provides several ways to declare variables depending on mutability, timing of initialization, and compile vs runtime behavior.</p>
+          <p class="answer-text">Kotlin provides five distinct ways to declare and initialize values, each suited for a different scenario. Getting these right is fundamental — using var when you should use val leads to bugs, using lateinit when you should use lazy leads to thread-safety issues, and confusing const val with regular val leads to performance and R8 optimization losses. A senior Kotlin developer instinctively picks the right one without thinking: val for most things, const val for compile-time constants, lateinit var for framework-injected properties, by lazy for expensive one-time computations, and var only when mutation is genuinely required.</p>
           <pre class="code-block"><span class="cm">// val — immutable reference, set once (like Java final)</span>
 <span class="kw">val</span> name = <span class="str">"Rahul"</span>  <span class="cm">// cannot reassign, object content can still change</span>
 <span class="kw">val</span> list = <span class="fn">mutableListOf</span>(<span class="nm">1</span>, <span class="nm">2</span>)
@@ -5197,13 +5200,14 @@ count = <span class="nm">5</span>  <span class="cm">// ✅</span>
 <span class="kw">val</span> obj <span class="kw">by</span> <span class="fn">lazy</span>(<span class="tp">LazyThreadSafetyMode</span>.SYNCHRONIZED) { <span class="cm">/* default, thread-safe */</span> }
 <span class="kw">val</span> obj <span class="kw">by</span> <span class="fn">lazy</span>(<span class="tp">LazyThreadSafetyMode</span>.NONE) { <span class="cm">/* single-thread, no lock overhead */</span> }</pre>
           <ul class="answer-points">
-            <li><strong>val:</strong> immutable reference — like Java final; can still mutate object content</li>
-            <li><strong>var:</strong> mutable reference — can reassign freely</li>
-            <li><strong>const val:</strong> compile-time constant — inlined at each usage site; must be primitive/String at top-level or in object</li>
-            <li><strong>lateinit var:</strong> non-null var initialized later — throws UninitializedPropertyAccessException if accessed before init</li>
-            <li><strong>by lazy:</strong> val initialized on first access — thread-safe by default, runs initializer only once</li>
+            <li><strong>val (immutable reference):</strong> Like Java's final — the reference cannot be reassigned after initialization. Does NOT mean the object itself is immutable; a val List can still have items added if it's a MutableList. Always prefer val over var — it makes your code easier to reason about and enables safe concurrent access without synchronization.</li>
+            <li><strong>var (mutable reference):</strong> Can be reassigned freely. Use only when you genuinely need reassignment. In ViewModels, prefer StateFlow instead of mutable var properties so changes are observable. Every var in your code is a potential bug — question whether it can be a val.</li>
+            <li><strong>const val (compile-time constant):</strong> Must be a primitive or String, must be at top-level or in an object/companion object, and its value is known at compile time. The compiler inlines the value at every usage site — no object access at runtime. Important for performance-sensitive constants and for use in annotation arguments (which require compile-time values).</li>
+            <li><strong>lateinit var (deferred initialization):</strong> A non-nullable var that promises it will be initialized before first access. Commonly used for: ViewBinding in Fragments/Activities, dependency injection fields (Hilt @Inject), and testing frameworks that set up fields in @Before. Accessing an uninitialized lateinit throws UninitializedPropertyAccessException. Check initialization with <code>::field.isInitialized</code>. Does NOT work with primitives (Int, Boolean, etc.) — use nullable types or Delegates.notNull() instead.</li>
+            <li><strong>by lazy (lazy initialization):</strong> The initializer block runs exactly once — on first access — and the result is cached for all future accesses. Thread-safe by default (LazyThreadSafetyMode.SYNCHRONIZED). Use for expensive computations, dependencies that require a context to build, or values that may never be needed. Three thread-safety modes: SYNCHRONIZED (default, safe), PUBLICATION (allows multiple initializations, first wins), NONE (no thread safety, fastest).</li>
+            <li><strong>val vs lateinit vs lazy decision rule:</strong> If you can initialize immediately → val. If initialization depends on framework lifecycle (Activity.onCreate, Hilt injection) → lateinit var. If initialization is expensive and can be deferred → by lazy. If it must be mutable → var.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>const val vs val: const val is inlined by the compiler — important for annotations where you can only use compile-time constants. val is evaluated at runtime. This distinction is a common trick question.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Two things set senior answers apart: (1) <code>const val</code> is inlined by the compiler — 'it's not just immutable, the compiler replaces every reference with its literal value, so there's no field access at runtime.' (2) The lateinit <code>isInitialized</code> check — many developers don't know you can safely check <code>::field.isInitialized</code> before accessing a lateinit. Also: lateinit doesn't work with nullable types or primitives — a very common gotcha.</p></div>
         </div></div>
       </div>
 
@@ -5218,7 +5222,7 @@ count = <span class="nm">5</span>  <span class="cm">// ✅</span>
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Data classes are designed for holding data. The compiler auto-generates several standard functions based on the primary constructor properties, saving significant boilerplate.</p>
+          <p class="answer-text">A data class is Kotlin's mechanism for modeling pure data — classes whose primary purpose is to hold values rather than define behavior. Think of it as Kotlin's answer to Java's notorious record verbosity: instead of writing 100 lines for a simple model class (constructor, getters, equals, hashCode, toString, copy), you write one line. The compiler automatically generates five types of functions based on all properties declared in the primary constructor. But data classes have important limitations that trip up developers — especially around inheritance, mutable properties, and the shallow copy behavior — making it essential to know not just what they generate, but when NOT to use them.</p>
           <pre class="code-block"><span class="kw">data class</span> <span class="tp">User</span>(
     <span class="kw">val</span> id: <span class="tp">String</span>,
     <span class="kw">val</span> name: <span class="tp">String</span>,
@@ -5256,13 +5260,15 @@ u1 === u2 <span class="cm">// false (referential equality — different objects)
 team2.members.<span class="fn">add</span>(u2)
 <span class="fn">println</span>(team1.members.<span class="fn">size</span>)  <span class="cm">// 2! — shallow copy, same list reference</span></pre>
           <ul class="answer-points">
-            <li>Auto-generates: equals(), hashCode(), toString(), copy(), componentN() functions</li>
-            <li>Only primary constructor properties are included in generated functions</li>
-            <li>copy() is shallow — nested mutable objects are shared between copies</li>
-            <li>Cannot be abstract, open, sealed, or inner classes</li>
-            <li>Use @Parcelize with data class for Android IPC — auto-generates Parcelable code too</li>
+            <li><strong>Auto-generated functions:</strong> equals() and hashCode() (structural equality based on all primary constructor properties), toString() (readable format like "User(id=1, name=Alice)"), copy() (creates a modified copy with some properties changed), and componentN() functions for destructuring. All generated from primary constructor properties only — body properties are excluded.</li>
+            <li><strong>equals() is structural, not referential:</strong> Two data class instances with the same property values are equal (<code>==</code> returns true), even if they're different objects in memory. This is different from regular classes where <code>==</code> compares references by default. Use <code>===</code> for reference equality if needed.</li>
+            <li><strong>copy() is shallow:</strong> <code>val updated = user.copy(name = "Bob")</code> creates a new instance with most properties copied. But nested mutable objects (like a MutableList) are shared between the original and the copy — modifying them affects both. For deep copies, you must implement it manually or use serialization round-trips.</li>
+            <li><strong>Only primary constructor properties matter:</strong> Properties declared in the class body (not in the primary constructor) are NOT included in equals(), hashCode(), toString(), or copy(). This is a common source of bugs when developers add computed or secondary properties and expect them to affect equality.</li>
+            <li><strong>Limitations:</strong> Cannot be abstract, open, sealed, or inner. Cannot extend other classes (but can implement interfaces). Best used for simple immutable model objects — DTOs, domain models, UI state containers. For complex hierarchies, use sealed classes instead.</li>
+            <li><strong>Best practice — immutable data classes:</strong> Prefer val properties in data classes. Mutable data classes (var properties) cause problems because if you put them in a Set or use them as Map keys, the hashCode changes when properties change — leading to lost items. Use copy() to simulate mutation: <code>state = state.copy(isLoading = true)</code>.</li>
+            <li><strong>data class vs record (Java 16+):</strong> Kotlin data classes and Java records solve the same problem. Data classes are more flexible (can have var properties, implement interfaces, have secondary constructors) while Java records are strictly immutable. In Kotlin code, always use data classes.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The shallow copy trap is a classic interview question: team1.copy() shares the same list reference as team1. To deep copy, you must do team1.copy(members = team1.members.toMutableList()).</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The shallow copy trap is a classic follow-up: 'If you do <code>team1.copy()</code>, what happens to the list inside it?' — the copy shares the same list reference as the original. To deep copy, you must do <code>team1.copy(members = team1.members.toMutableList())</code>. Also mention that data classes work great with sealed classes for UI state modeling — combine the two concepts to show architectural breadth.</p></div>
         </div></div>
       </div>
 
@@ -5277,7 +5283,7 @@ team2.members.<span class="fn">add</span>(u2)
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">All three restrict possible types/values, but they differ in flexibility, state-holding capability, and inheritance rules — making each suitable for different scenarios.</p>
+          <p class="answer-text">Sealed classes, sealed interfaces, and enum classes all restrict what values or subtypes are possible — but they solve different problems. Enums are for a fixed set of identical-shaped constants (like compass directions or HTTP methods). Sealed classes are for a fixed set of related types that can carry different data and different state per instance — the classic example is a UI state machine with Loading, Success(data), and Error(message) states. Sealed interfaces were introduced in Kotlin 1.5 and allow a single class to be part of multiple sealed hierarchies — something sealed classes don't support. The killer feature of all three: when you use them in a when expression, the compiler enforces exhaustiveness, making it impossible to forget handling a new state.</p>
           <pre class="code-block"><span class="cm">// Enum class — fixed set of constants, same type, no state variation</span>
 <span class="kw">enum class</span> <span class="tp">Direction</span> { NORTH, SOUTH, EAST, WEST }
 <span class="kw">enum class</span> <span class="tp">Status</span>(val code: <span class="tp">Int</span>) {
@@ -5308,13 +5314,14 @@ team2.members.<span class="fn">add</span>(u2)
     <span class="cm">// No else needed — compiler knows all cases covered</span>
 }</pre>
           <ul class="answer-points">
-            <li><strong>enum:</strong> fixed singleton constants — same structure, no per-instance state variation</li>
-            <li><strong>sealed class:</strong> restricted class hierarchy — subclasses can have different properties and state</li>
-            <li><strong>sealed interface:</strong> like sealed class but a subclass can implement multiple sealed interfaces</li>
-            <li>Kotlin 1.9+: sealed class subclasses can be in different files within the same package</li>
-            <li>All enable exhaustive <code>when</code> expressions without an else branch</li>
+            <li><strong>enum class:</strong> A fixed set of constants that are all instances of the same class. Each constant is a singleton — same type, same structure. Can have properties and functions. Use when values are conceptually interchangeable and don't need different structures. Examples: Direction (NORTH, SOUTH, EAST, WEST), HttpMethod (GET, POST, PUT, DELETE), Priority (LOW, MEDIUM, HIGH).</li>
+            <li><strong>sealed class:</strong> A restricted class hierarchy where all subclasses are known at compile time (must be in the same package). Unlike enums, each subclass can have a completely different structure — different properties, different state, different constructors. The canonical Android use case: UI state — <code>sealed class UiState { object Loading; data class Success(val data: List&lt;Item&gt;); data class Error(val message: String) }</code>.</li>
+            <li><strong>sealed interface (Kotlin 1.5+):</strong> Like sealed class, but a class can implement multiple sealed interfaces. Use when you need a type to participate in multiple sealed hierarchies. Also allows data classes and other sealed classes to be subclasses — sealed classes can only be extended by classes. Better for modeling orthogonal concerns that share a common contract.</li>
+            <li><strong>Exhaustive when — the real power:</strong> When you use a sealed class/interface in a when expression (without an else branch), the compiler verifies that every subclass is handled. When you add a new subclass, every when expression using it becomes a compile error until you handle the new case. This turns a runtime error (forgot to handle a new state) into a compile-time error.</li>
+            <li><strong>Sealed vs abstract class:</strong> Abstract classes can be extended anywhere in the codebase — subclasses are unlimited and unknown at compile time. Sealed classes are closed — all subclasses are declared in the same file/package, giving the compiler full knowledge. Sealed classes are essentially "abstract classes with a closed world assumption."</li>
+            <li><strong>State machines with sealed classes:</strong> The most powerful use in Android is UI state: <code>Loading → Success(data) → Error(msg)</code>. The ViewModel emits a StateFlow&lt;UiState&gt;, and the Fragment's when expression on it is guaranteed to handle every possible state. Adding a new state to the sealed class causes the when in the UI to fail compilation until handled.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Use enum for fixed constants (Direction, Day), sealed class for state machines with different data per state (UiState.Loading, UiState.Success(data)), sealed interface when you need multiple inheritance of sealed hierarchies.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Use the decision rule directly: 'enum for a fixed set of constants with no per-instance data (Direction, Day); sealed class for state machines where each subtype carries different data (Loading, Success(data), Error(message)).' The sealed interface angle is impressive — mention it when discussing multimodule projects where different modules need to add cases to a hierarchy without modifying a shared base.</p></div>
         </div></div>
       </div>
 
@@ -5329,7 +5336,7 @@ team2.members.<span class="fn">add</span>(u2)
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Scope functions execute a block of code in the context of an object. They differ in how the object is referenced (it vs this) and what they return (object vs lambda result).</p>
+          <p class="answer-text">Scope functions are one of Kotlin's most powerful but most confusing features for beginners. All five — let, run, with, also, apply — execute a block of code in the context of an object, but they differ along exactly two axes: how the context object is referenced (as <code>this</code> or as <code>it</code>), and what the function returns (the context object itself, or the lambda's result). Choosing the wrong one doesn't break compilation but makes code harder to read. A simple mental model: if you're configuring an object → apply. If you're doing a side effect on an object → also. If you want to transform an object → let or run. With is for grouping multiple calls on an already-existing object.</p>
           <pre class="code-block"><span class="cm">// Decision matrix:</span>
 <span class="cm">// Function | Reference | Returns        | Use for</span>
 <span class="cm">// let      | it        | lambda result  | null check, transform</span>
@@ -5366,13 +5373,14 @@ team2.members.<span class="fn">add</span>(u2)
     visibility = <span class="tp">View</span>.VISIBLE
 }</pre>
           <ul class="answer-points">
-            <li><strong>apply:</strong> object config — returns object, use <code>this</code> inside; perfect for builder pattern</li>
-            <li><strong>also:</strong> side effects — returns object, use <code>it</code>; for logging, validation</li>
-            <li><strong>let:</strong> transform — returns lambda result, use <code>it</code>; great for null-safety chains</li>
-            <li><strong>run:</strong> compute — returns lambda result, use <code>this</code>; like apply but returns result</li>
-            <li><strong>with:</strong> group calls — not extension function, use for non-nullable objects</li>
+            <li><strong>apply { } — configure, return object:</strong> Context object is <code>this</code> (implicit receiver). Returns the context object. Classic use: builder pattern — set up an object's properties and return it. <code>val intent = Intent(this, DetailActivity::class.java).apply { putExtra("id", 123) }</code>. Since it returns the object, apply calls chain naturally.</li>
+            <li><strong>also { } — side effect, return object:</strong> Context object is <code>it</code>. Returns the context object. Use for side effects that don't change the object: logging, validation, debugging. <code>val user = fetchUser().also { log("Fetched: $it") }</code>. Because it returns the object, it chains without interrupting the main flow.</li>
+            <li><strong>let { } — transform or null-check, return result:</strong> Context object is <code>it</code>. Returns the lambda result. Primary use: null-safe operations on nullable types (<code>user?.let { sendEmail(it) }</code>). Also for transformations: <code>val length = text.let { it.trim().length }</code>. When chained after ?., the block only runs if the value is non-null.</li>
+            <li><strong>run { } — compute from object, return result:</strong> Context object is <code>this</code>. Returns lambda result. Like apply but returns the result instead of the object. Use when you need to compute something from an object: <code>val preview = message.run { if (length &gt; 50) substring(0, 50) + "..." else this }</code>. Also used standalone as a block that returns a value.</li>
+            <li><strong>with(obj) { } — group calls, return result:</strong> Context object is <code>this</code>. Returns lambda result. Called as a regular function, not an extension. Use when you want to call multiple methods on an existing object without repeating its name: <code>with(binding) { tvTitle.text = title; tvBody.text = body }</code>. Doesn't chain as elegantly as the others.</li>
+            <li><strong>Decision table:</strong> This vs it: apply/run/with use <code>this</code>; let/also use <code>it</code>. Returns object vs result: apply/also return the object; let/run/with return the lambda result. Quick rule: Need to return the object? → apply or also. Need the result? → let, run, or with. Side effect only? → also. Null check? → let.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Simple rule: Need the object back? → apply/also. Need a result? → let/run/with. Need null safety? → let or run with ?.. Using 'this' or 'it' is the secondary differentiator.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The 2x2 matrix is the clearest way to explain scope functions: rows = 'returns the object (apply/also) vs returns the result (let/run/with)', columns = 'receiver as this (apply/run/with) vs receiver as it (let/also).' The most common interview follow-up is 'when do you use let vs run?' — both use the receiver as a result, but let uses 'it' (good for nullable chains) and run uses 'this' (good for object configuration).</p></div>
         </div></div>
       </div>
 
@@ -5387,7 +5395,7 @@ team2.members.<span class="fn">add</span>(u2)
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Higher-order functions take functions as parameters or return functions. Lambdas are anonymous function literals. Together they enable functional programming patterns in Kotlin.</p>
+          <p class="answer-text">Higher-order functions and lambdas are the foundation of Kotlin's functional programming capabilities — and understanding how they work under the hood is critical for writing performant Android code. A higher-order function is simply one that takes a function as a parameter or returns a function. Lambdas are the anonymous function literals you pass to them. The hidden cost: every lambda creates an anonymous class instance (a Function0, Function1, etc. object) that is heap-allocated, adding garbage collection pressure. This is why Kotlin's inline functions exist — they eliminate the object allocation by copying the lambda's bytecode directly to the call site at compile time.</p>
           <pre class="code-block"><span class="cm">// Higher-order function — takes a function as parameter</span>
 <span class="kw">fun</span> <span class="fn">performOperation</span>(x: <span class="tp">Int</span>, y: <span class="tp">Int</span>, operation: (<span class="tp">Int</span>, <span class="tp">Int</span>) -> <span class="tp">Int</span>): <span class="tp">Int</span> {
     <span class="kw">return</span> <span class="fn">operation</span>(x, y)
@@ -5420,13 +5428,15 @@ team2.members.<span class="fn">add</span>(u2)
 <span class="kw">val</span> evens2 = listOf(<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>).<span class="fn">filter</span> { it % <span class="nm">2</span> == <span class="nm">0</span> } <span class="cm">// [2]</span>
 <span class="kw">val</span> sum2 = listOf(<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>).<span class="fn">reduce</span> { acc, n -> acc + n }  <span class="cm">// 6</span></pre>
           <ul class="answer-points">
-            <li>Higher-order functions accept or return functions — enables functional programming patterns</li>
-            <li>Lambdas compile to anonymous classes implementing Function0, Function1, etc. — object allocations</li>
-            <li>Closures: lambdas capture variables from outer scope — be careful with mutable captures</li>
-            <li>Function references (::) are more efficient than equivalent lambdas in some cases</li>
-            <li>Use <code>inline</code> to avoid lambda object creation overhead in performance-critical paths</li>
+            <li><strong>Higher-order functions:</strong> Functions that accept other functions as parameters or return functions. This enables powerful patterns: forEach, map, filter, let, apply are all higher-order functions. You can define your own: <code>fun &lt;T&gt; retry(times: Int, block: () -> T): T</code> — a function that retries another function up to N times.</li>
+            <li><strong>Lambda syntax:</strong> <code>{ param -> expression }</code>. If there's only one parameter, you can use <code>it</code> implicitly. If the lambda is the last argument to a function, it can be moved outside the parentheses (trailing lambda syntax) — this is what makes DSLs like <code>lifecycleScope.launch { }</code> feel natural.</li>
+            <li><strong>Under the hood — object allocation:</strong> Each lambda compiles to an anonymous class implementing FunctionN (Function0 for no args, Function1 for one arg, etc.). Every call to a lambda-accepting function potentially creates a new object on the heap, contributing to garbage collection pressure. In tight loops or frequently-called functions, this adds up.</li>
+            <li><strong>Closures — capturing variables:</strong> Lambdas can capture variables from their enclosing scope. Unlike Java, Kotlin allows capturing mutable variables (not just final). Captured vars are wrapped in a Ref object on the heap. This makes closures powerful but means the lambda holds a reference to the captured variables — a common source of memory leaks when a lambda outlives its context.</li>
+            <li><strong>Function types:</strong> <code>(Int, String) -> Boolean</code> is a function type in Kotlin. You can declare variables of function type, pass them around, store them in collections. Nullable function types: <code>((Int) -> Unit)?</code>. Invoke them with .invoke() or just ().</li>
+            <li><strong>inline keyword — the solution to object allocation:</strong> Marking a higher-order function as inline tells the compiler to copy the function body AND the lambda body to every call site. No anonymous class created, no object allocation. This is why Kotlin's standard library functions like forEach, map, filter, let, run are all inline — they have zero overhead compared to writing the loop manually.</li>
+            <li><strong>Non-local returns:</strong> Inside a regular lambda you can only return from the lambda itself. But inside an inline function's lambda, you can use return to return from the enclosing function — this is called a non-local return. This is why <code>forEach { return }</code> returns from the outer function, not just the lambda.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Mentioning that lambdas create anonymous Function objects under the hood — and that inline functions eliminate this overhead — immediately shows you understand Kotlin beyond surface-level syntax.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Mentioning that lambdas create anonymous <code>Function</code> objects — and that <code>inline</code> eliminates this overhead — immediately signals you understand the JVM cost model. The most impressive follow-up: 'In RecyclerView adapters or onClickListener patterns that run thousands of times, lambda object creation adds GC pressure. inline removes it entirely.' Also: non-local returns are only possible from inline lambdas — this is why <code>forEach</code> is inline.</p></div>
         </div></div>
       </div>
 
@@ -5441,7 +5451,7 @@ team2.members.<span class="fn">add</span>(u2)
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Extension functions let you add new functions to existing classes without modifying them or subclassing. They're syntactic sugar — compiled to static methods with the receiver as the first parameter.</p>
+          <p class="answer-text">Extension functions are one of the most beloved Kotlin features — they let you add new functions to any class, including third-party libraries and Android framework classes you can't modify, without subclassing or the Decorator pattern. Syntactically they look like member functions; at runtime they're compiled to static methods that take the extended class as the first parameter. This is crucial to understand: extension functions don't actually modify the class, they don't have access to private members, and they're resolved statically based on the declared type — NOT the runtime type. This last point is a common source of subtle bugs.</p>
           <pre class="code-block"><span class="cm">// Extension function</span>
 <span class="kw">fun</span> <span class="tp">String</span>.<span class="fn">toTitleCase</span>(): <span class="tp">String</span> =
     <span class="fn">split</span>(<span class="str">" "</span>).<span class="fn">joinToString</span>(<span class="str">" "</span>) { it.<span class="fn">lowercase</span>().<span class="fn">replaceFirstChar</span> { c -> c.<span class="fn">uppercase</span>() } }
@@ -5475,13 +5485,15 @@ dog.<span class="fn">speak</span>()  <span class="cm">// "Animal speaks" — res
 <span class="cm">// Extensions cannot access private members</span>
 <span class="cm">// Extensions cannot be overridden polymorphically</span></pre>
           <ul class="answer-points">
-            <li>Compiled to static methods — no actual modification to the class</li>
-            <li>Resolved statically at compile time based on declared type — NOT runtime type</li>
-            <li>Member functions always win over extension functions with the same signature</li>
-            <li>Cannot access private or protected members of the receiver class</li>
-            <li>Can be defined on nullable types: <code>fun String?.orEmpty()</code></li>
+            <li><strong>Syntax and compilation:</strong> <code>fun String.isPalindrome(): Boolean = this == this.reversed()</code> — the receiver type (String) becomes the first parameter in the compiled bytecode: <code>public static boolean isPalindrome(String $this$isPalindrome)</code>. You can call it as <code>"racecar".isPalindrome()</code>, but it's just syntactic sugar for a static call.</li>
+            <li><strong>No access to private members:</strong> Since they compile to static methods, extension functions cannot access private or protected members of the extended class. They only see what's publicly available. This makes them safe to use on library/framework classes — they can't accidentally break encapsulation.</li>
+            <li><strong>Static dispatch — the most important gotcha:</strong> Extensions are resolved at compile time based on the DECLARED type, not the runtime type. If you have a variable of type Animal but the actual object is a Dog, and you call an extension defined on Animal, the Animal extension runs — not a Dog extension. Member functions always take priority over extensions with the same signature.</li>
+            <li><strong>Member vs extension priority:</strong> If a class has a member function and an extension function with the exact same signature, the member function always wins. This means you can't override existing behavior with extensions — only add new behavior. Trying to shadow a member function with an extension silently calls the member.</li>
+            <li><strong>Practical uses in Android:</strong> Context extensions (<code>fun Context.dpToPx(dp: Int): Int</code>), View extensions (<code>fun View.show() { visibility = View.VISIBLE }</code>), String extensions (<code>fun String.toEditable(): Editable</code>), and Fragment extensions are common patterns that eliminate repetitive code throughout Android apps.</li>
+            <li><strong>Extension properties:</strong> Work the same as extension functions but with property syntax. They don't actually store state — they're just syntactic sugar over getter/setter methods. <code>val String.lastChar: Char get() = this[length - 1]</code>. No backing field, no memory overhead.</li>
+            <li><strong>Scope of extension functions:</strong> Extensions defined at the top level of a file are available throughout the module. Extensions defined inside a class are only available within that class's scope. Extensions can be imported like regular functions. This makes them a powerful tool for organizing utility code without polluting the global namespace.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The static resolution is the key gotcha: if you declare a variable as Animal but it holds a Dog, calling an extension on it uses Animal's extension — not Dog's. Extensions cannot be polymorphic.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The static dispatch gotcha is the question that separates candidates who've read the docs from those who've been burned in production: 'If you declare a variable as <code>Animal</code> but assign a <code>Dog</code>, calling an extension on it uses Animal's extension, not Dog's.' Emphasize that extensions are resolved at compile time based on declared type, not runtime type. This is very different from overriding methods and trips up many developers.</p></div>
         </div></div>
       </div>
 
@@ -5496,7 +5508,7 @@ dog.<span class="fn">speak</span>()  <span class="cm">// "Animal speaks" — res
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Inline functions copy their body and all lambda parameters to the call site at compile time, eliminating lambda object allocation and enabling reified type parameters and non-local returns.</p>
+          <p class="answer-text">Inline functions are Kotlin's compile-time optimization for higher-order functions — when you mark a function as inline, the compiler copies the function's bytecode AND the lambda parameters' bytecode directly to every call site. No anonymous class is created, no virtual dispatch overhead, no object allocation. This eliminates the performance cost of higher-order functions in hot paths. But inlining comes with rules and two special modifiers — noinline and crossinline — for the cases where you don't want the standard inline behavior. Understanding these three modifiers is an intermediate-to-senior Kotlin topic that shows real depth of knowledge.</p>
           <pre class="code-block"><span class="cm">// Without inline — lambda creates an anonymous object every call</span>
 <span class="kw">fun</span> <span class="fn">measure</span>(block: () -> <span class="tp">Unit</span>) {
     <span class="kw">val</span> start = <span class="tp">System</span>.<fn>nanoTime</fn>()
@@ -5539,13 +5551,14 @@ dog.<span class="fn">speak</span>()  <span class="cm">// "Animal speaks" — res
 }
 <span class="fn">startActivity</span>&lt;<span class="tp">HomeActivity</span>&gt;(context)  <span class="cm">// no Class parameter needed!</span></pre>
           <ul class="answer-points">
-            <li>inline: copies function body and lambdas to call site — eliminates object allocation</li>
-            <li>Enables non-local returns (return from enclosing function inside lambda)</li>
-            <li>noinline: exclude specific lambda from inlining — needed when lambda is stored/passed around</li>
-            <li>crossinline: inline but disallow non-local returns — for lambdas passed to other contexts</li>
-            <li>reified: only works with inline — allows type parameter access at runtime</li>
+            <li><strong>inline — how it works:</strong> The compiler substitutes the function body AND every lambda parameter's body at the call site during compilation. The resulting bytecode is as if you wrote the implementation directly — zero overhead. This enables: (1) no lambda object allocation, (2) non-local returns, (3) reified type parameters. Cost: larger bytecode size if the function is called many times (code bloat).</li>
+            <li><strong>When to use inline:</strong> Higher-order functions that accept lambda parameters and are called frequently — especially standard library utilities. Don't inline large functions — the bytecode duplication cost outweighs the benefit. Don't inline functions that call their lambda conditionally or store it — use noinline instead.</li>
+            <li><strong>noinline — exclude a lambda from inlining:</strong> When a function is inline but you want one specific lambda parameter NOT to be inlined. Needed when you want to store the lambda in a variable, pass it to another non-inline function, or return it from the function. Inlined lambdas can't be stored or passed around — they exist only at the call site. <code>inline fun track(noinline onError: () -> Unit)</code></li>
+            <li><strong>crossinline — prevent non-local returns:</strong> Marks a lambda parameter that will be called in a different execution context (like another lambda or a Runnable). Non-local returns (returning from the enclosing function inside a lambda) are only allowed in direct call sites of inline functions. crossinline says: "this lambda will be inlined, but don't allow non-local returns in it." <code>inline fun runOnMain(crossinline block: () -> Unit) { handler.post { block() } }</code></li>
+            <li><strong>Non-local returns explained:</strong> Inside an inline lambda, you can write <code>return</code> to return from the enclosing function — this is called a non-local return. Example: <code>list.forEach { if (it == 0) return }</code> — this return exits the outer function, not just the forEach block. Without inline, this would be a compile error because you can't return from outside a lambda.</li>
+            <li><strong>reified type parameters:</strong> Only possible with inline functions. By default, generic type T is erased at runtime — you can't do <code>is T</code> or <code>T::class</code>. With reified + inline, the compiler substitutes the actual type at the call site, making runtime type information available. This is used extensively in Kotlin libraries: <code>inline fun &lt;reified T&gt; Context.startActivity()</code>.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Don't inline large functions — it copies the entire body to every call site, increasing bytecode size. Inline is best for small utility functions with lambda parameters used frequently.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Don't inline large functions — it copies the entire function body to every call site, increasing bytecode size and potentially causing Android's 64K dex method limit to be hit faster. The rule of thumb: inline is best for small utility functions that accept lambdas (1–10 lines). Also: <code>noinline</code> and <code>crossinline</code> are rarely needed but interviewers ask about them — noinline prevents a lambda from being inlined, crossinline prevents non-local returns.</p></div>
         </div></div>
       </div>
 
@@ -5560,7 +5573,7 @@ dog.<span class="fn">speak</span>()  <span class="cm">// "Animal speaks" — res
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Generics provide type safety and code reusability. Variance controls how subtyping relates to generic types — a fundamental concept for writing correct generic APIs.</p>
+          <p class="answer-text">Generics let you write type-safe code that works with any type — avoiding casts and providing compile-time type checking. Kotlin's generics work similarly to Java's, but with key improvements: declaration-site variance (out/in modifiers on the type parameter itself) instead of Java's use-site wildcards (? extends T, ? super T). Understanding variance is one of the hardest Kotlin/JVM topics but is essential for writing correct generic APIs. The core question: if Dog is a subtype of Animal, is List&lt;Dog&gt; a subtype of List&lt;Animal&gt;? The answer depends on how the generic type is used — if it only produces values (read-only), yes; if it can also consume values (writable), no.</p>
           <pre class="code-block"><span class="cm">// Generic class — works with any type T</span>
 <span class="kw">class</span> <span class="tp">Box</span>&lt;T&gt;(<span class="kw">val</span> value: T)
 <span class="kw">val</span> intBox = <span class="tp">Box</span>(<span class="nm">42</span>)       <span class="cm">// Box&lt;Int&gt;</span>
@@ -5595,13 +5608,14 @@ dog.<span class="fn">speak</span>()  <span class="cm">// "Animal speaks" — res
     <span class="fn">println</span>(list.<span class="fn">size</span>)  <span class="cm">// can read, elements are Any?</span>
 }</pre>
           <ul class="answer-points">
-            <li><strong>Invariant (default):</strong> Box&lt;Dog&gt; is NOT a Box&lt;Animal&gt; — neither can substitute the other</li>
-            <li><strong>out (covariant):</strong> Producer — can only return T; Box&lt;Dog&gt; IS a Box&lt;Animal&gt;</li>
-            <li><strong>in (contravariant):</strong> Consumer — can only accept T; Box&lt;Animal&gt; IS a Box&lt;Dog&gt;</li>
-            <li><strong>Star projection (*):</strong> unknown type — like Java's wildcard, read-only access</li>
-            <li>Kotlin's List is List&lt;out E&gt; (covariant); MutableList is invariant</li>
+            <li><strong>Invariance (default):</strong> By default, generic types are invariant — <code>MutableList&lt;Dog&gt;</code> is NOT a subtype of <code>MutableList&lt;Animal&gt;</code>, even though Dog is a subtype of Animal. This is correct for mutable containers: if you could pass a <code>MutableList&lt;Dog&gt;</code> where <code>MutableList&lt;Animal&gt;</code> is expected, someone could add a Cat to it — type unsafety.</li>
+            <li><strong>out (covariance) — producer:</strong> <code>out T</code> means the class only produces T values (only returns T, never takes T as input). This makes <code>List&lt;Dog&gt;</code> assignable to <code>List&lt;Animal&gt;</code> because read-only lists can't cause type unsafety. Kotlin's List interface uses out — <code>interface List&lt;out T&gt;</code>. Attempting to add to a covariant type is a compile error.</li>
+            <li><strong>in (contravariance) — consumer:</strong> <code>in T</code> means the class only consumes T values (only takes T as input, never returns T). Example: <code>Comparator&lt;in Animal&gt;</code> — a comparator that can compare Animals can also compare Dogs (since Dogs are Animals). Contravariance goes the opposite direction: <code>Comparator&lt;Animal&gt;</code> is assignable to <code>Comparator&lt;Dog&gt;</code>.</li>
+            <li><strong>Star projection (*):</strong> <code>List&lt;*&gt;</code> means "a list of some unknown type." You can read from it (getting Any? values), but you can't write to it (unknown type = unknown what's safe to add). Used when the type doesn't matter — e.g., checking if something is a List: <code>if (obj is List&lt;*&gt;)</code>. The star projection equivalent of Java's raw types, but type-safe.</li>
+            <li><strong>Type bounds:</strong> <code>&lt;T : Comparable&lt;T&gt;&gt;</code> constrains T to types that implement Comparable. Upper bounds restrict what types can be used. Multiple bounds use where: <code>&lt;T&gt; where T : Comparable&lt;T&gt;, T : Serializable</code>.</li>
+            <li><strong>Declaration-site vs use-site variance:</strong> Kotlin's out/in on the class declaration (declaration-site) is cleaner than Java's use-site wildcards (<code>? extends T</code>). The class author declares variance once; users don't need to add wildcards at every usage. However, you can still use use-site variance (<code>out T</code> at the usage) for classes you didn't write.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Remember: "out = Producer = return only", "in = Consumer = accept only." PECS from Java — Producer Extends, Consumer Super — maps to Kotlin's out and in respectively.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Use the producer/consumer mnemonic: 'out = producer of T (you can only GET T out), in = consumer of T (you can only PUT T in).' PECS from Java — Producer Extends, Consumer Super — maps directly. Star projection (<code>*</code>) is for when you want to use a generic type but don't care about its parameter — useful for reflection but loses type information. A real example: <code>List&lt;out Number&gt;</code> can accept a <code>List&lt;Int&gt;</code>.</p></div>
         </div></div>
       </div>
 
@@ -5616,7 +5630,7 @@ dog.<span class="fn">speak</span>()  <span class="cm">// "Animal speaks" — res
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">reified allows access to generic type information at runtime, bypassing Java's type erasure. It's only possible with inline functions because inlining copies the function body to the call site, where the actual type is known.</p>
+          <p class="answer-text">Type erasure is a fundamental JVM limitation: at runtime, the JVM forgets the generic type parameter — <code>List&lt;String&gt;</code> and <code>List&lt;Int&gt;</code> are both just <code>List</code> at the bytecode level. This means you can't write <code>if (value is T)</code> or <code>T::class</code> in a generic function — the JVM has no idea what T is at runtime. The reified keyword solves this exclusively for inline functions: because inlining copies the function body to the call site where the actual type is known, the compiler can substitute the real type T at each call site. This is one of the most powerful (and uniquely Kotlin) features you won't find in Java.</p>
           <pre class="code-block"><span class="cm">// Problem: Type erasure — T is unknown at runtime in regular generics</span>
 <span class="kw">fun</span> &lt;T&gt; <span class="fn">isType</span>(value: <span class="tp">Any</span>): <span class="tp">Boolean</span> {
     <span class="kw">return</span> value <span class="kw">is</span> T  <span class="cm">// ❌ ERROR: Cannot check for erased type T</span>
@@ -5651,13 +5665,14 @@ dog.<span class="fn">speak</span>()  <span class="cm">// "Animal speaks" — res
 <span class="cm">// At each call site the actual type (String, User, etc.) is known at compile time</span>
 <span class="cm">// The compiler replaces T with the actual class reference</span></pre>
           <ul class="answer-points">
-            <li>Type erasure: generic type T is erased at runtime — normally can't use T::class or is T</li>
-            <li>reified + inline: compiler copies function body to each call site where type is known</li>
-            <li>Enables: <code>is T</code>, <code>as T</code>, <code>T::class</code>, <code>T::class.java</code> inside inline functions</li>
-            <li>Common uses: startActivity, type-safe JSON parsing, filterIsInstance</li>
-            <li>Cannot be used in non-inline functions — type must be concretely known at compilation</li>
+            <li><strong>Type erasure — the problem:</strong> Generic type parameters exist only at compile time. At runtime, <code>List&lt;String&gt;</code>, <code>List&lt;Int&gt;</code>, <code>List&lt;User&gt;</code> are all just <code>List</code>. This means: can't do <code>listOf&lt;String&gt;() is List&lt;String&gt;</code>, can't do <code>T::class.java</code>, can't use T in instanceof/is checks. Java's answer is unchecked casts and @SuppressWarnings("unchecked") — messy and unsafe.</li>
+            <li><strong>reified — the solution:</strong> Marking a generic type parameter as reified (on an inline function) tells the compiler to substitute the real type at each call site during inlining. The result: T becomes a concrete, accessible type in each copy of the function body. <code>inline fun &lt;reified T&gt; parseJson(json: String): T = gson.fromJson(json, T::class.java)</code> — this works because the compiler inlines parseJson at each call site where T is known.</li>
+            <li><strong>Why only inline functions?</strong> Non-inline functions are compiled once to bytecode and called at runtime — at that point, T is already erased. Inline functions are expanded at the call site during compilation — the compiler substitutes the actual type before the bytecode is finalized. Without inlining, reified is impossible.</li>
+            <li><strong>Practical uses in Android:</strong> Starting a typed Activity (<code>inline fun &lt;reified T: Activity&gt; Context.start() { startActivity(Intent(this, T::class.java)) }</code>), getting a ViewModel (<code>inline fun &lt;reified T: ViewModel&gt; Fragment.viewModels()</code> — this is how the Jetpack viewModels() delegate works internally), parsing JSON (<code>inline fun &lt;reified T&gt; fromJson(json: String): T</code>), and Gson/Moshi type adapters.</li>
+            <li><strong>is and as with reified:</strong> Inside a reified inline function, <code>value is T</code> and <code>value as T</code> work correctly. Outside of inline functions, these are compile errors. This enables type filtering: <code>inline fun &lt;reified T&gt; List&lt;*&gt;.filterIsInstance(): List&lt;T&gt;</code> — the standard library's filterIsInstance() uses this exact pattern.</li>
+            <li><strong>Cannot do everything:</strong> Even with reified, you can't create new instances of T (like <code>T()</code>) unless you pass a factory function. Reified only gives you access to the type object — not construction capability. For that, pass a <code>() -> T</code> factory parameter or use a class reference with reflection.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Explain WHY reified needs inline: "The function is copied to each call site where the compiler knows the actual type. Without inlining, the function is compiled once — and at that point, T is erased."</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Explain the mechanism, not just the effect: 'Type erasure means the JVM forgets generic type parameters at runtime — a <code>List&lt;String&gt;</code> and a <code>List&lt;Int&gt;</code> are both just <code>List</code> at runtime. <code>reified</code> works around this by inlining the function, so the compiler knows the actual type at the call site and injects it.' The practical example: <code>inline fun &lt;reified T&gt; startActivity()</code> — used in every Android navigation helper.</p></div>
         </div></div>
       </div>
 
@@ -5672,7 +5687,7 @@ dog.<span class="fn">speak</span>()  <span class="cm">// "Animal speaks" — res
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Kotlin's by keyword provides first-class support for the delegation pattern — both for class implementation and property get/set logic — eliminating massive amounts of boilerplate.</p>
+          <p class="answer-text">Kotlin's by keyword enables two distinct but related patterns: class delegation (forwarding interface implementations to another object) and property delegation (delegating property get/set logic to a reusable delegate object). Both are expressions of the same idea: composition over inheritance. Instead of subclassing to add behavior, you delegate to another object. Kotlin makes this pattern first-class — what would require 50 lines of manual forwarding in Java is one line with by. The built-in delegates (lazy, observable, vetoable, by map) solve common patterns so cleanly that once you know them, you find yourself using them constantly in Android code.</p>
           <pre class="code-block"><span class="cm">// CLASS DELEGATION — delegate interface implementation to another object</span>
 <span class="kw">interface</span> <span class="tp">Printer</span> { <span class="kw">fun</span> <span class="fn">print</span>(text: <span class="tp">String</span>) }
 <span class="kw">class</span> <span class="tp">ConsolePrinter</span> : <span class="tp">Printer</span> { <span class="kw">override fun</span> <span class="fn">print</span>(text: <span class="tp">String</span>) = <span class="fn">println</span>(text) }
@@ -5713,13 +5728,15 @@ age = -<span class="nm">1</span>  <span class="cm">// ❌ rejected, age stays 25
 }
 <span class="kw">var</span> userName <span class="kw">by</span> <span class="tp">SharedPrefsDelegate</span>(<span class="str">"user_name"</span>, <span class="str">""</span>)</pre>
           <ul class="answer-points">
-            <li>Class delegation: <code>by</code> forwards interface implementation to another object — composition over inheritance</li>
-            <li>lazy: thread-safe by default, initializer runs only once on first access</li>
-            <li>observable: callback fires after every assignment — good for UI state changes</li>
-            <li>vetoable: callback fires before assignment, can reject the new value</li>
-            <li>Custom delegates: implement getValue/setValue operators — used for SharedPrefs, SavedStateHandle</li>
+            <li><strong>Class delegation (interface delegation):</strong> <code>class LoggingList&lt;T&gt;(private val inner: MutableList&lt;T&gt;) : MutableList&lt;T&gt; by inner</code> — all MutableList methods are automatically forwarded to inner. You only need to override the methods you want to customize. Without by, you'd write 20+ forwarding methods manually. This is the decorator pattern in one line.</li>
+            <li><strong>lazy { } delegate:</strong> <code>val heavyObject: HeavyObject by lazy { HeavyObject() }</code> — the initializer block runs once on first access, result cached forever. Thread-safe by default (LazyThreadSafetyMode.SYNCHRONIZED). The most commonly used delegate in Android — for ViewBinding, for repositories that need a context, for any expensive one-time computation. Three thread-safety modes: SYNCHRONIZED (default), PUBLICATION, NONE.</li>
+            <li><strong>Delegates.observable:</strong> <code>var name: String by Delegates.observable("initial") { prop, old, new -> log("$old → $new") }</code> — the callback fires after every assignment. Use for debugging property changes, triggering side effects, or implementing simple two-way binding. The callback receives the property, old value, and new value.</li>
+            <li><strong>Delegates.vetoable:</strong> Like observable but the callback can PREVENT the assignment by returning false. <code>var age: Int by Delegates.vetoable(0) { _, _, new -> new >= 0 }</code> — negative ages are rejected. Useful for validation without throwing exceptions.</li>
+            <li><strong>by map (property delegation to map):</strong> <code>val name: String by map</code> — reads the property from a Map using the property name as the key. The map must contain the key. Great for JSON deserialization scenarios or configuration objects backed by key-value stores.</li>
+            <li><strong>Custom delegates:</strong> Implement ReadOnlyProperty&lt;R, T&gt; or ReadWriteProperty&lt;R, T&gt; interfaces. Define getValue() (and setValue() for read-write). This is how SharedPreferences delegates, DataStore delegates, and argument delegates (e.g., Fragment args by navArgs()) are built in Android libraries.</li>
+            <li><strong>Android usage — Fragment arguments:</strong> The Jetpack Navigation <code>by navArgs()</code> and the custom <code>by argument(key)</code> patterns are property delegates — they read from Fragment.arguments bundle on first access. This is the idiomatic way to handle Fragment arguments without boilerplate.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Android uses delegation heavily: by viewModels(), by activityViewModels(), by navArgs() — all are Kotlin property delegates. Mentioning these Android-specific examples shows you connect language features to real usage.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The most impressive answer shows you've used multiple delegates in production: 'by <code>lazy</code> for expensive ViewModel factories, by <code>viewModels()</code> and <code>navArgs()</code> in Fragments (which ARE Kotlin delegates under the hood), <code>ObservableProperty</code> for automatically notifying UI of changes.' Class delegation with <code>by</code> is also powerful for the Decorator pattern — you can delegate most interface implementation to a wrapped instance and only override specific methods.</p></div>
         </div></div>
       </div>
 
@@ -5734,7 +5751,7 @@ age = -<span class="nm">1</span>  <span class="cm">// ❌ rejected, age stays 25
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Kotlin allows overloading a predefined set of operators by providing implementations of corresponding functions with the operator modifier. This makes custom classes feel like built-in types.</p>
+          <p class="answer-text">Operator overloading lets you define what standard operators (+, -, *, /, [], in, ==, >, etc.) mean for your custom classes. Kotlin restricts overloading to a specific predefined set of operators — unlike C++ where you can overload almost anything. The key rule: operator functions must be marked with the operator modifier, and they must use specific function names that Kotlin maps to each operator. When done well, operator overloading makes code dramatically more readable — <code>matrix1 + matrix2</code> is clearer than <code>matrix1.add(matrix2)</code>. When done poorly, it makes code cryptic. The standard guidance: only overload operators when the operation is natural and obvious to the reader.</p>
           <pre class="code-block"><span class="kw">data class</span> <span class="tp">Vector</span>(<span class="kw">val</span> x: <span class="tp">Double</span>, <span class="kw">val</span> y: <span class="tp">Double</span>) {
 
     <span class="cm">// Arithmetic operators</span>
@@ -5769,13 +5786,15 @@ age = -<span class="nm">1</span>  <span class="cm">// ❌ rejected, age stays 25
 <span class="kw">val</span> add5 = <span class="tp">Adder</span>(<span class="nm">5</span>)
 <span class="fn">println</span>(<span class="fn">add5</span>(<span class="nm">3</span>))  <span class="cm">// 8 — object called like a function!</span></pre>
           <ul class="answer-points">
-            <li>Arithmetic: plus, minus, times, div, rem, unaryMinus, unaryPlus</li>
-            <li>Comparison: compareTo (enables &gt;, &lt;, &gt;=, &lt;=)</li>
-            <li>Indexing: get, set (enables obj[i])</li>
-            <li>invoke: makes instances callable as functions</li>
-            <li>in: contains (enables the <code>in</code> operator)</li>
+            <li><strong>Arithmetic operators:</strong> plus (+), minus (-), times (*), div (/), rem (%). Also unary: unaryMinus (-x), unaryPlus (+x), not (!x). Example: <code>operator fun Vector.plus(other: Vector) = Vector(x + other.x, y + other.y)</code>. These are the most commonly overloaded operators — for math types like Money, Vector, Matrix, Fraction.</li>
+            <li><strong>Comparison operators:</strong> Implement <code>compareTo</code> — overloads &lt;, &gt;, &lt;=, &gt;=. Must return Int (negative, zero, positive). By implementing Comparable&lt;T&gt; and its compareTo, your class gets all four comparison operators plus sort() support automatically.</li>
+            <li><strong>Equality — equals():</strong> The == operator calls equals() under the hood. Data classes generate equals() for you. For other classes, override equals() (and always hashCode() together) to define equality semantics. Note: === always checks reference identity regardless of equals().</li>
+            <li><strong>Index operator — get/set:</strong> <code>operator fun get(index: Int): T</code> and <code>operator fun set(index: Int, value: T)</code> enable <code>obj[i]</code> and <code>obj[i] = value</code>. This is how Matrix[row][col] access works, how custom collections expose elements, and how Jetpack Compose's mutableStateMapOf works.</li>
+            <li><strong>invoke — callable objects:</strong> <code>operator fun invoke()</code> makes an instance callable like a function: <code>val handler = Handler(); handler()</code>. This is used extensively in Kotlin for factory objects, function-like interfaces, and command patterns. SAM (single abstract method) interfaces are essentially this pattern.</li>
+            <li><strong>in operator — contains:</strong> <code>operator fun contains(element: T): Boolean</code> enables the <code>in</code> keyword: <code>if (item in collection)</code>. Ranges use this. All Kotlin collections support it. You can add it to custom types to support natural "membership" syntax.</li>
+            <li><strong>rangeTo / rangeUntil:</strong> <code>operator fun rangeTo(other: T): ClosedRange&lt;T&gt;</code> enables <code>1..10</code> and custom range creation. By combining rangeTo with contains and iterator, you can make custom types work in for loops and range checks.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The invoke operator is the most surprising one — it makes instances callable like functions. This is how Kotlin lambda syntax works internally: lambdas are objects with an invoke operator.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The key principle to state: 'I overload operators only when the semantics are completely obvious to anyone reading the code — <code>Point + Point</code> makes sense, but <code>User + User</code> would be confusing.' The <code>invoke</code> operator is the most surprising — making instances callable like functions enables function-object patterns and DSLs. The <code>contains</code> operator (<code>in</code>) and <code>get</code>/<code>set</code> operators are very useful for domain-specific collections.</p></div>
         </div></div>
       </div>
 
@@ -5790,7 +5809,7 @@ age = -<span class="nm">1</span>  <span class="cm">// ❌ rejected, age stays 25
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Kotlin separates read-only and mutable collections at the type system level. Sequences provide lazy evaluation — critical for large datasets and chained operations.</p>
+          <p class="answer-text">Kotlin's collection system is built on a key design principle: separation of read-only and mutable interfaces. List is read-only (no add/remove); MutableList is mutable. This isn't about true immutability — a List variable might point to an ArrayList underneath — it's about expressing intent in your API. Sequences add a third dimension: lazy vs eager evaluation. A list operation like .map().filter().take() creates intermediate lists at every step. A sequence processes each element through the entire chain before moving to the next — no intermediate lists, dramatically more efficient for large datasets or long chains. Knowing when to use List vs Sequence is an important performance skill.</p>
           <pre class="code-block"><span class="cm">// Immutable collection interfaces — read-only view</span>
 <span class="kw">val</span> list: <span class="tp">List</span>&lt;<span class="tp">Int</span>&gt;       = <span class="fn">listOf</span>(<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>)       <span class="cm">// cannot add/remove</span>
 <span class="kw">val</span> set:  <span class="tp">Set</span>&lt;<span class="tp">Int</span>&gt;        = <span class="fn">setOf</span>(<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>)        <span class="cm">// unique, unordered</span>
@@ -5821,13 +5840,14 @@ names.<fn>associate</fn> { it to it.<fn>length</fn> } <span class="cm">// {Alice
 names.<fn>zip</fn>(<span class="fn">listOf</span>(<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>))          <span class="cm">// [(Alice,1), (Bob,2), (Charlie,3)]</span>
 names.<fn>flatMap</fn> { it.<fn>toList</fn>() }       <span class="cm">// [A,l,i,c,e,B,o,b,...]</span></pre>
           <ul class="answer-points">
-            <li>List/Set/Map: read-only interfaces — MutableList/MutableSet/MutableMap for mutation</li>
-            <li>Read-only ≠ immutable — the underlying implementation can still be mutable</li>
-            <li>Sequences: lazy — each element flows through the entire pipeline before the next one</li>
-            <li>Use Sequence for: large collections, multiple chained operations, early termination (first, take)</li>
-            <li>Use List for: small collections, single operations — Sequence has overhead for small sizes</li>
+            <li><strong>Read-only vs mutable interfaces:</strong> List, Set, Map are read-only views — no add, remove, or set. MutableList, MutableSet, MutableMap have the mutation operations. listOf() returns a read-only List; mutableListOf() returns a MutableList. Prefer read-only interfaces in function signatures — it communicates that the caller can't modify the collection and prevents accidental mutation.</li>
+            <li><strong>Read-only ≠ immutable:</strong> A List&lt;T&gt; variable might point to an ArrayList internally. Multiple references can exist — one as List (read-only) and one as MutableList (mutable). Mutating via the MutableList reference changes what the List reference sees. For true immutability, use kotlinx.collections.immutable or copy the collection. This is a common misconception that trips up developers.</li>
+            <li><strong>Eager evaluation (List operations):</strong> Standard collection operations (map, filter, flatMap) are eager — they immediately process the entire collection and return a new list. Chaining three operations on a 10,000-element list creates three intermediate lists: one after map (10k elements), one after filter (unknown elements), one after take. For small collections, this is fine. For large ones, it's wasteful.</li>
+            <li><strong>Sequences — lazy evaluation:</strong> <code>list.asSequence().map { }.filter { }.take(10)</code> processes elements one-by-one through the ENTIRE chain. No intermediate lists. Only produces 10 results because take stops early. For a 1M element list where you only need the first 10 filtered items, the sequence is dramatically faster and uses far less memory. Use sequences for: large collections, long chains of operations, potentially early-terminating operations.</li>
+            <li><strong>When NOT to use Sequences:</strong> Small collections (< ~1000 elements) — the lazy overhead can actually be slower due to the object allocation per element. Stateful operations like sorted() and distinct() can't benefit from laziness (they need to see all elements anyway). The crossover point is roughly 1000 elements — benchmark your specific case.</li>
+            <li><strong>Array vs List:</strong> Array&lt;T&gt; is a fixed-size, mutable Java array. List is resizable (ArrayList under the hood). For primitives, use IntArray, LongArray etc. — they map to int[], long[] avoiding boxing overhead. Never use Array&lt;Int&gt; — that boxes every Int. For most Android code, use List; use arrays only for performance-critical code or when interfacing with APIs that require arrays.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Rule of thumb: if your pipeline has 3+ operations OR the collection has 1000+ elements, use asSequence(). For small collections, the overhead of Sequence object creation outweighs the benefit.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The sequence performance question is a favorite: 'When do you use sequences over collections?' — answer: when your pipeline has 3+ operations OR the collection has 1000+ elements. The key insight: collections evaluate eagerly (all elements at each step), sequences evaluate lazily (element by element through the whole pipeline). One concrete example: <code>items.asSequence().filter{}.map{}.firstOrNull()</code> stops at the first match — collections would process ALL items even if the first match is at index 0.</p></div>
         </div></div>
       </div>
 
@@ -5842,7 +5862,7 @@ names.<fn>flatMap</fn> { it.<fn>toList</fn>() }       <span class="cm">// [A,l,i
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">when is Kotlin's powerful replacement for Java's switch statement. It's an expression (returns a value), supports any type (not just ints/strings), handles ranges, types, and conditions.</p>
+          <p class="answer-text">The when expression is Kotlin's supercharged replacement for Java's switch statement, and the upgrade is dramatic. Java's switch is limited to integers, strings, and enums, requires break statements to avoid fall-through, and can only be a statement (not return a value). Kotlin's when works with any type, has no fall-through, can match ranges and conditions, performs smart casts, and is an expression — meaning it can return a value and be used directly in assignments or as function arguments. When combined with sealed classes, it becomes exhaustive — the compiler forces you to handle every case, turning runtime bugs into compile-time errors.</p>
           <pre class="code-block"><span class="cm">// Basic when — replaces switch</span>
 <span class="kw">when</span> (x) {
     <span class="nm">1</span>    -> <span class="fn">println</span>(<span class="str">"one"</span>)
@@ -5882,13 +5902,14 @@ names.<fn>flatMap</fn> { it.<fn>toList</fn>() }       <span class="cm">// [A,l,i
     <span class="kw">is</span> <span class="tp">UiState</span>.<span class="tp">Error</span>   -> <span class="fn">showError</span>(state.message)
 }</pre>
           <ul class="answer-points">
-            <li>when is an expression — can return a value and be used in assignments</li>
-            <li>Supports: value matching, range checks (in), type checks (is), conditions without argument</li>
-            <li>Smart cast: when (obj) is String → obj is automatically String in that branch</li>
-            <li>With sealed classes: no else needed — compiler verifies exhaustiveness</li>
-            <li>Key differences from Java switch: expression (not statement), no fallthrough, any type</li>
+            <li><strong>when as an expression:</strong> <code>val label = when (status) { Status.LOADING -> "Loading..." Status.SUCCESS -> "Done" Status.ERROR -> "Failed" }</code> — the value of the matching branch is returned. When used as an expression, the else branch is required unless the compiler can prove exhaustiveness (sealed class/interface, enum with all cases covered).</li>
+            <li><strong>Type matching and smart casts:</strong> <code>when (shape) { is Circle -> println(shape.radius) is Rectangle -> println(shape.width) }</code> — inside each is branch, the variable is smart-cast to the matched type. No explicit cast needed. This is the primary pattern for working with sealed class hierarchies.</li>
+            <li><strong>Range and condition matching:</strong> <code>when (score) { in 90..100 -> "A" in 80 until 90 -> "B" else -> "C" }</code>. Conditions can be any boolean expression. Multiple values in one branch: <code>1, 2, 3 -> "small"</code>. This replaces chains of if-else if in Java.</li>
+            <li><strong>when without argument — replaces if-else chains:</strong> <code>when { x > 10 -> "big" x > 5 -> "medium" else -> "small" }</code> — evaluates each condition as a boolean. When without an argument is cleaner than long if-else if chains, especially when conditions are unrelated to a single value.</li>
+            <li><strong>Exhaustive when with sealed classes — the killer feature:</strong> When you use a sealed class/interface in a when expression (not statement), the compiler verifies all subclasses are handled. No else needed, and adding a new subclass causes a compile error at every when that doesn't handle it. This is how safe state machines are built in Kotlin — impossible to forget a state.</li>
+            <li><strong>when vs if:</strong> Use when when you're branching based on a single value with multiple cases — cleaner and faster. Use if for simple binary conditions or when conditions aren't variations of the same value. In Compose, use when extensively for UiState rendering: when (uiState) { is Loading -> LoadingSpinner() is Success -> ContentList(uiState.data) is Error -> ErrorMessage(uiState.msg) }.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Using when as an expression (assigning its result to val) is idiomatic Kotlin — it's concise and immutable. Mention that unlike Java switch, when has no fallthrough behavior — each branch is independent.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The sealed class + <code>when</code> combination is the most impressive answer: 'In every ViewModel I write, I use <code>when (uiState) { is Loading, is Success, is Error }</code> as an expression — the compiler forces me to handle all states, so adding a new state is a compile error, not a runtime bug.' Also highlight that <code>when</code> with no argument is a cleaner if-else chain — each branch can be an arbitrary boolean expression.</p></div>
         </div></div>
       </div>
 
@@ -5903,7 +5924,7 @@ names.<fn>flatMap</fn> { it.<fn>toList</fn>() }       <span class="cm">// [A,l,i
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Destructuring declarations let you unpack an object into multiple variables simultaneously. They work via componentN() convention functions auto-generated by data classes.</p>
+          <p class="answer-text">Destructuring declarations let you unpack an object's components into individual named variables in a single statement, making code more expressive and reducing the need for intermediate variables. <code>val (name, age) = person</code> is cleaner than <code>val name = person.name; val age = person.age</code>. Under the hood, destructuring is just syntactic sugar for calling componentN() functions — component1(), component2(), etc. Data classes auto-generate these. Any class can support destructuring by defining its own componentN() operators. The feature integrates deeply with for loops, lambda parameters, and function return values.</p>
           <pre class="code-block"><span class="cm">// data class auto-generates component1(), component2(), etc.</span>
 <span class="kw">data class</span> <span class="tp">User</span>(<span class="kw">val</span> name: <span class="tp">String</span>, <span class="kw">val</span> age: <span class="tp">Int</span>, <span class="kw">val</span> city: <span class="tp">String</span>)
 
@@ -5943,13 +5964,14 @@ pairs.<fn>forEach</fn> { (num, word) -> <span class="fn">println</span>(<span cl
 <span class="cm">// Pair and Triple support destructuring</span>
 <span class="kw">val</span> (first, second) = <span class="tp">Pair</span>(<span class="str">"Hello"</span>, <span class="nm">42</span>)</pre>
           <ul class="answer-points">
-            <li>Destructuring desugars to component1(), component2(), etc. calls</li>
-            <li>Data classes auto-generate componentN() for all primary constructor properties in order</li>
-            <li>Use _ to skip components you don't need</li>
-            <li>Works in: variable declarations, for loops, lambda parameters</li>
-            <li>Any class can support destructuring by declaring operator fun componentN()</li>
+            <li><strong>ComponentN convention:</strong> Destructuring calls component1() for the first variable, component2() for the second, etc. Data classes generate these automatically for all primary constructor properties in declaration order. For non-data classes, declare them yourself with the operator modifier: <code>operator fun component1() = name</code>.</li>
+            <li><strong>Data class destructuring:</strong> <code>data class User(val name: String, val age: Int); val (name, age) = user</code>. Order matters — component1 maps to the first property, component2 to the second. If you reorder properties in the constructor, all destructuring sites silently break. This is a well-known data class pitfall — add a property to the constructor and all destructuring downstream shifts.</li>
+            <li><strong>Underscore to skip components:</strong> <code>val (_, age) = user</code> — use _ to skip components you don't need. This avoids creating unused variables. The _ tells the compiler and readers "I'm intentionally ignoring this component." Essential when destructuring Pairs where you only need one element.</li>
+            <li><strong>Destructuring in for loops:</strong> <code>for ((key, value) in map)</code> — Map.Entry has component1() (key) and component2() (value). This is the idiomatic way to iterate maps. Also works with lists of pairs or data classes: <code>for ((user, score) in userScores)</code>.</li>
+            <li><strong>Destructuring in lambda parameters:</strong> <code>map.forEach { (key, value) -> println("$key=$value") }</code> — the lambda parameter is destructured inline. This only works when the lambda takes a single Pair or data class parameter. Note the parentheses around (key, value) — without them, you get a single parameter that happens to be destructured.</li>
+            <li><strong>Returning multiple values:</strong> Kotlin functions return a single value, but you can effectively return multiple values by returning a data class or Pair: <code>fun minMax(list: List&lt;Int&gt;): Pair&lt;Int, Int&gt; = list.min() to list.max()</code>, then <code>val (min, max) = minMax(list)</code>. Prefer data classes over Pairs for more than 2 values — they're named and self-documenting.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Property ORDER matters for destructuring — components are numbered by position in the primary constructor, not by name. Reordering data class properties can silently break destructuring code.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The gotcha interviewers love: 'Adding a new property to the beginning or middle of the primary constructor silently changes which value goes to which <code>componentN</code> — this breaks every destructuring of that class without a compile error.' Best practice: always use named variables in destructuring (<code>val (id, name) = user</code> → comment what each position is), or avoid destructuring altogether for data classes with 3+ properties. Also: <code>_</code> can skip components you don't need.</p></div>
         </div></div>
       </div>
 
@@ -5964,7 +5986,9 @@ pairs.<fn>forEach</fn> { (num, word) -> <span class="fn">println</span>(<span cl
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Kotlin's object keyword serves three distinct purposes — each solving a different problem in a cleaner way than Java's static methods or anonymous inner classes.</p>
+          <p class="answer-text">
+              Kotlin's <code>object</code> keyword creates singletons, companion objects, and anonymous objects — three related but distinct constructs. A top-level <code>object</code> declaration is a thread-safe, lazily-initialized singleton backed by a static <code>INSTANCE</code> field on the JVM. A <code>companion object</code> lives inside a class and serves as its "static" namespace — members are accessed via the class name. An anonymous <code>object</code> creates a one-off instance of an interface or abstract class without declaring a named class, similar to Java's anonymous inner classes.
+            </p>
           <pre class="code-block"><span class="cm">// 1. Object declaration — Singleton</span>
 <span class="kw">object</span> <span class="tp">AppConfig</span> {
     <span class="kw">val</span> baseUrl = <span class="str">"https://api.myapp.com"</span>
@@ -6014,7 +6038,9 @@ counter.count++</pre>
             <li>@JvmStatic: makes companion method a true static in bytecode — needed for Java interop</li>
             <li>Companion object can implement interfaces — used in factory pattern and type class pattern</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Object declarations are lazy and thread-safe by default — Kotlin handles the double-checked locking for you. In Java, implementing a thread-safe singleton requires careful synchronized code. Mention this advantage.</p></div>
+          <div class="tip-box">
+              <strong>Interview Tip:</strong> Explain the three distinct usages of <code>object</code> clearly. A common follow-up is "how do you expose a companion member as a true Java static?" — answer: <code>@JvmStatic</code>. Another good angle: discuss why Kotlin companions can implement interfaces while Java statics cannot, and how that enables more expressive factory patterns.
+            </div>
         </div></div>
       </div>
 
@@ -6029,7 +6055,9 @@ counter.count++</pre>
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Kotlin has no checked exceptions — all exceptions are unchecked. This eliminates the verbose try-catch boilerplate Java forces, but requires disciplined error handling design.</p>
+          <p class="answer-text">
+              Kotlin has no checked exceptions — all exceptions are unchecked, unlike Java where methods must declare or catch checked exceptions. This design choice reduces boilerplate and avoids the "swallowed exception" anti-pattern common in Java code. Kotlin also allows <code>try</code> to be used as an expression returning a value, and the standard library provides <code>runCatching</code> which wraps execution in a <code>Result</code> type for functional error handling without exceptions.
+            </p>
           <pre class="code-block"><span class="cm">// No checked exceptions — no throws declaration needed</span>
 <span class="kw">fun</span> <span class="fn">readFile</span>(path: <span class="tp">String</span>): <span class="tp">String</span> {
     <span class="kw">return</span> <span class="tp">File</span>(path).<fn>readText</fn>()  <span class="cm">// IOException — no @throws needed</span>
@@ -6076,7 +6104,9 @@ counter.count++</pre>
             <li>use() extension — Kotlin's replacement for Java's try-with-resources</li>
             <li>runCatching — functional alternative returning Result&lt;T&gt; — good for clean error handling</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Prefer Result/runCatching over try-catch in business logic layers — it's more composable and forces callers to explicitly handle the error case. Reserve try-catch for infrastructure code at boundaries.</p></div>
+          <div class="tip-box">
+              <strong>Interview Tip:</strong> The interviewer wants to know whether you understand the trade-offs of no checked exceptions. Mention the <code>@Throws</code> annotation for Java interop and the <code>Result</code>/<code>runCatching</code> API for functional error handling. A great bonus: discuss how coroutine exception propagation differs between <code>launch</code> (propagates to parent) and <code>async</code> (re-thrown on <code>await()</code>).
+            </div>
         </div></div>
       </div>
 
@@ -6091,7 +6121,9 @@ counter.count++</pre>
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Contracts let you provide the compiler with information about how a function behaves — enabling smart casts and definite assignment analysis in cases the compiler couldn't figure out alone.</p>
+          <p class="answer-text">
+              Kotlin Contracts are a compiler-hint mechanism (currently experimental) that lets library authors communicate additional guarantees about function behavior to the Kotlin compiler. Without contracts, the compiler cannot infer smart casts or variable initialization across lambda boundaries. Contracts express facts like "this lambda is called exactly once" (<code>callsInPlace</code>) or "if this function returns, the argument was non-null" (<code>returnsNotNull</code>), enabling the compiler to perform analysis it would otherwise conservatively refuse.
+            </p>
           <pre class="code-block"><span class="cm">// Problem: compiler doesn't know that after isValid(), user is non-null</span>
 <span class="kw">fun</span> <span class="fn">isValid</span>(user: <span class="tp">User</span>?): <span class="tp">Boolean</span> = user != <span class="kw">null</span> && user.name.<fn>isNotEmpty</fn>()
 
@@ -6137,7 +6169,9 @@ counter.count++</pre>
             <li>Stdlib scope functions (let, run, apply, also, with) all use callsInPlace internally</li>
             <li>Still experimental API but very stable — likely to become stable soon</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Contracts are a lesser-known advanced feature — mentioning them immediately distinguishes you from 99% of candidates. The callsInPlace contract is why you can initialize a val inside a run { } block.</p></div>
+          <div class="tip-box">
+              <strong>Interview Tip:</strong> Most Android developers haven't written custom contracts, but showing you understand <em>why</em> they exist sets you apart. Explain that <code>require(x != null)</code> enabling a smart cast is powered by a contract, then describe <code>callsInPlace</code> and the <code>val</code> initialization use case — that's a concrete, memorable example interviewers appreciate.
+            </div>
         </div></div>
       </div>
 
@@ -6152,7 +6186,9 @@ counter.count++</pre>
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">typealias provides an alternative name for an existing type. It improves code readability for complex types without creating new types or affecting performance.</p>
+          <p class="answer-text">
+              A <code>typealias</code> introduces an alternative name for an existing type, making complex type signatures more readable without creating a new type. It is a purely compile-time construct — after compilation, the alias is replaced with the original type in bytecode, so there is zero runtime overhead. Common uses include shortening long generic types, aliasing function types, and making domain intent clearer, though it provides no type safety since the alias and original are interchangeable.
+            </p>
           <pre class="code-block"><span class="cm">// Simplify complex types</span>
 <span class="kw">typealias</span> <span class="tp">UserId</span> = <span class="tp">String</span>
 <span class="kw">typealias</span> <span class="tp">UserMap</span> = <span class="tp">Map</span>&lt;<span class="tp">UserId</span>, <span class="tp">User</span>&gt;
@@ -6186,7 +6222,9 @@ counter.count++</pre>
             <li>For true type safety (no accidental mixing), use value/inline classes instead</li>
             <li>Can have generic type parameters: <code>typealias Predicate&lt;T&gt; = (T) -> Boolean</code></li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>typealias vs value class is a nuanced distinction. typealias = alias (no safety), value class = new type (compile-time safety, no runtime overhead). Mentioning value/inline classes as the alternative shows deeper knowledge.</p></div>
+          <div class="tip-box">
+              <strong>Interview Tip:</strong> The key contrast to know is <code>typealias</code> vs value class. Lead with "typealias is purely a readability tool — no new type, no type safety, no runtime cost" and follow with "if I need the compiler to prevent me from mixing a UserId with a plain String, I reach for a value class instead." That shows you understand both tools and know when to choose each.
+            </div>
         </div></div>
       </div>
 
@@ -6201,7 +6239,9 @@ counter.count++</pre>
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Value classes wrap a single value with a distinct type, providing type safety without runtime overhead. The compiler inlines the underlying value at most call sites, so no object is created.</p>
+          <p class="answer-text">
+              Value classes (formerly called inline classes) are single-property wrappers annotated with <code>@JvmInline value class</code>. The compiler inlines the underlying value at call sites where possible, avoiding object allocation — making them a zero-overhead abstraction. They are most valuable for the "domain primitive" pattern, where you wrap primitive types like <code>String</code> or <code>Int</code> in named wrappers to get type safety, preventing errors like mixing a <code>UserId</code> with an <code>OrderId</code> even though both are strings at runtime.
+            </p>
           <pre class="code-block"><span class="cm">// @JvmInline value class — wraps a single value</span>
 <span class="kw">@JvmInline</span>
 <span class="kw">value class</span> <span class="tp">UserId</span>(<span class="kw">val</span> value: <span class="tp">String</span>)
@@ -6244,7 +6284,9 @@ counter.count++</pre>
             <li>Can have computed properties, methods, and implement interfaces</li>
             <li>Jetpack Compose uses value classes extensively for Dp, Sp, Color, etc.</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Value classes are how Jetpack Compose defines Color, Dp, Sp — they're zero-overhead wrappers with type safety. This is a great example that shows you understand the library you use every day at a deeper level.</p></div>
+          <div class="tip-box">
+              <strong>Interview Tip:</strong> Connect value classes directly to Android: Jetpack Compose uses them extensively (e.g., <code>Dp</code>, <code>Color</code>). Mention the boxing gotcha with generics and nullable types, and contrast with <code>typealias</code> — "value class gives compile-time type safety; typealias is just readability." A great follow-up answer: describe using value class to wrap an API token so it can't be accidentally passed to a logging function that accepts <code>String</code>.
+            </div>
         </div></div>
       </div>
 
@@ -6259,7 +6301,9 @@ counter.count++</pre>
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Kotlin has four visibility modifiers. The default is public (unlike Java's package-private). The internal modifier is module-scoped — a key concept for library development and multi-module Android apps.</p>
+          <p class="answer-text">
+              Kotlin has four visibility modifiers: <code>public</code> (default), <code>private</code>, <code>protected</code>, and <code>internal</code>. The notable addition over Java is <code>internal</code>, which limits visibility to the same compilation module rather than Java's package-private (same package). This makes <code>internal</code> ideal for multi-module Android projects where you want to expose APIs within a feature module but not to other modules. Default visibility is <code>public</code>, the opposite of Java where package-private is the implicit default.
+            </p>
           <pre class="code-block"><span class="cm">// Kotlin visibility modifiers (top-level declarations)</span>
 <span class="kw">public</span>    <span class="cm">// visible everywhere (default if not specified)</span>
 <span class="kw">internal</span>  <span class="cm">// visible within the same MODULE only</span>
@@ -6305,7 +6349,9 @@ counter.count++</pre>
             <li>Use internal to hide implementation details between Gradle modules</li>
             <li>The pattern <code>private val _state, val state</code> exposes immutable view of mutable state</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>internal is Kotlin's most underused modifier. In multi-module apps, marking repository implementations as internal prevents other modules from depending on concrete implementations — enforcing Clean Architecture boundaries.</p></div>
+          <div class="tip-box">
+              <strong>Interview Tip:</strong> The question often targets <code>internal</code> vs package-private and how it helps in multi-module architecture. Frame your answer around a real Android example: "In a clean-architecture project, my <code>:data</code> module exposes Repository interfaces as public but keeps implementation classes internal so the <code>:app</code> module must go through the interface — enforcing the boundary at compile time."
+            </div>
         </div></div>
       </div>
 
@@ -6320,7 +6366,9 @@ counter.count++</pre>
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Kotlin DSLs (Domain Specific Languages) create readable, type-safe APIs that look like declarative config code. They use lambdas with receivers, operator overloading, and extension functions.</p>
+          <p class="answer-text">
+              Kotlin's combination of lambdas with receivers, extension functions, operator overloading, and infix functions makes it exceptionally well-suited for building internal DSLs — APIs that read like a domain-specific language while remaining valid Kotlin. The core mechanism is the <em>function type with receiver</em>: <code>Type.() -> Unit</code>, which lets a lambda body access the receiver's members without qualification. Jetpack libraries like Compose, the Navigation DSL, and Gradle's Kotlin DSL all rely heavily on this pattern.
+            </p>
           <pre class="code-block"><span class="cm">// DSL for building HTML</span>
 <span class="kw">class</span> <span class="tp">HtmlBuilder</span> {
     <span class="kw">private val</span> children = <span class="fn">StringBuilder</span>()
@@ -6378,7 +6426,9 @@ counter.count++</pre>
             <li>Jetpack Compose is fundamentally a DSL — understanding this unlocks deeper understanding of Compose</li>
             <li>@DslMarker annotation: prevents accidentally calling outer DSL scope inside inner — avoids confusing DSLs</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The key insight: "Lambda with receiver is the foundation of Kotlin DSLs." Then say: "Jetpack Compose, Gradle Kotlin DSL, and Ktor routing are all built on this single language feature." That connection alone is impressive.</p></div>
+          <div class="tip-box">
+              <strong>Interview Tip:</strong> Anchor your answer in real Jetpack examples — Compose's <code>Column { Text(...) }</code> or the Navigation DSL — to show the concept isn't academic. Then explain the mechanics: lambda with receiver enables the block, <code>@DslMarker</code> prevents scope leakage. If asked to write a DSL, a simple HTML builder or a Retrofit-style request builder demonstrates the pattern clearly in a few lines.
+            </div>
         </div></div>
       </div>
 
@@ -6393,7 +6443,9 @@ counter.count++</pre>
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Kotlin's type system is more expressive than Java's — it has explicit types for the top and bottom of the type hierarchy, and every type is an object (no primitives at the language level).</p>
+          <p class="answer-text">
+              Kotlin's type system includes three special types that define the top and bottom of the type hierarchy. <code>Any</code> is the root supertype of all non-nullable Kotlin types (equivalent to Java's <code>Object</code>). <code>Unit</code> is Kotlin's equivalent of <code>void</code>, but it is a real type with a single instance — enabling functions to be used in generic contexts. <code>Nothing</code> is the bottom type: a subtype of every type with no instances, used for functions that never return normally, enabling powerful exhaustiveness and smart-cast analysis.
+            </p>
           <pre class="code-block"><span class="cm">// Any — top type, supertype of ALL Kotlin types</span>
 <span class="cm">// Like Java's Object but with better semantics</span>
 <span class="kw">fun</span> <span class="fn">process</span>(value: <span class="tp">Any</span>) { }  <span class="cm">// accepts any non-null type</span>
@@ -6436,7 +6488,9 @@ counter.count++</pre>
             <li>Nothing enables type-safe throw in expressions (Elvis operator, when branches)</li>
             <li>Kotlin Int compiles to JVM int (primitive); Int? compiles to Integer (boxed) — no explicit boxing needed</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Nothing is the most misunderstood type in Kotlin. The key insight: "Nothing is a subtype of every type — that's why throw expression is valid wherever any type is expected, including String assignments."</p></div>
+          <div class="tip-box">
+              <strong>Interview Tip:</strong> Most candidates know <code>Unit</code> ≈ <code>void</code> but miss the key insight that it's a real type. The most impressive thing to say is: "Because <code>Unit</code> is a real singleton, you can use it in generic contexts like <code>Flow&lt;Unit&gt;</code> for event streams — you can't do that with Java's void." For <code>Nothing</code>, the smart-cast and <code>when</code>-exhaustiveness angle is what separates strong Kotlin developers from average ones.
+            </div>
         </div></div>
       </div>
 
@@ -6451,7 +6505,9 @@ counter.count++</pre>
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Kotlin was chosen as the preferred Android language for well-founded reasons — it solves Java's biggest pain points while adding powerful modern language features.</p>
+          <p class="answer-text">
+              Kotlin offers comprehensive improvements over Java for Android development across safety, conciseness, expressiveness, and concurrency. Google made Kotlin the preferred language for Android in 2019 and all new Jetpack APIs are Kotlin-first, with many (Compose, Flow, coroutines) unusable or awkward in Java. Key advantages include null safety baked into the type system, coroutines for structured concurrency, data classes, extension functions, and a more expressive type system — all reducing boilerplate and common bug classes.
+            </p>
           <pre class="code-block"><span class="cm">// 1. NULL SAFETY — eliminates NPE at compile time</span>
 <span class="cm">// Java: NullPointerException is the most common runtime crash</span>
 <span class="kw">val</span> name: <span class="tp">String</span>? = <span class="fn">getUserName</span>()   <span class="cm">// explicit nullable</span>
@@ -6497,7 +6553,9 @@ counter.count++</pre>
             <li><strong>Smart casts:</strong> no explicit casts needed after type checks</li>
             <li><strong>Full Java interop:</strong> use all existing Java libraries, no migration cliff</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Google announced Kotlin-first in 2019 — all new Jetpack APIs are Kotlin-first. Mentioning that Jetpack Compose, Kotlin Coroutines, and KMM are fundamentally Kotlin features (no Java equivalent) is the strongest argument.</p></div>
+          <div class="tip-box">
+              <strong>Interview Tip:</strong> Don't just list features — connect each to a concrete Android pain point it solves. "Coroutines replaced the 3-level callback nesting we had in our Retrofit+Handler code," or "data classes prevented a production bug where a new field added to our model broke the HashMap lookup because hashCode wasn't updated." Concrete impact beats a feature checklist.
+            </div>
         </div></div>
       </div>
 
@@ -6512,7 +6570,9 @@ counter.count++</pre>
         </div>
         <div class="q-answer"><div class="q-answer-inner">
           <div class="answer-label">Answer</div>
-          <p class="answer-text">Kotlin Serialization is a compiler plugin-based serialization library from JetBrains. It's the recommended choice for new Android projects in 2025 — especially with Retrofit and KMM.</p>
+          <p class="answer-text">
+              Kotlin Serialization (<code>kotlinx.serialization</code>) is a compile-time, annotation-driven serialization library that generates serializer code at compile time using a Kotlin compiler plugin, avoiding runtime reflection. Gson and Moshi rely on reflection (Gson) or annotation processing/reflection (Moshi) at runtime. Kotlin Serialization is the natural choice for Kotlin-first projects, offering multiplatform support, better performance, full Kotlin type system awareness (including sealed classes and nullable types), and compatibility with Kotlin's value classes.
+            </p>
           <pre class="code-block"><span class="cm">// Setup</span>
 <span class="cm">// plugins { id("org.jetbrains.kotlin.plugin.serialization") }</span>
 <span class="cm">// implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")</span>
@@ -6561,7 +6621,9 @@ counter.count++</pre>
             <li>Supports: sealed classes, generics, nested serialization, custom serializers</li>
             <li>Gson: reflection-based (slow, R8 issues); Moshi: code-gen optional; Kotlin Serialization: always compile-time</li>
           </ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The KMM argument is the strongest: Gson and Moshi only work on JVM. Kotlin Serialization works on Android, iOS, JS, and server — making it the only choice for shared KMM code. This shows strategic thinking beyond just Android.</p></div>
+          <div class="tip-box">
+              <strong>Interview Tip:</strong> Frame your answer around three axes: performance (compile-time vs reflection), correctness (null safety awareness, sealed classes), and portability (KMP). The ProGuard/R8 safety point is highly practical and shows production experience — many developers have debugged mysterious release-only JSON crashes caused by Gson and obfuscation. Mentioning that Moshi with codegen is also a good choice (not just "Gson is bad") shows balanced judgment.
+            </div>
         </div></div>
       </div>
 
@@ -6589,7 +6651,7 @@ counter.count++</pre>
 <span class="kw">val</span> x: <span class="tp">String</span>? = <span class="kw">null</span>
 <span class="fn">println</span>(x == <span class="kw">null</span>)  <span class="cm">// true — safe, no NPE</span></pre>
           <ul class="answer-points"><li>== calls equals() — structural/content equality</li><li>=== checks reference — same object in memory</li><li>data classes override equals() to compare all primary constructor properties</li><li>== is null-safe — never throws NPE unlike Java's .equals()</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>In Java, == compares references and .equals() compares content. Kotlin flips this intuitively — == is content, === is reference. The null-safe behavior of == is a bonus that prevents NPE.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Emphasize null safety: <code>==</code> in Kotlin is null-safe — <code>null == null</code> is true without NPE. In Java, <code>null.equals(anything)</code> throws. Also mention data classes: <code>==</code> compares all primary constructor properties, so two different User objects with the same id and name are equal — this is the default you want for value objects.</p></div>
         </div></div>
       </div>
 
@@ -6629,7 +6691,7 @@ counter.count++</pre>
 <span class="str">"hello"</span>.<span class="fn">reversed</span>()             <span class="cm">// "olleh"</span>
 <span class="str">"a,b,c"</span>.<span class="fn">split</span>(<span class="str">","</span>)            <span class="cm">// [a, b, c]</span></pre>
           <ul class="answer-points"><li>String templates: $ for variables, ${} for expressions — no concatenation needed</li><li>Triple-quoted strings: multiline, no escape sequences needed</li><li>trimIndent(): removes common leading whitespace from multiline strings</li><li>Raw strings: great for regex patterns — no double-backslash needed</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Raw strings with trimIndent() are heavily used in Android for JSON test fixtures, SQL queries, and XML templates. Showing you use them in tests demonstrates clean code habits.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>String templates (<code>"Hello $name"</code> and <code>"${user.name.uppercase()}"</code>) eliminate Java's verbose <code>+</code> concatenation. Multiline strings with <code>trimIndent()</code> are invaluable for test fixtures, SQL queries, and JSON templates in unit tests — mention this practical use case to stand out.</p></div>
         </div></div>
       </div>
 
@@ -6665,7 +6727,7 @@ mList[<span class="nm">0</span>] = <span class="nm">10</span>     <span class="c
 <span class="kw">val</span> fromArray = array.<fn>toList</fn>()
 <span class="kw">val</span> fromList  = list.<fn>toTypedArray</fn>()</pre>
           <ul class="answer-points"><li>Array: fixed size, mutable elements, compiles to JVM array — use for performance-critical code</li><li>List: immutable interface — use for most business logic</li><li>MutableList: dynamic sizing — use when you need to add/remove elements</li><li>IntArray/LongArray etc: no boxing overhead — prefer over Array&lt;Int&gt; for primitives</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Array&lt;Int&gt; compiles to Integer[] (boxed). IntArray compiles to int[] (primitive). For large numerical collections, intArrayOf() gives significantly better performance due to no boxing overhead.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The key distinction: List is an immutable interface backed by ArrayList (size can't change, elements can't be reassigned); Array is a fixed-size Java primitive array. For most Android code, prefer <code>List</code>/<code>MutableList</code>. Use <code>Array</code> only when interacting with Java APIs that require arrays or for performance-critical typed primitive arrays (<code>IntArray</code>, <code>FloatArray</code>).</p></div>
         </div></div>
       </div>
 
@@ -6704,7 +6766,7 @@ mList[<span class="nm">0</span>] = <span class="nm">10</span>     <span class="c
 <span class="kw">val</span> list = <span class="tp">ArrayList</span>&lt;<span class="tp">String</span>&gt;()  <span class="cm">// Java class</span>
 list.<fn>add</fn>(<span class="str">"hello"</span>)               <span class="cm">// Java method</span></pre>
           <ul class="answer-points"><li>@JvmStatic: makes companion object method a true static — needed for Java callers</li><li>@JvmField: exposes property as field — skips getter/setter generation</li><li>@JvmOverloads: generates overloaded methods for each default parameter combination</li><li>@Throws: declares checked exceptions — Java callers need to handle them</li><li>Kotlin can call Java seamlessly — no annotations needed in that direction</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>@JvmOverloads on custom Views is essential — View constructors have 3 overloads. Without it, your custom view crashes when inflated from XML. This is a real-world gotcha that shows practical experience.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The three annotations have distinct purposes: <code>@JvmStatic</code> makes companion members true Java static methods; <code>@JvmField</code> exposes a property as a public Java field (no getter/setter); <code>@JvmOverloads</code> generates Java overloads for functions with default parameters. Mention platform types — Java's unannoted return types become <code>String!</code> in Kotlin, bypassing null safety until you add <code>@NonNull</code>/<code>@Nullable</code>.</p></div>
         </div></div>
       </div>
 
@@ -6751,7 +6813,7 @@ list.<fn>add</fn>(<span class="str">"hello"</span>)               <span class="c
     <span class="kw">val</span> debug: <span class="tp">Boolean</span> = <span class="kw">false</span>
 )</pre>
           <ul class="answer-points"><li>Default arguments eliminate overload pyramids — one function replaces many</li><li>Named arguments make call sites self-documenting — no need to remember parameter order</li><li>Named arguments can be reordered freely</li><li>Replaces the Builder pattern in most cases — data class with defaults is cleaner</li><li>Use @JvmOverloads for Java interop when default arguments are used</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Named arguments replace the Builder pattern in Kotlin. Instead of UserBuilder().name("Rahul").age(25).build(), just write User(name="Rahul", age=25). Less code, same readability, zero boilerplate.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Named arguments solve the 'stringly-typed' problem: <code>createUser(name = "Alice", age = 25)</code> is self-documenting. Default arguments replace builder patterns and overloaded constructors. The <code>@JvmOverloads</code> annotation is required to expose these defaults to Java callers. A great interview point: named + default arguments make your API backward-compatible when adding new optional parameters.</p></div>
         </div></div>
       </div>
 
@@ -6788,7 +6850,7 @@ list.<fn>add</fn>(<span class="str">"hello"</span>)               <span class="c
 <span class="cm">// Return type always explicit for public API functions</span>
 <span class="kw">fun</span> <fn>getUser</fn>(): <span class="tp">User</span> = <fn>fetchFromDb</fn>()  <span class="cm">// explicit for clarity</span></pre>
           <ul class="answer-points"><li>Type inference happens at compile time — no runtime cost, full type safety</li><li>Works for local variables, function return types, generic type parameters</li><li>Smart cast: compiler narrows type after is/!is check — no explicit cast needed</li><li>Inference fails for empty collections and when wider type is needed — be explicit</li><li>Public API functions: always declare return type explicitly for readability</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Always explicitly declare return types for public functions even though Kotlin can infer them. It makes API contracts clear and prevents accidental return type changes from breaking callers.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Type inference keeps code concise without sacrificing safety — the type is still checked at compile time. The key limitation: inference doesn't work across function boundaries for generic return types. Mention the <code>_</code> wildcard for type arguments in Kotlin 1.9+ and how Kotlin 2.0's improved inference reduces the need for explicit annotations in complex generic expressions.</p></div>
         </div></div>
       </div>
 
@@ -6833,7 +6895,7 @@ users.<fn>all</span> { it.age > <span class="nm">20</span> }    <span class="cm"
 users.<fn>none</fn> { it.age > <span class="nm">50</span> }   <span class="cm">// true</span>
 users.<fn>count</fn> { it.role == <span class="str">"admin"</span> }  <span class="cm">// 2</span></pre>
           <ul class="answer-points"><li>map/filter: the most used — transform and select elements</li><li>reduce vs fold: reduce has no initial value and fails on empty list; fold is safer</li><li>groupBy: returns Map&lt;K, List&lt;V&gt;&gt; — groups elements by key</li><li>partition: returns Pair(matches, nonMatches) — split in one pass</li><li>associate: build a Map from collection — like a map that returns Pair</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Prefer fold over reduce when the collection might be empty — reduce throws NoSuchElementException on empty lists. fold with an initial value is always safe.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The two most important distinctions: <code>reduce</code> throws on empty collections (use <code>fold</code> with an identity element for safety), and <code>groupBy</code> returns a <code>Map&lt;K, List&lt;V&gt;&gt;</code> while <code>associateBy</code> returns <code>Map&lt;K, V&gt;</code> (last value wins on duplicate keys). For interview demos: <code>items.groupBy { it.category }.mapValues { it.value.sumOf { item -> item.price } }</code> is a great concise aggregation example.</p></div>
         </div></div>
       </div>
 
@@ -6871,7 +6933,7 @@ viewModelScope.<fn>launch</fn> {
 
 <span class="cm">// Compared to try-catch — cleaner, chainable, explicit</span></pre>
           <ul class="answer-points"><li>Result&lt;T&gt;: encapsulates success or failure — eliminates try-catch at every call site</li><li>runCatching: wraps any code in a Result — catches all exceptions</li><li>onSuccess/onFailure: handle both cases functionally</li><li>map: transform success value — failure passes through unchanged</li><li>Best for: repository layer, network calls, parsing — keeps business logic clean</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Use Result in the repository layer and sealed UiState in the ViewModel. The repository returns Result&lt;User&gt;, ViewModel maps it to UiState.Success or UiState.Error. This clean separation is what senior interviews look for.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The practical Android use case: use <code>Result</code> in Repository return types — <code>suspend fun getUser(id: String): Result&lt;User&gt;</code>. The ViewModel calls <code>.onSuccess { updateState(it) }.onFailure { handleError(it) }</code>. This separates error handling from the happy path without try-catch everywhere. Contrast with exceptions: Result makes failure explicit in the type signature.</p></div>
         </div></div>
       </div>
 
@@ -6908,7 +6970,7 @@ viewModelScope.<fn>launch</fn> {
 <span class="kw">@GET</span>(<span class="str">"/users"</span>)  <span class="cm">// Retrofit — HTTP GET</span>
 <span class="kw">@Parcelize</span>    <span class="cm">// generates Parcelable</span></pre>
           <ul class="answer-points"><li>@Target: where annotation can be applied (function, class, property, etc.)</li><li>@Retention: SOURCE (compile only), BINARY (bytecode), RUNTIME (reflection)</li><li>Annotations with RUNTIME retention can be read via Kotlin reflection</li><li>Most Android framework annotations use compile-time processing (kapt/ksp)</li><li>KSP (Kotlin Symbol Processing) is the modern replacement for kapt — faster</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Mention KSP vs kapt: KSP is Google's modern annotation processor for Kotlin — used by Room, Hilt, Compose. It's 2x faster than kapt. Knowing this shows you track the ecosystem.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Annotations are compile-time metadata. In Android, custom annotations power lint rules, custom code generation (Hilt, Room), and compile-time validation. The most common mistake: forgetting <code>@Retention(AnnotationRetention.RUNTIME)</code> when the annotation needs to be inspectable at runtime via reflection. For source-level annotations (code generation only), <code>SOURCE</code> retention is more efficient.</p></div>
         </div></div>
       </div>
 
@@ -6945,7 +7007,7 @@ viewModelScope.<fn>launch</fn> {
 <span class="cm">// Use KSP/kapt for compile-time code generation instead</span>
 <span class="cm">// Room, Hilt, Moshi use KSP — zero runtime reflection cost</span></pre>
           <ul class="answer-points"><li>KClass: runtime class representation — use ::class to get it</li><li>memberProperties: inspect all properties at runtime</li><li>Callable references (::): lightweight, no reflection overhead — prefer these</li><li>Reflection is slow: avoid in RecyclerView, custom Views, or any repeated code</li><li>KSP generates code at compile time — all the power, none of the runtime cost</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>If asked "does Room use reflection?" — the answer is no in modern setups. Room uses KSP to generate DAO implementations at compile time. Knowing this difference (compile-time codegen vs runtime reflection) shows architectural depth.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Reflection in Android is expensive and ProGuard/R8 can strip reflected classes without proper keep rules. Use it sparingly — prefer compile-time code generation (kapt/ksp) for most cases. The most common legitimate use: serialization libraries inspecting property names/types, and testing utilities that need to access private members. Always add keep rules for any class accessed via reflection in release builds.</p></div>
         </div></div>
       </div>
 
@@ -6980,7 +7042,7 @@ users shouldHaveSize <span class="nm">3</span>
 <span class="cm">// Must have exactly ONE parameter</span>
 <span class="cm">// Parameter cannot have default value or vararg</span></pre>
           <ul class="answer-points"><li>Infix: single-parameter member/extension function called without dot or parentheses</li><li>Standard library infix: to, until, step, downTo, and, or, xor, shl, shr</li><li>Used heavily in test frameworks: shouldBe, shouldContain, shouldEqual</li><li>Makes DSLs read like natural language</li><li>Constraints: exactly one parameter, no vararg, no default value</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>"key" to "value" — the to infix function is what you use to create Pairs for maps. It's infix, not a keyword! Knowing this shows you understand the standard library at a deeper level.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Infix functions read like natural language, making DSLs and test assertions expressive: <code>user should haveRole "admin"</code>, <code>1 to 2</code>, <code>a until b</code>. The rule: use infix only when the function is called frequently AND the operator syntax makes intent clearer than dot notation. Don't overuse — <code>user.haveRole("admin")</code> is clearer when the infix name isn't immediately obvious.</p></div>
         </div></div>
       </div>
 
@@ -7015,7 +7077,7 @@ users shouldHaveSize <span class="nm">3</span>
     messages.<fn>forEach</fn> { <span class="tp">Log</span>.<fn>d</fn>(tag, it) }
 }</pre>
           <ul class="answer-points"><li>vararg: accepts zero or more arguments of the same type</li><li>Inside the function, vararg parameter is treated as an Array</li><li>Spread operator (*): unpacks an array into individual vararg arguments</li><li>Can mix spread with individual arguments: printAll("x", *strs, "y")</li><li>Only one vararg per function; best placed as the last parameter</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The spread operator (*) is often forgotten. If you have an Array and want to pass it to a vararg function, you MUST use *array. Without the spread, you'd be passing the array as a single element.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The spread operator (<code>*array</code>) is needed to pass an Array to a vararg parameter. Mention the performance concern: in Kotlin, passing a vararg creates a new array at each call site. For performance-critical code called in tight loops, prefer an overload that accepts a List or Array directly to avoid the extra allocation.</p></div>
         </div></div>
       </div>
 
@@ -7047,7 +7109,7 @@ users shouldHaveSize <span class="nm">3</span>
     <span class="kw">data class</span> <span class="tp">Error</span>(<span class="kw">val</span> e: <span class="tp">Exception</span>) : <span class="tp">Result</span>&lt;<span class="tp">Nothing</span>&gt;()
 }</pre>
           <ul class="answer-points"><li>Nothing: bottom type — subtype of every type; represents non-terminating computation</li><li>Functions returning Nothing always throw or loop forever — compiler knows code after them is unreachable</li><li>throw expression has type Nothing — that's why it works on the right side of Elvis</li><li>Nothing? has exactly one value: null — useful for nullable Nothing in sealed classes</li><li>Result.Loading and Result.Error use Nothing because they carry no data of type T</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Connect Nothing to sealed classes: Loading and Error states use Result&lt;Nothing&gt; because they don't carry a T value. This shows you understand type theory and how the Kotlin type system enables elegant sealed hierarchies.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p><code>Nothing</code> is Kotlin's bottom type — a subtype of every type with no instances. Functions that always throw return <code>Nothing</code>: <code>fun fail(msg: String): Nothing = throw IllegalStateException(msg)</code>. The compiler uses this for smart casts and exhaustiveness: after a <code>Nothing</code>-returning call, all subsequent code is marked unreachable. <code>Nothing?</code> has exactly one value: <code>null</code>.</p></div>
         </div></div>
       </div>
 
@@ -7083,7 +7145,7 @@ heavyObject.<fn>query</fn>()  <span class="cm">// uses cached instance</span>
 <span class="cm">// by lazy { Room.databaseBuilder(...).build() } — singleton DB</span>
 <span class="cm">// lateinit var — DI-injected fields, view binding</span></pre>
           <ul class="answer-points"><li>Eager: simple, predictable — use when object is always needed and cheap to create</li><li>lazy: thread-safe by default, created once on first access — use for expensive objects</li><li>NONE mode: no synchronization overhead — use when you know access is single-threaded</li><li>lateinit: non-null var with deferred init — use for DI fields and view binding</li><li>isInitialized: check before accessing lateinit to avoid crash</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The Room database singleton is the classic lazy example: val db by lazy { Room.databaseBuilder(...).build() }. It's expensive to create, needed app-wide, thread-safe by default. This is a real pattern from every Android app.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Decision rule: eager initialization when the value is always needed and cheap to create; lazy when it may not be needed OR is expensive. <code>by lazy</code> uses double-checked locking by default (thread-safe). For ViewModels, use <code>by lazy</code> for use-case instances that require constructor parameters. Watch out for <code>LazyThreadSafetyMode.NONE</code> — it's faster but not safe for shared access from multiple coroutines.</p></div>
         </div></div>
       </div>
 
@@ -7122,7 +7184,7 @@ heavyObject.<fn>query</fn>()  <span class="cm">// uses cached instance</span>
 }
 <span class="cm">// class can implement multiple interfaces but extend only one class</span></pre>
           <ul class="answer-points"><li>All Kotlin classes are final by default — prevents accidental subclassing</li><li>open: allows subclassing/overriding — be explicit about extensibility</li><li>abstract: cannot instantiate, forces subclass to implement abstract members</li><li>override keyword: required explicitly — no accidental overrides like Java</li><li>Prefer interfaces over abstract classes — multiple interfaces, single inheritance</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Final by default is a deliberate Kotlin design choice based on Effective Java's "design and document for inheritance or else prohibit it." Mentioning this shows you understand the WHY behind Kotlin's design decisions.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Kotlin classes are <code>final</code> by default — use <code>open</code> to allow subclassing. This is intentional: it prevents the fragile base class problem. The trade-off: 'All-open' plugin (used by Spring/Mockito) or <code>@OpenForTesting</code> patterns are needed for mocking. In Android, prefer composition over inheritance; use <code>abstract</code> for template method patterns in base ViewModels or Fragments.</p></div>
         </div></div>
       </div>
 
@@ -7162,7 +7224,7 @@ heavyObject.<fn>query</fn>()  <span class="cm">// uses cached instance</span>
 <span class="kw">val</span> nested = <fn>listOf</fn>(<fn>listOf</fn>(<span class="nm">1</span>,<span class="nm">2</span>), <fn>listOf</fn>(<span class="nm">3</span>,<span class="nm">4</span>))
 <span class="kw">val</span> flat2 = nested.<fn>flatten</fn>()  <span class="cm">// [1,2,3,4]</span></pre>
           <ul class="answer-points"><li>map: 1-to-1 transformation — one element in, one element out</li><li>flatMap: 1-to-many transformation — one element in, collection out, then all flattened</li><li>flatMap = map + flatten in a single operation</li><li>Use flatMap when each element maps to a list and you want a single flat result</li><li>Equivalent in Flow: flatMapLatest/flatMapConcat/flatMapMerge for async streams</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The classic interview question: "get all orders from all users as a single list." The wrong answer is map (gives nested lists). The right answer is flatMap. Knowing the difference shows you think in transformations, not loops.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p><code>flatMap</code> is <code>map</code> + <code>flatten</code>: it transforms each element to a collection and flattens the result into a single list. The canonical example: <code>users.flatMap { it.orders }</code> gives all orders from all users as a flat list, vs <code>map</code> which would give <code>List&lt;List&lt;Order&gt;&gt;</code>. In coroutines, <code>flatMapMerge</code>/<code>flatMapLatest</code> on Flow are the async equivalents — mention these for bonus points.</p></div>
         </div></div>
       </div>
 
@@ -7199,7 +7261,7 @@ view.<fn>setOnClickListener</fn> { <fn>handleClick</fn>() }  <span class="cm">//
 }
 <span class="kw">val</span> cb = <span class="tp">KotlinCallback</span> { result -> <fn>println</fn>(result) }  <span class="cm">// ✅ now works</span></pre>
           <ul class="answer-points"><li>SAM: Java interface with single abstract method — can be replaced with lambda</li><li>Kotlin automatically supports SAM for Java interfaces — no annotation needed</li><li>Kotlin interfaces: not SAM by default — need fun interface keyword (Kotlin 1.4+)</li><li>fun interface: explicit SAM interface in Kotlin — enables lambda syntax</li><li>Common SAM: Runnable, Callable, View.OnClickListener, Comparator</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>fun interface was added in Kotlin 1.4 to enable SAM for Kotlin interfaces. If you're writing a callback interface that should accept lambdas, always use fun interface — it's the modern idiomatic way.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>SAM conversions let you pass a lambda wherever a single-abstract-method interface is expected. In Kotlin, this works automatically for Java interfaces (<code>Runnable</code>, <code>Callable</code>). For Kotlin interfaces, use <code>fun interface</code> to opt in: <code>fun interface OnClick { fun onClick(view: View) }</code>. This enables <code>button.setOnClick { ... }</code> lambda syntax for your own interfaces.</p></div>
         </div></div>
       </div>
 
@@ -7241,7 +7303,7 @@ viewModelScope.<fn>launch</fn> {
     )
 }</pre>
           <ul class="answer-points"><li>suspend: marks function as suspendable — compiler transforms to state machine</li><li>Under the hood: each suspend function takes a Continuation parameter</li><li>State machine: each suspension point becomes a state — no threads blocked</li><li>suspendCoroutine: bridge callback-based code to suspend functions</li><li>suspend functions are just regular functions at JVM level — zero JVM magic</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>When asked "how do coroutines work?" go beyond "lightweight threads." Say: "The compiler transforms suspend functions into state machines with Continuation callbacks. No JVM magic — it's pure compile-time transformation." This is what separates senior answers from junior ones.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Interviewers want you to mention the state machine transformation: the compiler rewrites <code>suspend</code> functions into a <code>Continuation</code>-passing style state machine. Each suspension point becomes a state. This is why suspending functions have no runtime overhead when they don't actually suspend — they return immediately without blocking the thread. The <code>Continuation</code> callback resumes the state machine when the suspended operation completes.</p></div>
         </div></div>
       </div>
 
@@ -7280,7 +7342,7 @@ viewModelScope.<fn>launch</fn> {
     <span class="kw">else</span>        -> <span class="str">"F"</span>
 }</pre>
           <ul class="answer-points"><li>.. creates inclusive IntRange; until creates exclusive range</li><li>downTo: creates descending progression</li><li>step: changes increment — works with both ascending and descending</li><li>in operator: checks if value is in range — compiles to efficient comparison, not iteration</li><li>Ranges work for Int, Long, Char, Double, and any Comparable type</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>score in 0..100 compiles to score >= 0 && score <= 100 — not a loop. It's a simple range check. Mentioning this shows you understand that Kotlin's range checks are zero-cost abstractions.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Ranges are inclusive by default (<code>1..10</code> includes 10). Use <code>until</code> for exclusive end (<code>0 until list.size</code> = indices). <code>downTo</code> for reversed iteration. <code>step</code> for custom increments. Ranges implement <code>ClosedRange</code> and work with <code>in</code> checks: <code>x in 1..100</code> compiles to an efficient <code>x >= 1 && x <= 100</code> — no object creation in bytecode.</p></div>
         </div></div>
       </div>
 
@@ -7319,7 +7381,7 @@ viewModelScope.<fn>launch</fn> {
 }
 <span class="cm">// Can ONLY be called inside a transaction — compile-time safety!</span></pre>
           <ul class="answer-points"><li>Context receivers: multiple implicit receivers without nesting</li><li>Solves the "I need Context, Scope, and Transaction all at once" problem</li><li>Compile-time safety: function can only be called when all contexts are in scope</li><li>Stable in Kotlin 2.0 — use -Xcontext-receivers flag for earlier versions</li><li>Alternative to passing many parameters or using ambient/thread-local state</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Context receivers are Kotlin 2.0's answer to the "I need multiple scopes" problem. Knowing about them — especially that they provide compile-time enforcement of contexts (like Database.Transaction) — shows you follow the latest Kotlin evolution closely.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Context receivers (experimental) allow a function to require multiple implicit receivers: <code>context(Logger, Database) fun processUser(user: User)</code>. This solves the problem of passing infrastructure dependencies (logger, DB connection) through long call chains. The interviewer may ask about alternatives like extension functions on a context interface or dependency injection — mention that context receivers are still experimental and should be used with caution in production.</p></div>
         </div></div>
       </div>
 
@@ -7356,7 +7418,7 @@ map.<fn>getOrPut</fn>(<span class="str">"four"</span>) { <span class="nm">4</spa
 <span class="cm">// Need key → value mapping?   → Map</span>
 <span class="cm">// Need sorted order?          → sortedSetOf(), sortedMapOf()</span></pre>
           <ul class="answer-points"><li>List: ordered, duplicates allowed — best for sequences and ordered data</li><li>Set: unordered (or insertion-ordered with LinkedHashSet), no duplicates — O(1) contains</li><li>Map: key-value pairs, unique keys — O(1) lookup by key</li><li>Prefer Set over List when checking membership frequently — much faster</li><li>LinkedHashSet/LinkedHashMap: preserve insertion order while giving Set/Map benefits</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>list.contains() is O(n) — checks each element. set.contains() is O(1) — hash lookup. If you frequently check membership in a large collection, converting to a Set first dramatically improves performance.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The choice between Set and List depends on whether duplicates matter and whether order matters. Map is the go-to for key-based lookup (O(1) with HashMap). In Kotlin, prefer immutable collections (<code>listOf</code>, <code>setOf</code>, <code>mapOf</code>) by default for thread safety and clarity of intent — use <code>mutableListOf</code> only when the collection genuinely needs to change after creation.</p></div>
         </div></div>
       </div>
 
@@ -7399,7 +7461,7 @@ map.<fn>getOrPut</fn>(<span class="str">"four"</span>) { <span class="nm">4</spa
 <span class="cm">// object expression  → local, new instance each time, captures scope</span>
 <span class="cm">// companion object   → tied to a class, one per class</span></pre>
           <ul class="answer-points"><li>Object declaration: singleton — initialized once, thread-safe, accessed by name</li><li>Object expression: anonymous object — new instance, can implement interfaces, captures scope</li><li>Companion object: class-scoped — static-equivalent members, factories, constants</li><li>Object expressions create a new instance every time — not cached like object declarations</li><li>Companion object implements interfaces — useful for type class pattern</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>The Factory pattern with companion object is idiomatic Kotlin: MyFragment.newInstance() instead of new MyFragment(). Always use this for Fragment creation with arguments — it's the standard Android pattern since forever.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>All three use <code>object</code> keyword but have different semantics: object declaration = named singleton initialized once; object expression = anonymous instance created fresh each time the expression is evaluated; companion object = per-class singleton that can implement interfaces. The thread-safety interview angle: object declarations are JVM-class-loader safe; companion objects are initialized when the containing class is loaded.</p></div>
         </div></div>
       </div>
 
@@ -7449,7 +7511,7 @@ intent.flags = <span class="tp">Intent</span>.FLAG_ACTIVITY_CLEAR_TOP
 <span class="cm">// ✅ Smart cast</span>
 <span class="kw">if</span> (x <span class="kw">is</span> <span class="tp">String</span>) <fn>use</fn>(x)  <span class="cm">// no cast needed!</span></pre>
           <ul class="answer-points"><li>Prefer ?: Elvis over if-null checks</li><li>Use apply/also/let for initialization and null-safe blocks</li><li>Replace loops with filter/map/reduce</li><li>Trust smart casts — no explicit cast after is check</li><li>Use data class copy() instead of manually creating modified copies</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>In live coding interviews, writing idiomatic Kotlin (filter/map instead of loops, Elvis instead of if-null, apply for initialization) immediately signals experience. Reviewers literally look for this — it's a differentiator between 2-year and 5-year developers.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Idiomatic Kotlin prioritizes: val over var, expression bodies over block bodies, scope functions for fluent chains, extension functions over utility classes, sealed classes for state, and data classes for value objects. The biggest idiom that impresses interviewers: 'I let the compiler enforce correctness rather than writing defensive runtime checks — sealed class when exhaustiveness, non-nullable types instead of null guards, require() instead of if-throw.'</p></div>
         </div></div>
       </div>
 
@@ -7495,7 +7557,7 @@ list.<fn>forEach</fn> {
 <span class="cm">// K2 kapt replacement — KSP2</span>
 <span class="cm">// KSP2 built on K2 — even faster annotation processing</span></pre>
           <ul class="answer-points"><li>K2 Compiler: 2x faster, better type inference, smarter smart casts for mutable properties</li><li>Kotlin Multiplatform stable since 2.0 — production-ready for Android + iOS</li><li>Power Assert: better test failure messages — shows values in assertion expressions</li><li>KSP2: next-gen annotation processing built on K2 compiler</li><li>Smart cast improvements: K2 can smart-cast mutable var properties in some cases</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Kotlin 2.0 released May 2024. The K2 compiler is the most impactful change — it makes builds faster and the IDE snappier. Mentioning that you've migrated a project to K2 and noticed faster incremental builds immediately shows you're current.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>Kotlin 2.0's headline feature is the new K2 compiler — up to 2x faster compilation. Other highlights: stable value classes, <code>when</code> with guard conditions (<code>when (x) { is Int if x > 0 -> ... }</code>), improved smart casts across complex conditions, and multiplatform improvements. For Android specifically: K2 mode in the IDE improves code analysis performance significantly — a concrete benefit worth mentioning.</p></div>
         </div></div>
       </div>
 
@@ -7544,7 +7606,7 @@ list.<fn>forEach</fn> {
     <span class="kw">suspend fun</span> <fn>getUser</fn>(id: <span class="tp">String</span>) = api.<fn>fetchUser</fn>(id)
 }</pre>
           <ul class="answer-points"><li>Share: business logic, repositories, models, networking, database — up to 70% of code</li><li>Keep native: UI (Compose on Android, SwiftUI on iOS) — best UX per platform</li><li>expect/actual: declare interface in common, implement per platform</li><li>KMP stable since Kotlin 2.0 — companies like Netflix, Cash App, Touchlab use it</li><li>Compose Multiplatform (by JetBrains): share UI too — still maturing for iOS</li></ul>
-          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>KMP's value proposition: "Write business logic once, deploy to Android and iOS with native UI." A 70% code share typically reduces cross-platform feature development time by 40%. Quantifying the business value like this impresses senior interviewers.</p></div>
+          <div class="tip-box"><div class="tip-label">💡 Interview Tip</div><p>KMP is gaining serious traction — Netflix, Cash App, and Touchlab use it in production. The key selling point: "write business logic once in Kotlin, share it between Android and iOS, keeping native UI on each platform for best user experience." Mention that KMP went stable with Kotlin 2.0, and that Compose Multiplatform (by JetBrains) extends sharing to UI as well, though the iOS side is still maturing. This shows both practical knowledge and awareness of ecosystem trajectory.</p></div>
         </div></div>
       </div>
 
