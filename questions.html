@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Droidly — Android Interview Prep</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -492,9 +493,6 @@
       .sd-grid { grid-template-columns: 1fr; }
     }
 </style>
-
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 /* ── Nav user avatar + dropdown (matches homepage) ── */
@@ -27312,7 +27310,8 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
 
   // ── Full refresh ───────────────────────────────
   async function refreshAuth() {
-    const { data: { user } } = await sb.auth.getUser();
+    const { data: { session } } = await sb.auth.getSession();
+    const user = session?.user ?? null;
     currentUser = user;
     await fetchPremiumStatus(user);
     updateNavForUser(user);
@@ -27374,8 +27373,9 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
     document.getElementById('navUserMenu')?.classList.remove('open');
   });
 
-  // ── Boot ───────────────────────────────────────
-  fetchPremiumTopics().then(() => refreshAuth());
+  // ── Boot — run in parallel so nav updates immediately ──
+  refreshAuth();        // reads localStorage instantly — no network wait
+  fetchPremiumTopics(); // separate network call for lock icons
 })();
 </script>
 </body>
