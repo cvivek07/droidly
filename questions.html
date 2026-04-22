@@ -497,21 +497,81 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* ── Auth / Paywall UI ── */
-.nav-auth-btn {
+/* ── Nav user avatar + dropdown (matches homepage) ── */
+.btn-nav {
   font-size: 13px; font-weight: 600; color: var(--ink);
   background: var(--bg-elevated); border: 1px solid var(--border);
-  padding: 6px 14px; border-radius: 100px; cursor: pointer;
-  transition: background 0.15s;
+  padding: 6px 16px; border-radius: 100px; cursor: pointer;
+  transition: background 0.15s; font-family: inherit;
 }
-.nav-auth-btn:hover { background: var(--border); }
-.nav-user-email {
-  font-size: 12px; color: var(--muted); max-width: 140px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+.btn-nav:hover { background: var(--border); }
 .tab-lock { margin-left: 4px; font-size: 11px; opacity: 0.7; }
 
-/* Modal backdrop */
+.nav-user {
+  display: flex; align-items: center; gap: 8px;
+  position: relative; cursor: pointer;
+}
+.nav-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--accent); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  border: 2px solid rgba(61,122,79,0.3);
+  flex-shrink: 0; transition: box-shadow 0.18s;
+}
+.nav-user:hover .nav-avatar { box-shadow: 0 0 0 3px rgba(61,122,79,0.2); }
+.nav-user-name {
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.nav-caret { font-size: 10px; color: var(--muted); }
+
+.user-dropdown {
+  position: absolute; top: calc(100% + 10px); right: 0;
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: 14px; padding: 8px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  min-width: 180px; z-index: 999;
+  opacity: 0; pointer-events: none;
+  transform: translateY(-6px);
+  transition: all 0.18s ease;
+}
+.nav-user:hover .user-dropdown,
+.nav-user.open .user-dropdown {
+  opacity: 1; pointer-events: all; transform: translateY(0);
+}
+.user-dropdown-email {
+  padding: 8px 12px 10px;
+  font-size: 12px; color: var(--muted);
+  border-bottom: 1px solid var(--border); margin-bottom: 6px;
+  word-break: break-all;
+}
+.user-dropdown-item {
+  padding: 9px 12px; border-radius: 8px;
+  font-size: 14px; font-weight: 500; color: var(--ink2);
+  cursor: pointer; display: flex; align-items: center; gap: 8px;
+  transition: all 0.15s; text-decoration: none;
+}
+.user-dropdown-item:hover { background: var(--bg-elevated); color: var(--ink); }
+.user-dropdown-item.danger { color: #e53e3e; }
+.user-dropdown-item.danger:hover { background: #fff0f0; color: #c53030; }
+
+/* Toast */
+.auth-toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--ink); color: white;
+  padding: 12px 22px; border-radius: 100px;
+  font-size: 14px; font-weight: 500;
+  z-index: 99999; opacity: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  white-space: nowrap;
+}
+.auth-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.auth-toast.success { background: var(--accent); }
+
+/* Paywall modal */
 .modal-backdrop {
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,0.55); z-index: 1000;
@@ -520,53 +580,57 @@
 .modal-backdrop.open { display: flex; }
 .modal-box {
   background: var(--bg-elevated, #fff); border-radius: 16px;
-  padding: 36px 32px; width: 100%; max-width: 400px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.2);
-  position: relative;
+  padding: 36px 32px; width: 100%; max-width: 420px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.2); position: relative;
 }
 .modal-close {
   position: absolute; top: 14px; right: 18px;
   background: none; border: none; font-size: 20px;
   cursor: pointer; color: var(--muted);
 }
-.modal-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
-.modal-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
-.modal-input {
-  width: 100%; box-sizing: border-box;
-  padding: 10px 14px; border: 1px solid var(--border);
-  border-radius: 10px; font-size: 14px; margin-bottom: 12px;
-  background: var(--bg, #fff); color: var(--ink);
-}
-.modal-btn {
-  width: 100%; padding: 12px; border-radius: 10px;
-  border: none; font-size: 15px; font-weight: 700;
-  cursor: pointer; background: var(--accent, #6366f1);
-  color: #fff; transition: opacity 0.15s;
-}
-.modal-btn:hover { opacity: 0.88; }
-.modal-err { color: #ef4444; font-size: 13px; margin-top: 8px; min-height: 18px; }
-.modal-toggle { text-align: center; margin-top: 16px; font-size: 13px; color: var(--muted); }
-.modal-toggle a { color: var(--accent); cursor: pointer; text-decoration: underline; }
-
-/* Paywall modal extras */
+.modal-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; text-align: center; }
+.modal-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; text-align: center; }
 .paywall-icon { font-size: 40px; text-align: center; margin-bottom: 12px; }
 .paywall-features { list-style: none; padding: 0; margin: 0 0 24px; }
 .paywall-features li { padding: 6px 0; font-size: 14px; }
 .paywall-features li::before { content: '✓ '; color: var(--accent); font-weight: 700; }
+.modal-btn {
+  width: 100%; padding: 12px; border-radius: 10px;
+  border: none; font-size: 15px; font-weight: 700;
+  cursor: pointer; background: var(--accent, #3d7a4f);
+  color: #fff; transition: opacity 0.15s; display: block;
+  text-align: center; text-decoration: none;
+}
+.modal-btn:hover { opacity: 0.88; }
+.modal-toggle { text-align: center; margin-top: 12px; font-size: 13px; color: var(--muted); }
+.modal-toggle a { color: var(--accent); cursor: pointer; text-decoration: underline; }
 </style>
 </head>
 <body>
+
+<!-- Toast -->
+<div class="auth-toast" id="authToast"></div>
 
 <nav>
   <a href="index.html" class="logo">
     <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
     Droidly
   </a>
-  <div class="nav-right">
+  <div class="nav-right" id="navRight">
     <div class="nav-stat"><span>375</span> Questions</div>
-    <span class="nav-user-email" id="nav-user-email"></span>
-    <button class="nav-auth-btn" id="auth-btn" onclick="showAuthModal()">Sign in</button>
-    <a href="premium.html" class="nav-cta" id="upgrade-cta">⚡ Get Premium</a>
+    <a href="premium.html" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
+    <!-- Logged-out -->
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
+    <!-- Logged-in (hidden by default) -->
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <div class="user-dropdown-item danger" onclick="handleSignOut()">🚪 Sign Out</div>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -27129,25 +27193,6 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
 </script>
 
 <!-- ══════════════════════════════════════════════
-     AUTH MODAL
-══════════════════════════════════════════════ -->
-<div class="modal-backdrop" id="auth-modal" onclick="handleBackdropClick(event, 'auth-modal')">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('auth-modal')">✕</button>
-    <div class="modal-title" id="auth-modal-title">Welcome back</div>
-    <div class="modal-sub" id="auth-modal-sub">Sign in to access your premium topics</div>
-    <input class="modal-input" type="email" id="auth-email" placeholder="Email address" />
-    <input class="modal-input" type="password" id="auth-password" placeholder="Password" />
-    <div class="modal-err" id="auth-err"></div>
-    <button class="modal-btn" id="auth-submit-btn" onclick="handleAuthSubmit()">Sign in</button>
-    <div class="modal-toggle">
-      <span id="auth-toggle-text">Don't have an account?</span>
-      <a onclick="toggleAuthMode()"> <span id="auth-toggle-link">Sign up</span></a>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════
      PAYWALL MODAL
 ══════════════════════════════════════════════ -->
 <div class="modal-backdrop" id="paywall-modal" onclick="handleBackdropClick(event, 'paywall-modal')">
@@ -27176,7 +27221,7 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
 <script>
 (function () {
   const SUPABASE_URL      = 'https://dquheflcmcppldrnckzf.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_XiqO_yfBLlMVgiOEfn70lQ_bSqZ4ylt';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // ── State ──────────────────────────────────────
@@ -27224,36 +27269,40 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
     } catch (_) { isPremium = false; }
   }
 
-  // ── Update nav UI ──────────────────────────────
-  function updateNavUI() {
-    const btn        = document.getElementById('auth-btn');
-    const emailEl    = document.getElementById('nav-user-email');
-    const upgradeEl  = document.getElementById('upgrade-cta');
-    if (currentUser) {
-      btn.textContent  = 'Sign out';
-      btn.onclick      = handleSignOut;
-      emailEl.textContent = currentUser.email;
+  // ── Update nav UI (matches homepage pattern) ──
+  function updateNavForUser(user) {
+    currentUser = user;
+    const signInBtn   = document.getElementById('navSignInBtn');
+    const userMenu    = document.getElementById('navUserMenu');
+    const avatarEl    = document.getElementById('navAvatarInitial');
+    const userNameEl  = document.getElementById('navUserName');
+    const userEmailEl = document.getElementById('navUserEmail');
+    const upgradeEl   = document.getElementById('upgrade-cta');
+
+    if (user) {
+      const name = user.user_metadata?.full_name || user.email.split('@')[0];
+      signInBtn.style.display = 'none';
+      userMenu.style.display  = 'flex';
+      avatarEl.textContent    = name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+      userNameEl.textContent  = name.split(' ')[0];
+      userEmailEl.textContent = user.email;
       if (isPremium && upgradeEl) upgradeEl.style.display = 'none';
     } else {
-      btn.textContent  = 'Sign in';
-      btn.onclick      = showAuthModal;
-      emailEl.textContent = '';
+      signInBtn.style.display = '';
+      userMenu.style.display  = 'none';
       if (upgradeEl) upgradeEl.style.display = '';
     }
   }
 
   // ── Show / hide lock icons on tabs ────────────
   function updateLockIcons() {
-    document.querySelectorAll('.tab-lock').forEach(el => {
-      el.style.display = 'none';
-    });
+    document.querySelectorAll('.tab-lock').forEach(el => { el.style.display = 'none'; });
     if (!isPremium) {
       PREMIUM_TOPICS.forEach(t => {
         const lock = document.getElementById('lock-' + t);
         if (lock) lock.style.display = '';
       });
     }
-    // If the currently active topic just became locked, boot to android
     if (PREMIUM_TOPICS.includes(currentTopic) && !isPremium) {
       const firstTab = document.querySelector('.tab');
       _origSwitch('android', { target: firstTab });
@@ -27261,39 +27310,33 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
     }
   }
 
-  // ── Full refresh (called on load + auth change) ─
+  // ── Full refresh ───────────────────────────────
   async function refreshAuth() {
     const { data: { user } } = await sb.auth.getUser();
     currentUser = user;
     await fetchPremiumStatus(user);
-    updateNavUI();
+    updateNavForUser(user);
     updateLockIcons();
   }
 
   // ── Auth state listener ────────────────────────
-  sb.auth.onAuthStateChange(async (_event, session) => {
+  sb.auth.onAuthStateChange(async (event, session) => {
     currentUser = session?.user ?? null;
     await fetchPremiumStatus(currentUser);
-    updateNavUI();
+    updateNavForUser(currentUser);
     updateLockIcons();
   });
 
   // ── Sign out ───────────────────────────────────
-  async function handleSignOut() {
+  window.handleSignOut = async function () {
     await sb.auth.signOut();
-    currentUser = null;
-    isPremium   = false;
-    updateNavUI();
+    isPremium = false;
+    updateNavForUser(null);
     updateLockIcons();
-  }
-
-  // ── Modal helpers ──────────────────────────────
-  window.showAuthModal = function () {
-    document.getElementById('auth-err').textContent = '';
-    document.getElementById('auth-email').value    = '';
-    document.getElementById('auth-password').value = '';
-    document.getElementById('auth-modal').classList.add('open');
+    showQToast('You\'ve been signed out.');
   };
+
+  // ── Paywall modal ──────────────────────────────
   window.showPaywallModal = function () {
     const row = document.getElementById('paywall-signin-row');
     if (row) row.style.display = currentUser ? 'none' : '';
@@ -27306,49 +27349,30 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
     if (e.target.id === id) closeModal(id);
   };
 
-  // ── Toggle signin / signup ─────────────────────
-  window.toggleAuthMode = function () {
-    authMode = authMode === 'signin' ? 'signup' : 'signin';
-    const isSignIn = authMode === 'signin';
-    document.getElementById('auth-modal-title').textContent = isSignIn ? 'Welcome back'   : 'Create account';
-    document.getElementById('auth-modal-sub').textContent   = isSignIn ? 'Sign in to access your premium topics' : 'Join to unlock premium content';
-    document.getElementById('auth-submit-btn').textContent  = isSignIn ? 'Sign in'         : 'Sign up';
-    document.getElementById('auth-toggle-text').textContent = isSignIn ? "Don't have an account?" : 'Already have an account?';
-    document.getElementById('auth-toggle-link').textContent = isSignIn ? 'Sign up'         : 'Sign in';
-    document.getElementById('auth-err').textContent         = '';
+  // ── Open auth modal — redirect to homepage modal ─
+  window.openAuthModal = function () {
+    // Redirect to homepage with a flag to open the auth modal
+    window.location.href = 'index.html?auth=signin&return=questions';
   };
 
-  // ── Handle sign in / sign up submit ───────────
-  window.handleAuthSubmit = async function () {
-    const email    = document.getElementById('auth-email').value.trim();
-    const password = document.getElementById('auth-password').value;
-    const errEl    = document.getElementById('auth-err');
-    errEl.textContent = '';
-    if (!email || !password) { errEl.textContent = 'Please fill in all fields.'; return; }
+  // ── Toast ──────────────────────────────────────
+  let _toastTimer;
+  function showQToast(msg) {
+    const t = document.getElementById('authToast');
+    t.textContent = msg;
+    t.className = 'auth-toast show';
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+  }
 
-    const btn = document.getElementById('auth-submit-btn');
-    btn.disabled = true;
-    btn.textContent = authMode === 'signin' ? 'Signing in…' : 'Creating account…';
-
-    let error;
-    if (authMode === 'signin') {
-      ({ error } = await sb.auth.signInWithPassword({ email, password }));
-    } else {
-      ({ error } = await sb.auth.signUp({ email, password }));
-    }
-
-    btn.disabled = false;
-    btn.textContent = authMode === 'signin' ? 'Sign in' : 'Sign up';
-
-    if (error) {
-      errEl.textContent = error.message;
-    } else {
-      closeModal('auth-modal');
-      if (authMode === 'signup') {
-        alert('Check your email to confirm your account, then sign in!');
-      }
-    }
-  };
+  // ── Dropdown toggle (click for mobile) ─────────
+  document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
+    this.classList.toggle('open');
+    e.stopPropagation();
+  });
+  document.addEventListener('click', function() {
+    document.getElementById('navUserMenu')?.classList.remove('open');
+  });
 
   // ── Boot ───────────────────────────────────────
   fetchPremiumTopics().then(() => refreshAuth());
