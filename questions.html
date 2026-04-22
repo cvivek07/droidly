@@ -492,6 +492,68 @@
       .sd-grid { grid-template-columns: 1fr; }
     }
 </style>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+/* ── Auth / Paywall UI ── */
+.nav-auth-btn {
+  font-size: 13px; font-weight: 600; color: var(--ink);
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 100px; cursor: pointer;
+  transition: background 0.15s;
+}
+.nav-auth-btn:hover { background: var(--border); }
+.nav-user-email {
+  font-size: 12px; color: var(--muted); max-width: 140px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tab-lock { margin-left: 4px; font-size: 11px; opacity: 0.7; }
+
+/* Modal backdrop */
+.modal-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55); z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.modal-backdrop.open { display: flex; }
+.modal-box {
+  background: var(--bg-elevated, #fff); border-radius: 16px;
+  padding: 36px 32px; width: 100%; max-width: 400px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+  position: relative;
+}
+.modal-close {
+  position: absolute; top: 14px; right: 18px;
+  background: none; border: none; font-size: 20px;
+  cursor: pointer; color: var(--muted);
+}
+.modal-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+.modal-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+.modal-input {
+  width: 100%; box-sizing: border-box;
+  padding: 10px 14px; border: 1px solid var(--border);
+  border-radius: 10px; font-size: 14px; margin-bottom: 12px;
+  background: var(--bg, #fff); color: var(--ink);
+}
+.modal-btn {
+  width: 100%; padding: 12px; border-radius: 10px;
+  border: none; font-size: 15px; font-weight: 700;
+  cursor: pointer; background: var(--accent, #6366f1);
+  color: #fff; transition: opacity 0.15s;
+}
+.modal-btn:hover { opacity: 0.88; }
+.modal-err { color: #ef4444; font-size: 13px; margin-top: 8px; min-height: 18px; }
+.modal-toggle { text-align: center; margin-top: 16px; font-size: 13px; color: var(--muted); }
+.modal-toggle a { color: var(--accent); cursor: pointer; text-decoration: underline; }
+
+/* Paywall modal extras */
+.paywall-icon { font-size: 40px; text-align: center; margin-bottom: 12px; }
+.paywall-features { list-style: none; padding: 0; margin: 0 0 24px; }
+.paywall-features li { padding: 6px 0; font-size: 14px; }
+.paywall-features li::before { content: '✓ '; color: var(--accent); font-weight: 700; }
+</style>
 </head>
 <body>
 
@@ -502,7 +564,9 @@
   </a>
   <div class="nav-right">
     <div class="nav-stat"><span>375</span> Questions</div>
-    <a href="premium.html" class="nav-cta">⚡ Get Premium</a>
+    <span class="nav-user-email" id="nav-user-email"></span>
+    <button class="nav-auth-btn" id="auth-btn" onclick="showAuthModal()">Sign in</button>
+    <a href="premium.html" class="nav-cta" id="upgrade-cta">⚡ Get Premium</a>
   </div>
 </nav>
 
@@ -539,20 +603,20 @@
 <div class="tabs-wrapper">
   <button class="tabs-arrow left" onclick="scrollTabs(-1)" aria-label="Scroll left">&#8249;</button>
   <div class="tabs" id="tabsScroll">
-    <div class="tab active" onclick="switchTopic('android', event)">🤖 Android <span class="tab-count">50</span></div>
-    <div class="tab" onclick="switchTopic('kotlin', event)">🟣 Kotlin <span class="tab-count">50</span></div>
-    <div class="tab" onclick="switchTopic('compose', event)">🎨 Compose <span class="tab-count">50</span></div>
-    <div class="tab" onclick="switchTopic('coroutines', event)">⚡ Coroutines <span class="tab-count">50</span></div>
-    <div class="tab" onclick="switchTopic('architecture', event)">🏛️ Architecture <span class="tab-count">50</span></div>
-    <div class="tab" onclick="switchTopic('di', event)">💉 Dependency Injection <span class="tab-count">75</span></div>
-    <div class="tab" onclick="switchTopic('networking', event)">🌐 Networking <span class="tab-count">50</span></div>
-    <div class="tab" onclick="switchTopic('storage', event)">🗄️ Data Storage <span class="tab-count">50</span></div>
-    <div class="tab" onclick="switchTopic('buildtools', event)">🔧 Build Tools <span class="tab-count">50</span></div>
-    <div class="tab" onclick="switchTopic('performance', event)">🚀 Performance <span class="tab-count">50</span></div>
-    <div class="tab" onclick="switchTopic('hr', event)">🤝 HR &amp; Behavioural <span class="tab-count">25</span></div>
-    <div class="tab" onclick="switchTopic('testing', event)">🧪 Testing <span class="tab-count">30</span></div>
-    <div class="tab" onclick="switchTopic('security', event)">🔒 Security <span class="tab-count">20</span></div>
-    <div class="tab" onclick="switchTopic('sysdesign', event)">🏗️ System Design <span class="tab-count">10</span></div>
+    <div class="tab active" id="tab-android" onclick="switchTopic('android', event)">🤖 Android <span class="tab-count">50</span><span class="tab-lock" id="lock-android" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-kotlin" onclick="switchTopic('kotlin', event)">🟣 Kotlin <span class="tab-count">50</span><span class="tab-lock" id="lock-kotlin" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-compose" onclick="switchTopic('compose', event)">🎨 Compose <span class="tab-count">50</span><span class="tab-lock" id="lock-compose" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-coroutines" onclick="switchTopic('coroutines', event)">⚡ Coroutines <span class="tab-count">50</span><span class="tab-lock" id="lock-coroutines" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-architecture" onclick="switchTopic('architecture', event)">🏛️ Architecture <span class="tab-count">50</span><span class="tab-lock" id="lock-architecture" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-di" onclick="switchTopic('di', event)">💉 Dependency Injection <span class="tab-count">75</span><span class="tab-lock" id="lock-di" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-networking" onclick="switchTopic('networking', event)">🌐 Networking <span class="tab-count">50</span><span class="tab-lock" id="lock-networking" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-storage" onclick="switchTopic('storage', event)">🗄️ Data Storage <span class="tab-count">50</span><span class="tab-lock" id="lock-storage" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-buildtools" onclick="switchTopic('buildtools', event)">🔧 Build Tools <span class="tab-count">50</span><span class="tab-lock" id="lock-buildtools" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-performance" onclick="switchTopic('performance', event)">🚀 Performance <span class="tab-count">50</span><span class="tab-lock" id="lock-performance" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-hr" onclick="switchTopic('hr', event)">🤝 HR &amp; Behavioural <span class="tab-count">25</span><span class="tab-lock" id="lock-hr" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-testing" onclick="switchTopic('testing', event)">🧪 Testing <span class="tab-count">30</span><span class="tab-lock" id="lock-testing" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-security" onclick="switchTopic('security', event)">🔒 Security <span class="tab-count">20</span><span class="tab-lock" id="lock-security" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-sysdesign" onclick="switchTopic('sysdesign', event)">🏗️ System Design <span class="tab-count">10</span><span class="tab-lock" id="lock-sysdesign" style="display:none">🔒</span></div>
   </div>
   <button class="tabs-arrow right" onclick="scrollTabs(1)" aria-label="Scroll right">&#8250;</button>
 </div>
@@ -27062,6 +27126,233 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else { init(); }
+</script>
+
+<!-- ══════════════════════════════════════════════
+     AUTH MODAL
+══════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="auth-modal" onclick="handleBackdropClick(event, 'auth-modal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('auth-modal')">✕</button>
+    <div class="modal-title" id="auth-modal-title">Welcome back</div>
+    <div class="modal-sub" id="auth-modal-sub">Sign in to access your premium topics</div>
+    <input class="modal-input" type="email" id="auth-email" placeholder="Email address" />
+    <input class="modal-input" type="password" id="auth-password" placeholder="Password" />
+    <div class="modal-err" id="auth-err"></div>
+    <button class="modal-btn" id="auth-submit-btn" onclick="handleAuthSubmit()">Sign in</button>
+    <div class="modal-toggle">
+      <span id="auth-toggle-text">Don't have an account?</span>
+      <a onclick="toggleAuthMode()"> <span id="auth-toggle-link">Sign up</span></a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAYWALL MODAL
+══════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="paywall-modal" onclick="handleBackdropClick(event, 'paywall-modal')">
+  <div class="modal-box" style="max-width:420px">
+    <button class="modal-close" onclick="closeModal('paywall-modal')">✕</button>
+    <div class="paywall-icon">⚡</div>
+    <div class="modal-title" style="text-align:center">Premium Topic</div>
+    <div class="modal-sub" style="text-align:center">This section is available for premium members only.</div>
+    <ul class="paywall-features">
+      <li>Access all locked topics instantly</li>
+      <li>New questions added regularly</li>
+      <li>One-time or monthly plans available</li>
+    </ul>
+    <a href="premium.html" class="modal-btn" style="display:block;text-align:center;text-decoration:none">
+      See Premium Plans
+    </a>
+    <div class="modal-toggle" style="margin-top:12px" id="paywall-signin-row">
+      Already have premium? <a onclick="closeModal('paywall-modal');showAuthModal()">Sign in</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SUPABASE PREMIUM GATING — backend-driven
+══════════════════════════════════════════════ -->
+<script>
+(function () {
+  const SUPABASE_URL      = 'https://dquheflcmcppldrnckzf.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_XiqO_yfBLlMVgiOEfn70lQ_bSqZ4ylt';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ── State ──────────────────────────────────────
+  let PREMIUM_TOPICS = [];   // filled from Supabase premium_topics table
+  let currentUser    = null;
+  let isPremium      = false;
+  let authMode       = 'signin'; // 'signin' | 'signup'
+
+  // ── Intercept switchTopic ──────────────────────
+  const _origSwitch = window.switchTopic;
+  window.switchTopic = function (topic, event) {
+    if (PREMIUM_TOPICS.includes(topic) && !isPremium) {
+      showPaywallModal();
+      return;
+    }
+    _origSwitch(topic, event);
+  };
+
+  // ── Fetch locked topics from Supabase ──────────
+  async function fetchPremiumTopics() {
+    try {
+      const { data, error } = await sb
+        .from('premium_topics')
+        .select('topic_id')
+        .eq('is_locked', true);
+      if (error) throw error;
+      PREMIUM_TOPICS = (data || []).map(r => r.topic_id);
+    } catch (e) {
+      console.warn('Could not load premium topics:', e.message);
+      PREMIUM_TOPICS = []; // fail open — don't lock users out on network error
+    }
+    updateLockIcons();
+  }
+
+  // ── Fetch premium status for logged-in user ────
+  async function fetchPremiumStatus(user) {
+    if (!user) { isPremium = false; return; }
+    try {
+      const { data } = await sb
+        .from('profiles')
+        .select('is_premium')
+        .eq('id', user.id)
+        .single();
+      isPremium = data?.is_premium === true;
+    } catch (_) { isPremium = false; }
+  }
+
+  // ── Update nav UI ──────────────────────────────
+  function updateNavUI() {
+    const btn        = document.getElementById('auth-btn');
+    const emailEl    = document.getElementById('nav-user-email');
+    const upgradeEl  = document.getElementById('upgrade-cta');
+    if (currentUser) {
+      btn.textContent  = 'Sign out';
+      btn.onclick      = handleSignOut;
+      emailEl.textContent = currentUser.email;
+      if (isPremium && upgradeEl) upgradeEl.style.display = 'none';
+    } else {
+      btn.textContent  = 'Sign in';
+      btn.onclick      = showAuthModal;
+      emailEl.textContent = '';
+      if (upgradeEl) upgradeEl.style.display = '';
+    }
+  }
+
+  // ── Show / hide lock icons on tabs ────────────
+  function updateLockIcons() {
+    document.querySelectorAll('.tab-lock').forEach(el => {
+      el.style.display = 'none';
+    });
+    if (!isPremium) {
+      PREMIUM_TOPICS.forEach(t => {
+        const lock = document.getElementById('lock-' + t);
+        if (lock) lock.style.display = '';
+      });
+    }
+    // If the currently active topic just became locked, boot to android
+    if (PREMIUM_TOPICS.includes(currentTopic) && !isPremium) {
+      const firstTab = document.querySelector('.tab');
+      _origSwitch('android', { target: firstTab });
+      firstTab.classList.add('active');
+    }
+  }
+
+  // ── Full refresh (called on load + auth change) ─
+  async function refreshAuth() {
+    const { data: { user } } = await sb.auth.getUser();
+    currentUser = user;
+    await fetchPremiumStatus(user);
+    updateNavUI();
+    updateLockIcons();
+  }
+
+  // ── Auth state listener ────────────────────────
+  sb.auth.onAuthStateChange(async (_event, session) => {
+    currentUser = session?.user ?? null;
+    await fetchPremiumStatus(currentUser);
+    updateNavUI();
+    updateLockIcons();
+  });
+
+  // ── Sign out ───────────────────────────────────
+  async function handleSignOut() {
+    await sb.auth.signOut();
+    currentUser = null;
+    isPremium   = false;
+    updateNavUI();
+    updateLockIcons();
+  }
+
+  // ── Modal helpers ──────────────────────────────
+  window.showAuthModal = function () {
+    document.getElementById('auth-err').textContent = '';
+    document.getElementById('auth-email').value    = '';
+    document.getElementById('auth-password').value = '';
+    document.getElementById('auth-modal').classList.add('open');
+  };
+  window.showPaywallModal = function () {
+    const row = document.getElementById('paywall-signin-row');
+    if (row) row.style.display = currentUser ? 'none' : '';
+    document.getElementById('paywall-modal').classList.add('open');
+  };
+  window.closeModal = function (id) {
+    document.getElementById(id).classList.remove('open');
+  };
+  window.handleBackdropClick = function (e, id) {
+    if (e.target.id === id) closeModal(id);
+  };
+
+  // ── Toggle signin / signup ─────────────────────
+  window.toggleAuthMode = function () {
+    authMode = authMode === 'signin' ? 'signup' : 'signin';
+    const isSignIn = authMode === 'signin';
+    document.getElementById('auth-modal-title').textContent = isSignIn ? 'Welcome back'   : 'Create account';
+    document.getElementById('auth-modal-sub').textContent   = isSignIn ? 'Sign in to access your premium topics' : 'Join to unlock premium content';
+    document.getElementById('auth-submit-btn').textContent  = isSignIn ? 'Sign in'         : 'Sign up';
+    document.getElementById('auth-toggle-text').textContent = isSignIn ? "Don't have an account?" : 'Already have an account?';
+    document.getElementById('auth-toggle-link').textContent = isSignIn ? 'Sign up'         : 'Sign in';
+    document.getElementById('auth-err').textContent         = '';
+  };
+
+  // ── Handle sign in / sign up submit ───────────
+  window.handleAuthSubmit = async function () {
+    const email    = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const errEl    = document.getElementById('auth-err');
+    errEl.textContent = '';
+    if (!email || !password) { errEl.textContent = 'Please fill in all fields.'; return; }
+
+    const btn = document.getElementById('auth-submit-btn');
+    btn.disabled = true;
+    btn.textContent = authMode === 'signin' ? 'Signing in…' : 'Creating account…';
+
+    let error;
+    if (authMode === 'signin') {
+      ({ error } = await sb.auth.signInWithPassword({ email, password }));
+    } else {
+      ({ error } = await sb.auth.signUp({ email, password }));
+    }
+
+    btn.disabled = false;
+    btn.textContent = authMode === 'signin' ? 'Sign in' : 'Sign up';
+
+    if (error) {
+      errEl.textContent = error.message;
+    } else {
+      closeModal('auth-modal');
+      if (authMode === 'signup') {
+        alert('Check your email to confirm your account, then sign in!');
+      }
+    }
+  };
+
+  // ── Boot ───────────────────────────────────────
+  fetchPremiumTopics().then(() => refreshAuth());
+})();
 </script>
 </body>
 </html>
