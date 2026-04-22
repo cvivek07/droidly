@@ -2704,7 +2704,12 @@
     const name = data.user.user_metadata?.full_name || email.split('@')[0];
     closeAuthModal();
     updateNavForUser(data.user);
-    showToast('✓ Welcome back, ' + name.split(' ')[0] + '!', 'success');
+    const returnTo = new URLSearchParams(window.location.search).get('return');
+    if (returnTo) {
+      window.location.href = returnTo + '.html';
+    } else {
+      showToast('✓ Welcome back, ' + name.split(' ')[0] + '!', 'success');
+    }
   }
 
   // ── Sign Up ─────────────────────────────────────────
@@ -2745,7 +2750,12 @@
       // Email confirmation disabled in Supabase → logged in immediately
       closeAuthModal();
       updateNavForUser(data.user);
-      showToast('🎉 Welcome to Droidly, ' + name.split(' ')[0] + '!', 'success');
+      const returnTo = new URLSearchParams(window.location.search).get('return');
+      if (returnTo) {
+        window.location.href = returnTo + '.html';
+      } else {
+        showToast('🎉 Welcome to Droidly, ' + name.split(' ')[0] + '!', 'success');
+      }
     }
   }
 
@@ -2873,7 +2883,21 @@
 
     // Check for existing session on page load
     const { data: { session } } = await db.auth.getSession();
-    if (session) updateNavForUser(session.user);
+    if (session) {
+      updateNavForUser(session.user);
+      // If already logged in and there's a return destination, go there immediately
+      const returnTo = new URLSearchParams(window.location.search).get('return');
+      if (returnTo) {
+        window.location.href = returnTo + '.html';
+        return;
+      }
+    }
+
+    // Auto-open auth modal if redirected from another page (e.g. questions page)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auth') === 'signin' && !session) {
+      openAuthModal('signin');
+    }
   })();
 
   // Escape key for auth modal
