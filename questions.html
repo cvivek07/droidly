@@ -27217,6 +27217,29 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
      SUPABASE PREMIUM GATING — backend-driven
 ══════════════════════════════════════════════ -->
 <script>
+// ── Instant nav pre-render from localStorage (no async needed) ──────────────
+// Supabase v2 stores session at this key. We read it synchronously so the
+// nav shows the correct state immediately — before any network calls.
+(function preRenderNav() {
+  try {
+    const PROJECT_REF = 'dquheflcmcppldrnckzf';
+    const raw = localStorage.getItem('sb-' + PROJECT_REF + '-auth-token');
+    if (!raw) return;
+    const session = JSON.parse(raw);
+    const user = session?.user;
+    if (!user) return;
+    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || '';
+    const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?';
+    const el = id => document.getElementById(id);
+    if (el('navSignInBtn'))    el('navSignInBtn').style.display   = 'none';
+    if (el('navUserMenu'))     el('navUserMenu').style.display    = 'flex';
+    if (el('navAvatarInitial'))el('navAvatarInitial').textContent = initials;
+    if (el('navUserName'))     el('navUserName').textContent      = name.split(' ')[0];
+    if (el('navUserEmail'))    el('navUserEmail').textContent     = user.email;
+    // upgrade-cta visibility is handled by refreshAuth() once premium status is known
+  } catch (e) {}
+})();
+
 (function () {
   const SUPABASE_URL      = 'https://dquheflcmcppldrnckzf.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
