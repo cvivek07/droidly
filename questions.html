@@ -26984,7 +26984,7 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
   // ── Auth state listener ────────────────────────
   sb.auth.onAuthStateChange(async (event, session) => {
     currentUser = session?.user ?? null;
-    await fetchPremiumStatus(currentUser);
+    await Promise.all([fetchPremiumStatus(currentUser), fetchPremiumTopics()]);
     updateNavForUser(currentUser);
     updateLockIcons();
   });
