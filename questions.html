@@ -26916,7 +26916,6 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
       console.warn('Could not load premium topics:', e.message);
       PREMIUM_TOPICS = []; // fail open — don't lock users out on network error
     }
-    updateLockIcons();
   }
 
   // ── Fetch premium status for logged-in user ────
@@ -26980,7 +26979,6 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
     currentUser = user;
     await fetchPremiumStatus(user);
     updateNavForUser(user);
-    updateLockIcons();
   }
 
   // ── Auth state listener ────────────────────────
@@ -27038,9 +27036,8 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
     document.getElementById('navUserMenu')?.classList.remove('open');
   });
 
-  // ── Boot — run in parallel so nav updates immediately ──
-  refreshAuth();        // reads localStorage instantly — no network wait
-  fetchPremiumTopics(); // separate network call for lock icons
+  // ── Boot — fetch both in parallel, update UI only after both resolve ──
+  Promise.all([refreshAuth(), fetchPremiumTopics()]).then(() => updateLockIcons());
 })();
 </script>
 </body>
