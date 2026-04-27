@@ -503,7 +503,7 @@
   transition: background 0.15s; font-family: inherit;
 }
 .btn-nav:hover { background: var(--border); }
-.tab-lock { margin-left: 4px; font-size: 11px; opacity: 0.7; }
+.tab-lock { margin-left: 2px; font-size: 13px; opacity: 0.85; line-height: 1; }
 
 .nav-user {
   display: flex; align-items: center; gap: 8px;
@@ -26713,7 +26713,7 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
   </div><!-- end .content -->
 </div><!-- end .main -->
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 
   const topics = {
     android: { name: '🤖 Android Domain', questions: ['Activity lifecycle & Home vs Back','Fragment lifecycle & viewLifecycleOwner','Explicit vs Implicit Intents','Service vs IntentService vs WorkManager','Context vs ApplicationContext','Android 13/14 Permission model','BroadcastReceiver static vs dynamic','Process death & state restoration','Predictive Back Gesture','SplashScreen API Android 12+','Serializable vs Parcelable','LaunchMode: standard, singleTop, singleTask, singleInstance','Deep links vs App Links','ANR — causes & diagnosis','compileSdk vs minSdk vs targetSdk','Edge-to-edge & window insets','Push notifications full flow 2025','App Startup library','View.GONE vs INVISIBLE vs VISIBLE','Baseline Profiles 2025','ContentProvider & FileProvider','LiveData vs StateFlow 2025','RecyclerView vs LazyColumn','Doze Mode & App Standby','Handler, Looper & MessageQueue','ViewBinding vs DataBinding vs findViewById','Foldable & large screen support','Jetpack Navigation Component','Android security — SSL pinning & secure storage','ConstraintLayout & MotionLayout','AndroidManifest.xml deep dive','Jetpack Paging 3','Accessibility best practices','Android 15 & 16 new features','Kotlin Multiplatform Mobile (KMM)','IPC & AIDL','Scoped Storage & MediaStore','BiometricPrompt API','Custom View — onMeasure, onDraw, Canvas','DVM vs ART vs JVM','AlarmManager vs WorkManager','SparseArray vs HashMap','Bitmap memory & BitmapPool','App Widgets & Glance','Backward compatibility & @RequiresApi','StrictMode in development','WebView security best practices','App Shortcuts — static, dynamic, pinned','Multi-process architecture','Android Vitals & production monitoring'] },
@@ -26905,29 +26905,35 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
 
   // ── Fetch locked topics from Supabase ──────────
   async function fetchPremiumTopics() {
+    console.log('[Premium] fetchPremiumTopics called');
     try {
-      const { data, error } = await sb
-        .from('premium_topics')
-        .select('topic_id')
-        .eq('is_locked', true);
-      if (error) throw error;
-      PREMIUM_TOPICS = (data || []).map(r => r.topic_id);
+      const res = await fetch(
+        SUPABASE_URL + '/rest/v1/premium_topics?select=topic_id&is_locked=eq.true',
+        { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY } }
+      );
+      const data = await res.json();
+      console.log('[Premium] Supabase response:', data);
+      PREMIUM_TOPICS = Array.isArray(data) ? data.map(r => r.topic_id) : [];
+      console.log('[Premium] PREMIUM_TOPICS loaded:', PREMIUM_TOPICS);
     } catch (e) {
-      console.warn('Could not load premium topics:', e.message);
-      PREMIUM_TOPICS = []; // fail open — don't lock users out on network error
+      console.warn('[Premium] Could not load premium topics:', e.message);
+      PREMIUM_TOPICS = [];
     }
   }
 
-  // ── Fetch premium status for logged-in user ────
+  // ── Fetch premium status for logged-in user (direct fetch, no SDK) ────
   async function fetchPremiumStatus(user) {
     if (!user) { isPremium = false; return; }
     try {
-      const { data } = await sb
-        .from('profiles')
-        .select('is_premium')
-        .eq('id', user.id)
-        .single();
-      isPremium = data?.is_premium === true;
+      const raw = localStorage.getItem('sb-dquheflcmcppldrnckzf-auth-token');
+      const session = raw ? JSON.parse(raw) : null;
+      const token = session?.access_token || SUPABASE_ANON_KEY;
+      const res = await fetch(
+        SUPABASE_URL + '/rest/v1/profiles?select=is_premium&id=eq.' + user.id,
+        { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token } }
+      );
+      const data = await res.json();
+      isPremium = Array.isArray(data) && data[0]?.is_premium === true;
     } catch (_) { isPremium = false; }
   }
 
@@ -26958,11 +26964,12 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
 
   // ── Show / hide lock icons on tabs ────────────
   function updateLockIcons() {
+    console.log('[Premium] updateLockIcons called — isPremium:', isPremium, 'PREMIUM_TOPICS:', PREMIUM_TOPICS);
     document.querySelectorAll('.tab-lock').forEach(el => { el.style.display = 'none'; });
     if (!isPremium) {
       PREMIUM_TOPICS.forEach(t => {
         const lock = document.getElementById('lock-' + t);
-        if (lock) lock.style.display = '';
+        if (lock) lock.style.display = 'inline-block';
       });
     }
     if (PREMIUM_TOPICS.includes(currentTopic) && !isPremium) {
@@ -26972,13 +26979,16 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
     }
   }
 
-  // ── Full refresh ───────────────────────────────
+  // ── Full refresh (reads session from localStorage, no SDK hang) ──────
   async function refreshAuth() {
-    const { data: { session } } = await sb.auth.getSession();
-    const user = session?.user ?? null;
-    currentUser = user;
-    await fetchPremiumStatus(user);
-    updateNavForUser(user);
+    try {
+      const raw = localStorage.getItem('sb-dquheflcmcppldrnckzf-auth-token');
+      const session = raw ? JSON.parse(raw) : null;
+      const user = session?.user ?? null;
+      currentUser = user;
+      await fetchPremiumStatus(user);
+      updateNavForUser(user);
+    } catch (e) { console.warn('[Premium] refreshAuth error:', e); }
   }
 
   // ── Auth state listener ────────────────────────
@@ -27036,8 +27046,10 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
     document.getElementById('navUserMenu')?.classList.remove('open');
   });
 
-  // ── Boot — fetch both in parallel, update UI only after both resolve ──
-  Promise.all([refreshAuth(), fetchPremiumTopics()]).then(() => updateLockIcons());
+  // ── Boot — load topics immediately, auth separately ──
+  console.log('[Premium] Boot starting');
+  fetchPremiumTopics().then(() => updateLockIcons()); // show locks ASAP, no auth wait
+  refreshAuth().then(() => updateLockIcons());        // re-check once auth resolves
 })();
 </script>
 </body>
