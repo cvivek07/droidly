@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Design a Chat App — Android System Design | Droidly</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -41,43 +41,80 @@
       font-size: 15px;
       line-height: 1.7;
       -webkit-font-smoothing: antialiased;
+      padding-top: 68px;
     }
 
     /* ── TOP NAV ──────────────────────────────────────────── */
-    .topnav {
-      position: sticky; top: 0; z-index: 900;
-      height: 56px;
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      background: rgba(255,255,255,0.90);
+      backdrop-filter: blur(20px) saturate(1.6);
       border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(12px);
-      display: flex; align-items: center;
-      padding: 0 24px; gap: 16px;
+      box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04);
     }
-    .topnav-logo {
-      font-weight: 800; font-size: 16px; color: var(--ink);
-      text-decoration: none; display: flex; align-items: center; gap: 7px;
+    nav::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--green2), var(--green-mid), var(--green));
+      z-index: 1;
     }
-    .topnav-logo-mark {
-      width: 28px; height: 28px; border-radius: 7px;
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--ink);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800; font-size: 20px; letter-spacing: -0.5px;
+    }
+    .logo-mark { display: flex; align-items: center; flex-shrink: 0; }
+    .logo-mark img { height: 32px; width: auto; display: block; object-fit: contain; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-cta {
+      background: var(--accent);
+      color: white; padding: 8px 20px; border-radius: 100px;
+      font-size: 13px; font-weight: 700; text-decoration: none;
+      box-shadow: 0 2px 8px var(--accent-glow);
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .nav-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-nav {
+      font-size: 13px; font-weight: 600; color: var(--ink);
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      padding: 6px 16px; border-radius: 100px; cursor: pointer;
+      transition: background 0.15s; font-family: inherit;
+    }
+    .btn-nav:hover { background: var(--border); }
+    .nav-user {
+      display: flex; align-items: center; gap: 8px;
+      position: relative; cursor: pointer;
+    }
+    .nav-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
       background: var(--accent); color: white;
-      display: flex; align-items: center; justify-content: center; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+      border: 2px solid rgba(61,122,79,0.3);
+      flex-shrink: 0; transition: box-shadow 0.18s;
     }
-    .topnav-sep { color: var(--border); font-size: 18px; }
-    .topnav-crumb {
-      font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px;
+    .nav-user-name { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .nav-caret { font-size: 10px; color: var(--muted); }
+    .user-dropdown {
+      display: none; position: absolute; top: calc(100% + 10px); right: 0;
+      background: white; border: 1px solid var(--border);
+      border-radius: 12px; padding: 6px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 200px; z-index: 999;
     }
-    .topnav-crumb a { color: var(--muted); text-decoration: none; }
-    .topnav-crumb a:hover { color: var(--accent); }
-    .topnav-crumb .sep { color: var(--muted2); }
-    .topnav-crumb .current { color: var(--ink); font-weight: 500; }
-    .topnav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-    .btn-unlock {
-      background: var(--accent); color: white;
-      padding: 7px 16px; border-radius: 6px;
-      font-size: 13px; font-weight: 600; text-decoration: none;
-      transition: background 0.15s;
+    .nav-user:hover .user-dropdown, .nav-user.open .user-dropdown { display: block; }
+    .user-dropdown-email { font-size: 12px; color: var(--muted); padding: 8px 12px 6px; }
+    .user-dropdown-item {
+      padding: 8px 12px; border-radius: 8px; font-size: 13px;
+      font-weight: 500; cursor: pointer; color: var(--ink);
     }
-    .btn-unlock:hover { background: var(--accent-dark); }
+    .user-dropdown-item:hover { background: var(--bg-elevated); }
+    .user-dropdown-item.danger { color: #e53e3e; }
+    .user-dropdown-item.danger:hover { background: #fff0f0; color: #c53030; }
 
     /* ── PAGE LAYOUT ──────────────────────────────────────── */
     .page {
@@ -555,25 +592,28 @@
       .levels-grid { grid-template-columns: 1fr; }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
 <!-- TOP NAV -->
-<nav class="topnav">
-  <a href="index.html" class="topnav-logo">
-    <div class="topnav-logo-mark">🤖</div>
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
     Droidly
   </a>
-  <span class="topnav-sep">/</span>
-  <div class="topnav-crumb">
-    <a href="questions.html">Questions</a>
-    <span class="sep">›</span>
-    <a href="questions.html#topic-sysdesign">System Design</a>
-    <span class="sep">›</span>
-    <span class="current">Chat App</span>
-  </div>
-  <div class="topnav-right">
-    <a href="#" class="btn-unlock">Unlock Premium</a>
+  <div class="nav-right" id="navRight">
+    <a href="premium.html" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <div class="user-dropdown-item danger" onclick="handleSignOut()">🚪 Sign Out</div>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -712,7 +752,6 @@
           <p>
             The dual-ID system enables optimistic UI — the message appears instantly, before any server confirmation. This is how WhatsApp, iMessage, and Telegram all work. The <code>localId</code> acts as an idempotency key: even if the network request is retried, the server deduplicates by <code>localId</code> and never creates a duplicate message.
           </p>
-          <button class="pattern-btn">Learn This Pattern</button>
         </div>
       </div>
     </div>
@@ -933,7 +972,6 @@
           <p>
             On connection failure, do not retry immediately — this thundering herd problem can DDoS your own server when millions of clients lose connectivity at once (e.g. server deploy). Instead, use exponential backoff with jitter: delay = min(2ⁿ × 1000ms, 30000ms) + random(0, 1000ms).
           </p>
-          <button class="pattern-btn">Learn This Pattern</button>
         </div>
       </div>
 
@@ -1372,7 +1410,6 @@
           <p>
             On reconnect, the server may re-deliver messages the client already received. Using <code>INSERT OR IGNORE</code> (Room's <code>OnConflictStrategy.IGNORE</code>) means duplicate frames are silently dropped. The UI never shows a duplicate bubble — no extra deduplication logic needed anywhere else.
           </p>
-          <button class="pattern-btn">Learn This Pattern</button>
         </div>
       </div>
 
@@ -1419,7 +1456,6 @@
           <p>
             E2E encryption introduces a key distribution problem: what if a user installs the app on a new device? They need to re-establish keys with every contact. WhatsApp handles this by requiring the user to re-verify contacts' safety numbers. This is a UX trade-off you should surface in the interview.
           </p>
-          <button class="pattern-btn">Learn This Pattern</button>
         </div>
       </div>
 
@@ -1429,6 +1465,211 @@
           Use <strong>Kotlin Multiplatform (KMM)</strong>. The Repository layer, use cases, data models, and Room queries (via SQLDelight on iOS) can be shared. Only the UI layer (Compose on Android, SwiftUI on iOS) and platform-specific code (WorkManager, FCM) stay separate. This is a strong signal at Staff+ level interviews.
         </p>
       </div>
+
+      <!-- ── TYPING INDICATORS ── -->
+      <div id="dd-typing">
+        <div class="sec-h2">6) How do you implement typing indicators?</div>
+        <p>
+          Typing indicators feel simple but have two tricky problems: you don't want to spam the server with a frame for every keystroke, and you need to hide the indicator automatically if the user stops typing without sending.
+        </p>
+
+        <div class="diagram-wrap">
+          <div style="background:#fafafa; padding:28px 20px; border-radius:12px;">
+            <svg viewBox="0 0 680 200" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter,sans-serif" font-size="12">
+              <defs>
+                <marker id="ty-arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="#374151"/>
+                </marker>
+                <marker id="ty-arr-r" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="#dc2626"/>
+                </marker>
+              </defs>
+
+              <!-- Client A -->
+              <rect x="10" y="20" width="130" height="50" rx="8" fill="#e8f2ec" stroke="#6aad82" stroke-width="1.5"/>
+              <text x="75" y="41" text-anchor="middle" font-weight="700" fill="#2e6040" font-size="11">Client A</text>
+              <text x="75" y="60" text-anchor="middle" fill="#374151" font-size="11">user is typing...</text>
+
+              <!-- debounce box -->
+              <rect x="185" y="20" width="120" height="50" rx="8" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+              <text x="245" y="41" text-anchor="middle" font-weight="700" fill="#1d4ed8" font-size="11">Debounce</text>
+              <text x="245" y="60" text-anchor="middle" fill="#374151" font-size="11">300ms window</text>
+
+              <!-- Server -->
+              <rect x="355" y="20" width="120" height="50" rx="8" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
+              <text x="415" y="41" text-anchor="middle" font-weight="700" fill="#5b21b6" font-size="11">Server</text>
+              <text x="415" y="60" text-anchor="middle" fill="#374151" font-size="11">fan-out event</text>
+
+              <!-- Client B -->
+              <rect x="525" y="20" width="140" height="50" rx="8" fill="#e8f2ec" stroke="#6aad82" stroke-width="1.5"/>
+              <text x="595" y="41" text-anchor="middle" font-weight="700" fill="#2e6040" font-size="11">Client B</text>
+              <text x="595" y="60" text-anchor="middle" fill="#374151" font-size="11">Alice is typing… 💬</text>
+
+              <!-- Arrows top -->
+              <line x1="140" y1="45" x2="182" y2="45" stroke="#374151" stroke-width="1.5" marker-end="url(#ty-arr)"/>
+              <text x="161" y="39" text-anchor="middle" fill="#6b7280" font-size="10">keystroke</text>
+
+              <line x1="305" y1="45" x2="352" y2="45" stroke="#374151" stroke-width="1.5" marker-end="url(#ty-arr)"/>
+              <text x="328" y="39" text-anchor="middle" fill="#6b7280" font-size="10">TYPING frame</text>
+
+              <line x1="475" y1="45" x2="522" y2="45" stroke="#374151" stroke-width="1.5" marker-end="url(#ty-arr)"/>
+              <text x="498" y="39" text-anchor="middle" fill="#6b7280" font-size="10">TYPING event</text>
+
+              <!-- Timeout row -->
+              <rect x="525" y="120" width="140" height="50" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5"/>
+              <text x="595" y="141" text-anchor="middle" font-weight="700" fill="#c2410c" font-size="11">5s timeout</text>
+              <text x="595" y="160" text-anchor="middle" fill="#374151" font-size="11">hide indicator</text>
+
+              <line x1="595" y1="70" x2="595" y2="118" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ty-arr-r)"/>
+              <text x="608" y="100" fill="#dc2626" font-size="10">no new frame</text>
+              <text x="608" y="113" fill="#dc2626" font-size="10">in 5 seconds</text>
+            </svg>
+          </div>
+        </div>
+
+        <p><strong>Two rules that make this work well:</strong></p>
+        <p><strong>1. Debounce on the client.</strong> Don't send a TYPING frame for every keystroke — that's one WebSocket frame per character. Instead, send a frame only when the user has paused for 300ms. In practice this means one frame per word, not one per letter.</p>
+        <p><strong>2. Auto-hide with a timeout.</strong> The receiver's app starts a 5-second countdown the moment it sees a TYPING frame. If no new TYPING frame arrives in 5 seconds, hide the indicator. If the sender keeps typing, they keep emitting debounced frames and the timer keeps resetting. If they abandon the draft, the indicator disappears cleanly after 5 seconds — no STOP_TYPING frame needed.</p>
+
+        <div class="pattern-box">
+          <div class="pattern-header">
+            <span class="pattern-icon">🔷</span>
+            <span class="pattern-title">Key insight: Typing events are ephemeral — never write them to the DB</span>
+          </div>
+          <p>
+            TYPING frames flow directly: Client → Server → Receiver. They're never stored in Room or Postgres. If the receiver's app is killed and restarted, they just won't see the typing indicator — that's perfectly acceptable. Keeping these out of the DB keeps the message pipeline clean and avoids unnecessary writes.
+          </p>
+        </div>
+
+        <p>On Android, wire the debounce to the <code>TextWatcher</code> or Compose's <code>onValueChange</code> using a <code>Flow</code> with <code>debounce(300)</code>:</p>
+
+        <pre class="code-block"><span class="cm">// In ViewModel</span>
+<span class="kw">val</span> typingFlow = MutableSharedFlow&lt;<span class="tp">Unit</span>&gt;()
+
+<span class="kw">init</span> {
+    viewModelScope.<span class="fn">launch</span> {
+        typingFlow
+            .<span class="fn">debounce</span>(<span class="nu">300</span>)
+            .<span class="fn">collect</span> { wsManager.<span class="fn">send</span>(<span class="tp">WsFrame</span>.<span class="fn">typing</span>(conversationId)) }
+    }
+}
+
+<span class="cm">// In UI — called on every keystroke</span>
+<span class="kw">fun</span> <span class="fn">onTextChanged</span>() = viewModelScope.<span class="fn">launch</span> { typingFlow.<span class="fn">emit</span>(<span class="tp">Unit</span>) }</pre>
+      </div>
+
+      <!-- ── ONLINE / PRESENCE ── -->
+      <div id="dd-presence">
+        <div class="sec-h2">7) How do you show online status and last seen?</div>
+        <p>
+          Presence is one of the hardest things to get right at scale. The naive approach — storing a boolean <code>isOnline</code> in your main database — breaks under load and leads to stale state. Here's the right way.
+        </p>
+
+        <div class="diagram-wrap">
+          <div style="background:#fafafa; padding:28px 20px; border-radius:12px;">
+            <svg viewBox="0 0 660 210" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter,sans-serif" font-size="12">
+              <defs>
+                <marker id="pr-arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="#374151"/>
+                </marker>
+                <marker id="pr-arr-g" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="#3d7a4f"/>
+                </marker>
+              </defs>
+
+              <!-- Client -->
+              <rect x="10" y="60" width="130" height="90" rx="8" fill="#e8f2ec" stroke="#6aad82" stroke-width="1.5"/>
+              <text x="75" y="82" text-anchor="middle" font-weight="700" fill="#2e6040" font-size="11">Android Client</text>
+              <text x="75" y="100" text-anchor="middle" fill="#374151" font-size="10.5">WS connect → online</text>
+              <text x="75" y="116" text-anchor="middle" fill="#374151" font-size="10.5">ping every 30s</text>
+              <text x="75" y="132" text-anchor="middle" fill="#374151" font-size="10.5">WS close → offline</text>
+
+              <!-- WS Gateway -->
+              <rect x="200" y="60" width="130" height="90" rx="8" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
+              <text x="265" y="82" text-anchor="middle" font-weight="700" fill="#5b21b6" font-size="11">WS Gateway</text>
+              <text x="265" y="100" text-anchor="middle" fill="#374151" font-size="10.5">on connect →</text>
+              <text x="265" y="116" text-anchor="middle" fill="#374151" font-size="10.5">mark online</text>
+              <text x="265" y="132" text-anchor="middle" fill="#374151" font-size="10.5">on disconnect →</text>
+              <text x="265" y="148" text-anchor="middle" fill="#374151" font-size="10.5">record lastSeen</text>
+
+              <!-- Redis -->
+              <rect x="390" y="30" width="130" height="60" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5"/>
+              <text x="455" y="54" text-anchor="middle" font-weight="700" fill="#c2410c" font-size="11">Redis</text>
+              <text x="455" y="72" text-anchor="middle" fill="#374151" font-size="10.5">presence store</text>
+              <text x="455" y="86" text-anchor="middle" fill="#374151" font-size="10.5">(TTL: 35s)</text>
+
+              <!-- Postgres -->
+              <rect x="390" y="120" width="130" height="50" rx="8" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+              <text x="455" y="142" text-anchor="middle" font-weight="700" fill="#1d4ed8" font-size="11">Postgres</text>
+              <text x="455" y="160" text-anchor="middle" fill="#374151" font-size="10.5">lastSeen timestamp</text>
+
+              <!-- Observers -->
+              <rect x="545" y="60" width="110" height="90" rx="8" fill="#e8f2ec" stroke="#6aad82" stroke-width="1.5"/>
+              <text x="600" y="82" text-anchor="middle" font-weight="700" fill="#2e6040" font-size="11">Other Clients</text>
+              <text x="600" y="100" text-anchor="middle" fill="#374151" font-size="10.5">poll presence</text>
+              <text x="600" y="116" text-anchor="middle" fill="#374151" font-size="10.5">or subscribe</text>
+              <text x="600" y="132" text-anchor="middle" fill="#374151" font-size="10.5">via WS event</text>
+
+              <!-- Arrows -->
+              <line x1="140" y1="105" x2="198" y2="105" stroke="#374151" stroke-width="1.5" marker-end="url(#pr-arr)"/>
+              <line x1="330" y1="78" x2="388" y2="68" stroke="#374151" stroke-width="1.5" marker-end="url(#pr-arr)"/>
+              <text x="350" y="68" fill="#6b7280" font-size="10">online key</text>
+              <text x="350" y="79" fill="#6b7280" font-size="10">+TTL 35s</text>
+              <line x1="330" y1="128" x2="388" y2="145" stroke="#374151" stroke-width="1.5" marker-end="url(#pr-arr)"/>
+              <text x="342" y="145" fill="#6b7280" font-size="10">lastSeen</text>
+              <line x1="520" y1="105" x2="543" y2="105" stroke="#3d7a4f" stroke-width="1.5" marker-end="url(#pr-arr-g)"/>
+            </svg>
+          </div>
+        </div>
+
+        <p><strong>The two-store pattern — Redis + Postgres:</strong></p>
+        <p><strong>Redis for live presence.</strong> When a WebSocket connects, write a key like <code>presence:{userId}</code> with a TTL of 35 seconds. The client sends a ping frame every 30 seconds. Each ping refreshes the TTL. If the client disconnects without notice (killed process, network drop), the TTL expires naturally and the user goes offline within 35 seconds. Redis is the right store here because it's fast, ephemeral, and has native TTL support — no cron job needed to clean up stale data.</p>
+        <p><strong>Postgres for last seen.</strong> When the WebSocket closes cleanly, write <code>lastSeen = now()</code> to the users table. This is the timestamp shown as "last seen today at 3:42 PM". It only needs to be written on disconnect, not continuously — so the write load is low.</p>
+
+        <div class="pattern-box">
+          <div class="pattern-header">
+            <span class="pattern-icon">🔷</span>
+            <span class="pattern-title">Trade-off: Privacy vs. Usefulness</span>
+          </div>
+          <p>
+            Always mention this in the interview. WhatsApp, iMessage, and Telegram all give users the option to hide their last seen and online status. This is a product decision but has architectural implications — you need a privacy settings table and need to filter presence data before returning it to other clients. The server should never return raw presence data without checking the user's privacy preferences first.
+          </p>
+        </div>
+      </div>
+
+      <!-- ── MESSAGE ORDERING ── -->
+      <div id="dd-ordering">
+        <div class="sec-h2">8) How do you handle message ordering when the client clock is wrong?</div>
+        <p>
+          This is a subtle but important problem. Android devices can have incorrect clocks — the user may have set the time manually, or the device's time sync may be delayed. If you sort messages by <code>createdAt</code> (client timestamp), messages can appear out of order.
+        </p>
+
+        <p>The correct approach uses <strong>two timestamps</strong> and a simple rule:</p>
+
+        <pre class="code-block"><span class="cm">// Sort rule in DAO — use server timestamp when available, fall back to local</span>
+<span class="an">@Query</span>(<span class="st">"SELECT * FROM messages WHERE conversationId = :id
+        ORDER BY COALESCE(serverTs, createdAt) ASC, localId ASC"</span>)
+<span class="kw">fun</span> <span class="fn">getMessages</span>(id: <span class="tp">String</span>): <span class="tp">Flow</span>&lt;<span class="tp">List</span>&lt;<span class="tp">MessageEntity</span>&gt;&gt;</pre>
+
+        <p>Here's what happens at each stage:</p>
+
+        <p><strong>Before the server ACK (PENDING state):</strong> The message only has <code>createdAt</code> (client timestamp). It sorts by client time — which is fine because it's the user's own outgoing message and they just sent it. It will always appear at the bottom.</p>
+
+        <p><strong>After the server ACK (SENT and beyond):</strong> The server writes back a <code>serverTs</code> — a timestamp from the server's clock, which is authoritative. The DAO now sorts by <code>serverTs</code>. If the device clock was wrong by a few minutes, the message snaps to its correct position in the conversation.</p>
+
+        <p><code>localId ASC</code> is the tiebreaker for messages with identical timestamps (extremely rare, but possible in batch imports or message migrations).</p>
+
+        <div class="pattern-box">
+          <div class="pattern-header">
+            <span class="pattern-icon">🔷</span>
+            <span class="pattern-title">What about Lamport Timestamps?</span>
+          </div>
+          <p>
+            Lamport timestamps are a distributed systems concept for ordering events without a global clock. In a 1:1 mobile chat app, server timestamps are usually sufficient — the server is the single authority. Lamport timestamps matter more in <strong>group chats with distributed servers</strong>, where multiple servers might process messages for the same conversation. Mentioning this trade-off in an interview signals strong distributed systems awareness.
+          </p>
+        </div>
+      </div>
+
     </div>
 
     <hr/>
@@ -1823,6 +2064,9 @@
       <li class="toc-item sub"><a href="#dd-push" id="toc-dd-push">3) Push when app is killed</a></li>
       <li class="toc-item sub"><a href="#dd-encryption" id="toc-dd-encryption">4) End-to-end encryption</a></li>
       <li class="toc-item sub"><a href="#dd-kmm" id="toc-dd-kmm">5) KMM sharing with iOS</a></li>
+      <li class="toc-item sub"><a href="#dd-typing" id="toc-dd-typing">6) Typing indicators</a></li>
+      <li class="toc-item sub"><a href="#dd-presence" id="toc-dd-presence">7) Online & presence status</a></li>
+      <li class="toc-item sub"><a href="#dd-ordering" id="toc-dd-ordering">8) Message ordering</a></li>
 
       <li class="toc-item"><a href="#expectations" id="toc-expectations">What is Expected at</a></li>
       <li class="toc-item sub"><a href="#expectations">Mid-level</a></li>
@@ -1871,7 +2115,7 @@
     'setup','planning','core-entities',
     'high-level','hl-architecture','hl-send-flow','hl-websocket','hl-media',
     'lld','lld-whiteboard','lld-send','lld-receive','lld-receipt',
-    'deep-dives','dd-pagination','dd-receipts','dd-push','dd-encryption','dd-kmm',
+    'deep-dives','dd-pagination','dd-receipts','dd-push','dd-encryption','dd-kmm','dd-typing','dd-presence','dd-ordering',
     'expectations',
     'interview-qs'
   ];
@@ -1894,6 +2138,92 @@
     const el = document.getElementById(id);
     if (el) observer.observe(el);
   });
+</script>
+
+<!-- ── Auth (matches questions.html pattern) ── -->
+<script>
+(function preRenderNav() {
+  try {
+    const raw = localStorage.getItem('sb-dquheflcmcppldrnckzf-auth-token');
+    if (!raw) return;
+    const session = JSON.parse(raw);
+    const user = session?.user;
+    if (!user) return;
+    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || '';
+    const initials = name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() || '?';
+    const el = id => document.getElementById(id);
+    if (el('navSignInBtn'))    el('navSignInBtn').style.display   = 'none';
+    if (el('navUserMenu'))     el('navUserMenu').style.display    = 'flex';
+    if (el('navAvatarInitial'))el('navAvatarInitial').textContent = initials;
+    if (el('navUserName'))     el('navUserName').textContent      = name.split(' ')[0];
+    if (el('navUserEmail'))    el('navUserEmail').textContent     = user.email;
+  } catch (e) {}
+})();
+
+(function () {
+  const SUPABASE_URL      = 'https://dquheflcmcppldrnckzf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let currentUser = null;
+  let isPremium   = false;
+
+  function updateNavForUser(user) {
+    currentUser = user;
+    const signInBtn  = document.getElementById('navSignInBtn');
+    const userMenu   = document.getElementById('navUserMenu');
+    const avatarEl   = document.getElementById('navAvatarInitial');
+    const userNameEl = document.getElementById('navUserName');
+    const emailEl    = document.getElementById('navUserEmail');
+    const upgradeEl  = document.getElementById('upgrade-cta');
+    if (user) {
+      const name = user.user_metadata?.full_name || user.email.split('@')[0];
+      signInBtn.style.display = 'none';
+      userMenu.style.display  = 'flex';
+      avatarEl.textContent    = name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+      userNameEl.textContent  = name.split(' ')[0];
+      emailEl.textContent     = user.email;
+      if (isPremium && upgradeEl) upgradeEl.style.display = 'none';
+    } else {
+      signInBtn.style.display = '';
+      userMenu.style.display  = 'none';
+      if (upgradeEl) upgradeEl.style.display = '';
+    }
+  }
+
+  async function refreshAuth() {
+    try {
+      const raw = localStorage.getItem('sb-dquheflcmcppldrnckzf-auth-token');
+      const session = raw ? JSON.parse(raw) : null;
+      const user = session?.user ?? null;
+      currentUser = user;
+      updateNavForUser(user);
+    } catch (e) {}
+  }
+
+  sb.auth.onAuthStateChange((event, session) => {
+    updateNavForUser(session?.user ?? null);
+  });
+
+  window.handleSignOut = async function () {
+    await sb.auth.signOut();
+    updateNavForUser(null);
+  };
+
+  window.openAuthModal = function () {
+    window.location.href = 'index.html?auth=signin&return=sysdesign_chat_hi_style';
+  };
+
+  document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
+    this.classList.toggle('open');
+    e.stopPropagation();
+  });
+  document.addEventListener('click', function() {
+    document.getElementById('navUserMenu')?.classList.remove('open');
+  });
+
+  refreshAuth();
+})();
 </script>
 
 </body>
