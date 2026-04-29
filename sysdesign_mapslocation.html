@@ -1,1119 +1,871 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Design Maps & Live Location Tracking — Droidly</title>
-<style>
-  :root {
-    --accent: #3d7a4f; --accent-dark: #2e6040;
-    --bg-green: #e8f2ec; --border-green: #6aad82;
-    --bg: #ffffff; --bg-secondary: #f8f9fa;
-    --text: #1a1a1a; --text-muted: #6b7280;
-    --border: #e5e7eb; --radius: 12px;
-    --sidebar-w: 260px;
-    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.7; }
-  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0%; z-index: 1000; transition: width 0.1s linear; }
-  .topnav { position: sticky; top: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 0 32px; height: 52px; display: flex; align-items: center; gap: 8px; z-index: 100; font-size: 14px; }
-  .topnav a { color: var(--text-muted); text-decoration: none; }
-  .topnav a:hover { color: var(--accent); }
-  .topnav .sep { color: var(--border); }
-  .page-wrap { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr var(--sidebar-w); gap: 48px; padding: 48px 24px; align-items: start; }
-  .article h1 { font-size: 2rem; font-weight: 800; line-height: 1.2; border-bottom: 3px solid var(--text); padding-bottom: 12px; margin-bottom: 20px; }
-  .article-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 32px; }
-  .tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-  .tag-topic { background: var(--bg-green); color: var(--accent-dark); }
-  .tag-hard { background: #fee2e2; color: #991b1b; }
-  .tag-year { background: var(--bg-secondary); color: var(--text-muted); border: 1px solid var(--border); }
-  .meta-item { font-size: 13px; color: var(--text-muted); }
-  .article h2 { font-size: 1.35rem; font-weight: 700; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); scroll-margin-top: 80px; }
-  .article h3 { font-size: 1.1rem; font-weight: 700; margin: 28px 0 12px; color: var(--accent-dark); }
-  .article p { margin-bottom: 14px; }
-  .article ul { margin: 10px 0 16px 20px; }
-  .article ul li { margin-bottom: 6px; }
-  .article strong { font-weight: 700; }
-  .callout { border: 1px solid var(--border-green); background: var(--bg-green); border-radius: var(--radius); padding: 20px 24px; margin: 24px 0; }
-  .callout-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
-  .callout p { margin-bottom: 0; font-size: 15px; }
-  .callout-cta { display: inline-block; margin-top: 12px; background: var(--accent); color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none; }
-  .req-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
-  .req-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
-  .req-box h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 12px; }
-  .req-box ul { margin-left: 16px; }
-  .req-box ul li { font-size: 14px; margin-bottom: 6px; }
-  .comp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
-  .comp-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
-  .comp-icon { font-size: 1.6rem; margin-bottom: 8px; }
-  .comp-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-  .comp-sub { font-size: 12px; color: var(--text-muted); }
-  .accuracy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
-  .acc-card { border-radius: 10px; border: 1.5px solid; padding: 14px; text-align: center; }
-  .acc-high   { background: #dcfce7; border-color: #4ade80; }
-  .acc-bal    { background: #dbeafe; border-color: #60a5fa; }
-  .acc-low    { background: #fef3c7; border-color: #fbbf24; }
-  .acc-label  { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-  .acc-high   .acc-label { color: #166534; }
-  .acc-bal    .acc-label { color: #1e40af; }
-  .acc-low    .acc-label { color: #92400e; }
-  .acc-name   { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-  .acc-detail { font-size: 12px; color: var(--text-muted); }
-  pre { background: #0f1117; color: #e2e8f0; border-radius: 10px; padding: 20px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 16px 0; tab-size: 2; }
-  code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
-  .kw { color: #c792ea; } .fn { color: #82aaff; } .cl { color: #ffcb6b; }
-  .cm { color: #546e7a; font-style: italic; } .st { color: #c3e88d; }
-  .nm { color: #f78c6c; } .an { color: #89ddff; }
-  .diagram-wrap { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 20px 0; overflow-x: auto; text-align: center; }
-  .diagram-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
-  .flow-wrap { margin: 24px 0; }
-  .flow-title { font-weight: 700; font-size: 15px; padding: 10px 16px; background: var(--bg-green); border-radius: 8px 8px 0 0; border: 1px solid var(--border-green); border-bottom: none; color: var(--accent-dark); }
-  .flow-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); overflow: hidden; }
-  .flow-table th { padding: 10px 14px; font-size: 12px; font-weight: 700; text-align: left; letter-spacing: 0.5px; }
-  .th-ui   { background: #dcfce7; color: #166534; }
-  .th-vm   { background: #d1fae5; color: #065f46; }
-  .th-svc  { background: #dbeafe; color: #1e40af; }
-  .th-fused{ background: #fef3c7; color: #92400e; }
-  .th-maps { background: #ede9fe; color: #5b21b6; }
-  .th-ws   { background: #fee2e2; color: #991b1b; }
-  .th-db   { background: #f3e8ff; color: #6b21a8; }
-  .flow-table td { padding: 10px 14px; font-size: 13px; vertical-align: top; border-top: 1px solid var(--border); }
-  .flow-table tr:nth-child(even) td { background: var(--bg-secondary); }
-  .step-num { font-weight: 700; color: var(--accent); margin-right: 6px; }
-  .decision-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
-  .decision-table th { background: var(--bg-green); color: var(--accent-dark); padding: 10px 14px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .decision-table td { padding: 10px 14px; border-top: 1px solid var(--border); }
-  .decision-table tr:nth-child(even) td { background: var(--bg-secondary); }
-  .check { color: #16a34a; font-weight: 700; }
-  .cross { color: #dc2626; font-weight: 700; }
-  .chosen-row td { background: #f0fdf4 !important; font-weight: 600; }
-  .levels-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
-  .level-card { border-radius: var(--radius); border: 1px solid var(--border); padding: 18px; }
-  .level-mid { border-top: 3px solid #60a5fa; }
-  .level-senior { border-top: 3px solid var(--accent); }
-  .level-staff { border-top: 3px solid #a855f7; }
-  .level-badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-  .level-mid .level-badge { color: #2563eb; }
-  .level-senior .level-badge { color: var(--accent); }
-  .level-staff .level-badge { color: #9333ea; }
-  .level-card ul { margin-left: 16px; }
-  .level-card ul li { font-size: 13px; margin-bottom: 5px; }
-  .iq-wrap { margin: 20px 0; }
-  .iq-card { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
-  .iq-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; cursor: pointer; user-select: none; background: var(--bg-secondary); }
-  .iq-header:hover { background: #f0fdf4; }
-  .iq-q { font-size: 14px; font-weight: 600; flex: 1; padding-right: 12px; }
-  .iq-meta { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-  .iq-diff { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .diff-easy { background: #dcfce7; color: #166534; }
-  .diff-medium { background: #fef3c7; color: #92400e; }
-  .diff-hard { background: #fee2e2; color: #991b1b; }
-  .iq-chevron { font-size: 16px; color: var(--text-muted); transition: transform 0.2s; }
-  .iq-card.open .iq-chevron { transform: rotate(180deg); }
-  .iq-body { display: none; padding: 16px 18px; border-top: 1px solid var(--border); font-size: 14px; line-height: 1.7; background: #fff; }
-  .iq-card.open .iq-body { display: block; }
-  .iq-body ul { margin-left: 18px; margin-bottom: 10px; }
-  .iq-body li { margin-bottom: 5px; }
-  .sidebar { position: sticky; top: 72px; }
-  .sidebar-inner { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
-  .sidebar-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 14px; }
-  .toc-item { display: block; padding: 6px 10px; border-radius: 6px; text-decoration: none; font-size: 13px; color: var(--text-muted); margin-bottom: 2px; border-left: 2px solid transparent; transition: all 0.15s; }
-  .toc-item:hover { color: var(--accent); background: var(--bg-green); }
-  .toc-item.active { color: var(--accent); border-left-color: var(--accent); background: var(--bg-green); font-weight: 600; }
-  .sidebar-progress { margin-bottom: 16px; }
-  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-  .progress-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.2s; }
-  .sidebar-divider { height: 1px; background: var(--border); margin: 16px 0; }
-  .sidebar-companies { display: flex; flex-wrap: wrap; gap: 6px; }
-  .co-chip { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: var(--bg-green); color: var(--accent-dark); border: 1px solid var(--border-green); }
-  @media (max-width: 900px) {
-    .page-wrap { grid-template-columns: 1fr; }
-    .sidebar { display: none; }
-    .req-grid, .levels-grid, .comp-grid, .accuracy-grid { grid-template-columns: 1fr 1fr; }
-  }
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Design Maps & Live Location Tracking — Android System Design | Droidly</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #ffffff; --bg-subtle: #f9fafb; --bg-green: #e8f2ec; --bg-blue: #eff6ff;
+      --border: #e5e7eb; --border-green: #6aad82;
+      --ink: #111827; --ink2: #374151; --muted: #6b7280; --muted2: #9ca3af;
+      --accent: #3d7a4f; --accent-dark: #2e6040; --blue: #2563eb;
+      --red: #dc2626; --code-bg: #1e1e2e;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--ink); font-family: 'Inter', -apple-system, sans-serif; font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; padding-top: 68px; }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 900; height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; background: rgba(255,255,255,0.90); backdrop-filter: blur(20px) saturate(1.6); border-bottom: 1px solid var(--border); box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04); }
+    nav::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #2e6040, #4caf70, #3d7a4f); z-index: 1; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.5px; }
+    .logo-mark img { height: 32px; width: auto; display: block; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-cta { background: var(--accent); color: white; padding: 8px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; text-decoration: none; }
+    .btn-nav { font-size: 13px; font-weight: 600; color: var(--ink); background: var(--bg-subtle); border: 1px solid var(--border); padding: 6px 16px; border-radius: 100px; cursor: pointer; font-family: inherit; }
+    .nav-user { display: flex; align-items: center; gap: 8px; position: relative; cursor: pointer; }
+    .nav-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; }
+    .nav-user-name { font-size: 14px; font-weight: 600; color: var(--ink2); }
+    .nav-caret { font-size: 10px; color: var(--muted); }
+    .user-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); min-width: 200px; overflow: hidden; z-index: 999; }
+    .nav-user.open .user-dropdown { display: block; }
+    .user-dropdown-email { padding: 12px 16px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
+    .user-dropdown-item { padding: 10px 16px; font-size: 14px; cursor: pointer; }
+    .user-dropdown-item.danger { color: var(--red); }
+    .page { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 260px; gap: 48px; padding: 40px 24px 80px; align-items: start; }
+    .content { min-width: 0; }
+    .article-eyebrow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; }
+    .tag-topic { background: var(--bg-green); color: var(--accent-dark); }
+    .tag-hard  { background: #fee2e2; color: #991b1b; }
+    .tag-new   { background: var(--bg-subtle); color: var(--muted); border: 1px solid var(--border); }
+    .article-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(26px, 4vw, 36px); font-weight: 800; letter-spacing: -1px; line-height: 1.15; color: var(--ink); margin-bottom: 16px; }
+    .article-desc { font-size: 16px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; max-width: 660px; }
+    .article-meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 36px; }
+    .meta-pill { font-size: 13px; color: var(--ink2); background: var(--bg-subtle); border: 1px solid var(--border); padding: 5px 12px; border-radius: 100px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .sec-h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--ink); margin: 40px 0 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border); scroll-margin-top: 90px; }
+    .sec-h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 17px; font-weight: 700; color: var(--ink); margin: 28px 0 12px; }
+    .content p { margin-bottom: 14px; color: var(--ink2); line-height: 1.8; }
+    .content strong { color: var(--ink); font-weight: 600; }
+    .pattern-box { border: 1px solid var(--border-green); border-left: 4px solid var(--accent); background: var(--bg-green); border-radius: 0 10px 10px 0; padding: 16px 20px; margin: 20px 0; }
+    .pattern-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .pattern-title { font-size: 13px; font-weight: 700; color: var(--accent-dark); text-transform: uppercase; letter-spacing: 0.5px; }
+    .pattern-box p { font-size: 14px; color: var(--ink2); margin-bottom: 0; }
+    .req-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+    .req-box { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .req-box h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 12px; }
+    .req-box ul { margin-left: 16px; }
+    .req-box ul li { font-size: 14px; margin-bottom: 6px; color: var(--ink2); }
+    .accuracy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+    .acc-card { border-radius: 10px; border: 1.5px solid; padding: 14px; }
+    .acc-high { background: #dcfce7; border-color: #4ade80; }
+    .acc-bal  { background: #dbeafe; border-color: #60a5fa; }
+    .acc-low  { background: #fef3c7; border-color: #fbbf24; }
+    .acc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .acc-high .acc-label { color: #166534; } .acc-bal .acc-label { color: #1e40af; } .acc-low .acc-label { color: #92400e; }
+    .acc-name { font-weight: 700; font-size: 13px; margin-bottom: 4px; color: var(--ink); }
+    .acc-detail { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .comp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+    .comp-card { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+    .comp-icon { font-size: 1.6rem; margin-bottom: 8px; }
+    .comp-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; color: var(--ink); }
+    .comp-sub  { font-size: 12px; color: var(--muted); }
+    .model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+    .model-card { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .model-name { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent); margin-bottom: 10px; }
+    .model-field { display: flex; gap: 8px; margin-bottom: 4px; }
+    .field-type { font-size: 11px; font-weight: 600; color: var(--blue); background: var(--bg-blue); padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+    .field-name { font-size: 12px; color: var(--ink2); font-family: 'JetBrains Mono', monospace; }
+    .diagram-wrap { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 20px 0; background: var(--bg-subtle); }
+    .diagram-caption { padding: 10px 16px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); background: white; }
+    .flow-wrap { margin: 24px 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .flow-title { padding: 12px 18px; font-size: 13px; font-weight: 700; background: var(--ink); color: white; }
+    .flow-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .flow-table th { padding: 10px 14px; font-size: 11px; font-weight: 700; text-align: left; letter-spacing: 0.5px; text-transform: uppercase; }
+    .flow-table td { padding: 10px 14px; vertical-align: top; border-top: 1px solid var(--border); color: var(--ink2); }
+    .flow-table tr:nth-child(even) td { background: var(--bg-subtle); }
+    .th-ui   { background: #dcfce7; color: #166534; } .th-vm { background: #d1fae5; color: #065f46; }
+    .th-ws   { background: #fee2e2; color: #991b1b; } .th-maps { background: #ede9fe; color: #5b21b6; }
+    .th-fused{ background: #fef3c7; color: #92400e; } .th-svc { background: #dbeafe; color: #1e40af; }
+    .th-db   { background: #f3e8ff; color: #6b21a8; }
+    .step-num { font-weight: 700; color: var(--accent); margin-right: 4px; }
+    .decision-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .decision-table th { background: var(--bg-green); color: var(--accent-dark); padding: 10px 14px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .decision-table td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--ink2); }
+    .decision-table tr:nth-child(even) td { background: var(--bg-subtle); }
+    .chosen-row td { background: #f0fdf4 !important; font-weight: 600; }
+    .edge-grid { display: flex; flex-direction: column; gap: 16px; margin: 20px 0; }
+    .edge-card { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .edge-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: var(--bg-subtle); border-bottom: 1px solid var(--border); }
+    .edge-icon { font-size: 20px; flex-shrink: 0; }
+    .edge-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+    .edge-body { padding: 16px 18px; }
+    .edge-body p { font-size: 14px; color: var(--ink2); margin-bottom: 10px; line-height: 1.7; }
+    .edge-body p:last-child { margin-bottom: 0; }
+    .code-block { background: #1e1e2e; color: #cdd6f4; border-radius: 10px; padding: 20px; overflow-x: auto; font-size: 13px; line-height: 1.7; margin: 16px 0; font-family: 'JetBrains Mono', monospace; white-space: pre; }
+    .kw { color: #cba6f7; } .fn { color: #89b4fa; } .cl { color: #f9e2af; }
+    .cm { color: #6c7086; font-style: italic; } .st { color: #a6e3a1; } .nm { color: #fab387; }
+    .levels-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+    .level-card { border-radius: 12px; border: 1px solid var(--border); padding: 20px; }
+    .level-card.mid    { border-top: 3px solid #60a5fa; }
+    .level-card.senior { border-top: 3px solid var(--accent); }
+    .level-card.staff  { border-top: 3px solid #a855f7; }
+    .level-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 12px; }
+    .level-card.mid    .level-title { color: #2563eb; }
+    .level-card.senior .level-title { color: var(--accent); }
+    .level-card.staff  .level-title { color: #9333ea; }
+    .level-card ul { margin-left: 16px; }
+    .level-card ul li { font-size: 13px; margin-bottom: 6px; color: var(--ink2); }
+    .iq-list { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .iq-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.18s; background: white; }
+    .iq-card:hover, .iq-card.open { border-color: var(--accent); }
+    .iq-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; gap: 12px; user-select: none; }
+    .iq-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .iq-num { font-size: 10px; font-weight: 800; color: var(--accent); background: var(--bg-green); padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
+    .iq-diff { font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
+    .iq-easy   { background: #dcfce7; color: #166534; }
+    .iq-medium { background: #fef9c3; color: #854d0e; }
+    .iq-hard   { background: #fee2e2; color: #991b1b; }
+    .iq-text { font-size: 14px; font-weight: 500; color: var(--ink); line-height: 1.5; }
+    .iq-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; }
+    .iq-card.open .iq-toggle { transform: rotate(180deg); color: var(--accent); }
+    .iq-answer { display: none; padding: 4px 18px 18px; border-top: 1px solid var(--border); background: var(--bg-subtle); }
+    .iq-card.open .iq-answer { display: block; }
+    .iq-answer p { font-size: 13.5px; color: var(--ink2); line-height: 1.8; margin-top: 12px; margin-bottom: 0; }
+    .iq-answer code { font-family: 'JetBrains Mono', monospace; background: var(--border); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+    .sidebar { position: sticky; top: 88px; }
+    .rp-label { font-size: 11px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .rp-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+    .rp-fill  { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.2s; width: 0%; }
+    .toc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted2); margin-bottom: 10px; }
+    .toc-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .toc-item a { display: block; padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 13px; color: var(--muted); border-left: 2px solid transparent; transition: all 0.15s; }
+    .toc-item a:hover { color: var(--ink); background: var(--bg-subtle); }
+    .toc-item a.active { color: var(--accent); font-weight: 600; border-left-color: var(--accent); background: var(--bg-green); }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .companies-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted2); margin-bottom: 10px; }
+    .company-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { font-size: 11.5px; color: var(--ink2); background: var(--bg-subtle); border: 1px solid var(--border); padding: 3px 9px; border-radius: 4px; }
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; } .sidebar { display: none; }
+      .comp-grid, .levels-grid, .accuracy-grid, .req-grid, .model-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) { nav { padding: 0 20px; } .page { padding: 24px 16px 60px; } .comp-grid, .levels-grid { grid-template-columns: 1fr; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<div id="progress-bar"></div>
-<nav class="topnav">
-  <a href="index.html">🤖 Droidly</a>
-  <span class="sep">›</span>
-  <a href="questions.html">Questions</a>
-  <span class="sep">›</span>
-  <a href="questions.html?topic=sysdesign">System Design</a>
-  <span class="sep">›</span>
-  <span style="color:var(--text)">Maps &amp; Live Location Tracking</span>
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="nav-right">
+    <a href="premium.html" class="nav-cta">⚡ Get Premium</a>
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <div class="user-dropdown-item danger" onclick="handleSignOut()">🚪 Sign Out</div>
+      </div>
+    </div>
+  </div>
 </nav>
 
-<div class="page-wrap">
-<article class="article">
+<div class="page">
+<main class="content">
 
-  <h1>Design Maps &amp; Live Location Tracking</h1>
-  <div class="article-meta">
-    <span class="tag tag-topic">System Design</span>
+  <div class="article-eyebrow">
+    <span class="tag tag-topic">🏗️ System Design</span>
     <span class="tag tag-hard">Hard</span>
-    <span class="tag tag-year">2025–26</span>
-    <span class="meta-item">⏱ 45–60 min</span>
-    <span class="meta-item">📱 Android Focus</span>
+    <span class="tag tag-new">2025–26</span>
+  </div>
+  <h1 class="article-title">Design Maps &amp; Live Location Tracking</h1>
+  <p class="article-desc">A deep-dive Android system design breakdown of real-time location tracking — covering FusedLocationProviderClient, WebSocket streaming, smooth marker animation, geofencing, battery strategy, and every edge case interviewers probe at senior and staff level.</p>
+  <div class="article-meta-row">
+    <div class="meta-pill">⏱ <strong>45–60 min</strong> interview</div>
+    <div class="meta-pill">📖 <strong>~15 min</strong> read</div>
+    <div class="meta-pill">🎯 <strong>Senior / Staff+</strong></div>
+    <div class="meta-pill">🔥 Asked at <strong>Ola, Uber, Swiggy</strong></div>
   </div>
 
-  <!-- ══════════ 1. PROBLEM ══════════ -->
-  <h2 id="s-problem">1. Understanding the Problem</h2>
-
-  <p>Design the Android client for a maps and live location tracking feature — think an Ola/Uber driver's position updating in real-time on a passenger's screen, or a delivery tracking screen in Swiggy. The core challenges: getting accurate location efficiently without destroying battery, sending/receiving location over a persistent connection, animating a marker smoothly across the map, drawing the route polyline, and handling the complex Android location permission landscape (foreground vs background).</p>
-
-  <div class="callout">
-    <div class="callout-label">📌 Pattern: FusedLocation + WebSocket + Animated Marker</div>
-    <p>Three technologies work together: <strong>FusedLocationProviderClient</strong> — Google's smart location provider that picks the best source (GPS, Wi-Fi, cell) for the requested accuracy/power trade-off. <strong>WebSocket</strong> — bi-directional persistent connection to stream location updates with low latency. <strong>ValueAnimator</strong> — smoothly interpolates a map marker between GPS fixes so it glides rather than teleports, even when updates arrive every 2–5 seconds.</p>
-    <a class="callout-cta" href="#">Learn This Pattern →</a>
-  </div>
-
-  <div class="req-grid">
-    <div class="req-box">
-      <h4>✅ Functional Requirements</h4>
-      <ul>
-        <li>Show user's own location on the map in real time</li>
-        <li>Track a driver/delivery agent's position (received from server)</li>
-        <li>Draw a route polyline from origin to destination</li>
-        <li>Animate the driver marker smoothly between position updates</li>
-        <li>Show ETA and distance, updated as driver moves</li>
-        <li>Geofence: alert when driver enters a radius of the pickup point</li>
-        <li>Location continues updating in background (driver app)</li>
-      </ul>
+  <!-- 1. UNDERSTANDING -->
+  <div id="understanding">
+    <div class="sec-h1">Understanding the Problem</div>
+    <p>Design the Android client for maps and live location tracking — a driver's position updating in real-time on a passenger's screen in Ola/Uber, or a delivery agent tracked in Swiggy. The core challenges: getting accurate location efficiently without destroying battery, streaming location over a persistent connection, animating a map marker smoothly between GPS fixes, drawing and trimming a route polyline, and navigating Android's complex permission landscape.</p>
+    <div class="pattern-box">
+      <div class="pattern-header"><span>📌</span><span class="pattern-title">Core Pattern: FusedLocation + WebSocket + ValueAnimator</span></div>
+      <p>Three technologies work in concert. <strong>FusedLocationProviderClient</strong> fuses GPS, Wi-Fi, and cell towers, selecting the best source for the requested accuracy/battery trade-off. <strong>WebSocket</strong> provides a bi-directional persistent connection to stream location at low latency, with exponential-backoff reconnection. <strong>ValueAnimator</strong> linearly interpolates a map marker between GPS fixes at 60 fps so it glides rather than teleports, even with updates every 2–5 seconds.</p>
     </div>
-    <div class="req-box">
-      <h4>⛔ Non-Functional Requirements</h4>
-      <ul>
-        <li>Location must not drain battery — choose right accuracy tier</li>
-        <li>Driver app: foreground service required for background location</li>
-        <li>Android 10+ requires explicit ACCESS_BACKGROUND_LOCATION</li>
-        <li>Marker animation must feel smooth (60 fps interpolation)</li>
-        <li>Graceful degradation when GPS signal is weak/unavailable</li>
-        <li>Map tile loading works offline (cached tiles)</li>
-        <li>Handle camera auto-follow vs user-panned map interaction</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ══════════ 2. SET UP ══════════ -->
-  <h2 id="s-setup">2. The Set Up</h2>
-
-  <h3>Location accuracy vs battery — choosing the right priority</h3>
-
-  <div class="accuracy-grid">
-    <div class="acc-card acc-high">
-      <div class="acc-label">High Accuracy</div>
-      <div class="acc-name">PRIORITY_HIGH_ACCURACY</div>
-      <div class="acc-detail">GPS + Wi-Fi + cell. ~3–5 m accuracy. High battery drain. Use for: active navigation, driver GPS upload.</div>
-    </div>
-    <div class="acc-card acc-bal">
-      <div class="acc-label">Balanced</div>
-      <div class="acc-name">PRIORITY_BALANCED_POWER</div>
-      <div class="acc-detail">Wi-Fi + cell only. ~50–100 m accuracy. Moderate battery. Use for: background ETA tracking, geofence monitoring.</div>
-    </div>
-    <div class="acc-card acc-low">
-      <div class="acc-label">Low Power</div>
-      <div class="acc-name">PRIORITY_LOW_POWER</div>
-      <div class="acc-detail">Cell only. ~1–3 km accuracy. Minimal battery. Use for: city-level awareness, not tracking.</div>
+    <div class="req-grid">
+      <div class="req-box">
+        <h4>✅ Functional Requirements</h4>
+        <ul>
+          <li>Show the user's own location on the map in real time</li>
+          <li>Track a driver/agent's position received from the server</li>
+          <li>Draw a route polyline, origin → destination</li>
+          <li>Animate the driver marker smoothly between position updates</li>
+          <li>Show ETA and distance, updated as driver moves</li>
+          <li>Geofence: alert when driver enters the pickup radius</li>
+          <li>Driver app uploads location continuously in background</li>
+        </ul>
+      </div>
+      <div class="req-box">
+        <h4>⛔ Non-Functional Requirements</h4>
+        <ul>
+          <li>Location must not drain battery — choose right accuracy tier</li>
+          <li>Driver app: Foreground Service required for background location</li>
+          <li>Android 10+ requires explicit ACCESS_BACKGROUND_LOCATION</li>
+          <li>Marker animation must feel smooth (60 fps interpolation)</li>
+          <li>Graceful degradation when GPS signal is weak</li>
+          <li>Map tiles load offline (cached tiles)</li>
+          <li>Camera auto-follows driver unless user manually pans</li>
+        </ul>
+      </div>
     </div>
   </div>
 
-  <h3>Key Android APIs at a glance</h3>
-
-  <div class="comp-grid">
-    <div class="comp-card">
-      <div class="comp-icon">📍</div>
-      <div class="comp-name">FusedLocationProviderClient</div>
-      <div class="comp-sub">Google Play Services API. Fuses GPS, Wi-Fi, cell for best accuracy/battery ratio. Replaces raw LocationManager for all consumer apps.</div>
-    </div>
-    <div class="comp-card">
-      <div class="comp-icon">🔔</div>
-      <div class="comp-name">LocationCallback + PendingIntent</div>
-      <div class="comp-sub">Foreground: <code>LocationCallback</code> receives updates while service is alive. Background/killed: <code>PendingIntent</code> wakes a BroadcastReceiver.</div>
-    </div>
-    <div class="comp-card">
-      <div class="comp-icon">🗺️</div>
-      <div class="comp-name">Google Maps SDK</div>
-      <div class="comp-sub"><code>GoogleMap</code> API: add/move markers, draw <code>Polyline</code>, control camera with <code>animateCamera()</code>, cluster dense markers with <code>ClusterManager</code>.</div>
-    </div>
-    <div class="comp-card">
-      <div class="comp-icon">🔴</div>
-      <div class="comp-name">Foreground Service</div>
-      <div class="comp-sub">Required for driver app to collect location in background. Mandatory persistent notification. <code>serviceType=location</code> in manifest since Android 10.</div>
-    </div>
-    <div class="comp-card">
-      <div class="comp-icon">🎯</div>
-      <div class="comp-name">GeofencingClient</div>
-      <div class="comp-sub">Register a <code>Geofence</code> with center + radius. OS triggers a <code>PendingIntent</code> when the device enters/exits — no polling needed.</div>
-    </div>
-    <div class="comp-card">
-      <div class="comp-icon">🎞️</div>
-      <div class="comp-name">ValueAnimator</div>
-      <div class="comp-sub">Interpolates LatLng between GPS fixes over animation duration (e.g., 1 s). Updates marker position on each animation frame — smooth 60 fps glide.</div>
+  <!-- 2. DATA MODELS -->
+  <div id="models">
+    <div class="sec-h1">Data Models</div>
+    <p>Three core models drive the system. <code>DriverLocation</code> is a single GPS fix uploaded by the driver. <code>TripState</code> is the driver-side state machine that determines accuracy tier and upload interval. <code>LocationUpdateMessage</code> is the WebSocket payload the server fans out to passengers.</p>
+    <div class="model-grid">
+      <div class="model-card">
+        <div class="model-name">DriverLocation</div>
+        <div class="model-field"><span class="field-type">Double</span><span class="field-name">latitude</span></div>
+        <div class="model-field"><span class="field-type">Double</span><span class="field-name">longitude</span></div>
+        <div class="model-field"><span class="field-type">Float</span><span class="field-name">bearing</span></div>
+        <div class="model-field"><span class="field-type">Float</span><span class="field-name">speed (m/s)</span></div>
+        <div class="model-field"><span class="field-type">Float</span><span class="field-name">accuracy (metres)</span></div>
+        <div class="model-field"><span class="field-type">Long</span><span class="field-name">timestamp</span></div>
+        <div class="model-field"><span class="field-type">Boolean</span><span class="field-name">isMock</span></div>
+      </div>
+      <div class="model-card">
+        <div class="model-name">TripState (enum)</div>
+        <div class="model-field"><span class="field-type">IDLE</span><span class="field-name">LOW_POWER, 60 s interval</span></div>
+        <div class="model-field"><span class="field-type">SEARCHING</span><span class="field-name">BALANCED, 10 s interval</span></div>
+        <div class="model-field"><span class="field-type">EN_ROUTE</span><span class="field-name">HIGH_ACCURACY, 2 s interval</span></div>
+        <div class="model-field"><span class="field-type">COMPLETED</span><span class="field-name">LOW_POWER, 60 s interval</span></div>
+      </div>
+      <div class="model-card">
+        <div class="model-name">LocationUpdateMessage (WS)</div>
+        <div class="model-field"><span class="field-type">String</span><span class="field-name">tripId</span></div>
+        <div class="model-field"><span class="field-type">Double</span><span class="field-name">lat</span></div>
+        <div class="model-field"><span class="field-type">Double</span><span class="field-name">lng</span></div>
+        <div class="model-field"><span class="field-type">Float</span><span class="field-name">bearing</span></div>
+        <div class="model-field"><span class="field-type">Int</span><span class="field-name">etaMinutes</span></div>
+        <div class="model-field"><span class="field-type">Long</span><span class="field-name">serverTimestamp</span></div>
+      </div>
+      <div class="model-card">
+        <div class="model-name">DriverState (sealed)</div>
+        <div class="model-field"><span class="field-type">Loading</span><span class="field-name">connecting to WS</span></div>
+        <div class="model-field"><span class="field-type">Located</span><span class="field-name">pos, bearing, eta</span></div>
+        <div class="model-field"><span class="field-type">Nearby</span><span class="field-name">within geofence radius</span></div>
+        <div class="model-field"><span class="field-type">Arrived</span><span class="field-name">trip complete</span></div>
+        <div class="model-field"><span class="field-type">Disconnected</span><span class="field-name">WS error + attempt#</span></div>
+      </div>
     </div>
   </div>
 
-  <!-- ══════════ 3. HLD ══════════ -->
-  <h2 id="s-hld">3. High-Level Design</h2>
+  <!-- 3. HLD -->
+  <div id="hld">
+    <div class="sec-h1">High-Level Design</div>
+    <div class="sec-h2">Location accuracy vs battery</div>
+    <div class="accuracy-grid">
+      <div class="acc-card acc-high">
+        <div class="acc-label">High Accuracy</div>
+        <div class="acc-name">PRIORITY_HIGH_ACCURACY</div>
+        <div class="acc-detail">GPS + Wi-Fi + cell. ~3–5 m. High battery. Use for active navigation, driver upload during EN_ROUTE.</div>
+      </div>
+      <div class="acc-card acc-bal">
+        <div class="acc-label">Balanced</div>
+        <div class="acc-name">PRIORITY_BALANCED_POWER</div>
+        <div class="acc-detail">Wi-Fi + cell only. ~50–100 m. Moderate battery. Use for SEARCHING state, passenger blue dot.</div>
+      </div>
+      <div class="acc-card acc-low">
+        <div class="acc-label">Low Power</div>
+        <div class="acc-name">PRIORITY_LOW_POWER</div>
+        <div class="acc-detail">Cell only. ~1–3 km. Minimal battery. Use for IDLE state — driver not on a trip.</div>
+      </div>
+    </div>
 
-  <div class="diagram-wrap">
-    <div class="diagram-title">Architecture Overview — Maps & Live Location Tracking</div>
-    <svg viewBox="0 0 820 420" xmlns="http://www.w3.org/2000/svg" style="max-width:780px;width:100%;font-family:'Segoe UI',sans-serif;font-size:12px;">
-      <defs>
-        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L8,3 z" fill="#9ca3af"/>
-        </marker>
-      </defs>
+    <div class="sec-h2">Key Android APIs</div>
+    <div class="comp-grid">
+      <div class="comp-card"><div class="comp-icon">📍</div><div class="comp-name">FusedLocationProviderClient</div><div class="comp-sub">Fuses GPS, Wi-Fi, cell for best accuracy/battery ratio. Replaces raw LocationManager.</div></div>
+      <div class="comp-card"><div class="comp-icon">🔔</div><div class="comp-name">LocationCallback + PendingIntent</div><div class="comp-sub">Foreground: LocationCallback while service alive. Background/killed: PendingIntent wakes BroadcastReceiver.</div></div>
+      <div class="comp-card"><div class="comp-icon">🗺️</div><div class="comp-name">Google Maps SDK</div><div class="comp-sub">GoogleMap: add/move markers, draw Polyline, animateCamera(), cluster markers with ClusterManager.</div></div>
+      <div class="comp-card"><div class="comp-icon">🔴</div><div class="comp-name">Foreground Service</div><div class="comp-sub">Required for driver app background location. Persistent notification. foregroundServiceType=location since Android 10.</div></div>
+      <div class="comp-card"><div class="comp-icon">🎯</div><div class="comp-name">GeofencingClient</div><div class="comp-sub">Register Geofence with center + radius. OS triggers PendingIntent on ENTER/EXIT — no polling needed.</div></div>
+      <div class="comp-card"><div class="comp-icon">🎞️</div><div class="comp-name">ValueAnimator</div><div class="comp-sub">Interpolates LatLng between GPS fixes over 1 s. Updates marker.position each frame — 60 fps glide.</div></div>
+    </div>
 
-      <!-- Driver side -->
-      <rect x="8" y="8" width="370" height="200" rx="12" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1.5"/>
-      <text x="193" y="30" text-anchor="middle" font-weight="700" fill="#374151" font-size="11" letter-spacing="0.5">DRIVER APP</text>
-
-      <rect x="20" y="38" width="155" height="40" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5"/>
-      <text x="97" y="56" text-anchor="middle" font-weight="700" fill="#5b21b6">LocationForeground</text>
-      <text x="97" y="72" text-anchor="middle" fill="#6b7280" font-size="10">Service (START_STICKY)</text>
-
-      <rect x="195" y="38" width="170" height="40" rx="8" fill="#fef3c7" stroke="#fcd34d" stroke-width="1.5"/>
-      <text x="280" y="56" text-anchor="middle" font-weight="700" fill="#92400e">FusedLocation</text>
-      <text x="280" y="72" text-anchor="middle" fill="#6b7280" font-size="10">HIGH_ACCURACY, 2 s interval</text>
-
-      <line x1="175" y1="58" x2="193" y2="58" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
-
-      <rect x="20" y="100" width="155" height="40" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
-      <text x="97" y="118" text-anchor="middle" font-weight="700" fill="#1e40af">LocationRepository</text>
-      <text x="97" y="134" text-anchor="middle" fill="#6b7280" font-size="10">upload to server via WS</text>
-
-      <rect x="195" y="100" width="170" height="40" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
-      <text x="280" y="118" text-anchor="middle" font-weight="700" fill="#991b1b">WebSocketManager</text>
-      <text x="280" y="134" text-anchor="middle" fill="#6b7280" font-size="10">exponential backoff</text>
-
-      <line x1="97" y1="78" x2="97" y2="98" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
-      <line x1="175" y1="120" x2="193" y2="120" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
-
-      <rect x="20" y="160" width="345" height="38" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
-      <text x="192" y="178" text-anchor="middle" font-weight="700" fill="#166534">GeofencingClient</text>
-      <text x="192" y="193" text-anchor="middle" fill="#374151" font-size="10">pickup radius alert → PendingIntent → notification</text>
-
-      <!-- Server -->
-      <rect x="330" y="108" width="160" height="80" rx="10" fill="#f3e8ff" stroke="#d8b4fe" stroke-width="1.5"/>
-      <text x="410" y="133" text-anchor="middle" font-weight="700" fill="#6b21a8" font-size="13">Backend Server</text>
-      <text x="410" y="150" text-anchor="middle" fill="#6b7280" font-size="10">stores latest position</text>
-      <text x="410" y="166" text-anchor="middle" fill="#6b7280" font-size="10">fans out to passenger WS</text>
-      <text x="410" y="182" text-anchor="middle" fill="#6b7280" font-size="10">computes ETA / polyline</text>
-
-      <line x1="280" y1="140" x2="328" y2="140" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
-
-      <!-- Passenger side -->
-      <rect x="450" y="8" width="362" height="400" rx="12" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1.5"/>
-      <text x="631" y="30" text-anchor="middle" font-weight="700" fill="#374151" font-size="11" letter-spacing="0.5">PASSENGER APP</text>
-
-      <rect x="462" y="38" width="170" height="40" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
-      <text x="547" y="56" text-anchor="middle" font-weight="700" fill="#991b1b">WebSocketManager</text>
-      <text x="547" y="72" text-anchor="middle" fill="#6b7280" font-size="10">receives driver updates</text>
-
-      <line x1="490" y1="148" x2="462" y2="72" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
-
-      <rect x="648" y="38" width="155" height="40" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
-      <text x="725" y="56" text-anchor="middle" font-weight="700" fill="#1e40af">LocationViewModel</text>
-      <text x="725" y="72" text-anchor="middle" fill="#6b7280" font-size="10">StateFlow&lt;DriverState&gt;</text>
-
-      <line x1="632" y1="58" x2="646" y2="58" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
-
-      <rect x="462" y="108" width="170" height="40" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5"/>
-      <text x="547" y="126" text-anchor="middle" font-weight="700" fill="#5b21b6">MarkerAnimator</text>
-      <text x="547" y="142" text-anchor="middle" fill="#6b7280" font-size="10">ValueAnimator LatLng lerp</text>
-
-      <rect x="648" y="108" width="155" height="40" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5"/>
-      <text x="725" y="126" text-anchor="middle" font-weight="700" fill="#5b21b6">PolylineDrawer</text>
-      <text x="725" y="142" text-anchor="middle" fill="#6b7280" font-size="10">route + redraws on update</text>
-
-      <line x1="547" y1="78" x2="547" y2="106" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
-      <line x1="725" y1="78" x2="725" y2="106" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
-
-      <rect x="462" y="175" width="330" height="40" rx="8" fill="#fef3c7" stroke="#fcd34d" stroke-width="1.5"/>
-      <text x="627" y="193" text-anchor="middle" font-weight="700" fill="#92400e">Google Maps SDK (SupportMapFragment)</text>
-      <text x="627" y="209" text-anchor="middle" fill="#6b7280" font-size="10">GoogleMap: marker, polyline, camera</text>
-
-      <line x1="547" y1="148" x2="547" y2="173" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
-      <line x1="725" y1="148" x2="725" y2="173" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
-
-      <rect x="462" y="238" width="330" height="40" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
-      <text x="627" y="256" text-anchor="middle" font-weight="700" fill="#166534">CameraTracker</text>
-      <text x="627" y="272" text-anchor="middle" fill="#6b7280" font-size="10">auto-follow vs user-panned mode</text>
-
-      <line x1="627" y1="215" x2="627" y2="236" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
-
-      <rect x="462" y="302" width="330" height="40" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5"/>
-      <text x="627" y="320" text-anchor="middle" font-weight="700" fill="#c2410c">FusedLocation (passenger)</text>
-      <text x="627" y="336" text-anchor="middle" fill="#6b7280" font-size="10">BALANCED_POWER — own location on map</text>
-
-      <!-- Server → passenger WS -->
-      <line x1="490" y1="148" x2="465" y2="58" stroke="#3d7a4f" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
-      <text x="494" y="108" font-size="10" fill="#3d7a4f" font-weight="600">push</text>
-    </svg>
+    <div class="sec-h2">Architecture Diagram</div>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 820 370" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;width:100%;font-family:'Inter',sans-serif;font-size:12px;display:block;padding:16px;">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#9ca3af"/></marker>
+          <marker id="arrg" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3d7a4f"/></marker>
+        </defs>
+        <rect x="8" y="8" width="340" height="190" rx="12" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.5"/>
+        <text x="178" y="26" text-anchor="middle" font-weight="700" fill="#374151" font-size="11" letter-spacing="0.8">DRIVER APP</text>
+        <rect x="20" y="36" width="145" height="38" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5"/>
+        <text x="92" y="53" text-anchor="middle" font-weight="700" fill="#5b21b6" font-size="11">LocationForeground</text>
+        <text x="92" y="67" text-anchor="middle" fill="#6b7280" font-size="10">Service (START_STICKY)</text>
+        <rect x="180" y="36" width="155" height="38" rx="8" fill="#fef3c7" stroke="#fcd34d" stroke-width="1.5"/>
+        <text x="257" y="53" text-anchor="middle" font-weight="700" fill="#92400e" font-size="11">FusedLocation</text>
+        <text x="257" y="67" text-anchor="middle" fill="#6b7280" font-size="10">HIGH_ACCURACY, 2 s</text>
+        <line x1="165" y1="55" x2="178" y2="55" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+        <rect x="20" y="94" width="145" height="38" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+        <text x="92" y="111" text-anchor="middle" font-weight="700" fill="#1e40af" font-size="11">LocationRepository</text>
+        <text x="92" y="125" text-anchor="middle" fill="#6b7280" font-size="10">upload via WebSocket</text>
+        <rect x="180" y="94" width="155" height="38" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
+        <text x="257" y="111" text-anchor="middle" font-weight="700" fill="#991b1b" font-size="11">WebSocketManager</text>
+        <text x="257" y="125" text-anchor="middle" fill="#6b7280" font-size="10">exp. backoff reconnect</text>
+        <line x1="92" y1="74" x2="92" y2="92" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="165" y1="113" x2="178" y2="113" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+        <rect x="20" y="152" width="315" height="34" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+        <text x="177" y="168" text-anchor="middle" font-weight="700" fill="#166534" font-size="11">GeofencingClient</text>
+        <text x="177" y="181" text-anchor="middle" fill="#374151" font-size="10">pickup radius → PendingIntent → notification</text>
+        <rect x="318" y="90" width="155" height="80" rx="10" fill="#f3e8ff" stroke="#d8b4fe" stroke-width="1.5"/>
+        <text x="395" y="115" text-anchor="middle" font-weight="700" fill="#6b21a8" font-size="13">Backend</text>
+        <text x="395" y="132" text-anchor="middle" fill="#6b7280" font-size="10">stores latest position</text>
+        <text x="395" y="148" text-anchor="middle" fill="#6b7280" font-size="10">fans out to passengers</text>
+        <text x="395" y="164" text-anchor="middle" fill="#6b7280" font-size="10">computes ETA + polyline</text>
+        <line x1="257" y1="113" x2="316" y2="130" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+        <rect x="448" y="8" width="364" height="350" rx="12" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.5"/>
+        <text x="630" y="26" text-anchor="middle" font-weight="700" fill="#374151" font-size="11" letter-spacing="0.8">PASSENGER APP</text>
+        <rect x="460" y="36" width="148" height="38" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
+        <text x="534" y="53" text-anchor="middle" font-weight="700" fill="#991b1b" font-size="11">WebSocketManager</text>
+        <text x="534" y="67" text-anchor="middle" fill="#6b7280" font-size="10">receives driver updates</text>
+        <rect x="624" y="36" width="175" height="38" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+        <text x="711" y="53" text-anchor="middle" font-weight="700" fill="#1e40af" font-size="11">LocationViewModel</text>
+        <text x="711" y="67" text-anchor="middle" fill="#6b7280" font-size="10">StateFlow&lt;DriverState&gt;</text>
+        <line x1="608" y1="55" x2="622" y2="55" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+        <rect x="460" y="100" width="148" height="38" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5"/>
+        <text x="534" y="117" text-anchor="middle" font-weight="700" fill="#5b21b6" font-size="11">MarkerAnimator</text>
+        <text x="534" y="131" text-anchor="middle" fill="#6b7280" font-size="10">ValueAnimator LatLng lerp</text>
+        <rect x="624" y="100" width="175" height="38" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5"/>
+        <text x="711" y="117" text-anchor="middle" font-weight="700" fill="#5b21b6" font-size="11">PolylineDrawer</text>
+        <text x="711" y="131" text-anchor="middle" fill="#6b7280" font-size="10">route + trimUpTo(driver)</text>
+        <line x1="534" y1="74" x2="534" y2="98" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="711" y1="74" x2="711" y2="98" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+        <rect x="460" y="160" width="339" height="38" rx="8" fill="#fef3c7" stroke="#fcd34d" stroke-width="1.5"/>
+        <text x="629" y="177" text-anchor="middle" font-weight="700" fill="#92400e" font-size="11">Google Maps SDK (SupportMapFragment)</text>
+        <text x="629" y="191" text-anchor="middle" fill="#6b7280" font-size="10">GoogleMap: marker, polyline, camera</text>
+        <line x1="534" y1="138" x2="534" y2="158" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="711" y1="138" x2="711" y2="158" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+        <rect x="460" y="218" width="339" height="38" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+        <text x="629" y="235" text-anchor="middle" font-weight="700" fill="#166534" font-size="11">CameraTracker</text>
+        <text x="629" y="249" text-anchor="middle" fill="#6b7280" font-size="10">auto-follow vs user-panned mode</text>
+        <line x1="629" y1="198" x2="629" y2="216" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+        <rect x="460" y="276" width="339" height="38" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5"/>
+        <text x="629" y="293" text-anchor="middle" font-weight="700" fill="#c2410c" font-size="11">FusedLocation (passenger)</text>
+        <text x="629" y="307" text-anchor="middle" fill="#6b7280" font-size="10">BALANCED_POWER — own blue dot</text>
+        <line x1="480" y1="128" x2="462" y2="74" stroke="#3d7a4f" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrg)"/>
+        <text x="453" y="102" font-size="10" fill="#3d7a4f" font-weight="600">push</text>
+      </svg>
+      <div class="diagram-caption">Driver app uploads location via WS → Backend fans out to passenger → passenger renders animated marker + trimmed polyline on Maps SDK.</div>
+    </div>
   </div>
 
-  <!-- ══════════ 4. LLD ══════════ -->
-  <h2 id="s-lld">4. Low-Level Design</h2>
+  <!-- 4. LLD -->
+  <div id="lld">
+    <div class="sec-h1">Low-Level Design</div>
 
-  <h3>FusedLocationProviderClient — location request setup</h3>
-
-  <pre><code><span class="kw">class</span> <span class="cl">LocationForegroundService</span> : <span class="cl">Service</span>() {
-
-    <span class="kw">private val</span> fusedClient by <span class="fn">lazy</span> {
-        <span class="cl">LocationServices</span>.<span class="fn">getFusedLocationProviderClient</span>(<span class="kw">this</span>)
-    }
+    <div class="sec-h2">FusedLocationProviderClient — setup</div>
+    <div class="code-block"><span class="kw">class</span> <span class="cl">LocationForegroundService</span> : <span class="cl">Service</span>() {
+    <span class="kw">private val</span> fusedClient by <span class="fn">lazy</span> { <span class="cl">LocationServices</span>.<span class="fn">getFusedLocationProviderClient</span>(<span class="kw">this</span>) }
     <span class="kw">private lateinit var</span> locationCallback: <span class="cl">LocationCallback</span>
 
     <span class="kw">override fun</span> <span class="fn">onCreate</span>() {
         <span class="kw">super</span>.<span class="fn">onCreate</span>()
-        <span class="fn">startForeground</span>(NOTIF_ID, <span class="fn">buildNotification</span>())  <span class="cm">// required on Android 9+</span>
+        <span class="fn">startForeground</span>(NOTIF_ID, <span class="fn">buildNotification</span>())  <span class="cm">// required Android 9+</span>
         <span class="fn">startLocationUpdates</span>()
     }
 
     <span class="kw">private fun</span> <span class="fn">startLocationUpdates</span>() {
-        <span class="kw">val</span> request = <span class="cl">LocationRequest</span>.<span class="fn">Builder</span>(
-            <span class="cl">Priority</span>.PRIORITY_HIGH_ACCURACY,
-            <span class="nm">2000L</span>   <span class="cm">// intervalMillis — target 2 s between fixes</span>
-        )
-            .<span class="fn">setMinUpdateIntervalMillis</span>(<span class="nm">1000L</span>)   <span class="cm">// fastest if GPS provides faster</span>
-            .<span class="fn">setMinUpdateDistanceMeters</span>(<span class="nm">5f</span>)        <span class="cm">// ignore updates &lt; 5 m movement</span>
-            .<span class="fn">setWaitForAccurateLocation</span>(<span class="kw">false</span>)     <span class="cm">// don't wait for GPS lock — use fused</span>
+        <span class="kw">val</span> request = <span class="cl">LocationRequest</span>.<span class="fn">Builder</span>(<span class="cl">Priority</span>.PRIORITY_HIGH_ACCURACY, <span class="nm">2000L</span>)
+            .<span class="fn">setMinUpdateIntervalMillis</span>(<span class="nm">1000L</span>)
+            .<span class="fn">setMinUpdateDistanceMeters</span>(<span class="nm">5f</span>)    <span class="cm">// ignore &lt;5 m movement</span>
+            .<span class="fn">setWaitForAccurateLocation</span>(<span class="kw">false</span>)  <span class="cm">// use fused immediately</span>
             .<span class="fn">build</span>()
 
         locationCallback = <span class="kw">object</span> : <span class="cl">LocationCallback</span>() {
             <span class="kw">override fun</span> <span class="fn">onLocationResult</span>(result: <span class="cl">LocationResult</span>) {
-                <span class="kw">val</span> location = result.lastLocation ?: <span class="kw">return</span>
-                <span class="cm">// Upload to server via WebSocket</span>
+                <span class="kw">val</span> loc = result.lastLocation ?: <span class="kw">return</span>
                 locationRepository.<span class="fn">uploadLocation</span>(
-                    lat = location.latitude,
-                    lng = location.longitude,
-                    bearing = location.bearing,     <span class="cm">// heading in degrees — for marker rotation</span>
-                    accuracy = location.accuracy    <span class="cm">// horizontal accuracy in metres</span>
+                    lat = loc.latitude, lng = loc.longitude,
+                    bearing = loc.bearing, accuracy = loc.accuracy,
+                    isMock = loc.<span class="fn">isMock</span>()
                 )
             }
         }
-
         fusedClient.<span class="fn">requestLocationUpdates</span>(request, locationCallback, <span class="cl">Looper</span>.<span class="fn">getMainLooper</span>())
     }
 
-    <span class="kw">override fun</span> <span class="fn">onStartCommand</span>(intent: <span class="cl">Intent</span>?, flags: <span class="cl">Int</span>, startId: <span class="cl">Int</span>): <span class="cl">Int</span> {
-        <span class="kw">return</span> <span class="cl">START_STICKY</span>   <span class="cm">// OS restarts service if killed</span>
-    }
+    <span class="kw">override fun</span> <span class="fn">onStartCommand</span>(...): <span class="cl">Int</span> = <span class="cl">START_STICKY</span>  <span class="cm">// OS restarts if killed</span>
+    <span class="kw">override fun</span> <span class="fn">onDestroy</span>() { fusedClient.<span class="fn">removeLocationUpdates</span>(locationCallback); <span class="kw">super</span>.<span class="fn">onDestroy</span>() }
+}</div>
 
-    <span class="kw">override fun</span> <span class="fn">onDestroy</span>() {
-        fusedClient.<span class="fn">removeLocationUpdates</span>(locationCallback)
-        <span class="kw">super</span>.<span class="fn">onDestroy</span>()
-    }
-}</code></pre>
+    <div class="sec-h2">Smooth marker animation with ValueAnimator</div>
+    <div class="code-block"><span class="kw">object</span> <span class="cl">MarkerAnimator</span> {
+    <span class="kw">private var</span> activeAnimator: <span class="cl">ValueAnimator</span>? = <span class="kw">null</span>
 
-  <h3>Smooth marker animation with ValueAnimator</h3>
-
-  <pre><code><span class="kw">object</span> <span class="cl">MarkerAnimator</span> {
-
-    <span class="cm">/**
-     * Smoothly moves a marker from its current position to [newPosition]
-     * over [durationMs] milliseconds using spherical linear interpolation.
-     * Also rotates marker bearing so the car icon faces the direction of travel.
-     */</span>
-    <span class="kw">fun</span> <span class="fn">animateTo</span>(
-        marker: <span class="cl">Marker</span>,
-        newPosition: <span class="cl">LatLng</span>,
-        newBearing: <span class="cl">Float</span>,
-        durationMs: <span class="cl">Long</span> = <span class="nm">1000L</span>
-    ) {
+    <span class="kw">fun</span> <span class="fn">animateTo</span>(marker: <span class="cl">Marker</span>, newPos: <span class="cl">LatLng</span>, newBearing: <span class="cl">Float</span>, durationMs: <span class="cl">Long</span> = <span class="nm">1000L</span>) {
+        activeAnimator?.<span class="fn">cancel</span>()  <span class="cm">// prevent animation queue backlog on rapid updates</span>
         <span class="kw">val</span> startLat = marker.position.latitude
         <span class="kw">val</span> startLng = marker.position.longitude
         <span class="kw">val</span> startBearing = marker.rotation
 
-        <span class="cl">ValueAnimator</span>.<span class="fn">ofFloat</span>(<span class="nm">0f</span>, <span class="nm">1f</span>).<span class="fn">apply</span> {
-            duration = durationMs
-            interpolator = <span class="cl">LinearInterpolator</span>()
-
-            <span class="fn">addUpdateListener</span> { animator ->
-                <span class="kw">val</span> t = animator.animatedValue <span class="kw">as</span> <span class="cl">Float</span>
-
-                <span class="cm">// Linearly interpolate lat/lng</span>
-                <span class="kw">val</span> lat = startLat + (newPosition.latitude  - startLat) * t
-                <span class="kw">val</span> lng = startLng + (newPosition.longitude - startLng) * t
-                marker.position = <span class="cl">LatLng</span>(lat, lng)
-
-                <span class="cm">// Interpolate bearing — handle 359° → 1° wrap-around</span>
+        activeAnimator = <span class="cl">ValueAnimator</span>.<span class="fn">ofFloat</span>(<span class="nm">0f</span>, <span class="nm">1f</span>).<span class="fn">apply</span> {
+            duration = durationMs; interpolator = <span class="cl">LinearInterpolator</span>()
+            <span class="fn">addUpdateListener</span> { anim ->
+                <span class="kw">val</span> t = anim.animatedValue <span class="kw">as</span> <span class="cl">Float</span>
+                marker.position = <span class="cl">LatLng</span>(startLat + (newPos.latitude - startLat) * t, startLng + (newPos.longitude - startLng) * t)
                 <span class="kw">var</span> delta = newBearing - startBearing
-                <span class="kw">if</span> (delta > <span class="nm">180</span>) delta -= <span class="nm">360</span>
+                <span class="kw">if</span> (delta > <span class="nm">180</span>) delta -= <span class="nm">360</span>  <span class="cm">// handle 359° → 1° wrap</span>
                 <span class="kw">if</span> (delta < -<span class="nm">180</span>) delta += <span class="nm">360</span>
                 marker.rotation = startBearing + delta * t
             }
-
             <span class="fn">start</span>()
         }
     }
-}</code></pre>
+}</div>
 
-  <h3>Drawing and updating a route Polyline</h3>
-
-  <pre><code><span class="kw">class</span> <span class="cl">PolylineDrawer</span>(<span class="kw">private val</span> map: <span class="cl">GoogleMap</span>) {
+    <div class="sec-h2">Polyline draw and trim</div>
+    <div class="code-block"><span class="kw">class</span> <span class="cl">PolylineDrawer</span>(<span class="kw">private val</span> map: <span class="cl">GoogleMap</span>) {
     <span class="kw">private var</span> polyline: <span class="cl">Polyline</span>? = <span class="kw">null</span>
 
-    <span class="cm">/** Fetches route from Directions API and draws it */</span>
     <span class="kw">suspend fun</span> <span class="fn">drawRoute</span>(origin: <span class="cl">LatLng</span>, destination: <span class="cl">LatLng</span>) {
-        <span class="kw">val</span> points = directionsApi.<span class="fn">getRoute</span>(origin, destination)  <span class="cm">// list of LatLng</span>
+        <span class="kw">val</span> points = directionsApi.<span class="fn">getRoute</span>(origin, destination)
         polyline?.<span class="fn">remove</span>()
-        polyline = map.<span class="fn">addPolyline</span>(
-            <span class="cl">PolylineOptions</span>()
-                .<span class="fn">addAll</span>(points)
-                .<span class="fn">width</span>(<span class="nm">8f</span>)
-                .<span class="fn">color</span>(<span class="cl">Color</span>.<span class="fn">parseColor</span>(<span class="st">"#4285F4"</span>))   <span class="cm">// Google blue</span>
-                .<span class="fn">jointType</span>(<span class="cl">JointType</span>.ROUND)
-                .<span class="fn">startCap</span>(<span class="cl">RoundCap</span>())
-                .<span class="fn">endCap</span>(<span class="cl">CustomCap</span>(<span class="cl">BitmapDescriptorFactory</span>.<span class="fn">fromResource</span>(<span class="cl">R</span>.drawable.ic_arrow)))
-        )
+        polyline = map.<span class="fn">addPolyline</span>(<span class="cl">PolylineOptions</span>().<span class="fn">addAll</span>(points).<span class="fn">width</span>(<span class="nm">8f</span>)
+            .<span class="fn">color</span>(<span class="cl">Color</span>.<span class="fn">parseColor</span>(<span class="st">"#4285F4"</span>)).<span class="fn">jointType</span>(<span class="cl">JointType</span>.ROUND))
     }
 
-    <span class="cm">/** Trims the polyline up to the driver's current position — "travelled" portion disappears */</span>
+    <span class="cm">/** Removes the already-travelled portion — road disappears behind driver */</span>
     <span class="kw">fun</span> <span class="fn">trimUpTo</span>(driverPos: <span class="cl">LatLng</span>) {
         <span class="kw">val</span> pts = polyline?.points ?: <span class="kw">return</span>
-        <span class="kw">val</span> closestIdx = pts.<span class="fn">indexOfMinBy</span> { <span class="fn">distanceBetween</span>(it, driverPos) }
-        polyline?.points = pts.<span class="fn">drop</span>(closestIdx)
+        <span class="kw">val</span> idx = pts.<span class="fn">indexOfMinBy</span> { <span class="fn">distanceBetween</span>(it, driverPos) }
+        polyline?.points = pts.<span class="fn">drop</span>(idx)
     }
-}</code></pre>
+}</div>
 
-  <h3>Camera auto-follow with user override detection</h3>
-
-  <pre><code><span class="kw">class</span> <span class="cl">CameraTracker</span>(<span class="kw">private val</span> map: <span class="cl">GoogleMap</span>) {
-
+    <div class="sec-h2">Camera auto-follow with user override</div>
+    <div class="code-block"><span class="kw">class</span> <span class="cl">CameraTracker</span>(<span class="kw">private val</span> map: <span class="cl">GoogleMap</span>) {
     <span class="kw">private var</span> isFollowing = <span class="kw">true</span>
-
     <span class="kw">init</span> {
-        <span class="cm">// If user manually pans the map, disable auto-follow</span>
         map.<span class="fn">setOnCameraMoveStartedListener</span> { reason ->
-            <span class="kw">if</span> (reason == <span class="cl">GoogleMap</span>.OnCameraMoveStartedListener.REASON_GESTURE) {
-                isFollowing = <span class="kw">false</span>
-            }
+            <span class="kw">if</span> (reason == <span class="cl">GoogleMap</span>.OnCameraMoveStartedListener.REASON_GESTURE)
+                isFollowing = <span class="kw">false</span>  <span class="cm">// user panned — stop following</span>
         }
     }
-
-    <span class="cm">/** Called every time a new driver position arrives */</span>
     <span class="kw">fun</span> <span class="fn">onDriverMoved</span>(newPos: <span class="cl">LatLng</span>, bearing: <span class="cl">Float</span>) {
         <span class="kw">if</span> (!isFollowing) <span class="kw">return</span>
-        <span class="kw">val</span> camPos = <span class="cl">CameraPosition</span>.Builder()
-            .<span class="fn">target</span>(newPos)
-            .<span class="fn">zoom</span>(<span class="nm">17f</span>)
-            .<span class="fn">bearing</span>(bearing)      <span class="cm">// rotate map to face direction of travel</span>
-            .<span class="fn">tilt</span>(<span class="nm">45f</span>)             <span class="cm">// 3D tilt for navigation feel</span>
-            .<span class="fn">build</span>()
-        map.<span class="fn">animateCamera</span>(<span class="cl">CameraUpdateFactory</span>.<span class="fn">newCameraPosition</span>(camPos), <span class="nm">600</span>, <span class="kw">null</span>)
+        map.<span class="fn">animateCamera</span>(<span class="cl">CameraUpdateFactory</span>.<span class="fn">newCameraPosition</span>(
+            <span class="cl">CameraPosition</span>.Builder().<span class="fn">target</span>(newPos).<span class="fn">zoom</span>(<span class="nm">17f</span>).<span class="fn">bearing</span>(bearing).<span class="fn">tilt</span>(<span class="nm">45f</span>).<span class="fn">build</span>()
+        ), <span class="nm">600</span>, <span class="kw">null</span>)
     }
+    <span class="kw">fun</span> <span class="fn">resumeFollowing</span>() { isFollowing = <span class="kw">true</span> }  <span class="cm">// Re-center FAB tap</span>
+}</div>
 
-    <span class="cm">/** "Re-center" button taps re-enable following */</span>
-    <span class="kw">fun</span> <span class="fn">resumeFollowing</span>() { isFollowing = <span class="kw">true</span> }
-}</code></pre>
-
-  <h3>Geofencing — arrival alert at pickup point</h3>
-
-  <pre><code><span class="kw">class</span> <span class="cl">GeofenceManager</span>(<span class="kw">private val</span> context: <span class="cl">Context</span>) {
-
-    <span class="kw">private val</span> client = <span class="cl">LocationServices</span>.<span class="fn">getGeofencingClient</span>(context)
-
-    <span class="kw">fun</span> <span class="fn">addPickupGeofence</span>(pickupLat: <span class="cl">Double</span>, pickupLng: <span class="cl">Double</span>, radiusMeters: <span class="cl">Float</span> = <span class="nm">200f</span>) {
-        <span class="kw">val</span> geofence = <span class="cl">Geofence</span>.Builder()
-            .<span class="fn">setRequestId</span>(<span class="st">"PICKUP_ZONE"</span>)
-            .<span class="fn">setCircularRegion</span>(pickupLat, pickupLng, radiusMeters)
-            .<span class="fn">setTransitionTypes</span>(<span class="cl">Geofence</span>.GEOFENCE_TRANSITION_ENTER)
-            .<span class="fn">setExpirationDuration</span>(<span class="cl">Geofence</span>.NEVER_EXPIRE)
-            .<span class="fn">build</span>()
-
-        <span class="kw">val</span> request = <span class="cl">GeofencingRequest</span>.Builder()
-            .<span class="fn">setInitialTrigger</span>(<span class="cl">GeofencingRequest</span>.INITIAL_TRIGGER_ENTER)
-            .<span class="fn">addGeofence</span>(geofence)
-            .<span class="fn">build</span>()
-
-        <span class="kw">val</span> pendingIntent = <span class="fn">getPendingIntent</span>()   <span class="cm">// points to GeofenceBroadcastReceiver</span>
-        client.<span class="fn">addGeofences</span>(request, pendingIntent)
-    }
-
-    <span class="kw">fun</span> <span class="fn">removePickupGeofence</span>() = client.<span class="fn">removeGeofences</span>(<span class="fn">listOf</span>(<span class="st">"PICKUP_ZONE"</span>))
+    <div class="sec-h2">Geofencing — arrival alert</div>
+    <div class="code-block"><span class="kw">fun</span> <span class="fn">addPickupGeofence</span>(lat: <span class="cl">Double</span>, lng: <span class="cl">Double</span>, radiusM: <span class="cl">Float</span> = <span class="nm">200f</span>) {
+    client.<span class="fn">addGeofences</span>(
+        <span class="cl">GeofencingRequest</span>.Builder()
+            .<span class="fn">addGeofence</span>(<span class="cl">Geofence</span>.Builder()
+                .<span class="fn">setRequestId</span>(<span class="st">"PICKUP_ZONE"</span>)
+                .<span class="fn">setCircularRegion</span>(lat, lng, radiusM)
+                .<span class="fn">setTransitionTypes</span>(<span class="cl">Geofence</span>.GEOFENCE_TRANSITION_ENTER)
+                .<span class="fn">setExpirationDuration</span>(<span class="cl">Geofence</span>.NEVER_EXPIRE)
+                .<span class="fn">build</span>())
+            .<span class="fn">build</span>(), <span class="fn">getPendingIntent</span>())
 }
 
-<span class="cm">// BroadcastReceiver — fires when driver enters the 200 m pickup circle</span>
 <span class="kw">class</span> <span class="cl">GeofenceBroadcastReceiver</span> : <span class="cl">BroadcastReceiver</span>() {
     <span class="kw">override fun</span> <span class="fn">onReceive</span>(context: <span class="cl">Context</span>, intent: <span class="cl">Intent</span>) {
         <span class="kw">val</span> event = <span class="cl">GeofencingEvent</span>.<span class="fn">fromIntent</span>(intent) ?: <span class="kw">return</span>
         <span class="kw">if</span> (event.geofenceTransition == <span class="cl">Geofence</span>.GEOFENCE_TRANSITION_ENTER) {
-            <span class="cm">// Show "Your driver is nearby!" notification</span>
             <span class="fn">showDriverNearbyNotification</span>(context)
+            geofenceManager.<span class="fn">remove</span>()  <span class="cm">// no longer needed</span>
         }
     }
-}</code></pre>
+}</div>
 
-  <h3>LLD Whiteboard</h3>
+    <!-- Flow Tables -->
+    <div class="flow-wrap">
+      <div class="flow-title">Flow 1 — Passenger Opens Tracking Screen</div>
+      <table class="flow-table">
+        <thead><tr><th class="th-ui" style="width:20%">Fragment / UI</th><th class="th-vm" style="width:20%">LocationViewModel</th><th class="th-ws" style="width:20%">WebSocketManager</th><th class="th-maps" style="width:22%">Marker / Map</th><th class="th-fused" style="width:18%">FusedLocation</th></tr></thead>
+        <tbody>
+          <tr><td><span class="step-num">1.</span>onViewCreated() calls viewModel.startTracking(tripId)</td><td>Opens WS to wss://api/trip/{tripId}/track</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>—</td><td>—</td><td><span class="step-num">2.</span>WS connects. Server sends initial snapshot {lat, lng, bearing, eta}</td><td>—</td><td>—</td></tr>
+          <tr><td>—</td><td><span class="step-num">3.</span>Emits DriverState.Located(pos, bearing) via StateFlow</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td><span class="step-num">4.</span>Fragment collects StateFlow. Calls markerAnimator.animateTo() + cameraTracker.onDriverMoved()</td><td>—</td><td>—</td><td>Marker appears. Camera animates with tilt + bearing.</td><td>Passenger blue dot via map.isMyLocationEnabled = true</td></tr>
+          <tr><td>—</td><td>—</td><td>—</td><td><span class="step-num">5.</span>PolylineDrawer fetches route from Directions API and draws polyline origin → destination</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-  <div class="diagram-wrap">
-    <div class="diagram-title">LLD — Driver Location Update Flow (Passenger Side)</div>
-    <svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" style="max-width:740px;width:100%;font-family:'Segoe UI',sans-serif;font-size:12px;">
-      <defs>
-        <marker id="arr2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L7,3 z" fill="#6b7280"/>
-        </marker>
-      </defs>
-      <rect x="10" y="115" width="120" height="42" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
-      <text x="70" y="133" text-anchor="middle" font-weight="700" fill="#991b1b">WebSocket</text>
-      <text x="70" y="149" text-anchor="middle" fill="#6b7280" font-size="10">driver position msg</text>
+    <div class="flow-wrap">
+      <div class="flow-title">Flow 2 — Live Driver Position Update</div>
+      <table class="flow-table">
+        <thead><tr><th class="th-ws" style="width:22%">Driver / Server</th><th class="th-ws" style="width:20%">WS (Passenger)</th><th class="th-vm" style="width:20%">LocationViewModel</th><th class="th-maps" style="width:20%">MarkerAnimator</th><th class="th-fused" style="width:18%">GoogleMap</th></tr></thead>
+        <tbody>
+          <tr><td><span class="step-num">1.</span>Driver FusedLocation fires. App sends {lat, lng, bearing} every 2 s</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>Server fans out to all passengers on this tripId</td><td><span class="step-num">2.</span>WS receives onMessage(json). Parses LocationUpdateMessage.</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>—</td><td>—</td><td><span class="step-num">3.</span>Emits DriverState.Located(newLatLng, newBearing, etaMinutes)</td><td>—</td><td>—</td></tr>
+          <tr><td>—</td><td>—</td><td>—</td><td><span class="step-num">4.</span>ValueAnimator lerps marker old→new over 1 000 ms. Bearing rotates smoothly. 60 fps.</td><td>Marker glides. ETA label updates.</td></tr>
+          <tr><td>—</td><td>—</td><td>—</td><td><span class="step-num">5.</span>polylineDrawer.trimUpTo(driverPos) — removes travelled portion</td><td>Polyline shrinks from origin end.</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-      <rect x="180" y="115" width="130" height="42" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
-      <text x="245" y="133" text-anchor="middle" font-weight="700" fill="#1e40af">LocationViewModel</text>
-      <text x="245" y="149" text-anchor="middle" fill="#6b7280" font-size="10">emits DriverState</text>
-
-      <rect x="365" y="55" width="130" height="42" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5"/>
-      <text x="430" y="73" text-anchor="middle" font-weight="700" fill="#5b21b6">MarkerAnimator</text>
-      <text x="430" y="89" text-anchor="middle" fill="#6b7280" font-size="10">ValueAnimator lerp</text>
-
-      <rect x="365" y="175" width="130" height="42" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5"/>
-      <text x="430" y="193" text-anchor="middle" font-weight="700" fill="#5b21b6">PolylineDrawer</text>
-      <text x="430" y="209" text-anchor="middle" fill="#6b7280" font-size="10">trimUpTo(driverPos)</text>
-
-      <rect x="560" y="115" width="130" height="42" rx="8" fill="#fef3c7" stroke="#fcd34d" stroke-width="1.5"/>
-      <text x="625" y="133" text-anchor="middle" font-weight="700" fill="#92400e">GoogleMap</text>
-      <text x="625" y="149" text-anchor="middle" fill="#6b7280" font-size="10">marker + polyline + cam</text>
-
-      <rect x="365" y="230" width="130" height="38" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
-      <text x="430" y="248" text-anchor="middle" font-weight="700" fill="#166534">CameraTracker</text>
-      <text x="430" y="263" text-anchor="middle" fill="#6b7280" font-size="10">animateCamera()</text>
-
-      <line x1="130" y1="136" x2="178" y2="136" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr2)"/>
-      <line x1="310" y1="126" x2="363" y2="76" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr2)"/>
-      <line x1="310" y1="146" x2="363" y2="196" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr2)"/>
-      <line x1="310" y1="136" x2="363" y2="248" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr2)"/>
-      <line x1="495" y1="76" x2="558" y2="126" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr2)"/>
-      <line x1="495" y1="196" x2="558" y2="146" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr2)"/>
-      <line x1="495" y1="249" x2="558" y2="149" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr2)"/>
-
-      <!-- Fragment collect label -->
-      <rect x="180" y="40" width="130" height="38" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
-      <text x="245" y="57" text-anchor="middle" font-weight="700" fill="#166534">TrackingFragment</text>
-      <text x="245" y="72" text-anchor="middle" fill="#6b7280" font-size="10">collectLatestLifecycle</text>
-      <line x1="245" y1="78" x2="245" y2="113" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr2)"/>
-    </svg>
+    <div class="flow-wrap">
+      <div class="flow-title">Flow 3 — Driver Enters Pickup Geofence</div>
+      <table class="flow-table">
+        <thead><tr><th class="th-fused" style="width:22%">OS / FusedLocation</th><th class="th-svc" style="width:20%">GeofencingClient</th><th class="th-ui" style="width:20%">BroadcastReceiver</th><th class="th-vm" style="width:20%">NotificationManager</th><th class="th-db" style="width:18%">UI / Fragment</th></tr></thead>
+        <tbody>
+          <tr><td><span class="step-num">1.</span>OS monitors driver against geofences at low power (no GPS chip)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>—</td><td><span class="step-num">2.</span>Driver crosses 200 m pickup radius. OS fires PendingIntent.</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>—</td><td>—</td><td><span class="step-num">3.</span>onReceive() confirms ENTER for "PICKUP_ZONE".</td><td>—</td><td>—</td></tr>
+          <tr><td>—</td><td>—</td><td><span class="step-num">4.</span>Removes geofence. Posts "Driver is 200 m away" notification.</td><td>Fires with sound + vibration on CH_DRIVER_NEARBY</td><td>—</td></tr>
+          <tr><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="step-num">5.</span>If foreground: StateFlow emits DriverState.Nearby → "Driver arriving!" banner</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- Flow Tables -->
-  <div class="flow-wrap">
-    <div class="flow-title">Flow 1 — Passenger Opens Tracking Screen</div>
-    <table class="flow-table">
-      <thead>
-        <tr>
-          <th class="th-ui" style="width:18%">Fragment / UI</th>
-          <th class="th-vm" style="width:20%">LocationViewModel</th>
-          <th class="th-ws" style="width:20%">WebSocketManager</th>
-          <th class="th-maps" style="width:22%">MarkerAnimator / Map</th>
-          <th class="th-fused" style="width:20%">FusedLocation</th>
-        </tr>
-      </thead>
+  <!-- 5. DEEP DIVES -->
+  <div id="deepdives">
+    <div class="sec-h1">Deep Dives</div>
+
+    <div class="sec-h2">Location permission landscape — Android 10+</div>
+    <table class="decision-table">
+      <thead><tr><th>Use Case</th><th>Required Permission</th><th>When Prompted</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr>
-          <td><span class="step-num">1.</span>TrackingFragment appears. <code>onViewCreated()</code> calls <code>viewModel.startTracking(tripId)</code></td>
-          <td>Opens WebSocket connection to <code>wss://api/trip/{tripId}/track</code></td>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td>—</td>
-          <td>—</td>
-          <td><span class="step-num">2.</span>WebSocket connects. Server sends initial driver snapshot: <code>{lat, lng, bearing, eta}</code></td>
-          <td>—</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td>—</td>
-          <td><span class="step-num">3.</span>Emits <code>DriverState.Located(pos, bearing)</code> via StateFlow</td>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td><span class="step-num">4.</span>Fragment collects StateFlow. Calls <code>markerAnimator.animateTo()</code> and <code>cameraTracker.onDriverMoved()</code></td>
-          <td>—</td>
-          <td>—</td>
-          <td>Marker appears at initial position. Camera animates to driver with tilt + bearing.</td>
-          <td>Passenger's own position shown as blue dot via <code>map.isMyLocationEnabled = true</code></td>
-        </tr>
-        <tr>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-          <td><span class="step-num">5.</span>PolylineDrawer fetches route from Directions API and draws polyline origin → destination</td>
-          <td>—</td>
-        </tr>
+        <tr><td>Passenger blue dot</td><td><code>ACCESS_FINE_LOCATION</code></td><td>Runtime — app open</td><td>Needed for HIGH_ACCURACY.</td></tr>
+        <tr class="chosen-row"><td>Driver background upload</td><td><code>ACCESS_BACKGROUND_LOCATION</code></td><td>Separate dialog Android 10+, Settings on 11+</td><td>Request FINE first, then BACKGROUND separately. Most critical.</td></tr>
+        <tr><td>Geofencing</td><td>FINE + BACKGROUND_LOCATION</td><td>Same as above</td><td>Geofences fire when app is killed — needs background permission.</td></tr>
+        <tr><td>Foreground Service (Android 14+)</td><td><code>FOREGROUND_SERVICE_LOCATION</code></td><td>Manifest only — no dialog</td><td>Add android:foregroundServiceType="location" in manifest.</td></tr>
       </tbody>
     </table>
-  </div>
 
-  <div class="flow-wrap">
-    <div class="flow-title">Flow 2 — Live Driver Position Update</div>
-    <table class="flow-table">
-      <thead>
-        <tr>
-          <th class="th-ws" style="width:20%">Driver App / Server</th>
-          <th class="th-vm" style="width:22%">WebSocket (Passenger)</th>
-          <th class="th-ui" style="width:20%">LocationViewModel</th>
-          <th class="th-maps" style="width:20%">MarkerAnimator</th>
-          <th class="th-fused" style="width:18%">GoogleMap</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><span class="step-num">1.</span>Driver FusedLocation fires. Driver app sends <code>{lat, lng, bearing}</code> to server via WebSocket every 2 s</td>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td>Server fans out to all passengers watching this tripId</td>
-          <td><span class="step-num">2.</span>Passenger WebSocket receives <code>onMessage(json)</code>. Parses <code>DriverLocationUpdate</code>.</td>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td>—</td>
-          <td>—</td>
-          <td><span class="step-num">3.</span>ViewModel emits new <code>DriverState.Located(newLatLng, newBearing, etaMinutes)</code></td>
-          <td>—</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-          <td><span class="step-num">4.</span><code>ValueAnimator</code> lerps marker from old pos to new pos over 1 000 ms. Bearing rotates smoothly. Runs at 60 fps.</td>
-          <td>Marker glides on map. ETA label in UI updates.</td>
-        </tr>
-        <tr>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-          <td><span class="step-num">5.</span><code>polylineDrawer.trimUpTo(driverPos)</code> — removes the already-travelled portion of the polyline</td>
-          <td>Polyline shrinks from the origin end toward driver.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="flow-wrap">
-    <div class="flow-title">Flow 3 — Driver Enters Pickup Geofence</div>
-    <table class="flow-table">
-      <thead>
-        <tr>
-          <th class="th-fused" style="width:20%">FusedLocation / OS</th>
-          <th class="th-svc" style="width:22%">GeofencingClient</th>
-          <th class="th-ui" style="width:20%">GeofenceBroadcastRx</th>
-          <th class="th-vm" style="width:20%">NotificationManager</th>
-          <th class="th-db" style="width:18%">UI / Fragment</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><span class="step-num">1.</span>OS continuously monitors driver position against registered geofences (low-power, handled by system)</td>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td>—</td>
-          <td><span class="step-num">2.</span>Driver crosses 200 m radius around pickup point. OS triggers the registered <code>PendingIntent</code></td>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td>—</td>
-          <td>—</td>
-          <td><span class="step-num">3.</span><code>onReceive()</code> called. <code>GeofencingEvent.fromIntent()</code> confirms ENTER transition for "PICKUP_ZONE"</td>
-          <td>—</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td>—</td>
-          <td>—</td>
-          <td><span class="step-num">4.</span>Removes geofence (no longer needed). Posts "Driver is 200 m away — head to pickup" notification.</td>
-          <td>Notification fires with sound + vibration on CH_DRIVER_NEARBY</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-          <td><span class="step-num">5.</span>If app is in foreground: LiveData / StateFlow emits <code>DriverState.Nearby</code> → UI shows "Driver arriving!" banner</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- ══════════ 5. DEEP DIVES ══════════ -->
-  <h2 id="s-deepdives">5. Deep Dives</h2>
-
-  <h3>Location permission landscape — Android 10+ complexity</h3>
-
-  <table class="decision-table">
-    <thead>
-      <tr>
-        <th>Use Case</th>
-        <th>Required Permission</th>
-        <th>When Prompted</th>
-        <th>Notes</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>User's location on map (passenger)</td>
-        <td><code>ACCESS_FINE_LOCATION</code></td>
-        <td>Runtime — app open</td>
-        <td>Shown once. Needed for PRIORITY_HIGH_ACCURACY.</td>
-      </tr>
-      <tr class="chosen-row">
-        <td>Driver location in background</td>
-        <td><code>ACCESS_BACKGROUND_LOCATION</code></td>
-        <td>Separate dialog on Android 10+ — taken to Settings on 11+</td>
-        <td>Must request FINE first, then background separately. Most critical.</td>
-      </tr>
-      <tr>
-        <td>Geofencing</td>
-        <td><code>ACCESS_FINE_LOCATION</code> + <code>ACCESS_BACKGROUND_LOCATION</code></td>
-        <td>Same as above</td>
-        <td>Geofences fire even when app is killed — needs background permission.</td>
-      </tr>
-      <tr>
-        <td>Foreground Service location</td>
-        <td><code>FOREGROUND_SERVICE_LOCATION</code> (Android 14+)</td>
-        <td>Declared in manifest — no dialog</td>
-        <td>New in API 34. Must add <code>android:foregroundServiceType="location"</code>.</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <h3>Battery optimisation for the driver app</h3>
-
-  <pre><code><span class="cm">// Switch accuracy based on trip state</span>
-<span class="kw">fun</span> <span class="fn">updateLocationPriority</span>(tripState: <span class="cl">TripState</span>) {
+    <div class="sec-h2">Trip-state-adaptive battery strategy</div>
+    <div class="code-block"><span class="kw">fun</span> <span class="fn">updateLocationPriority</span>(tripState: <span class="cl">TripState</span>) {
     <span class="kw">val</span> (priority, intervalMs) = <span class="kw">when</span> (tripState) {
-        <span class="cl">TripState</span>.IDLE        -> <span class="cl">Priority</span>.PRIORITY_LOW_POWER          to <span class="nm">60_000L</span>  <span class="cm">// 1/min</span>
-        <span class="cl">TripState</span>.SEARCHING  -> <span class="cl">Priority</span>.PRIORITY_BALANCED_POWER       to <span class="nm">10_000L</span>  <span class="cm">// 1/10s</span>
-        <span class="cl">TripState</span>.EN_ROUTE   -> <span class="cl">Priority</span>.PRIORITY_HIGH_ACCURACY         to <span class="nm">2_000L</span>   <span class="cm">// 1/2s</span>
-        <span class="cl">TripState</span>.COMPLETED  -> <span class="cl">Priority</span>.PRIORITY_LOW_POWER          to <span class="nm">60_000L</span>
+        <span class="cl">TripState</span>.IDLE       -> <span class="cl">Priority</span>.PRIORITY_LOW_POWER      <span class="kw">to</span> <span class="nm">60_000L</span>
+        <span class="cl">TripState</span>.SEARCHING -> <span class="cl">Priority</span>.PRIORITY_BALANCED_POWER  <span class="kw">to</span> <span class="nm">10_000L</span>
+        <span class="cl">TripState</span>.EN_ROUTE  -> <span class="cl">Priority</span>.PRIORITY_HIGH_ACCURACY   <span class="kw">to</span>  <span class="nm">2_000L</span>
+        <span class="cl">TripState</span>.COMPLETED -> <span class="cl">Priority</span>.PRIORITY_LOW_POWER      <span class="kw">to</span> <span class="nm">60_000L</span>
     }
-    <span class="cm">// Re-register LocationRequest with new parameters</span>
     fusedClient.<span class="fn">removeLocationUpdates</span>(locationCallback)
     fusedClient.<span class="fn">requestLocationUpdates</span>(<span class="fn">buildRequest</span>(priority, intervalMs), locationCallback, looper)
 }
+<span class="cm">// setMinUpdateDistanceMeters(5f) filters noise when stationary at a red light</span></div>
+  </div>
 
-<span class="cm">// setMinUpdateDistanceMeters filters out noise when stationary</span>
-<span class="cm">// — if driver is stopped at a red light, identical GPS fixes aren't uploaded</span></code></pre>
+  <!-- 6. EDGE CASES -->
+  <div id="edgecases">
+    <div class="sec-h1">Edge Cases</div>
+    <p>These are the questions that separate senior from staff. Each one represents a real production failure mode in a live-tracking app.</p>
+    <div class="edge-grid">
 
-  <!-- ══════════ 6. LEVELS ══════════ -->
-  <h2 id="s-levels">6. Expected at Each Level</h2>
+      <div class="edge-card">
+        <div class="edge-header"><div class="edge-icon">📡</div><div class="edge-title">GPS Signal Lost Mid-Trip</div></div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> Driver enters a tunnel or underground parking. GPS satellite signal drops. FusedLocation falls back to Wi-Fi/cell positioning — accuracy degrades to 50–200 m. Updates may stop entirely if the driver is deep underground.</p>
+          <p><strong>The fix:</strong> FusedLocation handles the hardware fallback automatically, but you need to surface accuracy to the UI. Check <code>location.accuracy</code> on each callback — if it exceeds 100 m, show an accuracy ring around the marker (a semi-transparent circle proportional to accuracy radius). On the passenger side: if no WS message arrives for &gt;10 s, grey out the marker and show "Weak signal — tracking paused". Resume automatically when updates return. Never stop the Foreground Service — it will resume once the driver exits the tunnel.</p>
+          <p><strong>Dead reckoning (staff-level):</strong> Extrapolate position between fixes using last known speed and bearing: <code>newLat ≈ lastLat + (speed * cos(bearing) * dt / R)</code>. Continue animating the marker on the estimated trajectory rather than freezing it.</p>
+        </div>
+      </div>
 
-  <div class="levels-grid">
-    <div class="level-card level-mid">
-      <div class="level-badge">🔵 Mid-Level</div>
-      <ul>
-        <li>Knows <code>FusedLocationProviderClient</code> vs raw <code>LocationManager</code></li>
-        <li>Can set up <code>LocationRequest</code> with interval and priority</li>
-        <li>Understands foreground/background permission difference</li>
-        <li>Can add a marker and draw a polyline with the Maps SDK</li>
-        <li>Knows a Foreground Service is required for background GPS</li>
-        <li>Uses <code>animateCamera()</code> to move the map view</td>
-      </ul>
-    </div>
-    <div class="level-card level-senior">
-      <div class="level-badge">🟢 Senior</div>
-      <ul>
-        <li>Implements <code>ValueAnimator</code> LatLng lerp for smooth marker movement</li>
-        <li>Handles bearing wrap-around (359° → 1°) in animation</li>
-        <li>Uses <code>setMinUpdateDistanceMeters</code> to filter stationary noise</li>
-        <li>CameraTracker: auto-follow disabled on user pan gesture</li>
-        <li>Polyline trimming — removes travelled portion as driver moves</li>
-        <li>GeofencingClient for arrival alerts without polling</li>
-        <li>Adapts priority/interval by trip state to save battery</li>
-      </ul>
-    </div>
-    <div class="level-card level-staff">
-      <div class="level-badge">🟣 Staff+</div>
-      <ul>
-        <li>Dead reckoning: extrapolate marker position between fixes (Kalman filter)</li>
-        <li>Map clustering with <code>ClusterManager</code> for many driver markers</li>
-        <li>Custom tile provider for offline map tile caching</li>
-        <li>Speed-adaptive interval: increase GPS rate when driver is moving fast</li>
-        <li>Location spoof detection: compare GPS vs network vs sensor fusion</li>
-        <li>Multi-stop route with ordered waypoints and live rerouting</li>
-        <li>Battery impact dashboard: alert if driver app consumes &gt; X % per hour</li>
-      </ul>
+      <div class="edge-card">
+        <div class="edge-header"><div class="edge-icon">🔌</div><div class="edge-title">WebSocket Disconnect During Active Tracking</div></div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> The passenger's WebSocket drops mid-trip — network switch, server restart, or brief connectivity loss. The marker freezes. The passenger sees stale data with no indication anything is wrong.</p>
+          <p><strong>The fix:</strong> In <code>onFailure()</code>, immediately emit <code>DriverState.Disconnected(attempt = n)</code>. UI shows a "Reconnecting..." banner and greys the marker. Reconnect with exponential backoff: <code>delay = min(base * 2^attempt, 30_000) + jitter</code>. Also listen to <code>ConnectivityManager.NetworkCallback.onAvailable()</code> to trigger immediate reconnect when network returns — don't wait for the backoff timer. On reconnect, request a fresh server snapshot (last position + ETA) before resuming streaming. Cap at 10 retries then show a manual "Retry" button.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header"><div class="edge-icon">💀</div><div class="edge-title">Foreground Service Killed by OS / Doze Mode</div></div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> Android's Low Memory Killer or Doze mode kills the driver's Foreground Service during a long shift. Location uploads stop. The passenger's tracker goes stale.</p>
+          <p><strong>The fix:</strong> Return <code>START_STICKY</code> from <code>onStartCommand()</code> — the OS restarts the service with a null Intent when resources free up. The service rebuilds its LocationRequest and resumes uploading. For Doze: Foreground Services are exempt as long as the notification is visible — this is why the persistent notification is mandatory, not optional. Additionally, guide the driver to whitelist the app from battery optimisation via <code>Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)</code>, explaining the reason clearly. Don't use PendingIntent for the driver upload path — that's for low-frequency geofencing, not 2 s uploads.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header"><div class="edge-icon">🌀</div><div class="edge-title">Rapid Updates Cause Animation Queue Backlog</div></div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> WebSocket messages arrive faster than the 1 s animation duration — highway driving, server sends updates every 500 ms. Animations queue up, causing the marker to lag further and further behind the driver's actual position, eventually showing a position that's 5–10 seconds stale.</p>
+          <p><strong>The fix:</strong> In <code>MarkerAnimator.animateTo()</code>, always call <code>activeAnimator?.cancel()</code> before starting a new animation. Cancelling mid-animation leaves the marker at its current interpolated position and immediately starts the new one from there — no queue, no lag. The marker catches up instantly. Also make animation duration adaptive: if updates arrive every 500 ms, use 500 ms duration rather than 1 000 ms — match the animation to the update frequency.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header"><div class="edge-icon">📵</div><div class="edge-title">Location Permission Revoked Mid-Session</div></div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> Android 12 introduced one-time location grants. The user granted "Only this time" — when they background the app and return, location access has expired. Or the user goes to Settings and revokes the permission during an active trip.</p>
+          <p><strong>The fix:</strong> FusedLocation stops calling your LocationCallback silently when permission is revoked — no exception, just silence. Detect this: if no update arrives within 2× the expected interval, check <code>ContextCompat.checkSelfPermission()</code>. If revoked, emit a <code>PermissionRevoked</code> state and show a non-dismissable dialog explaining the impact, with a direct link to Settings. On the passenger side, if the server stops receiving driver updates it can push a separate "tracking unavailable" WS message.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header"><div class="edge-icon">📍</div><div class="edge-title">GPS Jitter When Driver is Stationary</div></div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> The driver stops at a red light. GPS chipsets oscillate ±5–15 m — generating constant callbacks even though the car hasn't moved. Without filtering this generates hundreds of unnecessary server uploads per minute and causes the marker to jitter nervously on the passenger's screen.</p>
+          <p><strong>The fix:</strong> Use <code>setMinUpdateDistanceMeters(5f)</code> in LocationRequest.Builder — FusedLocation suppresses callbacks if the device has moved less than 5 m since the last update. Additionally check <code>location.speed</code> — if speed is 0 m/s, skip the WebSocket upload even if a callback fires. On the animation side: if the new position is within 3 m of the current marker position, skip the ValueAnimator entirely. Combined effect: zero uploads and zero animation churn during red lights.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header"><div class="edge-icon">🗺️</div><div class="edge-title">Map Tiles Unavailable Offline</div></div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> The driver enters an area with no connectivity. The map SDK can't fetch tiles — large grey squares appear. The route polyline still displays (it's vector data in memory), but the blank background map makes navigation confusing.</p>
+          <p><strong>The fix:</strong> (1) Use the Maps SDK's built-in offline area support — let the user pre-download a region before the trip. (2) Implement a custom <code>TileProvider</code>: override <code>getTile(x, y, zoom)</code>, check a local LRU disk cache, return cached bytes if found, otherwise fetch and cache. Pre-download tiles for the route corridor at trip start: compute the route polyline's bounding box, determine tile coordinates at zoom 14–16, and fetch them via WorkManager before the driver departs.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header"><div class="edge-icon">🔄</div><div class="edge-title">Config Change / Process Death Mid-Trip</div></div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> The passenger rotates their phone or the process is killed under low RAM. The tracking Fragment is recreated. Naively this re-fetches everything, flashes a spinner, and resets the camera.</p>
+          <p><strong>The fix (config change):</strong> The LocationViewModel survives rotation. The WebSocket lives inside the ViewModel and stays connected. The Fragment re-collects the existing StateFlow — the last emitted DriverState is replayed immediately (StateFlow always emits current value to new collectors). The marker and camera restore from the last state in under 100 ms.</p>
+          <p><strong>The fix (process death):</strong> The Foreground Service is independent of the Fragment — it keeps running. When the passenger app restarts, the ViewModel reconnects to the WebSocket and receives the server's fresh snapshot within one round-trip. Use <code>SavedStateHandle</code> to persist the tripId so the ViewModel reconnects to the correct trip.</p>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- ══════════ 7. Q&A ══════════ -->
-  <h2 id="s-qa">7. Interview Q&amp;A (20 Questions)</h2>
-
-  <div class="iq-wrap">
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q1. Why use FusedLocationProviderClient instead of GPS directly?</span>
-        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
+  <!-- 7. LEVELS -->
+  <div id="levels">
+    <div class="sec-h1">Expected at Each Level</div>
+    <div class="levels-grid">
+      <div class="level-card mid">
+        <div class="level-title">🔵 Mid-Level</div>
+        <ul>
+          <li>Knows FusedLocationProviderClient vs raw LocationManager</li>
+          <li>Can set up LocationRequest with interval and priority</li>
+          <li>Understands foreground/background permission difference</li>
+          <li>Can add a marker and draw a polyline with the Maps SDK</li>
+          <li>Knows a Foreground Service is required for background GPS</li>
+          <li>Uses animateCamera() to move the map view</li>
+        </ul>
       </div>
-      <div class="iq-body">
-        <p><code>FusedLocationProviderClient</code> (FLPC) is Google's smart location provider that internally combines GPS, Wi-Fi positioning, Bluetooth beacons, and cell towers, choosing the best available source for the requested accuracy and battery trade-off. Raw <code>LocationManager</code> with <code>GPS_PROVIDER</code> only uses satellites — it's slow to get a fix (cold start can take 30–60 s), drains battery constantly, and fails indoors. FLPC gets a fix in ~1–2 s because it uses the last known location from Wi-Fi as an immediate result while GPS warms up. For consumer apps, always use FLPC over raw LocationManager.</p>
+      <div class="level-card senior">
+        <div class="level-title">🟢 Senior</div>
+        <ul>
+          <li>Implements ValueAnimator LatLng lerp for smooth marker movement</li>
+          <li>Handles bearing wrap-around (359° → 1°) in animation</li>
+          <li>Cancels active animator to prevent queue backlog on rapid updates</li>
+          <li>CameraTracker: auto-follow disabled on user pan gesture</li>
+          <li>Polyline trimming — removes travelled portion as driver moves</li>
+          <li>GeofencingClient for arrival alerts without polling</li>
+          <li>Adapts priority/interval by TripState to save battery</li>
+          <li>Exponential backoff WebSocket reconnection</li>
+        </ul>
       </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q2. What is the difference between PRIORITY_HIGH_ACCURACY and PRIORITY_BALANCED_POWER?</span>
-        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p><code>PRIORITY_HIGH_ACCURACY</code> enables GPS hardware — it can achieve 3–5 metre accuracy but uses significant battery. Use it when precise turn-by-turn navigation or real-time driver tracking is needed (active trip). <code>PRIORITY_BALANCED_POWER</code> uses Wi-Fi and cell towers only — no GPS chip activated. Accuracy degrades to 50–100 metres but battery impact is minimal. Use it when you just need city-block precision, e.g., checking if the driver is in the general area. For the passenger app just showing their own location as a blue dot, <code>BALANCED</code> is sufficient. Only activate <code>HIGH_ACCURACY</code> when the user is actively navigating.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q3. Why does a driver app need a Foreground Service for location?</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Android aggressively kills background processes to conserve battery. A plain background service will be killed within minutes. A Foreground Service with a persistent notification signals to the OS that this is intentional, user-visible, ongoing work — it has much higher priority and is rarely killed. Since Android 8, location updates in a background service (no foreground promotion) are throttled to once per hour. For real-time driver tracking at 2 s intervals, a Foreground Service is mandatory. Declare <code>android:foregroundServiceType="location"</code> in the manifest (required since Android 10) and call <code>startForeground(id, notification)</code> within 5 seconds of service start.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q4. How do you smoothly animate a marker between GPS fixes?</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>GPS fixes arrive at 1–5 second intervals. Without animation, the marker teleports — jarring UX. Use <code>ValueAnimator.ofFloat(0f, 1f)</code> with the animation duration matching the update interval (e.g., 1 000 ms). In <code>addUpdateListener</code>, linearly interpolate the latitude and longitude: <code>lat = startLat + (endLat - startLat) * t</code>. Update <code>marker.position</code> on each frame. Also interpolate <code>marker.rotation</code> for the bearing — but handle the 359° → 1° wrap: compute the delta, if &gt;180 subtract 360, if &lt;-180 add 360. The <code>LinearInterpolator</code> gives a constant-speed glide that matches expected car movement.</p>
+      <div class="level-card staff">
+        <div class="level-title">🟣 Staff+</div>
+        <ul>
+          <li>Dead reckoning: extrapolate marker between fixes (Kalman filter)</li>
+          <li>Adaptive animation duration matching update frequency</li>
+          <li>Custom TileProvider + MBTiles for offline map tiles</li>
+          <li>Location spoof detection: isMock, velocity sanity, sensor fusion</li>
+          <li>ClusterManager for many driver markers at city scale</li>
+          <li>Accuracy ring overlay — surfaces GPS uncertainty visually</li>
+          <li>Speed-adaptive GPS interval (faster updates on highways)</li>
+          <li>Battery impact metering across driver shift with Battery Historian</li>
+        </ul>
       </div>
     </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q5. What is ACCESS_BACKGROUND_LOCATION and why is it separate?</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Introduced in Android 10, <code>ACCESS_BACKGROUND_LOCATION</code> is a separate runtime permission from <code>ACCESS_FINE_LOCATION</code>. It grants the app the ability to receive location updates when the app is not visible to the user. You must request FINE first, and only after it's granted can you request BACKGROUND. On Android 11+, requesting both in the same dialog is not allowed — the system forces the user to go to Settings to grant background location (no runtime dialog). The Play Store also reviews background location use and requires a compelling justification. For driver apps, the justification is clear: the driver's location must update while they navigate. Always use it minimally and explain the benefit to the user before requesting.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q6. How do you detect when a user manually pans the map and stop auto-following?</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Register <code>GoogleMap.setOnCameraMoveStartedListener</code>. The callback receives a <code>reason</code> integer. <code>REASON_GESTURE</code> means the user is physically panning/zooming — set a <code>isFollowing = false</code> flag. <code>REASON_API_ANIMATION</code> means your own code called <code>animateCamera()</code> — don't change the flag. When a new driver position arrives: if <code>isFollowing</code> is false, skip <code>animateCamera()</code> but still animate the marker. Show a "Re-center" FAB button that sets <code>isFollowing = true</code> and calls <code>animateCamera()</code> to snap back to the driver. This pattern matches the Uber/Ola UX exactly.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q7. How does the GeofencingClient work and why is it better than polling?</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>You register a <code>Geofence</code> with a circular region (center + radius) and transition types (ENTER/EXIT/DWELL). The <code>GeofencingClient</code> passes this to Google Play Services, which monitors the device's position against all registered geofences at the OS level — using low-power cell/Wi-Fi positioning, not GPS. When a transition is detected, it fires a <code>PendingIntent</code> to your BroadcastReceiver or IntentService. This is far more battery-efficient than polling: your app code doesn't run at all during monitoring. The OS handles everything and only wakes your app when the boundary is crossed. Remove the geofence immediately after the event to avoid lingering monitoring.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q8. How do you draw and update a route polyline as the driver moves?</span>
-        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Fetch the route from the Google Directions API (or a Routes API equivalent) as a list of <code>LatLng</code> waypoints. Draw it with <code>map.addPolyline(PolylineOptions().addAll(points))</code>. Store the <code>Polyline</code> reference. As the driver moves, call <code>polyline.remove()</code> and re-draw with the updated points — or more efficiently: trim the waypoints list by removing all points before the driver's current position. Find the closest point in the list to the driver's <code>LatLng</code>, then call <code>polyline.points = originalPoints.drop(closestIndex)</code>. This gives the appearance of the road "disappearing behind" the driver without a full redraw.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q9. What is setMinUpdateDistanceMeters and why is it useful?</span>
-        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p><code>setMinUpdateDistanceMeters(5f)</code> tells FusedLocation to suppress callbacks if the device has moved less than 5 metres since the last update, even if the time interval has elapsed. This filters out GPS jitter — when a driver is stationary (waiting at a signal), the GPS chipset still oscillates slightly, generating false position updates. Without this filter, you'd upload hundreds of tiny "moves" per minute to your backend, burning bandwidth and battery. Setting a threshold of 5–10 metres ensures only meaningful movement triggers a callback and a server upload. Combine with the time interval to get both time-based and distance-based filtering.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q10. How do you handle a WebSocket disconnect during a live tracking session?</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Implement exponential backoff in the WebSocket manager: on <code>onFailure()</code> or <code>onClosing()</code>, schedule a reconnect after <code>min(baseDelay * 2^attempt, maxDelay)</code> milliseconds, with jitter (e.g., add a random 0–1 s). Show a UI indicator ("Reconnecting...") while disconnected. Stop showing the driver marker moving — optionally grey it out. On reconnection, request a fresh snapshot from the server (last known position + ETA). Cap the retry counter; after N consecutive failures, show "Unable to track — check connection" and offer a manual retry button. On Android, also listen to <code>ConnectivityManager</code> network callbacks to trigger reconnection immediately when the network comes back.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q11. How do you show multiple driver markers efficiently (e.g., available taxis near me)?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Use <code>ClusterManager</code> from the Maps Android Utils library. It groups nearby markers into a single cluster marker showing the count, and splits them apart as the user zooms in. For updating positions: maintain a <code>Map&lt;driverId, Marker&gt;</code>. On each position update, call <code>marker.position = newLatLng</code> directly rather than removing and re-adding — this is O(1) and preserves the cluster grouping. For very high volumes (100+ drivers), consider only rendering drivers within the visible map bounds: use <code>map.projection.visibleRegion.latLngBounds.contains(driverPos)</code> to filter before adding to ClusterManager. Off-screen markers waste GPU memory.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q12. What is dead reckoning and when would you apply it?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Dead reckoning extrapolates the driver's position between GPS fixes using last known speed and bearing. If a fix arrives at time T with speed 14 m/s and bearing 90°, and the next fix is delayed by 1 second, you can estimate the position as <code>newLat ≈ lastLat + (speed * cos(bearing) * dt / R)</code>. This makes the marker move continuously rather than jumping in steps. A Kalman filter combines dead reckoning estimates with actual GPS measurements, weighing each by its uncertainty, to produce a smooth, filtered track. Used in Google Maps navigation to keep the blue dot moving smoothly between 1 s GPS fixes. For an interview, describe the concept and the trade-off: extra computation for smoother UX.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q13. How do you implement a custom map style (dark mode / branded)?</span>
-        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Use the Google Maps SDK's <code>MapStyleOptions</code>. Create a JSON style file in <code>res/raw/map_style.json</code> (generate it at mapstyle.withgoogle.com). Apply it with: <code>map.setMapStyle(MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style))</code>. Call this inside <code>onMapReady()</code> after you have the <code>GoogleMap</code> reference. For dark mode: detect <code>resources.configuration.uiMode and UI_MODE_NIGHT_MASK == UI_MODE_NIGHT_YES</code> and load a dark style JSON. The style is client-side — no server changes needed. Commonly used: hide POI labels to reduce visual noise during navigation, change road colors to brand palette.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q14. How do you handle location permission denial and guide the user to Settings?</span>
-        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Three cases after <code>ActivityResultContracts.RequestPermission()</code>: (1) Granted — proceed normally. (2) Denied but not permanently — show a rationale dialog explaining why location is needed ("We need location to show your position on the map"), then re-request. (3) Permanently denied (<code>shouldShowRequestPermissionRationale()</code> returns false) — show a dialog with "Open Settings" that launches <code>Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)</code> so the user can manually enable it. Never request the permission in a loop. Show the feature as disabled with a CTA rather than crashing. For background location on Android 11+, the user is always directed to Settings — prepare UI for this flow.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q15. How do you implement offline map tiles?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Two approaches. (1) <strong>Google Maps SDK offline areas</strong>: the SDK itself supports caching tiles for a selected geographic region — the user downloads a rectangular area in advance. This works automatically without custom code. (2) <strong>Custom <code>TileProvider</code></strong>: implement <code>TileProvider.getTile(x, y, zoom)</code> — check a local tile cache (LRU disk cache), return cached bytes if present, else fetch from tile server and cache. Use MBTiles format for structured offline storage. Register with <code>map.addTileOverlay(TileOverlayOptions().tileProvider(yourProvider))</code>. For navigation apps: pre-download tiles for the route corridor ahead of time using the route bounds to determine which tiles to cache.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q16. What is the Maps SDK's getLastLocation() and when should you use it?</span>
-        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p><code>fusedClient.lastLocation</code> returns a Task that resolves with the most recently known location from FusedLocation's cache — it's instant (no GPS activation) but can be null if no location has been acquired recently (fresh reboot, no recent app used location). Use it for: showing an initial map position before live updates start ("Where was I last?"), pre-populating a pickup address field, or a coarse check to see if the user is in a service area. Don't use it as the main tracking mechanism — it's stale by design. Start <code>requestLocationUpdates()</code> for live data and use <code>lastLocation</code> only as a quick first position while the live stream warms up.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q17. How do you reduce battery drain on the driver app during a long shift?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Several strategies together: (1) <strong>Adaptive interval</strong>: reduce frequency when stationary (<code>setMinUpdateDistanceMeters</code>) and increase only when moving fast. (2) <strong>Trip-state-based priority</strong>: drop to <code>PRIORITY_BALANCED_POWER</code> when idle, only switch to <code>HIGH_ACCURACY</code> during an active trip. (3) <strong>Server-side filtering</strong>: send location only when delta exceeds a threshold — client-side <code>minUpdateDistanceMeters</code> does some of this, but explicit client filtering before the WebSocket send adds another layer. (4) <strong>Batch uploads</strong>: if the server allows it, buffer 3–5 fixes locally and send as a batch — fewer network radio activations. (5) Request the driver's device to be excluded from Doze mode only during active trips via <code>PowerManager.isIgnoringBatteryOptimizations()</code> and guide the user to whitelist the app.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q18. How would you detect GPS spoofing in a driver app?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Multiple signals. (1) <code>location.isMock</code> (API 31+) / <code>location.isFromMockProvider()</code> (deprecated but works pre-31) — returns true if a mock location app is active. (2) Cross-check GPS location against network/cell location: if they consistently disagree by &gt;1 km, flag as suspicious. (3) Velocity sanity check: if the position jumps 10 km in 1 second, that's physically impossible. (4) Sensor fusion: compare GPS bearing with accelerometer/gyroscope data — a spoofed GPS that "teleports" won't match inertial sensor data. (5) Check if developer options "Allow mock locations" is enabled: <code>Settings.Secure.getInt(cr, Settings.Secure.ALLOW_MOCK_LOCATION)</code>. Flag these signals and escalate to a server-side anti-fraud system rather than blocking locally — the driver could appeal if flagged incorrectly.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q19. How does map.isMyLocationEnabled work and what permission does it need?</span>
-        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p><code>map.isMyLocationEnabled = true</code> enables the built-in blue dot showing the user's current position, plus a "My Location" button in the top-right corner. It requires <code>ACCESS_FINE_LOCATION</code> or <code>ACCESS_COARSE_LOCATION</code> to be granted at runtime — if you enable it without the permission, it throws a <code>SecurityException</code>. Always check <code>ContextCompat.checkSelfPermission()</code> before setting it to true. The SDK handles all the FusedLocation calls internally — you don't need to manually manage your own location updates for the blue dot. Use it for the passenger's position; use your own marker + FusedLocation for the driver's position that needs server upload and custom animation.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">Q20. How would you implement ETA updating as the driver deviates from the planned route?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Two approaches. (1) <strong>Server-side</strong>: the server receives each driver position update and computes remaining distance using the Directions API or a routing engine (OSRM). It pushes the updated ETA back via WebSocket to the passenger. This is the standard approach — routing is expensive and best done server-side. (2) <strong>Client-side</strong>: the passenger app detects deviation by checking if the driver's position is &gt;N metres off the drawn polyline. If deviated beyond a threshold, request a new route from the Directions API from driver's current position to destination, redraw the polyline, and recompute ETA from the new route's <code>duration</code> field. Debounce rerouting — don't trigger on every minor deviation, wait until the driver is consistently off-route for 10+ seconds.</p>
-      </div>
-    </div>
-
   </div>
 
-</article>
+  <!-- 8. Q&A -->
+  <div id="qa">
+    <div class="sec-h1">Interview Q&amp;A (20 Questions)</div>
+    <div class="iq-list">
 
-<!-- ══════════ SIDEBAR ══════════ -->
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q1</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">Why use FusedLocationProviderClient instead of GPS directly?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>FusedLocationProviderClient combines GPS, Wi-Fi positioning, Bluetooth beacons, and cell towers, choosing the best source for the requested accuracy/battery trade-off. Raw <code>LocationManager</code> with GPS_PROVIDER only uses satellites — cold start takes 30–60 s, fails indoors, and drains battery constantly. FLPC gets a fix in ~1–2 s by using the last known Wi-Fi position immediately while GPS warms up. For consumer apps, always use FLPC over raw LocationManager.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q2</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">What is the difference between PRIORITY_HIGH_ACCURACY and PRIORITY_BALANCED_POWER?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>HIGH_ACCURACY activates the GPS hardware — 3–5 m accuracy but significant battery cost. Use it during active trips. BALANCED_POWER uses Wi-Fi and cell towers only — no GPS chip activated, 50–100 m accuracy, minimal battery. Use it for the passenger's own blue dot, or the driver app during IDLE/SEARCHING state. Only activate HIGH_ACCURACY when the driver is actively on a trip.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q3</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">Why does a driver app need a Foreground Service for location?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Since Android 8, location updates in a background service are throttled to once per hour. A Foreground Service with a visible notification has much higher OS priority and receives continuous updates. Declare <code>android:foregroundServiceType="location"</code> in the manifest (required since Android 10), and call <code>startForeground(id, notification)</code> within 5 seconds of service start. Return <code>START_STICKY</code> so the OS restarts the service if killed under memory pressure.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q4</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How do you smoothly animate a marker between GPS fixes?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Use <code>ValueAnimator.ofFloat(0f, 1f)</code> with duration matching the update interval (1 000 ms). In <code>addUpdateListener</code>, linearly interpolate lat/lng: <code>lat = startLat + (endLat - startLat) * t</code>. Also interpolate bearing — handle the 359° → 1° wrap: compute delta, if &gt;180 subtract 360, if &lt;-180 add 360. Crucially, cancel any active animation before starting a new one (<code>activeAnimator?.cancel()</code>) to prevent backlog when updates arrive faster than the animation completes.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q5</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">What is ACCESS_BACKGROUND_LOCATION and why is it separate?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Introduced in Android 10, it's a separate runtime permission from ACCESS_FINE_LOCATION, granting location access when the app is not visible. You must request FINE first; only after that can you request BACKGROUND. On Android 11+, you can't request both in the same dialog — the system forces the user to Settings. The Play Store also requires justification. For driver apps, explain the benefit clearly before requesting.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q6</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How do you detect when a user manually pans the map and stop auto-following?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Register <code>GoogleMap.setOnCameraMoveStartedListener</code>. The callback receives a reason: <code>REASON_GESTURE</code> means the user is panning — set <code>isFollowing = false</code>. <code>REASON_API_ANIMATION</code> means your own code called <code>animateCamera()</code> — don't change the flag. When <code>isFollowing</code> is false, skip <code>animateCamera()</code> but still animate the marker. Show a "Re-center" FAB that sets <code>isFollowing = true</code> and snaps back to the driver.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q7</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How does GeofencingClient work and why is it better than polling?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>You register a Geofence with a circular region and transition types. Play Services monitors the device position at the OS level using low-power cell/Wi-Fi — no GPS chip activated. When a transition is detected, it fires a PendingIntent to your BroadcastReceiver. Your app code doesn't run during monitoring — the OS handles everything and only wakes your app on boundary crossing. Far more battery-efficient than polling your own location every few seconds.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q8</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">How do you draw and update a route polyline as the driver moves?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Fetch the route from the Directions API as a list of LatLng waypoints. Draw with <code>map.addPolyline(PolylineOptions().addAll(points))</code>. Store the Polyline reference. As the driver moves, find the closest waypoint to the driver's current position, then set <code>polyline.points = originalPoints.drop(closestIndex)</code>. This gives the "road disappearing behind" effect without a full redraw. Don't remove and re-add the polyline on every update — updating points in-place avoids a redraw flash.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q9</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">What is setMinUpdateDistanceMeters and why is it useful?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p><code>setMinUpdateDistanceMeters(5f)</code> suppresses callbacks if the device hasn't moved more than 5 m since the last update, even if the time interval has elapsed. This filters GPS jitter when a driver is stationary — the chipset oscillates slightly, generating false position updates. Without this filter you'd upload hundreds of tiny "moves" per minute. Combine with the time interval for both time-based and distance-based filtering.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q10</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How do you handle a WebSocket disconnect during a live tracking session?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>On <code>onFailure()</code>, emit <code>DriverState.Disconnected(attempt = n)</code>. UI shows "Reconnecting..." and greys the marker. Reconnect with exponential backoff: <code>min(base * 2^attempt, 30_000) + jitter</code>. Listen to ConnectivityManager.NetworkCallback.onAvailable() to trigger immediate reconnect when network returns — don't wait for the timer. On reconnect, request a fresh snapshot from the server before resuming streaming. Cap retries at 10, then show a "Retry" button.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q11</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How do you show multiple driver markers efficiently?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Use <code>ClusterManager</code> from Maps Android Utils. It groups nearby markers into a cluster showing the count, splitting on zoom-in. For updates: maintain a <code>Map&lt;driverId, Marker&gt;</code>. On each position update, set <code>marker.position = newLatLng</code> directly — O(1), preserves cluster grouping. For high volumes (100+ drivers): filter to only markers within the visible map bounds via <code>map.projection.visibleRegion.latLngBounds.contains(pos)</code> before adding to ClusterManager.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q12</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">What is dead reckoning and when would you apply it?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Dead reckoning extrapolates position between GPS fixes using last known speed and bearing: <code>newLat ≈ lastLat + (speed * cos(bearing) * dt / R)</code>. If the driver is doing 14 m/s at 90° and the GPS fix is 1 s late, you estimate the position and keep the marker moving continuously. A Kalman filter combines these estimates with actual measurements, weighted by uncertainty, to produce a smooth filtered track — used in Google Maps navigation. Trade-off: errors compound if speed/bearing change during the gap.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q13</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">How do you implement a custom map style (dark mode)?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Generate a JSON style file at mapstyle.withgoogle.com and save it in <code>res/raw/map_style.json</code>. Apply with: <code>map.setMapStyle(MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style))</code> inside <code>onMapReady()</code>. For dark mode: detect <code>resources.configuration.uiMode and UI_MODE_NIGHT_MASK == UI_MODE_NIGHT_YES</code> and load a dark JSON. The style is client-side — no server changes. Common use: hide POI labels to reduce visual noise during navigation.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q14</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">How do you handle location permission denial and guide the user to Settings?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Three cases after RequestPermission(): (1) Granted — proceed. (2) Denied but not permanently — show rationale dialog, re-request. (3) Permanently denied (shouldShowRequestPermissionRationale() returns false) — show "Open Settings" dialog launching <code>Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)</code>. Never loop permission requests. Show the feature as disabled with a CTA. For background location on Android 11+, the user is always directed to Settings — prepare UI for this flow.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q15</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How do you implement offline map tiles?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Two approaches. (1) Maps SDK offline areas — built-in support, user downloads a rectangular region. No custom code needed. (2) Custom <code>TileProvider</code>: implement <code>getTile(x, y, zoom)</code> — check a local disk cache (LRU), return cached bytes if found, else fetch and cache. Use MBTiles for structured offline storage. Register with <code>map.addTileOverlay(TileOverlayOptions().tileProvider(yourProvider))</code>. For trip-start pre-caching: compute route bounding box, determine tile coordinates at zoom 14–16, fetch via WorkManager before departure.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q16</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">What is getLastLocation() and when should you use it?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p><code>fusedClient.lastLocation</code> resolves instantly from cache — no GPS activation — but can be null after a fresh reboot. Use it for: showing an initial map position before live updates start, pre-populating a pickup address field, or a coarse check whether the user is in a service area. Don't use it as the main tracking mechanism — it's stale by design. Start <code>requestLocationUpdates()</code> for live data and use <code>lastLocation</code> as a quick first position while the live stream warms up.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q17</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How do you reduce battery drain on the driver app during a long shift?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Multiple strategies together: (1) Trip-state-adaptive priority — LOW_POWER when IDLE, HIGH_ACCURACY only during EN_ROUTE. (2) <code>setMinUpdateDistanceMeters(5f)</code> — suppresses callbacks when stationary. (3) Client-side filtering before WS send — skip upload if speed == 0 or delta &lt; 3 m. (4) Batch uploads — buffer 3–5 fixes to reduce radio activations. (5) Guide driver to whitelist the app from battery optimisation via <code>ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS</code> — only during active trips. (6) Verify with Battery Historian before shipping.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q18</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How would you detect GPS spoofing in a driver app?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Multiple signals: (1) <code>location.isMock</code> (API 31+) — true if a mock location app is active. (2) Cross-check GPS vs network location — consistent disagreement &gt;1 km is suspicious. (3) Velocity sanity — position jumps 10 km in 1 second is physically impossible. (4) Sensor fusion — compare GPS bearing with accelerometer/gyroscope; spoofed GPS that "teleports" won't match inertial data. (5) Check if developer options mock locations is enabled. Flag signals server-side in an anti-fraud system — don't block locally.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q19</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">How does map.isMyLocationEnabled work and what permission does it need?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p><code>map.isMyLocationEnabled = true</code> shows the built-in blue dot for the user's position, plus a "My Location" button. It requires ACCESS_FINE_LOCATION or ACCESS_COARSE_LOCATION at runtime — enabling it without the permission throws SecurityException. Always check <code>ContextCompat.checkSelfPermission()</code> first. The SDK handles all FusedLocation calls internally. Use it for the passenger's position; use your own marker + FusedLocation for the driver's position that needs server upload and custom animation.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q20</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How would you implement ETA updating as the driver deviates from the planned route?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Two approaches. (1) Server-side (standard): server receives each driver position, queries a routing engine from driver's current position to destination, pushes updated ETA back via WebSocket to the passenger. (2) Client-side: detect deviation by checking if the driver is &gt;N metres off the drawn polyline. If deviation exceeds threshold consistently for 10+ seconds, request a new route from the Directions API, redraw the polyline, and recompute ETA from the new route's duration field. Debounce rerouting — don't trigger on every minor deviation. Use server-side in production — routing is expensive and best centralised.</p></div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- SIDEBAR -->
 <aside class="sidebar">
-  <div class="sidebar-inner">
-    <div class="sidebar-progress">
-      <div class="progress-label"><span>Reading progress</span><span id="pct">0%</span></div>
-      <div class="progress-track"><div class="progress-fill" id="pfill" style="width:0%"></div></div>
-    </div>
-    <div class="sidebar-title">On This Page</div>
-    <a class="toc-item" href="#s-problem">1. Understanding the Problem</a>
-    <a class="toc-item" href="#s-setup">2. The Set Up</a>
-    <a class="toc-item" href="#s-hld">3. High-Level Design</a>
-    <a class="toc-item" href="#s-lld">4. Low-Level Design</a>
-    <a class="toc-item" href="#s-deepdives">5. Deep Dives</a>
-    <a class="toc-item" href="#s-levels">6. Expected at Each Level</a>
-    <a class="toc-item" href="#s-qa">7. Interview Q&amp;A</a>
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-title">Asked At</div>
-    <div class="sidebar-companies">
-      <span class="co-chip">Ola</span>
-      <span class="co-chip">Uber</span>
-      <span class="co-chip">Zomato</span>
-      <span class="co-chip">Swiggy</span>
-      <span class="co-chip">Dunzo</span>
-    </div>
-    <div class="sidebar-divider"></div>
-    <a href="questions.html" style="display:block; text-align:center; font-size:13px; color:var(--accent); font-weight:600; padding:8px; border-radius:8px; border:1px solid var(--border-green); text-decoration:none;">← Back to Question Bank</a>
+  <div class="rp-label">Reading Progress</div>
+  <div class="rp-track"><div class="rp-fill" id="rpFill"></div></div>
+  <div class="toc-label">On This Page</div>
+  <ul class="toc-list">
+    <li class="toc-item"><a href="#understanding">Understanding the Problem</a></li>
+    <li class="toc-item"><a href="#models">Data Models</a></li>
+    <li class="toc-item"><a href="#hld">High-Level Design</a></li>
+    <li class="toc-item"><a href="#lld">Low-Level Design</a></li>
+    <li class="toc-item"><a href="#deepdives">Deep Dives</a></li>
+    <li class="toc-item"><a href="#edgecases">Edge Cases</a></li>
+    <li class="toc-item"><a href="#levels">Expected at Each Level</a></li>
+    <li class="toc-item"><a href="#qa">Interview Q&amp;A</a></li>
+  </ul>
+  <div class="sidebar-divider"></div>
+  <div class="companies-label">Asked At</div>
+  <div class="company-chips">
+    <span class="chip">Ola</span><span class="chip">Uber</span><span class="chip">Zomato</span>
+    <span class="chip">Swiggy</span><span class="chip">Dunzo</span><span class="chip">Rapido</span>
   </div>
+  <div class="sidebar-divider"></div>
+  <a href="questions.html" style="display:block;text-align:center;font-size:13px;color:var(--accent);font-weight:600;padding:8px;border-radius:8px;border:1px solid var(--border-green);text-decoration:none;">← Back to Question Bank</a>
 </aside>
 
-</div><!-- /page-wrap -->
+</div>
 
 <script>
-  window.addEventListener('scroll', () => {
-    const doc = document.documentElement;
-    const pct = Math.round((doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100) || 0;
-    document.getElementById('progress-bar').style.width = pct + '%';
-    document.getElementById('pfill').style.width = pct + '%';
-    document.getElementById('pct').textContent = pct + '%';
+  const SUPABASE_URL = 'https://ixqjhzxbpkrsphlmuqlv.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4cWpoenhi...';
+  try { const u = JSON.parse(localStorage.getItem('droidly_user')); if (u) showUser(u); } catch(e) {}
+  const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  _sb.auth.onAuthStateChange((_, session) => {
+    if (session?.user) { localStorage.setItem('droidly_user', JSON.stringify(session.user)); showUser(session.user); }
+    else { localStorage.removeItem('droidly_user'); showSignedOut(); }
   });
-  const tocItems = document.querySelectorAll('.toc-item');
-  const headings = document.querySelectorAll('h2[id]');
-  window.addEventListener('scroll', () => {
-    let cur = '';
-    headings.forEach(h => { if (window.scrollY >= h.offsetTop - 100) cur = h.id; });
-    tocItems.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + cur));
-  });
-  function toggleIQ(header) {
-    header.closest('.iq-card').classList.toggle('open');
+  function showUser(u) {
+    document.getElementById('navAvatarInitial').textContent = (u.email||'?')[0].toUpperCase();
+    document.getElementById('navUserName').textContent = u.email?.split('@')[0]||'';
+    document.getElementById('navUserEmail').textContent = u.email||'';
+    document.getElementById('navUserMenu').style.display = 'flex';
+    document.getElementById('navSignInBtn').style.display = 'none';
   }
+  function showSignedOut() {
+    document.getElementById('navUserMenu').style.display = 'none';
+    document.getElementById('navSignInBtn').style.display = '';
+  }
+  function openAuthModal() { window.location.href = 'index.html#auth'; }
+  function handleSignOut() { _sb.auth.signOut(); }
+  document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('user-dropdown-item')) this.classList.toggle('open');
+  });
+  document.addEventListener('click', e => { if (!e.target.closest('#navUserMenu')) document.getElementById('navUserMenu')?.classList.remove('open'); });
+  window.addEventListener('scroll', () => {
+    const pct = Math.round((document.documentElement.scrollTop / (document.documentElement.scrollHeight - document.documentElement.clientHeight)) * 100) || 0;
+    document.getElementById('rpFill').style.width = pct + '%';
+  });
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        document.querySelectorAll('.toc-item a').forEach(a => a.classList.remove('active'));
+        const active = document.querySelector(`.toc-item a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  document.querySelectorAll('[id]').forEach(s => obs.observe(s));
+  function toggleIQ(card) { card.classList.toggle('open'); }
 </script>
 </body>
 </html>
