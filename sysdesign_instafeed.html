@@ -1,783 +1,738 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Design an Instagram-Style Feed — Droidly</title>
-<style>
-  :root {
-    --accent: #3d7a4f;
-    --accent-dark: #2e6040;
-    --bg-green: #e8f2ec;
-    --border-green: #6aad82;
-    --bg: #ffffff;
-    --bg-secondary: #f8f9fa;
-    --text: #1a1a1a;
-    --text-muted: #6b7280;
-    --border: #e5e7eb;
-    --radius: 12px;
-    --sidebar-w: 260px;
-    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.7; }
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Design an Instagram-Style Feed — Android System Design | Droidly</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* Progress bar */
-  #progress-bar {
-    position: fixed; top: 0; left: 0; height: 3px;
-    background: var(--accent); width: 0%; z-index: 1000;
-    transition: width 0.1s linear;
-  }
+    :root {
+      --bg:          #ffffff;
+      --bg-subtle:   #f9fafb;
+      --bg-green:    #e8f2ec;
+      --bg-blue:     #eff6ff;
+      --bg-amber:    #fffbeb;
+      --border:      #e5e7eb;
+      --border-green: #6aad82;
+      --ink:         #111827;
+      --ink2:        #374151;
+      --muted:       #6b7280;
+      --muted2:      #9ca3af;
+      --accent:      #3d7a4f;
+      --accent-dark: #2e6040;
+      --accent-light:#4caf70;
+      --green:       #3d7a4f;
+      --green-light: #e8f2ec;
+      --blue:        #2563eb;
+      --blue-light:  #dbeafe;
+      --amber:       #d97706;
+      --red:         #dc2626;
+      --red-light:   #fee2e2;
+      --code-bg:     #1e1e2e;
+    }
 
-  /* Top nav */
-  .topnav {
-    position: sticky; top: 0; background: rgba(255,255,255,0.96);
-    backdrop-filter: blur(8px); border-bottom: 1px solid var(--border);
-    padding: 0 32px; height: 52px; display: flex; align-items: center;
-    gap: 8px; z-index: 100; font-size: 14px;
-  }
-  .topnav a { color: var(--text-muted); text-decoration: none; }
-  .topnav a:hover { color: var(--accent); }
-  .topnav .sep { color: var(--border); }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      padding-top: 68px;
+    }
 
-  /* Layout */
-  .page-wrap {
-    max-width: 1200px; margin: 0 auto;
-    display: grid; grid-template-columns: 1fr var(--sidebar-w);
-    gap: 48px; padding: 48px 24px;
-    align-items: start;
-  }
+    /* ── TOP NAV ──────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      background: rgba(255,255,255,0.90);
+      backdrop-filter: blur(20px) saturate(1.6);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04);
+    }
+    nav::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #2e6040, #4caf70, #3d7a4f);
+      z-index: 1;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--ink);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800; font-size: 20px; letter-spacing: -0.5px;
+    }
+    .logo-mark { display: flex; align-items: center; flex-shrink: 0; }
+    .logo-mark img { height: 32px; width: auto; display: block; object-fit: contain; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-cta {
+      background: var(--accent);
+      color: white; padding: 8px 20px; border-radius: 100px;
+      font-size: 13px; font-weight: 700; text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .nav-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-nav {
+      font-size: 13px; font-weight: 600; color: var(--ink);
+      background: var(--bg-subtle); border: 1px solid var(--border);
+      padding: 6px 16px; border-radius: 100px; cursor: pointer;
+      transition: background 0.15s; font-family: inherit;
+    }
+    .btn-nav:hover { background: var(--border); }
+    .nav-user {
+      display: flex; align-items: center; gap: 8px;
+      position: relative; cursor: pointer;
+    }
+    .nav-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--accent); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+      border: 2px solid rgba(61,122,79,0.3);
+      flex-shrink: 0;
+    }
+    .nav-user-name { font-size: 14px; font-weight: 600; color: var(--ink2); }
+    .nav-caret { font-size: 10px; color: var(--muted); }
+    .user-dropdown {
+      display: none; position: absolute; top: calc(100% + 10px); right: 0;
+      background: white; border: 1px solid var(--border); border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1); min-width: 200px; overflow: hidden; z-index: 999;
+    }
+    .nav-user.open .user-dropdown { display: block; }
+    .user-dropdown-email { padding: 12px 16px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
+    .user-dropdown-item { padding: 10px 16px; font-size: 14px; cursor: pointer; transition: background 0.12s; }
+    .user-dropdown-item:hover { background: var(--bg-subtle); }
+    .user-dropdown-item.danger { color: var(--red); }
 
-  /* Article */
-  .article h1 {
-    font-size: 2rem; font-weight: 800; line-height: 1.2;
-    border-bottom: 3px solid var(--text); padding-bottom: 12px;
-    margin-bottom: 20px;
-  }
-  .article-meta {
-    display: flex; flex-wrap: wrap; gap: 10px;
-    align-items: center; margin-bottom: 32px;
-  }
-  .tag {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 4px 12px; border-radius: 20px; font-size: 12px;
-    font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .tag-topic { background: var(--bg-green); color: var(--accent-dark); }
-  .tag-hard { background: #fee2e2; color: #991b1b; }
-  .tag-medium { background: #fef3c7; color: #92400e; }
-  .tag-year { background: var(--bg-secondary); color: var(--text-muted); border: 1px solid var(--border); }
-  .meta-item { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+    /* ── PAGE LAYOUT ─────────────────────────────────────── */
+    .page {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 260px;
+      gap: 48px; padding: 40px 24px 80px;
+      align-items: start;
+    }
 
-  /* Section headings */
-  .article h2 {
-    font-size: 1.35rem; font-weight: 700; margin: 48px 0 16px;
-    padding-bottom: 8px; border-bottom: 2px solid var(--border);
-    scroll-margin-top: 80px;
-  }
-  .article h3 { font-size: 1.1rem; font-weight: 700; margin: 28px 0 12px; color: var(--accent-dark); }
-  .article p { margin-bottom: 14px; }
-  .article ul { margin: 10px 0 16px 20px; }
-  .article ul li { margin-bottom: 6px; }
-  .article strong { font-weight: 700; }
+    /* ── CONTENT ─────────────────────────────────────────── */
+    .content { min-width: 0; }
 
-  /* Pattern callout */
-  .callout {
-    border: 1px solid var(--border-green);
-    background: var(--bg-green);
-    border-radius: var(--radius); padding: 20px 24px;
-    margin: 24px 0;
-  }
-  .callout-label {
-    font-size: 11px; font-weight: 700; letter-spacing: 1px;
-    text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
-  }
-  .callout p { margin-bottom: 0; font-size: 15px; }
-  .callout-cta {
-    display: inline-block; margin-top: 12px;
-    background: var(--accent); color: #fff;
-    padding: 6px 14px; border-radius: 6px; font-size: 13px;
-    font-weight: 600; text-decoration: none;
-  }
+    .article-eyebrow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 100px; font-size: 12px;
+      font-weight: 600; letter-spacing: 0.3px;
+    }
+    .tag-topic { background: var(--bg-green); color: var(--accent-dark); }
+    .tag-hard  { background: #fee2e2; color: #991b1b; }
+    .tag-new   { background: var(--bg-subtle); color: var(--muted); border: 1px solid var(--border); }
 
-  /* Info / tip box */
-  .info-box {
-    background: #f0f9ff; border: 1px solid #bae6fd; border-radius: var(--radius);
-    padding: 16px 20px; margin: 16px 0;
-  }
-  .info-box .info-label { font-weight: 700; font-size: 13px; color: #0369a1; margin-bottom: 6px; }
+    .article-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(26px, 4vw, 36px); font-weight: 800;
+      letter-spacing: -1px; line-height: 1.15;
+      color: var(--ink); margin-bottom: 16px;
+    }
+    .article-desc {
+      font-size: 16px; color: var(--muted); line-height: 1.7;
+      margin-bottom: 20px; max-width: 660px;
+    }
+    .article-meta-row {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 36px;
+    }
+    .meta-pill {
+      font-size: 13px; color: var(--ink2);
+      background: var(--bg-subtle); border: 1px solid var(--border);
+      padding: 5px 12px; border-radius: 100px;
+    }
 
-  /* Requirements grid */
-  .req-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
-  .req-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
-  .req-box h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 12px; }
-  .req-box ul { margin-left: 16px; }
-  .req-box ul li { font-size: 14px; margin-bottom: 6px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
 
-  /* Components grid */
-  .comp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
-  .comp-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
-  .comp-icon { font-size: 1.6rem; margin-bottom: 8px; }
-  .comp-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-  .comp-sub { font-size: 12px; color: var(--text-muted); }
+    /* ── SECTION HEADINGS ────────────────────────────────── */
+    .sec-h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 22px; font-weight: 800; letter-spacing: -0.5px;
+      color: var(--ink); margin: 40px 0 16px;
+      padding-bottom: 12px; border-bottom: 2px solid var(--border);
+      scroll-margin-top: 90px;
+    }
+    .sec-h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 17px; font-weight: 700;
+      color: var(--ink); margin: 28px 0 12px;
+      scroll-margin-top: 90px;
+    }
+    .content p { margin-bottom: 14px; color: var(--ink2); line-height: 1.8; }
+    .content ol, .content ul { margin: 10px 0 16px 22px; color: var(--ink2); }
+    .content li { margin-bottom: 6px; }
+    .content strong { color: var(--ink); font-weight: 600; }
 
-  /* Cache tier cards */
-  .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
-  .tier-card { border-radius: var(--radius); padding: 18px; border: 1px solid; }
-  .tier-mem { background: #f0fdf4; border-color: #86efac; }
-  .tier-disk { background: #fef9c3; border-color: #fde047; }
-  .tier-net { background: #eff6ff; border-color: #93c5fd; }
-  .tier-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
-  .tier-mem .tier-label { color: #166534; }
-  .tier-disk .tier-label { color: #854d0e; }
-  .tier-net .tier-label { color: #1e40af; }
-  .tier-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-  .tier-stat { font-size: 12px; color: var(--text-muted); }
+    /* ── PATTERN BOX ─────────────────────────────────────── */
+    .pattern-box {
+      border: 1px solid var(--border-green);
+      border-left: 4px solid var(--accent);
+      background: var(--bg-green);
+      border-radius: 0 10px 10px 0;
+      padding: 16px 20px; margin: 20px 0;
+    }
+    .pattern-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    }
+    .pattern-icon { font-size: 16px; }
+    .pattern-title { font-size: 13px; font-weight: 700; color: var(--accent-dark); text-transform: uppercase; letter-spacing: 0.5px; }
+    .pattern-box p { font-size: 14px; color: var(--ink2); margin-bottom: 0; }
 
-  /* Code blocks */
-  pre {
-    background: #0f1117; color: #e2e8f0; border-radius: 10px;
-    padding: 20px; overflow-x: auto; font-size: 13px; line-height: 1.6;
-    margin: 16px 0; tab-size: 2;
-  }
-  code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
-  .kw { color: #c792ea; } .fn { color: #82aaff; } .cl { color: #ffcb6b; }
-  .cm { color: #546e7a; font-style: italic; } .st { color: #c3e88d; }
-  .nm { color: #f78c6c; } .an { color: #89ddff; }
+    /* ── INFO BOX ────────────────────────────────────────── */
+    .info-box {
+      background: var(--bg-blue); border: 1px solid #bfdbfe;
+      border-radius: 10px; padding: 16px 20px; margin: 20px 0;
+    }
+    .info-box p { font-size: 14px; color: var(--ink2); margin-bottom: 0; }
 
-  /* SVG diagrams */
-  .diagram-wrap {
-    background: var(--bg-secondary); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 24px; margin: 20px 0;
-    overflow-x: auto; text-align: center;
-  }
-  .diagram-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+    /* ── WARNING BOX ─────────────────────────────────────── */
+    .warn-box {
+      background: #fffbeb; border: 1px solid #fcd34d;
+      border-radius: 10px; padding: 16px 20px; margin: 20px 0;
+    }
+    .warn-box p { font-size: 14px; color: #78350f; margin-bottom: 0; }
 
-  /* Flow diagrams */
-  .flow-wrap { margin: 24px 0; }
-  .flow-title {
-    font-weight: 700; font-size: 15px; padding: 10px 16px;
-    background: var(--bg-green); border-radius: 8px 8px 0 0;
-    border: 1px solid var(--border-green); border-bottom: none;
-    color: var(--accent-dark);
-  }
-  .flow-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); border-radius: 0 0 8px 8px; overflow: hidden; }
-  .flow-table th { padding: 10px 14px; font-size: 12px; font-weight: 700; text-align: left; letter-spacing: 0.5px; }
-  .th-ui { background: #dcfce7; color: #166534; }
-  .th-vm { background: #d1fae5; color: #065f46; }
-  .th-repo { background: #dbeafe; color: #1e40af; }
-  .th-room { background: #fef3c7; color: #92400e; }
-  .th-api { background: #f3e8ff; color: #6b21a8; }
-  .th-pager { background: #ffe4e6; color: #9f1239; }
-  .flow-table td { padding: 10px 14px; font-size: 13px; vertical-align: top; border-top: 1px solid var(--border); }
-  .flow-table tr:nth-child(even) td { background: var(--bg-secondary); }
-  .step-num { font-weight: 700; color: var(--accent); margin-right: 6px; }
-  .step-arrow { color: var(--text-muted); font-size: 11px; }
+    /* ── REQUIREMENTS ────────────────────────────────────── */
+    .req-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--accent); margin: 20px 0 8px; }
+    .req-scope-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin: 16px 0 8px; }
 
-  /* Decision table */
-  .decision-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
-  .decision-table th { background: var(--bg-green); color: var(--accent-dark); padding: 10px 14px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .decision-table td { padding: 10px 14px; border-top: 1px solid var(--border); }
-  .decision-table tr:nth-child(even) td { background: var(--bg-secondary); }
-  .check { color: #16a34a; font-weight: 700; }
-  .cross { color: #dc2626; font-weight: 700; }
-  .chosen-row td { background: #f0fdf4 !important; font-weight: 600; }
+    /* ── DIAGRAM WRAP ────────────────────────────────────── */
+    .diagram-wrap {
+      border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden; margin: 20px 0; background: var(--bg-subtle);
+    }
+    .diagram-caption {
+      padding: 10px 16px; font-size: 12px; color: var(--muted);
+      border-top: 1px solid var(--border); background: white;
+      display: flex; align-items: center; justify-content: space-between;
+    }
 
-  /* Expected levels */
-  .levels-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
-  .level-card { border-radius: var(--radius); border: 1px solid var(--border); padding: 18px; }
-  .level-mid { border-top: 3px solid #60a5fa; }
-  .level-senior { border-top: 3px solid var(--accent); }
-  .level-staff { border-top: 3px solid #a855f7; }
-  .level-badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-  .level-mid .level-badge { color: #2563eb; }
-  .level-senior .level-badge { color: var(--accent); }
-  .level-staff .level-badge { color: #9333ea; }
-  .level-card ul { margin-left: 16px; }
-  .level-card ul li { font-size: 13px; margin-bottom: 5px; }
+    /* ── FLOW TABLE ──────────────────────────────────────── */
+    .flow-wrap { margin: 24px 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .flow-title {
+      padding: 12px 18px; font-size: 13px; font-weight: 700;
+      background: var(--ink); color: white;
+    }
+    .flow-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .flow-table th { padding: 10px 14px; font-size: 11px; font-weight: 700; text-align: left; letter-spacing: 0.5px; text-transform: uppercase; }
+    .flow-table td { padding: 10px 14px; vertical-align: top; border-top: 1px solid var(--border); color: var(--ink2); }
+    .flow-table tr:nth-child(even) td { background: var(--bg-subtle); }
+    .th-ui   { background: #dcfce7; color: #166534; }
+    .th-vm   { background: #d1fae5; color: #065f46; }
+    .th-med  { background: #dbeafe; color: #1e40af; }
+    .th-room { background: #fef3c7; color: #854d0e; }
+    .th-api  { background: #f3e8ff; color: #6b21a8; }
+    .th-wm   { background: #fee2e2; color: #991b1b; }
+    .step-num { font-weight: 700; color: var(--accent); margin-right: 4px; }
 
-  /* IQ accordion */
-  .iq-wrap { margin: 20px 0; }
-  .iq-card { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
-  .iq-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 14px 18px; cursor: pointer; user-select: none;
-    background: var(--bg-secondary);
-  }
-  .iq-header:hover { background: #f0fdf4; }
-  .iq-q { font-size: 14px; font-weight: 600; flex: 1; padding-right: 12px; }
-  .iq-meta { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-  .iq-diff {
-    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
-    text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .diff-easy { background: #dcfce7; color: #166534; }
-  .diff-medium { background: #fef3c7; color: #92400e; }
-  .diff-hard { background: #fee2e2; color: #991b1b; }
-  .iq-chevron { font-size: 16px; color: var(--text-muted); transition: transform 0.2s; }
-  .iq-card.open .iq-chevron { transform: rotate(180deg); }
-  .iq-body { display: none; padding: 16px 18px; border-top: 1px solid var(--border); font-size: 14px; line-height: 1.7; background: #fff; }
-  .iq-card.open .iq-body { display: block; }
-  .iq-body ul { margin-left: 18px; margin-bottom: 10px; }
-  .iq-body li { margin-bottom: 5px; }
+    /* ── DECISION TABLE ──────────────────────────────────── */
+    .decision-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .decision-table th { background: var(--bg-green); color: var(--accent-dark); padding: 10px 14px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .decision-table td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--ink2); }
+    .decision-table tr:nth-child(even) td { background: var(--bg-subtle); }
+    .check { color: #16a34a; font-weight: 700; }
+    .cross { color: #dc2626; font-weight: 700; }
+    .chosen-row td { background: #f0fdf4 !important; font-weight: 600; }
 
-  /* Sticky sidebar */
-  .sidebar { position: sticky; top: 72px; }
-  .sidebar-inner { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
-  .sidebar-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 14px; }
-  .toc-item {
-    display: block; padding: 6px 10px; border-radius: 6px;
-    text-decoration: none; font-size: 13px; color: var(--text-muted);
-    margin-bottom: 2px; border-left: 2px solid transparent;
-    transition: all 0.15s;
-  }
-  .toc-item:hover { color: var(--accent); background: var(--bg-green); }
-  .toc-item.active { color: var(--accent); border-left-color: var(--accent); background: var(--bg-green); font-weight: 600; }
-  .sidebar-progress { margin-bottom: 16px; }
-  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-  .progress-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.2s; }
-  .sidebar-divider { height: 1px; background: var(--border); margin: 16px 0; }
-  .sidebar-companies { display: flex; flex-wrap: wrap; gap: 6px; }
-  .co-chip {
-    font-size: 11px; font-weight: 600; padding: 3px 10px;
-    border-radius: 20px; background: var(--bg-green);
-    color: var(--accent-dark); border: 1px solid var(--border-green);
-  }
+    /* ── COMPONENT GRID ──────────────────────────────────── */
+    .comp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+    .comp-card {
+      background: var(--bg-subtle); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px; text-align: center;
+    }
+    .comp-icon { font-size: 1.6rem; margin-bottom: 8px; }
+    .comp-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; color: var(--ink); }
+    .comp-sub  { font-size: 12px; color: var(--muted); }
 
-  @media (max-width: 900px) {
-    .page-wrap { grid-template-columns: 1fr; }
-    .sidebar { display: none; }
-    .req-grid, .levels-grid, .comp-grid, .tier-grid { grid-template-columns: 1fr; }
-  }
-</style>
+    /* ── TIER GRID ───────────────────────────────────────── */
+    .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+    .tier-card { border-radius: 10px; padding: 18px; border: 1px solid; }
+    .tier-mem  { background: #f0fdf4; border-color: #86efac; }
+    .tier-disk { background: #fef9c3; border-color: #fde047; }
+    .tier-net  { background: #eff6ff; border-color: #93c5fd; }
+    .tier-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+    .tier-mem .tier-label  { color: #166534; }
+    .tier-disk .tier-label { color: #854d0e; }
+    .tier-net .tier-label  { color: #1e40af; }
+    .tier-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; color: var(--ink); }
+    .tier-stat  { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* ── EDGE CASE CARDS ─────────────────────────────────── */
+    .edge-grid { display: flex; flex-direction: column; gap: 16px; margin: 20px 0; }
+    .edge-card {
+      border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    }
+    .edge-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px; background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border);
+    }
+    .edge-icon { font-size: 20px; flex-shrink: 0; }
+    .edge-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+    .edge-badge {
+      margin-left: auto; font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; padding: 3px 10px; border-radius: 100px;
+    }
+    .badge-hard   { background: #fee2e2; color: #991b1b; }
+    .badge-medium { background: #fef3c7; color: #92400e; }
+    .edge-body { padding: 16px 18px; }
+    .edge-body p { font-size: 14px; color: var(--ink2); margin-bottom: 10px; line-height: 1.7; }
+    .edge-body p:last-child { margin-bottom: 0; }
+
+    /* ── CODE BLOCKS ─────────────────────────────────────── */
+    .code-block {
+      background: #1e1e2e; color: #cdd6f4;
+      border-radius: 10px; padding: 20px; overflow-x: auto;
+      font-size: 13px; line-height: 1.7; margin: 16px 0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .kw { color: #cba6f7; }
+    .fn { color: #89b4fa; }
+    .cl { color: #f9e2af; }
+    .cm { color: #6c7086; font-style: italic; }
+    .st { color: #a6e3a1; }
+    .nm { color: #fab387; }
+    .an { color: #89dceb; }
+
+    /* ── LEVELS GRID ─────────────────────────────────────── */
+    .levels-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+    .level-card { border-radius: 12px; border: 1px solid var(--border); padding: 20px; }
+    .level-card.mid    { border-top: 3px solid #60a5fa; }
+    .level-card.senior { border-top: 3px solid var(--accent); }
+    .level-card.staff  { border-top: 3px solid #a855f7; }
+    .level-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 12px; }
+    .level-card.mid    .level-title { color: #2563eb; }
+    .level-card.senior .level-title { color: var(--accent); }
+    .level-card.staff  .level-title { color: #9333ea; }
+    .level-card ul { margin-left: 16px; }
+    .level-card ul li { font-size: 13px; margin-bottom: 6px; color: var(--ink2); }
+
+    /* ── Q&A CARDS ───────────────────────────────────────── */
+    .iq-list { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .iq-card {
+      border: 1px solid var(--border); border-radius: 10px;
+      overflow: hidden; cursor: pointer; transition: border-color 0.18s; background: white;
+    }
+    .iq-card:hover { border-color: var(--accent); }
+    .iq-card.open  { border-color: var(--accent); }
+    .iq-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; gap: 12px; user-select: none;
+    }
+    .iq-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .iq-num { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; color: var(--accent); background: var(--bg-green); padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
+    .iq-diff { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; white-space: nowrap; flex-shrink: 0; }
+    .iq-easy   { background: #dcfce7; color: #166534; }
+    .iq-medium { background: #fef9c3; color: #854d0e; }
+    .iq-hard   { background: #fee2e2; color: #991b1b; }
+    .iq-text { font-size: 14px; font-weight: 500; color: var(--ink); line-height: 1.5; }
+    .iq-toggle { font-size: 16px; color: var(--muted); flex-shrink: 0; transition: transform 0.2s; }
+    .iq-card.open .iq-toggle { transform: rotate(180deg); color: var(--accent); }
+    .iq-answer { display: none; padding: 4px 18px 18px; border-top: 1px solid var(--border); background: var(--bg-subtle); }
+    .iq-card.open .iq-answer { display: block; }
+    .iq-answer p { font-size: 13.5px; color: var(--ink2); line-height: 1.8; margin-top: 12px; margin-bottom: 0; }
+
+    /* ── SIDEBAR ─────────────────────────────────────────── */
+    .sidebar { position: sticky; top: 88px; }
+
+    .reading-progress-wrap { margin-bottom: 20px; }
+    .rp-label { font-size: 11px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .rp-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .rp-fill  { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.2s; width: 0%; }
+
+    .toc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted2); margin-bottom: 10px; }
+    .toc-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .toc-item a {
+      display: block; padding: 5px 10px; border-radius: 6px;
+      text-decoration: none; font-size: 13px; color: var(--muted);
+      border-left: 2px solid transparent; transition: all 0.15s;
+    }
+    .toc-item a:hover { color: var(--ink); background: var(--bg-subtle); }
+    .toc-item a.active { color: var(--accent); font-weight: 600; border-left-color: var(--accent); background: var(--bg-green); }
+    .toc-item.sub a { padding-left: 22px; font-size: 12.5px; }
+
+    .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .companies-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted2); margin-bottom: 10px; }
+    .company-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { font-size: 11.5px; font-weight: 500; color: var(--ink2); background: var(--bg-subtle); border: 1px solid var(--border); padding: 3px 9px; border-radius: 4px; }
+
+    /* ── RESPONSIVE ──────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .comp-grid, .tier-grid, .levels-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      nav { padding: 0 20px; }
+      .page { padding: 24px 16px 60px; }
+      .comp-grid, .tier-grid, .levels-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<div id="progress-bar"></div>
-
-<nav class="topnav">
-  <a href="index.html">🤖 Droidly</a>
-  <span class="sep">›</span>
-  <a href="questions.html">Questions</a>
-  <span class="sep">›</span>
-  <a href="questions.html?topic=sysdesign">System Design</a>
-  <span class="sep">›</span>
-  <span style="color:var(--text)">Instagram-style Feed</span>
+<!-- ── NAV ─────────────────────────────────────────────────── -->
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="nav-right" id="navRight">
+    <a href="premium.html" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <div class="user-dropdown-item danger" onclick="handleSignOut()">🚪 Sign Out</div>
+      </div>
+    </div>
+  </div>
 </nav>
 
-<div class="page-wrap">
+<!-- ── PAGE ────────────────────────────────────────────────── -->
+<div class="page">
 
-<!-- ═══════════════════════════════════ MAIN ARTICLE ═══════════════════════════════════ -->
-<article class="article">
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<main class="content">
 
-  <h1>Design an Instagram-Style Feed</h1>
-  <div class="article-meta">
-    <span class="tag tag-topic">System Design</span>
+  <div class="article-eyebrow">
+    <span class="tag tag-topic">🏗️ System Design</span>
     <span class="tag tag-hard">Hard</span>
-    <span class="tag tag-year">2025–26</span>
-    <span class="meta-item">⏱ 45–60 min</span>
-    <span class="meta-item">📱 Android Focus</span>
+    <span class="tag tag-new">2025–26</span>
+  </div>
+  <h1 class="article-title">Design an Instagram-Style Feed</h1>
+  <p class="article-desc">
+    A deep-dive Android system design breakdown of an infinite social feed — covering Paging 3, offline-first architecture, video autoplay, optimistic UI, and every edge case interviewers probe at senior and staff level.
+  </p>
+  <div class="article-meta-row">
+    <div class="meta-pill">⏱ <strong>45–60 min</strong> interview</div>
+    <div class="meta-pill">📖 <strong>~14 min</strong> read</div>
+    <div class="meta-pill">🎯 <strong>Senior / Staff+</strong></div>
+    <div class="meta-pill">🔥 Asked at <strong>Meta, Snap, ShareChat</strong></div>
   </div>
 
-  <!-- ══════════════════════════════ 1. UNDERSTANDING ══════════════════════════════ -->
-  <h2 id="s-problem">1. Understanding the Problem</h2>
+  <!-- ─── UNDERSTANDING ──────────────────────────────────── -->
+  <div id="understanding">
+    <div class="sec-h1">Understanding the Problem</div>
 
-  <p>The interviewer asks you to design the Android client for an Instagram-style social feed — infinite scroll of posts (images, videos, captions, likes, comments). This is a deceptively rich problem: it touches <strong>Paging</strong>, <strong>offline-first caching</strong>, <strong>image loading</strong>, <strong>video autoplay</strong>, and <strong>optimistic UI updates</strong>.</p>
+    <p>Start every system design interview by nailing down requirements. For a feed, the deceptively rich scope means candidates who don't scope clearly run out of time before reaching the interesting parts. State your top 3 core requirements explicitly and mark everything else below the line.</p>
 
-  <div class="callout">
-    <div class="callout-label">📌 Pattern: Feed Pagination</div>
-    <p>Social feeds are the canonical use-case for cursor-based pagination. Offset pagination breaks when new posts are inserted mid-scroll; a <strong>cursor</strong> (e.g., <code>after_id</code> or timestamp) gives a stable position regardless of server inserts.</p>
-    <a class="callout-cta" href="#">Learn This Pattern →</a>
-  </div>
+    <div id="functional-req">
+      <div class="sec-h2">Functional Requirements</div>
+      <div class="req-label">Core Requirements</div>
+      <ol>
+        <li>Display an infinite, paginated feed of posts (images, videos, captions, likes, comment count)</li>
+        <li>Users can like/unlike posts — reaction must feel instant with no waiting for a server round-trip</li>
+        <li>Feed must be usable offline — show the last cached feed when there is no internet</li>
+      </ol>
+      <div class="req-scope-label">Below the line (out of scope):</div>
+      <ol>
+        <li>Stories bar (mention it, note you'd handle it with ConcatAdapter)</li>
+        <li>Comments — separate screen, separate API</li>
+        <li>Video Reels — same ExoPlayer pattern, different API surface</li>
+        <li>Real-time feed updates via WebSocket / SSE</li>
+      </ol>
+    </div>
 
-  <div class="req-grid">
-    <div class="req-box">
-      <h4>✅ Functional Requirements</h4>
-      <ul>
-        <li>Display an infinite, paginated feed of posts</li>
-        <li>Each post: image/video, avatar, username, caption, likes, comments count</li>
-        <li>Double-tap or heart icon to like/unlike (optimistic)</li>
-        <li>Stories bar at the top (horizontal scroll)</li>
-        <li>Video posts autoplay when ≥50% visible, pause on scroll away</li>
-        <li>Offline: show last cached feed when no internet</li>
-        <li>Pull-to-refresh for latest posts</li>
-      </ul>
+    <div id="nonfunctional-req">
+      <div class="sec-h2">Non-Functional Requirements</div>
+      <div class="req-label">Core Requirements</div>
+      <ol>
+        <li><strong>Performance:</strong> 60 fps scroll, zero jank on RecyclerView at 20+ items/page</li>
+        <li><strong>Cold start:</strong> Feed visible in &lt;2 s — show cached items while fetching fresh data</li>
+        <li><strong>Memory:</strong> Only the visible window of posts held in memory; Bitmap pool recycled</li>
+        <li><strong>Battery:</strong> No polling; next page fetched only when user approaches the end</li>
+      </ol>
+      <div class="req-scope-label">Below the line:</div>
+      <ol>
+        <li>Sub-100ms image load (disk cache gives us ~30ms)</li>
+        <li>Video preloading on cellular (Wi-Fi only to protect data)</li>
+      </ol>
     </div>
-    <div class="req-box">
-      <h4>⚙️ Non-Functional Requirements</h4>
-      <ul>
-        <li><strong>Startup:</strong> Feed visible &lt;2 s cold start</li>
-        <li><strong>Scroll:</strong> 60 fps, zero jank on RecyclerView</li>
-        <li><strong>Data:</strong> Paginate in chunks of 20 posts</li>
-        <li><strong>Prefetch:</strong> Next page loads before user reaches end</li>
-        <li><strong>Images:</strong> Decode at display size, pool bitmaps</li>
-        <li><strong>Battery:</strong> No redundant API calls; de-duplicate requests</li>
-        <li><strong>Video:</strong> Preload next video when on Wi-Fi</li>
-      </ul>
-    </div>
-  </div>
 
-  <div class="info-box">
-    <div class="info-label">💡 Clarifying Questions to Ask</div>
-    <ul>
-      <li>Is the feed ranked/personalized server-side or chronological?</li>
-      <li>Should we support Stories, Reels, or just static posts?</li>
-      <li>Is video required? Autoplay with sound or muted?</li>
-      <li>Is offline read-only acceptable, or do likes/comments queue offline?</li>
-    </ul>
-  </div>
-
-  <!-- ══════════════════════════════ 2. SET UP ══════════════════════════════ -->
-  <h2 id="s-setup">2. The Set Up</h2>
-
-  <h3>Core Components</h3>
-  <div class="comp-grid">
-    <div class="comp-card">
-      <div class="comp-icon">📄</div>
-      <div class="comp-name">Paging 3</div>
-      <div class="comp-sub">PagingSource + RemoteMediator</div>
-    </div>
-    <div class="comp-card">
-      <div class="comp-icon">🗄️</div>
-      <div class="comp-name">Room DB</div>
-      <div class="comp-sub">Local post cache + remote keys</div>
-    </div>
-    <div class="comp-card">
-      <div class="comp-icon">🖼️</div>
-      <div class="comp-name">Coil / Glide</div>
-      <div class="comp-sub">Async image loading & caching</div>
-    </div>
-    <div class="comp-card">
-      <div class="comp-icon">▶️</div>
-      <div class="comp-name">ExoPlayer</div>
-      <div class="comp-sub">Video playback, preloading</div>
-    </div>
-    <div class="comp-card">
-      <div class="comp-icon">🔁</div>
-      <div class="comp-name">WorkManager</div>
-      <div class="comp-sub">Queue offline likes for sync</div>
-    </div>
-    <div class="comp-card">
-      <div class="comp-icon">📡</div>
-      <div class="comp-name">Retrofit + OkHttp</div>
-      <div class="comp-sub">REST API, HTTP caching</div>
+    <div class="info-box">
+      <p>💡 <strong>Clarifying questions to ask:</strong> Is the feed ranked/personalised server-side or chronological? Are videos required? Should offline likes queue and sync later, or just be dropped?</p>
     </div>
   </div>
 
-  <h3>Feed Pagination Tiers</h3>
-  <div class="tier-grid">
-    <div class="tier-card tier-mem">
-      <div class="tier-label">Memory</div>
-      <div class="tier-title">PagingData in VM</div>
-      <div class="tier-stat">Active page, instant render</div>
-      <div class="tier-stat" style="margin-top:6px; font-size:11px;">RecyclerView binder · No I/O</div>
+  <hr/>
+
+  <!-- ─── THE SET UP ─────────────────────────────────────── -->
+  <div id="setup">
+    <div class="sec-h1">The Set Up</div>
+
+    <div id="planning">
+      <div class="sec-h2">Planning the Approach</div>
+      <p>The single most important design decision in this problem: <strong>Room is the single source of truth.</strong> The UI never reads from the network directly — it observes a Room Flow. The Paging 3 RemoteMediator syncs Room from the network in the background. This is what gives you offline support, config-change safety, and 60 fps scroll essentially for free.</p>
+
+      <div class="pattern-box">
+        <div class="pattern-header">
+          <span class="pattern-icon">🔷</span>
+          <span class="pattern-title">Pattern: Room as Single Source of Truth</span>
+        </div>
+        <p>Every data flow — network response, optimistic update, rollback — writes to Room first. The UI only ever reads from Room. This makes online and offline behaviour identical from the UI's perspective, and eliminates an entire class of state management bugs.</p>
+      </div>
     </div>
-    <div class="tier-card tier-disk">
-      <div class="tier-label">Disk</div>
-      <div class="tier-title">Room DB Cache</div>
-      <div class="tier-stat">Offline feed · Survives kill</div>
-      <div class="tier-stat" style="margin-top:6px; font-size:11px;">RemoteMediator writes · PagingSource reads</div>
+
+    <div id="core-entities">
+      <div class="sec-h2">Defining the Core Entities</div>
+      <p>Three tables drive the entire feed system. The <code>action_queue</code> table is the one most candidates miss — it's what makes offline likes work correctly.</p>
+
+      <pre class="code-block"><span class="cm">// Primary feed entity — the SSoT for every post card</span>
+<span class="an">@Entity</span>(tableName = <span class="st">"posts"</span>)
+<span class="kw">data class</span> <span class="cl">PostEntity</span>(
+    <span class="an">@PrimaryKey</span> <span class="kw">val</span> id: <span class="cl">String</span>,
+    <span class="kw">val</span> authorId: <span class="cl">String</span>,
+    <span class="kw">val</span> authorUsername: <span class="cl">String</span>,
+    <span class="kw">val</span> authorAvatarUrl: <span class="cl">String</span>,
+    <span class="kw">val</span> imageUrl: <span class="cl">String</span>?,
+    <span class="kw">val</span> videoUrl: <span class="cl">String</span>?,
+    <span class="kw">val</span> mediaType: <span class="cl">MediaType</span>,    <span class="cm">// IMAGE | VIDEO | CAROUSEL</span>
+    <span class="kw">val</span> caption: <span class="cl">String</span>,
+    <span class="kw">val</span> likeCount: <span class="cl">Int</span>,
+    <span class="kw">val</span> isLiked: <span class="cl">Boolean</span>,         <span class="cm">// source of truth for heart state</span>
+    <span class="kw">val</span> commentCount: <span class="cl">Int</span>,
+    <span class="kw">val</span> createdAt: <span class="cl">Long</span>
+)
+
+<span class="cm">// Cursor storage — one row per post, survives APPEND without clearing</span>
+<span class="an">@Entity</span>(tableName = <span class="st">"remote_keys"</span>)
+<span class="kw">data class</span> <span class="cl">RemoteKey</span>(
+    <span class="an">@PrimaryKey</span> <span class="kw">val</span> postId: <span class="cl">String</span>,
+    <span class="kw">val</span> nextCursor: <span class="cl">String</span>?         <span class="cm">// null = end of pagination</span>
+)
+
+<span class="cm">// Offline action queue — persisted so likes survive process death</span>
+<span class="an">@Entity</span>(tableName = <span class="st">"action_queue"</span>)
+<span class="kw">data class</span> <span class="cl">ActionQueueEntry</span>(
+    <span class="an">@PrimaryKey</span> <span class="kw">val</span> id: <span class="cl">String</span> = UUID.randomUUID().toString(),
+    <span class="kw">val</span> postId: <span class="cl">String</span>,
+    <span class="kw">val</span> action: <span class="cl">String</span>,             <span class="cm">// "LIKE" | "UNLIKE"</span>
+    <span class="kw">val</span> createdAt: <span class="cl">Long</span>
+)</pre>
+
+      <div class="pattern-box">
+        <div class="pattern-header">
+          <span class="pattern-icon">🔷</span>
+          <span class="pattern-title">Pattern: Cursor-Based Pagination</span>
+        </div>
+        <p>Use <code>after_id</code> or a timestamp cursor, never <code>page=2&amp;offset=40</code>. Offset pagination drifts when new posts are inserted mid-scroll — the user sees duplicates or misses posts. A cursor anchors to a specific post regardless of concurrent inserts. The <code>remote_keys</code> table stores the cursor for each post so APPEND never needs to scan the entire posts table.</p>
+      </div>
     </div>
-    <div class="tier-card tier-net">
-      <div class="tier-label">Network</div>
-      <div class="tier-title">Feed API</div>
-      <div class="tier-stat">Cursor pagination · Ranked server-side</div>
-      <div class="tier-stat" style="margin-top:6px; font-size:11px;">GET /feed?after_id=&amp;limit=20</div>
+  </div>
+
+  <hr/>
+
+  <!-- ─── HIGH-LEVEL DESIGN ──────────────────────────────── -->
+  <div id="high-level">
+    <div class="sec-h1">High-Level Design</div>
+
+    <div id="hl-architecture">
+      <div class="sec-h2">1) Android Client Architecture</div>
+
+      <div class="diagram-wrap">
+        <div style="padding: 24px 20px; background: #fff;">
+          <svg viewBox="0 0 640 320" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif" font-size="12">
+            <defs>
+              <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L8,3 z" fill="#6b7280"/>
+              </marker>
+            </defs>
+            <!-- UI Layer -->
+            <rect x="20" y="10" width="600" height="56" rx="8" fill="#e8f2ec" stroke="#6aad82" stroke-width="1.5"/>
+            <text x="320" y="28" text-anchor="middle" font-weight="700" font-size="11" fill="#2e6040" letter-spacing="1">UI LAYER</text>
+            <rect x="40" y="34" width="150" height="24" rx="5" fill="#fff" stroke="#6aad82"/>
+            <text x="115" y="51" text-anchor="middle" fill="#374151" font-size="11">FeedFragment</text>
+            <rect x="205" y="34" width="150" height="24" rx="5" fill="#fff" stroke="#6aad82"/>
+            <text x="280" y="51" text-anchor="middle" fill="#374151" font-size="11">FeedAdapter (Paging)</text>
+            <rect x="370" y="34" width="160" height="24" rx="5" fill="#fff" stroke="#6aad82"/>
+            <text x="450" y="51" text-anchor="middle" fill="#374151" font-size="11">FeedViewModel</text>
+
+            <line x1="320" y1="66" x2="320" y2="88" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <!-- Domain Layer -->
+            <rect x="20" y="94" width="600" height="46" rx="8" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+            <text x="320" y="112" text-anchor="middle" font-weight="700" font-size="11" fill="#1d4ed8" letter-spacing="1">DOMAIN LAYER</text>
+            <rect x="50" y="118" width="155" height="18" rx="4" fill="#fff" stroke="#bfdbfe"/>
+            <text x="127" y="131" text-anchor="middle" fill="#374151" font-size="11">ToggleLikeUseCase</text>
+            <rect x="230" y="118" width="175" height="18" rx="4" fill="#fff" stroke="#bfdbfe"/>
+            <text x="317" y="131" text-anchor="middle" fill="#374151" font-size="11">GetFeedUseCase (Pager)</text>
+            <rect x="430" y="118" width="155" height="18" rx="4" fill="#fff" stroke="#bfdbfe"/>
+            <text x="507" y="131" text-anchor="middle" fill="#374151" font-size="11">SyncActionsUseCase</text>
+
+            <line x1="320" y1="140" x2="320" y2="160" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <!-- Repository -->
+            <rect x="20" y="166" width="600" height="36" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.5"/>
+            <text x="320" y="180" text-anchor="middle" font-weight="700" font-size="11" fill="#374151" letter-spacing="0.5">DATA LAYER — FeedRepository</text>
+            <text x="320" y="196" text-anchor="middle" fill="#6b7280" font-size="11">coordinates Room (SSoT) + RemoteMediator + Action Queue</text>
+
+            <!-- Three data sources -->
+            <line x1="160" y1="202" x2="160" y2="238" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="320" y1="202" x2="320" y2="238" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="480" y1="202" x2="480" y2="238" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <rect x="30" y="240" width="260" height="36" rx="6" fill="#e8f2ec" stroke="#6aad82"/>
+            <text x="160" y="256" text-anchor="middle" font-weight="700" fill="#2e6040" font-size="11">Room Database (SSoT)</text>
+            <text x="160" y="270" text-anchor="middle" fill="#2e6040" font-size="10">posts · remote_keys · action_queue</text>
+
+            <rect x="250" y="240" width="140" height="36" rx="6" fill="#fef3c7" stroke="#fcd34d"/>
+            <text x="320" y="256" text-anchor="middle" font-weight="700" fill="#92400e" font-size="11">Feed API + Coil</text>
+            <text x="320" y="270" text-anchor="middle" fill="#92400e" font-size="10">RemoteMediator</text>
+
+            <rect x="400" y="240" width="220" height="36" rx="6" fill="#fee2e2" stroke="#fca5a5"/>
+            <text x="510" y="256" text-anchor="middle" font-weight="700" fill="#991b1b" font-size="11">WorkManager</text>
+            <text x="510" y="270" text-anchor="middle" fill="#991b1b" font-size="10">SyncActionsWorker · ExoPlayer</text>
+          </svg>
+        </div>
+        <div class="diagram-caption">Android Feed Architecture — UI always reads from Room</div>
+      </div>
+
+      <div class="comp-grid">
+        <div class="comp-card"><div class="comp-icon">📄</div><div class="comp-name">Paging 3</div><div class="comp-sub">PagingSource + RemoteMediator</div></div>
+        <div class="comp-card"><div class="comp-icon">🗄️</div><div class="comp-name">Room DB</div><div class="comp-sub">posts · remote_keys · action_queue</div></div>
+        <div class="comp-card"><div class="comp-icon">🖼️</div><div class="comp-name">Coil</div><div class="comp-sub">3-tier cache: memory / disk / CDN</div></div>
+        <div class="comp-card"><div class="comp-icon">▶️</div><div class="comp-name">ExoPlayer</div><div class="comp-sub">Single shared instance, autoplay on 50% vis.</div></div>
+        <div class="comp-card"><div class="comp-icon">🔁</div><div class="comp-name">WorkManager</div><div class="comp-sub">SyncActionsWorker — offline like queue</div></div>
+        <div class="comp-card"><div class="comp-icon">📡</div><div class="comp-name">Retrofit + OkHttp</div><div class="comp-sub">REST API, HTTP cache-control headers</div></div>
+      </div>
+    </div>
+
+    <div id="hl-pagination">
+      <div class="sec-h2">2) Why Paging 3 + RemoteMediator?</div>
+      <table class="decision-table">
+        <thead>
+          <tr><th>Approach</th><th>Offline?</th><th>Config change?</th><th>Cursor?</th><th>Prefetch?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Manual scroll listener + ViewModel list</td><td class="cross">✗</td><td class="cross">✗ lost</td><td>Manual</td><td>Manual</td></tr>
+          <tr><td>PagingSource only (network)</td><td class="cross">✗</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr class="chosen-row"><td>🏆 PagingSource + RemoteMediator (Room)</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+        </tbody>
+      </table>
+
+      <div class="tier-grid">
+        <div class="tier-card tier-mem">
+          <div class="tier-label">Memory</div>
+          <div class="tier-title">PagingData in VM</div>
+          <div class="tier-stat">Active page · instant render</div>
+          <div class="tier-stat">RecyclerView binder · no I/O</div>
+        </div>
+        <div class="tier-card tier-disk">
+          <div class="tier-label">Disk</div>
+          <div class="tier-title">Room DB Cache</div>
+          <div class="tier-stat">Offline feed · survives process kill</div>
+          <div class="tier-stat">RemoteMediator writes · PagingSource reads</div>
+        </div>
+        <div class="tier-card tier-net">
+          <div class="tier-label">Network</div>
+          <div class="tier-title">Feed API</div>
+          <div class="tier-stat">Cursor pagination · ranked server-side</div>
+          <div class="tier-stat">GET /feed?after_id=&amp;limit=20</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ══════════════════════════════ 3. HLD ══════════════════════════════ -->
-  <h2 id="s-hld">3. High-Level Design</h2>
+  <hr/>
 
-  <div class="diagram-wrap">
-    <div class="diagram-title">Architecture Overview</div>
-    <svg width="700" height="320" viewBox="0 0 700 320" font-family="Segoe UI, sans-serif" font-size="13">
-      <!-- UI Layer -->
-      <rect x="20" y="20" width="150" height="70" rx="10" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
-      <text x="95" y="48" text-anchor="middle" font-weight="700" fill="#166534">UI Layer</text>
-      <text x="95" y="66" text-anchor="middle" fill="#166534" font-size="11">FeedFragment</text>
-      <text x="95" y="80" text-anchor="middle" fill="#166534" font-size="11">StoriesBar · PostCard</text>
+  <!-- ─── LOW-LEVEL DESIGN ───────────────────────────────── -->
+  <div id="lld">
+    <div class="sec-h1">Low-Level Design</div>
 
-      <!-- ViewModel -->
-      <rect x="20" y="120" width="150" height="60" rx="10" fill="#d1fae5" stroke="#6ee7b7" stroke-width="1.5"/>
-      <text x="95" y="147" text-anchor="middle" font-weight="700" fill="#065f46">FeedViewModel</text>
-      <text x="95" y="163" text-anchor="middle" fill="#065f46" font-size="11">PagingData&lt;Post&gt; Flow</text>
+    <div id="lld-coldstart">
+      <div class="sec-h2">Flow 1 — Cold Start (Initial Feed Load)</div>
+      <div class="flow-wrap">
+        <div class="flow-title">Cached items render first → API call runs in background → fresh data replaces stale</div>
+        <table class="flow-table">
+          <thead><tr>
+            <th class="th-ui" style="width:20%">FeedFragment</th>
+            <th class="th-vm" style="width:22%">FeedViewModel</th>
+            <th class="th-med" style="width:25%">RemoteMediator</th>
+            <th class="th-room" style="width:18%">Room DB</th>
+            <th class="th-api" style="width:15%">Feed API</th>
+          </tr></thead>
+          <tbody>
+            <tr><td><span class="step-num">1</span>onViewCreated → collectLatest(pagingData) → adapter.submitData()</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td><span class="step-num">2</span>Pager(config, FeedRemoteMediator, RoomPagingSource).flow exposed as StateFlow</td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td><span class="step-num">3</span>initialize() → returns LAUNCH_INITIAL_REFRESH; load(REFRESH) triggered</td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td><span class="step-num">4</span>RoomPagingSource emits cached posts immediately (may be empty on first launch)</td><td></td></tr>
+            <tr><td><span class="step-num">5</span>⚡ RecyclerView shows cached items within ~30ms. User sees content before API finishes.</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td><span class="step-num">6</span>Reads remote_keys for cursor (null on first load)</td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td><td><span class="step-num">7</span>GET /feed?limit=20 (no cursor on REFRESH)</td></tr>
+            <tr><td></td><td></td><td><span class="step-num">8</span>withTransaction { DELETE old posts + keys; INSERT fresh posts + keys } — atomic</td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td><span class="step-num">9</span>Room emits invalidation → PagingSource re-queries</td><td></td></tr>
+            <tr><td><span class="step-num">10</span>DiffUtil animates new items in. User sees fresh feed. Scroll position preserved.</td><td></td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-      <!-- Repository -->
-      <rect x="20" y="210" width="150" height="60" rx="10" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
-      <text x="95" y="237" text-anchor="middle" font-weight="700" fill="#1e40af">FeedRepository</text>
-      <text x="95" y="253" text-anchor="middle" fill="#1e40af" font-size="11">Pager( RemoteMediator )</text>
+    <div id="lld-scroll">
+      <div class="sec-h2">Flow 2 — Infinite Scroll (APPEND)</div>
+      <div class="flow-wrap">
+        <div class="flow-title">Paging 3 auto-triggers APPEND when user is prefetchDistance items from the end</div>
+        <table class="flow-table">
+          <thead><tr>
+            <th class="th-ui" style="width:22%">RecyclerView</th>
+            <th class="th-vm" style="width:22%">Paging Engine</th>
+            <th class="th-med" style="width:28%">RemoteMediator</th>
+            <th class="th-room" style="width:14%">Room</th>
+            <th class="th-api" style="width:14%">API</th>
+          </tr></thead>
+          <tbody>
+            <tr><td><span class="step-num">1</span>User scrolls; reaches prefetchDistance threshold (5 items from end by default)</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td><span class="step-num">2</span>Paging calls load(LoadType.APPEND) — only one APPEND at a time, queued if duplicate</td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td><span class="step-num">3</span>Reads remote_keys for the last item's nextCursor</td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td><td><span class="step-num">4</span>GET /feed?after_id=&lt;cursor&gt;&amp;limit=20</td></tr>
+            <tr><td></td><td></td><td><span class="step-num">5</span>INSERT new posts + update remote_keys (no DELETE on APPEND — keep existing items)</td><td></td><td></td></tr>
+            <tr><td><span class="step-num">6</span>New items smoothly appended at bottom. No flicker, no full reload of visible items.</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td><span class="step-num">7</span>If response.hasMore=false → MediatorResult.Success(endOfPaginationReached=true) → LoadStateAdapter hides footer</td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-      <!-- Arrows: UI ↔ VM ↔ Repo -->
-      <line x1="95" y1="90" x2="95" y2="120" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
-      <line x1="95" y1="180" x2="95" y2="210" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+    <div id="lld-like">
+      <div class="sec-h2">Flow 3 — Optimistic Like / Unlike</div>
+      <div class="flow-wrap">
+        <div class="flow-title">UI reacts instantly → server confirms → error rolls back and queues offline retry</div>
+        <table class="flow-table">
+          <thead><tr>
+            <th class="th-ui" style="width:22%">PostCard / UI</th>
+            <th class="th-vm" style="width:25%">FeedViewModel</th>
+            <th class="th-room" style="width:25%">Room DB</th>
+            <th class="th-wm" style="width:28%">API / WorkManager</th>
+          </tr></thead>
+          <tbody>
+            <tr><td><span class="step-num">1</span>User double-taps → heart animation fires immediately</td><td></td><td></td><td></td></tr>
+            <tr><td></td><td><span class="step-num">2</span>toggleLike(postId) → optimistic local update in coroutine</td><td></td><td></td></tr>
+            <tr><td></td><td></td><td><span class="step-num">3</span>UPDATE posts SET isLiked=true, likeCount+=1 WHERE id=postId</td><td></td></tr>
+            <tr><td><span class="step-num">4</span>Room emits → DiffUtil re-binds only this item. Zero full-list reload.</td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td><span class="step-num">5</span>POST /like {postId} in background coroutine</td></tr>
+            <tr><td></td><td><span class="step-num">6a ✓</span>Server success → no-op, local state already correct</td><td></td><td></td></tr>
+            <tr><td></td><td><span class="step-num">6b ✗</span>Server error → rollback: isLiked=false, likeCount-=1. Show snackbar.</td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td><span class="step-num">7</span>If offline: INSERT action_queue entry; enqueue SyncActionsWorker (NETWORK_CONNECTED constraint)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-      <!-- Room -->
-      <rect x="230" y="200" width="140" height="60" rx="10" fill="#fef3c7" stroke="#fde047" stroke-width="1.5"/>
-      <text x="300" y="227" text-anchor="middle" font-weight="700" fill="#854d0e">Room Database</text>
-      <text x="300" y="244" text-anchor="middle" fill="#854d0e" font-size="11">posts · remote_keys</text>
-      <text x="300" y="258" text-anchor="middle" fill="#854d0e" font-size="10">action_queue</text>
-
-      <!-- API -->
-      <rect x="420" y="200" width="140" height="60" rx="10" fill="#f3e8ff" stroke="#c084fc" stroke-width="1.5"/>
-      <text x="490" y="227" text-anchor="middle" font-weight="700" fill="#6b21a8">Feed API</text>
-      <text x="490" y="244" text-anchor="middle" fill="#6b21a8" font-size="11">GET /feed?after_id=</text>
-      <text x="490" y="258" text-anchor="middle" fill="#6b21a8" font-size="10">POST /like · /comment</text>
-
-      <!-- Image Loader -->
-      <rect x="230" y="100" width="140" height="60" rx="10" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
-      <text x="300" y="127" text-anchor="middle" font-weight="700" fill="#991b1b">Image Loader</text>
-      <text x="300" y="144" text-anchor="middle" fill="#991b1b" font-size="11">Coil · 3-tier cache</text>
-      <text x="300" y="158" text-anchor="middle" fill="#991b1b" font-size="10">Memory/Disk/CDN</text>
-
-      <!-- ExoPlayer -->
-      <rect x="420" y="100" width="140" height="60" rx="10" fill="#fef9c3" stroke="#fde047" stroke-width="1.5"/>
-      <text x="490" y="127" text-anchor="middle" font-weight="700" fill="#713f12">ExoPlayer Pool</text>
-      <text x="490" y="144" text-anchor="middle" fill="#713f12" font-size="11">1 player re-used</text>
-      <text x="490" y="158" text-anchor="middle" fill="#713f12" font-size="10">Autoplay on 50% vis.</text>
-
-      <!-- WorkManager -->
-      <rect x="570" y="20" width="110" height="50" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
-      <text x="625" y="43" text-anchor="middle" font-weight="700" fill="#166534" font-size="12">WorkManager</text>
-      <text x="625" y="58" text-anchor="middle" fill="#166534" font-size="10">SyncActionsWorker</text>
-
-      <!-- Connecting lines -->
-      <line x1="170" y1="240" x2="230" y2="240" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
-      <line x1="370" y1="240" x2="420" y2="240" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
-      <line x1="300" y1="200" x2="300" y2="160" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
-      <line x1="490" y1="200" x2="490" y2="160" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
-      <line x1="490" y1="100" x2="490" y2="70" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
-      <line x1="560" y1="45" x2="570" y2="45" stroke="#94a3b8" stroke-width="1.5" marker-start="url(#ars)"/>
-      <!-- UI to image loader -->
-      <path d="M 170 90 Q 200 90 230 130" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
-
-      <defs>
-        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
-        </marker>
-        <marker id="ars" markerWidth="8" markerHeight="8" refX="2" refY="3" orient="auto">
-          <circle cx="3" cy="3" r="2.5" fill="#94a3b8"/>
-        </marker>
-      </defs>
-    </svg>
-  </div>
-
-  <h3>Why Paging 3 + RemoteMediator?</h3>
-  <table class="decision-table">
-    <thead>
-      <tr>
-        <th>Approach</th><th>Offline?</th><th>Config Change?</th><th>Cursor?</th><th>Complexity</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Manual scroll + ViewModel list</td>
-        <td class="cross">✗</td><td class="cross">✗ Lost</td><td class="cross">Manual</td><td>Low → grows complex</td>
-      </tr>
-      <tr>
-        <td>PagingSource only (network)</td>
-        <td class="cross">✗</td><td class="check">✓</td><td class="check">✓</td><td>Medium</td>
-      </tr>
-      <tr class="chosen-row">
-        <td>🏆 PagingSource + RemoteMediator (Room)</td>
-        <td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td>Medium-High</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <h3>Feed API Contract</h3>
-  <pre><code><span class="cm">// Cursor-based pagination — stable across inserts</span>
-<span class="an">GET</span> /feed?after_id=<span class="nm">1234</span>&amp;limit=<span class="nm">20</span>
-
-<span class="cm">// Response</span>
-{
-  <span class="st">"posts"</span>: [ { <span class="st">"id"</span>: <span class="nm">1235</span>, <span class="st">"imageUrl"</span>: <span class="st">"..."</span>, <span class="st">"videoUrl"</span>: <span class="st">"..."</span>,
-      <span class="st">"author"</span>: { <span class="st">"id"</span>: <span class="nm">42</span>, <span class="st">"username"</span>: <span class="st">"alice"</span>, <span class="st">"avatarUrl"</span>: <span class="st">"..."</span> },
-      <span class="st">"caption"</span>: <span class="st">"Sunsets 🌅"</span>, <span class="st">"likeCount"</span>: <span class="nm">1203</span>,
-      <span class="st">"isLiked"</span>: <span class="kw">false</span>, <span class="st">"commentCount"</span>: <span class="nm">47</span>, <span class="st">"mediaType"</span>: <span class="st">"IMAGE"</span>
-  }, ... ],
-  <span class="st">"nextCursor"</span>: <span class="st">"1254"</span>,
-  <span class="st">"hasMore"</span>: <span class="kw">true</span>
-}</code></pre>
-
-  <div class="callout">
-    <div class="callout-label">📌 Pattern: Cursor vs Offset Pagination</div>
-    <p>Use <strong>cursor-based pagination</strong> for feeds. Offset (<code>page=2</code>) drifts when new posts are inserted — the user sees duplicate or skipped items. A stable cursor anchors position regardless of server mutations.</p>
-    <a class="callout-cta" href="#">Learn This Pattern →</a>
-  </div>
-
-  <!-- ══════════════════════════════ 4. LLD ══════════════════════════════ -->
-  <h2 id="s-lld">4. Low-Level Design</h2>
-
-  <h3>Whiteboard: Full Pipeline</h3>
-
-  <div class="diagram-wrap">
-    <div class="diagram-title">End-to-End Feed Pipeline</div>
-    <svg width="720" height="420" viewBox="0 0 720 420" font-family="Segoe UI, sans-serif" font-size="12">
-      <!-- Column headers -->
-      <rect x="0" y="0" width="145" height="40" rx="6" fill="#dcfce7"/>
-      <text x="72" y="25" text-anchor="middle" font-weight="700" fill="#166534">UI / FeedFragment</text>
-
-      <rect x="155" y="0" width="145" height="40" rx="6" fill="#d1fae5"/>
-      <text x="227" y="25" text-anchor="middle" font-weight="700" fill="#065f46">FeedViewModel</text>
-
-      <rect x="310" y="0" width="145" height="40" rx="6" fill="#dbeafe"/>
-      <text x="382" y="25" text-anchor="middle" font-weight="700" fill="#1e40af">RemoteMediator</text>
-
-      <rect x="465" y="0" width="110" height="40" rx="6" fill="#fef3c7"/>
-      <text x="520" y="25" text-anchor="middle" font-weight="700" fill="#854d0e">Room DB</text>
-
-      <rect x="585" y="0" width="120" height="40" rx="6" fill="#f3e8ff"/>
-      <text x="645" y="25" text-anchor="middle" font-weight="700" fill="#6b21a8">Feed API</text>
-
-      <!-- Steps -->
-      <!-- Step 1 -->
-      <rect x="0" y="55" width="145" height="42" rx="6" fill="#f0fdf4" stroke="#86efac"/>
-      <text x="72" y="73" text-anchor="middle" font-weight="700" fill="#166534">1</text>
-      <text x="72" y="87" text-anchor="middle" fill="#166534" font-size="11">onCreate → collectLatest</text>
-      <line x1="145" y1="76" x2="155" y2="76" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2)"/>
-
-      <!-- Step 2 -->
-      <rect x="155" y="55" width="145" height="42" rx="6" fill="#d1fae5" stroke="#6ee7b7"/>
-      <text x="227" y="73" text-anchor="middle" font-weight="700" fill="#065f46">2</text>
-      <text x="227" y="87" text-anchor="middle" fill="#065f46" font-size="11">Pager(config, mediator)</text>
-      <line x1="300" y1="76" x2="310" y2="76" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2)"/>
-
-      <!-- Step 3 -->
-      <rect x="310" y="55" width="145" height="42" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
-      <text x="382" y="73" text-anchor="middle" font-weight="700" fill="#1e40af">3</text>
-      <text x="382" y="87" text-anchor="middle" fill="#1e40af" font-size="11">load(REFRESH) triggered</text>
-      <line x1="455" y1="76" x2="465" y2="76" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2)"/>
-
-      <!-- Step 4 Room check -->
-      <rect x="465" y="55" width="110" height="42" rx="6" fill="#fef3c7" stroke="#fde047"/>
-      <text x="520" y="73" text-anchor="middle" font-weight="700" fill="#854d0e">4</text>
-      <text x="520" y="87" text-anchor="middle" fill="#854d0e" font-size="11">Emit cached posts</text>
-
-      <!-- Step 4 → UI (fast path) -->
-      <path d="M 520 55 Q 520 30 72 30 Q 72 55 72 55" fill="none" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#a2)"/>
-      <text x="296" y="22" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="600">⚡ Instant render from cache</text>
-
-      <!-- Step 5 API call -->
-      <rect x="465" y="120" width="110" height="42" rx="6" fill="#fef3c7" stroke="#fde047"/>
-      <text x="520" y="138" text-anchor="middle" font-weight="700" fill="#854d0e">5</text>
-      <text x="520" y="152" text-anchor="middle" fill="#854d0e" font-size="11">GET remoteKeys (cursor)</text>
-      <line x1="575" y1="141" x2="585" y2="141" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2)"/>
-
-      <rect x="585" y="120" width="120" height="42" rx="6" fill="#f3e8ff" stroke="#c084fc"/>
-      <text x="645" y="138" text-anchor="middle" font-weight="700" fill="#6b21a8">6</text>
-      <text x="645" y="152" text-anchor="middle" fill="#6b21a8" font-size="11">GET /feed?after_id=…</text>
-
-      <!-- Step 7 write Room -->
-      <rect x="465" y="185" width="110" height="42" rx="6" fill="#fef3c7" stroke="#fde047"/>
-      <text x="520" y="203" text-anchor="middle" font-weight="700" fill="#854d0e">7</text>
-      <text x="520" y="218" text-anchor="middle" fill="#854d0e" font-size="11">writeTx: posts + keys</text>
-      <line x1="645" y1="162" x2="645" y2="203" stroke="#94a3b8" stroke-width="1.5"/>
-      <line x1="645" y1="203" x2="575" y2="203" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2)"/>
-
-      <!-- Step 8 PagingSource reads -->
-      <rect x="310" y="250" width="145" height="42" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
-      <text x="382" y="268" text-anchor="middle" font-weight="700" fill="#1e40af">8</text>
-      <text x="382" y="282" text-anchor="middle" fill="#1e40af" font-size="11">PagingSource invalidated</text>
-      <line x1="465" y1="206" x2="382" y2="250" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a2)"/>
-
-      <!-- Step 9 VM emits -->
-      <rect x="155" y="250" width="145" height="42" rx="6" fill="#d1fae5" stroke="#6ee7b7"/>
-      <text x="227" y="268" text-anchor="middle" font-weight="700" fill="#065f46">9</text>
-      <text x="227" y="282" text-anchor="middle" fill="#065f46" font-size="11">PagingData emitted</text>
-      <line x1="310" y1="271" x2="300" y2="271" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2)"/>
-
-      <!-- Step 10 RecyclerView -->
-      <rect x="0" y="250" width="145" height="42" rx="6" fill="#f0fdf4" stroke="#86efac"/>
-      <text x="72" y="268" text-anchor="middle" font-weight="700" fill="#166534">10</text>
-      <text x="72" y="282" text-anchor="middle" fill="#166534" font-size="11">RecyclerView renders</text>
-      <line x1="155" y1="271" x2="145" y2="271" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2)"/>
-
-      <!-- Prefetch next page -->
-      <rect x="155" y="330" width="310" height="42" rx="6" fill="#f0fdf4" stroke="#86efac"/>
-      <text x="310" y="348" text-anchor="middle" font-weight="700" fill="#166534">11 — Prefetch</text>
-      <text x="310" y="362" text-anchor="middle" fill="#166534" font-size="11">Paging 3 auto-triggers APPEND when 5 items from bottom</text>
-
-      <!-- Step 10 to prefetch -->
-      <line x1="72" y1="292" x2="72" y2="350" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
-      <line x1="72" y1="350" x2="155" y2="350" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2)"/>
-
-      <defs>
-        <marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
-        </marker>
-      </defs>
-    </svg>
-  </div>
-
-  <h3>Flow 1: Initial Feed Load (Cold Start)</h3>
-
-  <div class="flow-wrap">
-    <div class="flow-title">Flow 1 — Cold Start: RecyclerView shows stale cache first, then fresh data arrives</div>
-    <table class="flow-table">
-      <thead>
-        <tr>
-          <th class="th-ui" style="width:18%">FeedFragment</th>
-          <th class="th-vm" style="width:22%">FeedViewModel</th>
-          <th class="th-repo" style="width:25%">RemoteMediator</th>
-          <th class="th-room" style="width:20%">Room DB</th>
-          <th class="th-api" style="width:15%">API</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><span class="step-num">1</span>Fragment.onViewCreated → <code>adapter.submitData(pagingData)</code></td>
-          <td></td><td></td><td></td><td></td>
-        </tr>
-        <tr>
-          <td></td>
-          <td><span class="step-num">2</span>Pager(RemoteMediator, RoomPagingSource).flow exposed as StateFlow</td>
-          <td></td><td></td><td></td>
-        </tr>
-        <tr>
-          <td></td><td></td>
-          <td><span class="step-num">3</span>Paging calls <code>initialize()</code> → returns LAUNCH_INITIAL_REFRESH</td>
-          <td></td><td></td>
-        </tr>
-        <tr>
-          <td></td><td></td><td></td>
-          <td><span class="step-num">4</span>RoomPagingSource emits cached posts (may be empty on first run)</td>
-          <td></td>
-        </tr>
-        <tr>
-          <td><span class="step-num">5</span>RecyclerView shows cached items while spinner runs</td>
-          <td></td><td></td><td></td><td></td>
-        </tr>
-        <tr>
-          <td></td><td></td>
-          <td><span class="step-num">6</span><code>load(REFRESH)</code>: reads remote_keys for cursor; if null → first load</td>
-          <td></td><td></td>
-        </tr>
-        <tr>
-          <td></td><td></td><td></td><td></td>
-          <td><span class="step-num">7</span>GET /feed?limit=20 (no cursor on REFRESH)</td>
-        </tr>
-        <tr>
-          <td></td><td></td>
-          <td><span class="step-num">8</span>Transaction: DELETE old posts, INSERT new posts + remote_keys in one tx → atomic</td>
-          <td></td><td></td>
-        </tr>
-        <tr>
-          <td></td><td></td><td></td>
-          <td><span class="step-num">9</span>Room emits invalidation → PagingSource re-loads</td>
-          <td></td>
-        </tr>
-        <tr>
-          <td><span class="step-num">10</span>DiffUtil animates new items in. User sees fresh feed.</td>
-          <td></td><td></td><td></td><td></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <h3>Flow 2: Infinite Scroll (APPEND)</h3>
-
-  <div class="flow-wrap">
-    <div class="flow-title">Flow 2 — Infinite Scroll: Paging 3 auto-triggers next page 5 items before end</div>
-    <table class="flow-table">
-      <thead>
-        <tr>
-          <th class="th-ui" style="width:20%">RecyclerView</th>
-          <th class="th-vm" style="width:20%">Paging Engine</th>
-          <th class="th-repo" style="width:28%">RemoteMediator</th>
-          <th class="th-room" style="width:17%">Room DB</th>
-          <th class="th-api" style="width:15%">API</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><span class="step-num">1</span>User scrolls; reaches prefetchDistance threshold (5 items from end)</td>
-          <td></td><td></td><td></td><td></td>
-        </tr>
-        <tr>
-          <td></td>
-          <td><span class="step-num">2</span>Paging calls <code>load(LoadType.APPEND)</code></td>
-          <td></td><td></td><td></td>
-        </tr>
-        <tr>
-          <td></td><td></td>
-          <td><span class="step-num">3</span>Reads <code>remote_keys</code> for last item's <code>nextCursor</code></td>
-          <td></td><td></td>
-        </tr>
-        <tr>
-          <td></td><td></td><td></td><td></td>
-          <td><span class="step-num">4</span>GET /feed?after_id=&lt;cursor&gt;&amp;limit=20</td>
-        </tr>
-        <tr>
-          <td></td><td></td>
-          <td><span class="step-num">5</span>INSERT new posts + update remote_keys (no delete on APPEND)</td>
-          <td></td><td></td>
-        </tr>
-        <tr>
-          <td><span class="step-num">6</span>New items smoothly appended; no flicker, no full reload</td>
-          <td></td><td></td><td></td><td></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <h3>Flow 3: Optimistic Like / Unlike</h3>
-
-  <div class="flow-wrap">
-    <div class="flow-title">Flow 3 — Optimistic Like: UI reacts instantly; server confirms; error rolls back</div>
-    <table class="flow-table">
-      <thead>
-        <tr>
-          <th class="th-ui" style="width:22%">PostCard / UI</th>
-          <th class="th-vm" style="width:25%">FeedViewModel</th>
-          <th class="th-room" style="width:25%">Room DB</th>
-          <th class="th-api" style="width:28%">API / WorkManager</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><span class="step-num">1</span>User double-taps post → heart animation fires</td>
-          <td></td><td></td><td></td>
-        </tr>
-        <tr>
-          <td></td>
-          <td><span class="step-num">2</span><code>toggleLike(postId)</code> → optimistic local update</td>
-          <td></td><td></td>
-        </tr>
-        <tr>
-          <td></td><td></td>
-          <td><span class="step-num">3</span>UPDATE posts SET isLiked=true, likeCount+=1 WHERE id=postId</td>
-          <td></td>
-        </tr>
-        <tr>
-          <td><span class="step-num">4</span>RecyclerView re-binds item immediately via DiffUtil (no full reload)</td>
-          <td></td><td></td><td></td>
-        </tr>
-        <tr>
-          <td></td><td></td><td></td>
-          <td><span class="step-num">5</span>POST /like {postId} in background coroutine</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td><span class="step-num">6a ✓</span>Server success → no-op, local is already correct</td>
-          <td></td><td></td>
-        </tr>
-        <tr>
-          <td></td>
-          <td><span class="step-num">6b ✗</span>Server error → rollback: UPDATE isLiked=false, likeCount-=1</td>
-          <td></td><td></td>
-        </tr>
-        <tr>
-          <td></td><td></td><td></td>
-          <td><span class="step-num">7</span>If offline: enqueue SyncLikeWorker (WorkManager), retries when online</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <h3>Key Code: RemoteMediator</h3>
-  <pre><code><span class="kw">class</span> <span class="cl">FeedRemoteMediator</span>(
+    <div id="lld-code">
+      <div class="sec-h2">Key Code: RemoteMediator</div>
+      <pre class="code-block"><span class="kw">class</span> <span class="cl">FeedRemoteMediator</span>(
     <span class="kw">private val</span> api: <span class="cl">FeedApi</span>,
     <span class="kw">private val</span> db: <span class="cl">FeedDatabase</span>
 ) : <span class="cl">RemoteMediator</span>&lt;<span class="cl">Int</span>, <span class="cl">PostEntity</span>&gt;() {
@@ -787,443 +742,556 @@
         state: <span class="cl">PagingState</span>&lt;<span class="cl">Int</span>, <span class="cl">PostEntity</span>&gt;
     ): <span class="cl">MediatorResult</span> {
         <span class="kw">val</span> cursor = <span class="kw">when</span> (loadType) {
-            <span class="cl">LoadType</span>.REFRESH  -> <span class="kw">null</span>          <span class="cm">// always reload from top</span>
+            <span class="cl">LoadType</span>.REFRESH  -> <span class="kw">null</span>
             <span class="cl">LoadType</span>.PREPEND  -> <span class="kw">return</span> <span class="cl">MediatorResult</span>.<span class="fn">Success</span>(endOfPaginationReached = <span class="kw">true</span>)
             <span class="cl">LoadType</span>.APPEND   -> {
                 <span class="kw">val</span> last = state.<span class="fn">lastItemOrNull</span>()
                     ?: <span class="kw">return</span> <span class="cl">MediatorResult</span>.<span class="fn">Success</span>(endOfPaginationReached = <span class="kw">true</span>)
                 db.remoteKeysDao().<span class="fn">remoteKeyById</span>(last.id)?.nextCursor
+                    ?: <span class="kw">return</span> <span class="cl">MediatorResult</span>.<span class="fn">Success</span>(endOfPaginationReached = <span class="kw">true</span>)
             }
         }
 
         <span class="kw">return try</span> {
             <span class="kw">val</span> response = api.<span class="fn">getFeed</span>(afterId = cursor, limit = state.config.pageSize)
-            <span class="kw">val</span> posts = response.posts
-
             db.<span class="fn">withTransaction</span> {
                 <span class="kw">if</span> (loadType == <span class="cl">LoadType</span>.REFRESH) {
                     db.postsDao().<span class="fn">clearAll</span>()
                     db.remoteKeysDao().<span class="fn">clearAll</span>()
                 }
-                <span class="kw">val</span> keys = posts.<span class="fn">map</span> { post ->
-                    <span class="cl">RemoteKey</span>(postId = post.id, nextCursor = response.nextCursor)
-                }
-                db.remoteKeysDao().<span class="fn">insertAll</span>(keys)
-                db.postsDao().<span class="fn">insertAll</span>(posts.<span class="fn">map</span> { it.<span class="fn">toEntity</span>() })
+                <span class="cm">// Merge pending offline likes — don't overwrite optimistic state</span>
+                <span class="kw">val</span> pending = db.actionQueueDao().<span class="fn">getAllPendingPostIds</span>().<span class="fn">toSet</span>()
+                <span class="kw">val</span> entities = response.posts.<span class="fn">map</span> { it.<span class="fn">toEntity</span>(preserveLikeFor = pending) }
+                db.postsDao().<span class="fn">insertAll</span>(entities)
+                db.remoteKeysDao().<span class="fn">insertAll</span>(response.posts.<span class="fn">map</span> {
+                    <span class="cl">RemoteKey</span>(postId = it.id, nextCursor = response.nextCursor)
+                })
             }
-
             <span class="cl">MediatorResult</span>.<span class="fn">Success</span>(endOfPaginationReached = !response.hasMore)
         } <span class="kw">catch</span> (e: <span class="cl">Exception</span>) {
             <span class="cl">MediatorResult</span>.<span class="fn">Error</span>(e)
         }
     }
-}</code></pre>
+}</pre>
 
-  <h3>Key Code: Video Autoplay with ExoPlayer</h3>
-  <pre><code><span class="cm">// One shared ExoPlayer reused across RecyclerView items</span>
+      <div class="sec-h2">Key Code: Single-Player Video Autoplay</div>
+      <pre class="code-block"><span class="cm">// One ExoPlayer instance shared across all RecyclerView items</span>
 <span class="kw">class</span> <span class="cl">VideoAutoplayManager</span>(context: <span class="cl">Context</span>) {
 
-    <span class="kw">private val</span> player = <span class="cl">ExoPlayer</span>.<span class="fn">Builder</span>(context).<span class="fn">build</span>()
-    <span class="kw">private var</span> currentViewHolder: <span class="cl">VideoViewHolder</span>? = <span class="kw">null</span>
+    <span class="kw">private var</span> player: <span class="cl">ExoPlayer</span>? = <span class="cl">ExoPlayer</span>.<span class="fn">Builder</span>(context).<span class="fn">build</span>()
+    <span class="kw">private var</span> currentVH: <span class="cl">VideoViewHolder</span>? = <span class="kw">null</span>
 
-    <span class="cm">// Called from RecyclerView.OnScrollListener</span>
-    <span class="kw">fun</span> <span class="fn">onScrollSettled</span>(recyclerView: <span class="cl">RecyclerView</span>) {
-        <span class="kw">val</span> mostVisible = <span class="fn">findMostVisibleVideoHolder</span>(recyclerView)
+    <span class="cm">// Attach to RecyclerView.OnScrollListener.onScrolled</span>
+    <span class="kw">fun</span> <span class="fn">onScrollSettled</span>(rv: <span class="cl">RecyclerView</span>) {
+        <span class="kw">val</span> best = <span class="fn">findMostVisibleVideo</span>(rv)
+        <span class="kw">if</span> (best?.postId == currentVH?.postId) <span class="kw">return</span>
 
-        <span class="kw">if</span> (mostVisible?.postId == currentViewHolder?.postId) <span class="kw">return</span>
+        currentVH?.playerView?.player = <span class="kw">null</span>
+        player?.<span class="fn">stop</span>()
 
-        <span class="cm">// Detach from old item</span>
-        currentViewHolder?.playerView?.<span class="fn">player</span> = <span class="kw">null</span>
-        player.<span class="fn">stop</span>()
-
-        <span class="cm">// Attach to new item</span>
-        mostVisible?.<span class="fn">let</span> { vh ->
+        best?.<span class="fn">let</span> { vh ->
             vh.playerView.player = player
-            player.<span class="fn">setMediaItem</span>(<span class="cl">MediaItem</span>.<span class="fn">fromUri</span>(vh.videoUrl))
-            player.<span class="fn">prepare</span>()
-            player.<span class="fn">play</span>()
-            currentViewHolder = vh
+            player?.<span class="fn">setMediaItem</span>(<span class="cl">MediaItem</span>.<span class="fn">fromUri</span>(vh.videoUrl))
+            player?.<span class="fn">prepare</span>()
+            player?.<span class="fn">play</span>()
+            currentVH = vh
         }
     }
 
-    <span class="kw">private fun</span> <span class="fn">findMostVisibleVideoHolder</span>(rv: <span class="cl">RecyclerView</span>): <span class="cl">VideoViewHolder</span>? {
+    <span class="cm">// Release on Fragment.onDestroyView() — avoids AudioFocus leak</span>
+    <span class="kw">fun</span> <span class="fn">release</span>() {
+        currentVH?.playerView?.player = <span class="kw">null</span>
+        player?.<span class="fn">release</span>()
+        player = <span class="kw">null</span>
+    }
+
+    <span class="kw">private fun</span> <span class="fn">findMostVisibleVideo</span>(rv: <span class="cl">RecyclerView</span>): <span class="cl">VideoViewHolder</span>? {
         <span class="kw">val</span> lm = rv.layoutManager <span class="kw">as</span> <span class="cl">LinearLayoutManager</span>
-        <span class="kw">val</span> first = lm.<span class="fn">findFirstVisibleItemPosition</span>()
-        <span class="kw">val</span> last  = lm.<span class="fn">findLastVisibleItemPosition</span>()
-        <span class="kw">var</span> best: <span class="cl">VideoViewHolder</span>? = <span class="kw">null</span>; <span class="kw">var</span> bestArea = <span class="nm">0</span>
-        (<span class="nm">first</span>..<span class="nm">last</span>).<span class="fn">forEach</span> { i ->
-            <span class="kw">val</span> vh = rv.<span class="fn">findViewHolderForAdapterPosition</span>(i) <span class="kw">as</span>? <span class="cl">VideoViewHolder</span> ?: <span class="kw">return</span>@forEach
-            <span class="kw">val</span> rect = <span class="cl">Rect</span>()
-            vh.itemView.<span class="fn">getGlobalVisibleRect</span>(rect)
-            <span class="kw">val</span> area = rect.width() * rect.height()
-            <span class="kw">if</span> (area > bestArea && <span class="fn">visibilityPercent</span>(vh) >= <span class="nm">50</span>) { best = vh; bestArea = area }
-        }
-        <span class="kw">return</span> best
+        <span class="kw">return</span> (lm.<span class="fn">findFirstVisibleItemPosition</span>()..lm.<span class="fn">findLastVisibleItemPosition</span>())
+            .<span class="fn">mapNotNull</span> { rv.<span class="fn">findViewHolderForAdapterPosition</span>(it) <span class="kw">as</span>? <span class="cl">VideoViewHolder</span> }
+            .<span class="fn">filter</span> { <span class="fn">visiblePercent</span>(it) >= <span class="nm">50</span> }
+            .<span class="fn">maxByOrNull</span> { <span class="fn">visiblePercent</span>(it) }
     }
-}</code></pre>
+}</pre>
+    </div>
+  </div>
 
-  <!-- ══════════════════════════════ 5. DEEP DIVES ══════════════════════════════ -->
-  <h2 id="s-deep">5. Potential Deep Dives</h2>
+  <hr/>
 
-  <h3>Image Pre-fetching</h3>
-  <p>Coil's <code>ImageLoader</code> can be used headlessly to pre-fetch images before the user scrolls to them. In the <code>RemoteMediator</code>, after inserting posts into Room, issue pre-fetch requests for the next 5 image URLs:</p>
-  <pre><code><span class="cm">// Warm the disk cache for next page images</span>
-posts.<span class="fn">take</span>(<span class="nm">5</span>).<span class="fn">forEach</span> { post ->
-    <span class="kw">val</span> req = <span class="cl">ImageRequest</span>.<span class="cl">Builder</span>(context)
-        .<span class="fn">data</span>(post.imageUrl)
-        .<span class="fn">memoryCachePolicy</span>(<span class="cl">CachePolicy</span>.DISABLED) <span class="cm">// disk only</span>
-        .<span class="fn">diskCachePolicy</span>(<span class="cl">CachePolicy</span>.ENABLED)
-        .<span class="fn">build</span>()
-    imageLoader.<span class="fn">enqueue</span>(req)
-}</code></pre>
+  <!-- ─── EDGE CASES ─────────────────────────────────────── -->
+  <div id="edge-cases">
+    <div class="sec-h1">Edge Cases</div>
+    <p>This is the section that separates senior from staff candidates. Every scenario below has been reported in real Meta, Snap, and Google interviews. Know the mechanism, not just the answer.</p>
 
-  <h3>RecyclerView Performance</h3>
-  <ul>
-    <li><strong>setHasFixedSize(true)</strong> — skips full layout pass when items change size</li>
-    <li><strong>DiffUtil</strong> (built into PagingDataAdapter) — only rebinds changed items</li>
-    <li><strong>setRecycledViewPool</strong> — share pool between Stories RecyclerView (horizontal) and feed</li>
-    <li><strong>View.setTag(R.id.image_request, request)</strong> — cancel Coil request in <code>onViewRecycled</code> to avoid stale loads</li>
-    <li><strong>Avoid nested RecyclerViews</strong> — use ConcatAdapter to merge Stories + Feed in one list</li>
+    <div class="edge-grid">
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <div class="edge-icon">💾</div>
+          <div class="edge-title">Memory Pressure — OOM / Low Memory Killer</div>
+        </div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> On low-RAM devices, Android's LMK can kill your process while the user is mid-scroll. When they return, a cold start happens — they expect to see the feed immediately, not a spinner.</p>
+          <p><strong>The fix:</strong> Room is your answer. Because all posts are in Room, the app cold-starts and renders cached items in &lt;100ms before any API call completes. Additionally, override <code>onTrimMemory(level)</code> in your Application class. When level ≥ <code>TRIM_MEMORY_MODERATE</code>, tell Coil's ImageLoader to clear its memory cache (<code>imageLoader.memoryCache?.clear()</code>). At <code>TRIM_MEMORY_COMPLETE</code>, call <code>videoAutoplayManager.release()</code> — ExoPlayer holds codec buffers that can be several MB.</p>
+          <p><strong>RecyclerView bitmap pool:</strong> Coil uses a <code>BitmapPool</code> that recycles bitmap allocations across item binds. On memory pressure, Coil automatically trims this pool. You can tune the pool size via <code>ImageLoader.Builder(context).bitmapPoolingEnabled(true)</code>. Never decode images at full resolution — always pass the target <code>ImageView</code> size so Coil downsamples at decode time.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <div class="edge-icon">📶</div>
+          <div class="edge-title">Network Transition — Wi-Fi → Cellular Mid-Scroll</div>
+        </div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> The user is scrolling on Wi-Fi, switches to cellular. In-flight image requests may fail; video preloading should stop immediately (data cost).</p>
+          <p><strong>The fix:</strong> Register a <code>ConnectivityManager.NetworkCallback</code> in your Application. When <code>onAvailable(network)</code> fires, check <code>NetworkCapabilities.hasTransport(TRANSPORT_CELLULAR)</code>. If true: (1) cancel queued image prefetch requests; (2) pause ExoPlayer's buffer-ahead by setting <code>player.setPlaybackParameters</code> or limiting the <code>DefaultLoadControl.maxBufferMs</code>; (3) OkHttp will automatically retry failed requests on the new network via its connection pool fallback.</p>
+          <p><strong>On reconnect after full offline:</strong> WorkManager observes network availability via its <code>CONNECTED</code> constraint — <code>SyncActionsWorker</code> fires automatically. You don't need to handle this manually.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <div class="edge-icon">🆕</div>
+          <div class="edge-title">New Posts Available — Don't Jump the Scroll Position</div>
+        </div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> FCM push arrives: "10 new posts". If you call <code>adapter.refresh()</code> immediately, the RecyclerView jumps to the top — terrible UX if the user is mid-scroll.</p>
+          <p><strong>The fix:</strong> Show a "New Posts" chip at the top of the feed (floating, not part of the list). Check the current scroll offset: <code>val isAtTop = (layoutManager.findFirstCompletelyVisibleItemPosition() == 0)</code>. If the user is already at the top, auto-refresh. Otherwise, show the chip. When the user taps the chip, scroll to position 0 (<code>recyclerView.smoothScrollToPosition(0)</code>), then call <code>adapter.refresh()</code> in the scroll listener's <code>onScrolled</code> once position 0 is reached.</p>
+          <p><strong>The chip:</strong> is a separate View overlaid above the RecyclerView, not a list item. This means it doesn't interfere with Paging's item count or DiffUtil calculations.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <div class="edge-icon">🕐</div>
+          <div class="edge-title">Stale Feed — Cache TTL and Stale-While-Revalidate</div>
+        </div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> The user opens the app after 6 hours. The cached feed is stale. You don't want to block on the API call, but you also shouldn't show 6-hour-old content indefinitely.</p>
+          <p><strong>The fix:</strong> Two-part approach. First, <code>RemoteMediator.initialize()</code> can return <code>SKIP_INITIAL_REFRESH</code> if the last refresh was recent (e.g., within 30 minutes) — check a timestamp stored in DataStore. Beyond the threshold, return <code>LAUNCH_INITIAL_REFRESH</code> to trigger a background API call while showing cached content. Second, add an OkHttp <code>CacheControl</code> interceptor that reads the server's <code>Cache-Control: max-age=300</code> header. For content older than <code>max-age</code>, OkHttp automatically makes a conditional request with <code>If-None-Match</code> — if the server returns 304, no data transfer occurs.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <div class="edge-icon">🔄</div>
+          <div class="edge-title">Config Change / Process Death — Scroll Position Lost</div>
+        </div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> User rotates the screen. Naive implementation re-fetches the entire feed and resets scroll to top.</p>
+          <p><strong>The fix (config change):</strong> The PagingData Flow lives in the ViewModel, which survives rotation. The Fragment is recreated and re-collects the <em>same</em> Flow — no API call fires. RecyclerView's LinearLayoutManager automatically saves/restores scroll position via <code>onSaveInstanceState()</code>.</p>
+          <p><strong>The fix (process death):</strong> Room survives. On restart, <code>RemoteMediator.initialize()</code> checks DataStore for a recent refresh timestamp. If within the TTL, it returns <code>SKIP_INITIAL_REFRESH</code> and Room serves the cached feed instantly. Use <code>SavedStateHandle</code> in the ViewModel to persist the last visible position so you can scroll back to it on recreate.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <div class="edge-icon">🎬</div>
+          <div class="edge-title">ExoPlayer Crash / Error Recovery</div>
+        </div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> ExoPlayer throws a <code>PlaybackException</code> (codec error, network error, DRM failure). The video item shows a black square and the player is in a broken state.</p>
+          <p><strong>The fix:</strong> Add a <code>Player.Listener</code>: on <code>onPlayerError(error)</code>, check the error type. For network errors (<code>ERROR_CODE_IO_*</code>): retry up to 3 times with 500ms delay. For codec/format errors (<code>ERROR_CODE_DECODING_*</code>): release the current player, recreate it (<code>ExoPlayer.Builder(context).build()</code>), re-attach to the ViewHolder, and show a thumbnail fallback in the PlayerView. Always call <code>player.stop()</code> before <code>player.release()</code> to avoid <code>IllegalStateException</code>. Release AudioFocus before recreating the player.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <div class="edge-icon">❤️</div>
+          <div class="edge-title">Pending Like Survives App Kill and Feed Refresh</div>
+        </div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> User likes a post offline. The app is killed. When the app restarts and the feed refreshes, the server returns <code>isLiked=false</code> for that post (it hasn't synced yet). The heart un-fills — wrong and confusing.</p>
+          <p><strong>The fix:</strong> The <code>action_queue</code> table is the solution. Before the RemoteMediator writes fresh posts to Room, it queries <code>action_queue</code> for all pending <code>LIKE</code> post IDs. When mapping API response to <code>PostEntity</code>, it overrides <code>isLiked=true</code> and increments <code>likeCount</code> for any post in that set — even though the server says otherwise. WorkManager's <code>SyncActionsWorker</code> will drain the queue once connectivity returns, after which future refreshes get the correct server state.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <div class="edge-icon">🔁</div>
+          <div class="edge-title">Competing REFRESH Calls (Pull-to-Refresh + Auto-Refresh)</div>
+        </div>
+        <div class="edge-body">
+          <p><strong>The problem:</strong> The user pulls to refresh at the exact moment Paging 3 auto-triggers a REFRESH (e.g., from a "New Posts" chip tap). Two REFRESH loads compete, potentially leaving the DB in an inconsistent state.</p>
+          <p><strong>The fix:</strong> Paging 3 serialises concurrent loads — it cancels the in-flight REFRESH when a new one arrives. Because RemoteMediator uses a <code>withTransaction { DELETE all; INSERT fresh }</code> block, partial writes cannot leak. The final REFRESH always wins and leaves Room in a consistent state. The SwipeRefreshLayout spinner should be bound to <code>loadStateFlow.collect { it.refresh is LoadState.Loading }</code> — it will correctly show/hide based on whichever REFRESH is active.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ─── DEEP DIVES ─────────────────────────────────────── -->
+  <div id="deep-dives">
+    <div class="sec-h1">Potential Deep Dives</div>
+
+    <div id="dd-prefetch">
+      <div class="sec-h2">1) Image Prefetching for Next Page</div>
+      <p>After RemoteMediator inserts the next page's posts into Room, fire headless Coil requests for those image URLs with <code>memoryCachePolicy = DISABLED</code> and <code>diskCachePolicy = ENABLED</code>. This downloads and decodes images into disk cache without using memory. When RecyclerView binds those ViewHolders, Coil finds images in the disk cache (~30ms) rather than hitting the network. Gate this behind Wi-Fi only using <code>NetworkCapabilities.hasTransport(TRANSPORT_WIFI)</code>.</p>
+    </div>
+
+    <div id="dd-recycler">
+      <div class="sec-h2">2) RecyclerView Performance — Zero Jank at 60fps</div>
+      <p>Four things matter most: (1) <strong>setHasFixedSize(true)</strong> skips a full layout pass when items don't change the RecyclerView's own size. (2) <strong>DiffUtil</strong> (built into PagingDataAdapter) rebinds only changed ViewHolders — when the user likes a post, only that one item re-binds. (3) <strong>ConcatAdapter</strong> — merge StoriesAdapter + PagingDataAdapter into one flat RecyclerView. Nested horizontal RecyclerView for stories breaks the outer recycler's pool and causes scroll jank. (4) <strong>Cancel image loads on recycle</strong> — call <code>imageView.dispose()</code> (Coil) in <code>onViewRecycled()</code> to stop stale bitmap loads from arriving late.</p>
+    </div>
+
+    <div id="dd-offline">
+      <div class="sec-h2">3) Offline Like Queue — Full Lifecycle</div>
+      <pre class="code-block"><span class="kw">class</span> <span class="cl">SyncActionsWorker</span>(ctx: <span class="cl">Context</span>, params: <span class="cl">WorkerParameters</span>) : <span class="cl">CoroutineWorker</span>(ctx, params) {
+    <span class="kw">override suspend fun</span> <span class="fn">doWork</span>(): <span class="cl">Result</span> {
+        <span class="kw">val</span> queue = db.actionQueueDao().<span class="fn">getAll</span>()
+        queue.<span class="fn">forEach</span> { entry ->
+            <span class="kw">try</span> {
+                <span class="kw">when</span> (entry.action) {
+                    <span class="st">"LIKE"</span>   -> api.<span class="fn">like</span>(entry.postId)
+                    <span class="st">"UNLIKE"</span> -> api.<span class="fn">unlike</span>(entry.postId)
+                }
+                db.actionQueueDao().<span class="fn">delete</span>(entry)   <span class="cm">// only delete on success</span>
+            } <span class="kw">catch</span> (e: <span class="cl">Exception</span>) {
+                <span class="kw">if</span> (entry.retryCount >= <span class="nm">3</span>) db.actionQueueDao().<span class="fn">delete</span>(entry)
+                <span class="kw">else</span> db.actionQueueDao().<span class="fn">incrementRetry</span>(entry.id)
+            }
+        }
+        <span class="kw">return</span> <span class="kw">if</span> (db.actionQueueDao().<span class="fn">count</span>() == <span class="nm">0</span>) <span class="cl">Result</span>.<span class="fn">success</span>() <span class="kw">else</span> <span class="cl">Result</span>.<span class="fn">retry</span>()
+    }
+}</pre>
+    </div>
+
+    <div id="dd-ptr">
+      <div class="sec-h2">4) Pull-to-Refresh — Wiring It Correctly</div>
+      <p>Call <code>adapter.refresh()</code> from the <code>SwipeRefreshLayout.setOnRefreshListener</code>. Paging 3 re-triggers <code>RemoteMediator.load(REFRESH)</code>. Observe <code>adapter.loadStateFlow</code> to show/hide the spinner: bind the SwipeRefreshLayout's refreshing state to <code>loadStates.refresh is LoadState.Loading</code>. Handle <code>LoadState.Error</code> to show a Snackbar with a Retry action. The spinner automatically hides on <code>NotLoading</code>.</p>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ─── EXPECTATIONS ───────────────────────────────────── -->
+  <div id="expectations">
+    <div class="sec-h1">What is Expected at Each Level</div>
+    <div class="levels-grid">
+      <div class="level-card mid">
+        <div class="level-title">🔵 Mid-Level</div>
+        <ul>
+          <li>Knows Paging 3 exists and why</li>
+          <li>Implements RecyclerView + ViewHolder correctly</li>
+          <li>Loads images with Coil/Glide, shows placeholder</li>
+          <li>Basic Room cache with manual pagination</li>
+          <li>Handles config change via ViewModel</li>
+          <li>Knows DiffUtil for efficient updates</li>
+          <li>Optimistic like (but may miss rollback)</li>
+        </ul>
+      </div>
+      <div class="level-card senior">
+        <div class="level-title">🟢 Senior</div>
+        <ul>
+          <li>Full RemoteMediator — Room as SSoT</li>
+          <li>Cursor vs offset trade-offs, articulated clearly</li>
+          <li>Optimistic like with full rollback + WorkManager queue</li>
+          <li>Single ExoPlayer instance pattern</li>
+          <li>ConcatAdapter for stories + feed</li>
+          <li>Image prefetching on Wi-Fi</li>
+          <li>action_queue + stale-like merge on REFRESH</li>
+        </ul>
+      </div>
+      <div class="level-card staff">
+        <div class="level-title">🟣 Staff+</div>
+        <ul>
+          <li>New-posts chip without scroll jump</li>
+          <li>onTrimMemory → Coil/ExoPlayer release strategy</li>
+          <li>Network transition: pause video preload on cellular</li>
+          <li>Cache TTL via DataStore + stale-while-revalidate</li>
+          <li>ExoPlayer crash recovery and AudioFocus lifecycle</li>
+          <li>Competing REFRESH serialisation</li>
+          <li>A/B testing feed ranking signals client-side</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ─── INTERVIEW Q&A ──────────────────────────────────── -->
+  <div id="interview-qs">
+    <div class="sec-h1">20 Must-Know Interview Questions</div>
+    <p>These are the most frequently probed follow-ups in real feed system design interviews at Meta, Snap, Google, Zomato, and Meesho.</p>
+
+    <div class="iq-list">
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q1</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">Why use cursor-based pagination instead of offset pagination for a social feed?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Offset pagination (<code>page=2&size=20</code>) drifts when new posts are inserted between page fetches — the user sees duplicates or skipped posts. A cursor anchors to a specific post ID or timestamp, so even with concurrent inserts the next page starts from the exact item after the cursor. The trade-off: you can't jump to an arbitrary page, but feeds scroll linearly so this is fine.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q2</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">Explain the role of RemoteMediator vs PagingSource in Paging 3.</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p><strong>PagingSource</strong> is the UI-facing source of truth — it reads from Room and emits pages. It knows nothing about the network. <strong>RemoteMediator</strong> is a boundary-event bridge: it reacts when PagingSource needs data that isn't in Room (APPEND boundary reached), hits the API, writes results into Room, and lets PagingSource naturally pick up the change via Room's reactive invalidation. This separation keeps PagingSource simple (pure Room queries) while RemoteMediator handles the complex network-to-Room sync logic.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q3</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">How does Paging 3 know when to fetch the next page?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>The Paging engine tracks unconsumed items ahead. When that count drops below <code>prefetchDistance</code> (default equals <code>pageSize</code>), it triggers an APPEND load. Configure with <code>PagingConfig(pageSize=20, prefetchDistance=5)</code> — the next API call fires when the user is 5 items from the end, giving enough lead time before they scroll there.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q4</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">What is an optimistic UI update and why is it critical for the Like button?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>An optimistic update applies the expected change immediately without waiting for server confirmation. For likes, this means flipping <code>isLiked</code> and incrementing <code>likeCount</code> in Room the instant the user taps — the heart animation plays with zero latency. The API call runs in the background. On success: no-op. On failure: roll back Room and show a snackbar. This is critical because users expect instant feedback on social interactions — any perceptible delay kills the UX.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q5</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How do you implement offline mode for the feed?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>The RemoteMediator pattern gives offline support essentially for free: Room is the SSoT. When offline, <code>RemoteMediator.load()</code> throws an <code>IOException</code> and returns <code>MediatorResult.Error</code>, but PagingSource still reads from Room — the user sees the cached feed. Show a "Viewing offline" banner by observing a <code>ConnectivityManager.NetworkCallback</code>. Offline likes are queued via <code>action_queue</code> + WorkManager with a <code>CONNECTED</code> constraint — they sync automatically when connectivity returns.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q6</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How do you prevent RecyclerView from triggering redundant API calls during fast scroll?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Paging 3 automatically de-duplicates: it only runs one APPEND at a time, queueing subsequent requests. Additionally: use <code>distinctUntilChanged()</code> on the PagingData Flow to prevent identical pages causing re-emission; Room's PagingSource only emits on actual data changes; DiffUtil in PagingDataAdapter ensures only changed items re-bind. The net result: zero redundant API calls regardless of scroll speed.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q7</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How do you implement video autoplay that pauses when the video scrolls off screen?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Use a single <code>ExoPlayer</code> instance shared across all items — creating one per ViewHolder is prohibitively expensive. Attach a <code>RecyclerView.OnScrollListener</code> that on scroll settle finds the video ViewHolder with the largest visible area (≥50% visible). Detach the player from the old ViewHolder (<code>playerView.player = null</code>, <code>player.stop()</code>), then attach to the new one (<code>playerView.player = player</code>, set MediaItem, <code>prepare()</code>, <code>play()</code>). Release the player in <code>Fragment.onDestroyView()</code> to avoid AudioFocus and codec leaks.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q8</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How does DiffUtil work in a PagingDataAdapter and why does it matter?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>PagingDataAdapter uses a <code>DiffUtil.ItemCallback</code> you provide. When a new page arrives, DiffUtil computes the minimum change set (inserts, removes, moves, changes) on a background thread. Only changed ViewHolders re-bind. When the user likes a post and likeCount changes, only that one item re-binds — the rest stay untouched. This means appending 20 new items animates a smooth insertion at the bottom without any visible jitter on the currently visible items.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q9</span><span class="iq-diff iq-easy">Easy</span><span class="iq-text">How do you handle the "end of feed" state with a loading footer?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Use a <code>LoadStateAdapter</code> attached via <code>adapter.withLoadStateFooter(loadStateAdapter)</code>. It automatically shows a spinner while APPEND is loading, a Retry button on error, and hides itself when there's no active load. When <code>RemoteMediator</code> returns <code>MediatorResult.Success(endOfPaginationReached=true)</code>, Paging 3 stops triggering APPEND and the footer disappears cleanly.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q10</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">What happens to scroll position on screen rotation?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>PagingData Flow lives in the ViewModel — it survives rotation. The Fragment re-subscribes to the same Flow; no API call is re-issued. RecyclerView's LinearLayoutManager saves and restores scroll position automatically via <code>onSaveInstanceState()</code>. Videos: the shared ExoPlayer re-attaches to the newly created PlayerView after the ViewHolder re-binds. Net result: the user sees the same scroll position with zero data fetch on rotation.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q11</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">Why use ConcatAdapter for Stories + Feed instead of a nested RecyclerView?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>A nested horizontal RecyclerView for stories treats the stories row as a single ViewHolder that never properly recycles. It also causes nested scroll conflicts, poor memory usage, and breaks Paging 3's ability to manage a unified list. <code>ConcatAdapter</code> merges <code>StoriesAdapter</code> and <code>PagingDataAdapter</code> into one flat RecyclerView. Stories are item type 0, posts are item type 1. The RecycledViewPool is shared so ViewHolders recycle correctly across the entire merged list.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q12</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How do you prefetch images for the next page before the user scrolls there?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>After RemoteMediator inserts the next page's posts into Room, fire headless Coil requests with <code>memoryCachePolicy=DISABLED</code> and <code>diskCachePolicy=ENABLED</code>. This downloads and decodes images into disk cache without occupying memory. When RecyclerView binds those ViewHolders, Coil hits disk cache (~30ms) instead of network. Gate behind Wi-Fi using <code>NetworkCapabilities.hasTransport(TRANSPORT_WIFI)</code> — never prefetch on cellular.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q13</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How do you implement pull-to-refresh correctly with Paging 3?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Call <code>adapter.refresh()</code> from the SwipeRefreshLayout listener. Paging 3 re-triggers <code>RemoteMediator.load(REFRESH)</code>, which atomically clears old Room data and inserts fresh posts. Bind the SwipeRefreshLayout's isRefreshing to <code>adapter.loadStateFlow.map { it.refresh is LoadState.Loading }.distinctUntilChanged()</code>. Handle <code>LoadState.Error</code> to show a Snackbar with a Retry. The spinner auto-hides on <code>NotLoading</code>.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q14</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How do you notify the user of new posts without jumping their scroll position?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>On FCM data push (new posts available): check <code>layoutManager.findFirstCompletelyVisibleItemPosition() == 0</code>. If at the top, auto-call <code>adapter.refresh()</code>. Otherwise, show a floating "New Posts ↑" chip above the RecyclerView (a separate View, not a list item). On chip tap: smoothScrollToPosition(0), then call <code>adapter.refresh()</code> inside the scroll listener once position 0 is reached. The chip being outside the list means it has zero impact on DiffUtil or Paging's item accounting.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q15</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How do you prevent stale like counts after a feed refresh overwrites optimistic state?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Before RemoteMediator writes fresh posts to Room on REFRESH, it queries <code>action_queue</code> for all pending LIKE/UNLIKE post IDs. When mapping the API response to <code>PostEntity</code>, for any post in the pending set, it overrides the server's <code>isLiked</code> and <code>likeCount</code> values with the local optimistic state. This way, even if the server returns <code>isLiked=false</code> for a pending like, the UI shows the heart filled until WorkManager successfully syncs.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q16</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How do you handle memory pressure — what gets released first?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Override <code>onTrimMemory(level)</code> in your Application class. Priority order for release: (1) <code>TRIM_MEMORY_UI_HIDDEN</code> → trim Coil's memory cache to 50%. (2) <code>TRIM_MEMORY_MODERATE</code> → clear Coil memory cache fully; trim ExoPlayer's buffer (<code>player.setPlaybackParameters</code> to reduce buffering). (3) <code>TRIM_MEMORY_COMPLETE</code> → release ExoPlayer entirely (<code>player.release()</code>), clear any in-memory bitmap pools. Room and disk caches are never evicted here — they survive. On the next foreground event, recreate ExoPlayer lazily.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q17</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How would you handle mixed content types — images, videos, carousels, ads — in one feed?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Use a sealed class <code>FeedItem</code> with subtypes: <code>ImagePost</code>, <code>VideoPost</code>, <code>CarouselPost</code>, <code>AdPost</code>. In <code>PagingDataAdapter</code> override <code>getItemViewType()</code> returning distinct integers per type. Create separate ViewHolder classes with different layouts in <code>onCreateViewHolder()</code>. Room stores all types in one <code>posts</code> table with a <code>mediaType</code> column. Ads come from the API with <code>mediaType=AD</code> — they have a different layout (no like/comment row, "Sponsored" label) and are inserted at server-defined positions in the response.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q18</span><span class="iq-diff iq-medium">Medium</span><span class="iq-text">How do you cancel image loads when a ViewHolder is recycled?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Coil automatically cancels requests bound via <code>imageView.load(url)</code> when the ImageView is detached (which happens on recycle). If using the ImageLoader manually, store the <code>Disposable</code> in the ViewHolder and call <code>disposable.dispose()</code> in <code>Adapter.onViewRecycled(holder)</code>. For Glide, binding to the Fragment lifecycle via <code>Glide.with(fragment)</code> handles cancellation automatically when the Fragment is stopped or destroyed.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q19</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How do you test the RemoteMediator in isolation?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>Use an in-memory Room database (<code>Room.inMemoryDatabaseBuilder</code>) and a fake API implementation that returns controlled responses. Call <code>mediator.load(LoadType.REFRESH, pagingState)</code> directly and assert: (1) <code>MediatorResult.Success</code> returned; (2) Room <code>posts</code> table contains expected entities; (3) <code>remote_keys</code> table has the correct cursor. Test error path: fake API throws <code>IOException</code>, assert <code>MediatorResult.Error</code> and Room is unchanged. Test the <code>action_queue</code> merge: pre-populate queue with a pending LIKE, verify the entity written to Room has <code>isLiked=true</code> even when API returns <code>isLiked=false</code>.</p></div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header"><div class="iq-left"><span class="iq-num">Q20</span><span class="iq-diff iq-hard">Hard</span><span class="iq-text">How would you add feed ranking signals A/B tested client-side?</span></div><span class="iq-toggle">▾</span></div>
+        <div class="iq-answer"><p>The server handles ranking — the client's job is to: (1) Send implicit engagement signals (view time per post, scroll speed, re-views) to a telemetry endpoint. Batch these in memory and flush every 30 seconds or on app background. (2) Receive a ranking experiment assignment via the API response header (<code>X-Feed-Experiment: rankv2</code>) or a remote config SDK call. (3) Store the assignment in DataStore and include it in every feed API request header so the server serves the appropriate ranked feed. The client never runs ranking itself — it provides signal inputs and receives the ranked output.</p></div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="reading-progress-wrap">
+    <div class="rp-label">Reading Progress</div>
+    <div class="rp-track"><div class="rp-fill" id="rpFill"></div></div>
+  </div>
+
+  <div class="toc-label">On This Page</div>
+  <ul class="toc-list">
+    <li class="toc-item"><a href="#understanding" id="toc-understanding">Understanding the Problem</a></li>
+    <li class="toc-item sub"><a href="#functional-req" id="toc-functional-req">Functional Requirements</a></li>
+    <li class="toc-item sub"><a href="#nonfunctional-req" id="toc-nonfunctional-req">Non-Functional Requirements</a></li>
+
+    <li class="toc-item"><a href="#setup" id="toc-setup">The Set Up</a></li>
+    <li class="toc-item sub"><a href="#planning" id="toc-planning">Planning the Approach</a></li>
+    <li class="toc-item sub"><a href="#core-entities" id="toc-core-entities">Core Entities</a></li>
+
+    <li class="toc-item"><a href="#high-level" id="toc-high-level">High-Level Design</a></li>
+    <li class="toc-item sub"><a href="#hl-architecture" id="toc-hl-architecture">1) Architecture</a></li>
+    <li class="toc-item sub"><a href="#hl-pagination" id="toc-hl-pagination">2) Why Paging 3</a></li>
+
+    <li class="toc-item"><a href="#lld" id="toc-lld">Low-Level Design</a></li>
+    <li class="toc-item sub"><a href="#lld-coldstart" id="toc-lld-coldstart">Flow 1 — Cold Start</a></li>
+    <li class="toc-item sub"><a href="#lld-scroll" id="toc-lld-scroll">Flow 2 — Infinite Scroll</a></li>
+    <li class="toc-item sub"><a href="#lld-like" id="toc-lld-like">Flow 3 — Optimistic Like</a></li>
+    <li class="toc-item sub"><a href="#lld-code" id="toc-lld-code">Key Code</a></li>
+
+    <li class="toc-item"><a href="#edge-cases" id="toc-edge-cases">Edge Cases</a></li>
+    <li class="toc-item sub"><a href="#edge-cases">Memory Pressure / OOM</a></li>
+    <li class="toc-item sub"><a href="#edge-cases">Network Transition</a></li>
+    <li class="toc-item sub"><a href="#edge-cases">New Posts Chip</a></li>
+    <li class="toc-item sub"><a href="#edge-cases">Stale Feed / TTL</a></li>
+    <li class="toc-item sub"><a href="#edge-cases">ExoPlayer Recovery</a></li>
+    <li class="toc-item sub"><a href="#edge-cases">Pending Like on Refresh</a></li>
+
+    <li class="toc-item"><a href="#deep-dives" id="toc-deep-dives">Deep Dives</a></li>
+    <li class="toc-item"><a href="#expectations" id="toc-expectations">Expected at Each Level</a></li>
+    <li class="toc-item"><a href="#interview-qs" id="toc-interview-qs">20 Interview Questions</a></li>
   </ul>
 
-  <div class="callout">
-    <div class="callout-label">📌 Pattern: ConcatAdapter</div>
-    <p><strong>ConcatAdapter</strong> merges multiple adapters (StoriesAdapter + FeedAdapter) into a single RecyclerView, eliminating nested scroll jank and allowing the Paging engine to manage the full list.</p>
-    <a class="callout-cta" href="#">Learn This Pattern →</a>
-  </div>
+  <div class="sidebar-divider"></div>
 
-  <h3>Offline Like Queue</h3>
-  <p>If the user likes a post while offline, enqueue a <code>SyncLikeWorker</code> with <code>Constraints(NetworkType.CONNECTED)</code>. WorkManager persists the work across process death and retries with exponential backoff:</p>
-  <pre><code><span class="kw">class</span> <span class="cl">SyncLikeWorker</span>(ctx: <span class="cl">Context</span>, params: <span class="cl">WorkerParameters</span>) : <span class="cl">CoroutineWorker</span>(ctx, params) {
-    <span class="kw">override suspend fun</span> <span class="fn">doWork</span>(): <span class="cl">Result</span> {
-        <span class="kw">val</span> postId = inputData.<span class="fn">getString</span>(<span class="st">"POST_ID"</span>) ?: <span class="kw">return</span> <span class="cl">Result</span>.<span class="fn">failure</span>()
-        <span class="kw">val</span> like   = inputData.<span class="fn">getBoolean</span>(<span class="st">"IS_LIKE"</span>, <span class="kw">true</span>)
-        <span class="kw">return try</span> {
-            <span class="kw">if</span> (like) api.<span class="fn">like</span>(postId) <span class="kw">else</span> api.<span class="fn">unlike</span>(postId)
-            <span class="cl">Result</span>.<span class="fn">success</span>()
-        } <span class="kw">catch</span> (e: <span class="cl">Exception</span>) { <span class="cl">Result</span>.<span class="fn">retry</span>() }
-    }
-}</code></pre>
-
-  <h3>Pull-to-Refresh</h3>
-  <p>Observe <code>LoadState.Refresh</code> from the PagingDataAdapter. Show SwipeRefreshLayout spinner while <code>LoadState.Loading</code>, hide on <code>NotLoading</code>. Call <code>adapter.refresh()</code> on swipe — Paging 3 re-triggers <code>RemoteMediator.load(REFRESH)</code> automatically.</p>
-
-  <h3>Stories Circular Crop + Progress</h3>
-  <p>Stories avatars use a <strong>circular crop transformation</strong> in Coil. The unread ring is drawn via a custom <code>Drawable</code> with a <code>GradientDrawable</code> ring. Story progress bars are a horizontal <code>LinearProgressIndicator</code> per segment, advanced by a <code>CountDownTimer</code> that auto-advances the ViewPager2.</p>
-
-  <!-- ══════════════════════════════ 6. EXPECTED ══════════════════════════════ -->
-  <h2 id="s-levels">6. What is Expected at Each Level</h2>
-
-  <div class="levels-grid">
-    <div class="level-card level-mid">
-      <div class="level-badge">🔵 Mid-Level</div>
-      <ul>
-        <li>Knows Paging 3 exists and why it's used</li>
-        <li>Implements RecyclerView + ViewHolder correctly</li>
-        <li>Loads images with Coil/Glide, shows placeholder</li>
-        <li>Basic Room cache with manual pagination</li>
-        <li>Handles config change in ViewModel</li>
-        <li>Knows DiffUtil for efficient updates</li>
-      </ul>
-    </div>
-    <div class="level-card level-senior">
-      <div class="level-badge">🟢 Senior</div>
-      <ul>
-        <li>Full RemoteMediator pattern — Room as SSoT</li>
-        <li>Cursor-based pagination vs offset trade-offs</li>
-        <li>Optimistic like with rollback on failure</li>
-        <li>ExoPlayer single-player pattern for video</li>
-        <li>WorkManager for offline action queue</li>
-        <li>Image pre-fetching strategy</li>
-        <li>ConcatAdapter for stories + feed</li>
-      </ul>
-    </div>
-    <div class="level-card level-staff">
-      <div class="level-badge">🟣 Staff+</div>
-      <ul>
-        <li>Feed refresh strategy without losing scroll position</li>
-        <li>Incremental invalidation (only updated posts re-bind)</li>
-        <li>Predictive scroll-ahead prefetch based on velocity</li>
-        <li>ExoPlayer bandwidth estimation for adaptive bitrate</li>
-        <li>Multiple media types in one list (ConcatAdapter + viewType)</li>
-        <li>A/B testing feed ranking signals client-side</li>
-        <li>Memory pressure → trim Stories cache first</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════ 7. Q&A ══════════════════════════════ -->
-  <h2 id="s-qa">7. Interview Questions</h2>
-  <div class="iq-wrap">
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">1. Why use cursor-based pagination over offset pagination for a social feed?</span>
-        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Offset pagination (<code>page=2&amp;size=20</code>) uses a numeric offset into the dataset. If new posts are inserted between page fetches, items shift — causing <strong>duplicates or skipped posts</strong>. Cursor-based pagination anchors to a specific item ID or timestamp, so even with concurrent inserts, the next page starts from the exact item after the cursor. For a social feed with constant new content this is essential. The trade-off: cursors can't jump to arbitrary pages (no "go to page 5"), but feeds scroll linearly so this is fine.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">2. Explain the role of RemoteMediator vs PagingSource in Paging 3.</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p><strong>PagingSource</strong> is the single source of truth for paged data — it reads from Room and emits pages to the UI. It knows nothing about the network. <strong>RemoteMediator</strong> is a bridge that reacts to boundary events (need more data) by hitting the API, writing results into Room, and letting PagingSource naturally pick up the change via Room's reactive invalidation. This separation keeps PagingSource simple (just Room queries) and RemoteMediator focused on network-to-Room sync.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">3. How does Paging 3 know when to fetch the next page?</span>
-        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>The Paging engine tracks how many items the user has consumed. When the number of unconsumed items ahead drops below <code>prefetchDistance</code> (default = page size), it triggers a <code>APPEND</code> load. You can configure <code>PagingConfig(pageSize=20, prefetchDistance=5)</code> so the next API call fires when the user is 5 items from the end — giving enough lead time for the network request to complete before they scroll there.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">4. How do you implement pull-to-refresh with Paging 3?</span>
-        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Call <code>adapter.refresh()</code> from the SwipeRefreshLayout listener. Paging 3 re-triggers <code>RemoteMediator.load(LoadType.REFRESH)</code>, which clears old Room data and inserts fresh posts atomically. Observe <code>adapter.loadStateFlow</code> and bind the refresh indicator to <code>LoadState.Refresh is Loading</code>. Hide it when <code>is NotLoading</code>. Handle <code>is Error</code> to show a Snackbar.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">5. What is an optimistic UI update and why is it important for the Like button?</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>An optimistic update applies the expected UI change immediately without waiting for server confirmation. For likes, this means toggling <code>isLiked</code> and incrementing <code>likeCount</code> in Room the moment the user taps — the heart animation plays with zero latency. The API call runs in the background. On success: no-op. On failure: roll back Room to the previous state and show an error. This pattern is critical for perceived responsiveness in social apps — users expect instant feedback on interactions.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">6. How do you prevent RecyclerView from triggering redundant API calls during fast scroll?</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Paging 3 automatically de-duplicates: it only triggers one APPEND at a time, queuing subsequent requests. Additionally: (1) use <code>distinctUntilChanged()</code> on the PagingData flow so identical pages don't cause re-emission; (2) Room's PagingSource emits only when the underlying data actually changes; (3) DiffUtil in PagingDataAdapter ensures only changed items re-bind, not the entire list.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">7. How would you implement video autoplay that pauses when the video scrolls off screen?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Use a single <code>ExoPlayer</code> instance (expensive to create) shared across items. Attach a <code>RecyclerView.OnScrollListener</code> that, when scroll settles, finds the video ViewHolder with the largest visible area (≥50% of item height). Detach the player from the old ViewHolder, set <code>playerView.player = null</code>, stop playback. Attach to the new ViewHolder, set <code>MediaItem</code>, call <code>prepare()</code> and <code>play()</code>. Release the player in <code>Fragment.onDestroyView()</code> to avoid leaks.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">8. How does DiffUtil work in a Paging adapter and why is it important?</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p><code>PagingDataAdapter</code> uses a <code>DiffUtil.ItemCallback</code> that you provide. When a new PagingData page arrives, DiffUtil computes the minimum set of changes (insertions, removals, moves, changes) between old and new lists on a background thread. Only the changed ViewHolders re-bind — the rest stay as-is. This means appending 20 new items animates a smooth insertion at the bottom without touching the visible items or causing scroll jitter. You implement <code>areItemsTheSame</code> (compare IDs) and <code>areContentsTheSame</code> (compare all fields).</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">9. How do you handle the "end of feed" state with a loading footer?</span>
-        <div class="iq-meta"><span class="iq-diff diff-easy">Easy</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Use a <code>LoadStateAdapter</code> and attach it via <code>adapter.withLoadStateFooter(LoadStateAdapter)</code>. This adapter automatically shows a loading spinner while APPEND is loading, a retry button on error, and hides itself when there's no active load. For end-of-feed, <code>RemoteMediator</code> returns <code>MediatorResult.Success(endOfPaginationReached=true)</code> and Paging 3 stops triggering APPEND — the footer simply disappears.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">10. How would you implement offline mode for the feed?</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>The RemoteMediator pattern gives offline support for free: Room is the single source of truth. On no internet, <code>RemoteMediator.load()</code> throws an IOException and returns <code>MediatorResult.Error</code>, but PagingSource still reads from Room — the user sees the cached feed. Show a "Viewing offline" banner by observing network connectivity. Likes while offline are queued via WorkManager with <code>NetworkType.CONNECTED</code> constraint — they sync automatically when connectivity returns.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">11. Why use ConcatAdapter for Stories + Feed, instead of a nested RecyclerView?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Nested RecyclerView (horizontal stories inside vertical feed) breaks the outer RecyclerView's recycling: the stories row is treated as a single ViewHolder and never properly recycled. It also causes nested scroll conflicts, poor memory usage, and prevents Paging 3 from managing a unified list. <code>ConcatAdapter</code> merges <code>StoriesAdapter</code> and <code>PagingDataAdapter</code> into one flat RecyclerView with a single scroll. The stories row is just item type 0; posts are item type 1. RecycledViewPool is shared so ViewHolders recycle across the merged list.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">12. How do you pre-fetch images for the next page before the user scrolls to it?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>After RemoteMediator inserts the next page's posts into Room, fire headless Coil requests for those image URLs with <code>memoryCachePolicy = DISABLED</code> and <code>diskCachePolicy = ENABLED</code>. This downloads and decodes the images into the disk cache without occupying memory. When RecyclerView binds those ViewHolders, Coil finds the images in the disk cache (5-50ms) rather than hitting the network. Limit pre-fetch to Wi-Fi only using <code>ConnectivityManager</code> to avoid wasting mobile data.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">13. What happens to the feed scroll position on a screen rotation?</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>The PagingData Flow lives in the ViewModel, which survives config changes. The Fragment is recreated and re-subscribes to the same Flow — no API call is re-issued. RecyclerView's LayoutManager saves and restores scroll position via <code>onSaveInstanceState()</code> / <code>onRestoreInstanceState()</code> automatically. The user sees the same scroll position after rotation. Videos re-attach the shared ExoPlayer instance to the newly created PlayerView after re-binding.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">14. How would you implement new-post notifications that update the feed in real time?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Two approaches: (1) <strong>FCM Push</strong> — server sends a data push when new posts are available. The app triggers <code>adapter.refresh()</code> only if the user is at the top (scroll position = 0). Otherwise, show a "New Posts" chip at the top. Tap → scroll to top → refresh. (2) <strong>WebSocket / SSE</strong> — maintain a live connection; server pushes new post IDs. The app prefetches those posts in the background and shows the chip. Option 1 is simpler and sufficient for most interview contexts.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">15. How do you cancel image loads when a ViewHolder is recycled?</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Coil automatically cancels requests bound via <code>imageView.load(url)</code> when the ImageView is detached (which happens on recycle). If you use the Coil <code>ImageLoader</code> manually, store the <code>Disposable</code> in <code>ViewHolder.itemView.setTag(R.id.coil_request, disposable)</code> and call <code>disposable.cancel()</code> in <code>Adapter.onViewRecycled()</code>. Glide's lifecycle-aware RequestManager handles this automatically when bound to the Fragment lifecycle.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">16. How do you handle the case where a user likes a post, the app is killed, and reopened?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>WorkManager persists enqueued work to its own database (backed by Room). Even if the process is killed, WorkManager re-schedules <code>SyncLikeWorker</code> on next app launch. The local Room <code>posts</code> table already has the optimistic update (isLiked=true), so the UI shows the correct state immediately. When WorkManager runs the sync and the server confirms, no further action is needed. If the sync fails permanently (after max retries), the worker returns <code>Result.failure()</code> and we rollback Room + show a notification.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">17. How would you implement stories with auto-advance and progress bars?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Stories are shown in a full-screen Activity with a ViewPager2 (one Fragment per user's story set). Progress is a row of LinearProgressIndicators, one per story. A <code>CountDownTimer(storyDuration, tickInterval)</code> updates the active bar each tick. On timer finish: <code>viewPager.setCurrentItem(current+1)</code>. On swipe: cancel timer, start new one. Image stories use <code>duration=5000ms</code>; video stories sync the timer to ExoPlayer's actual duration. Pause timer on long-press (common UX pattern).</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">18. How do you test the RemoteMediator in isolation?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Use Paging 3's <code>TestPager</code> and an in-memory Room database (<code>Room.inMemoryDatabaseBuilder</code>). Mock the API with a fake implementation. Call <code>mediator.load(LoadType.REFRESH, pager.asPagingSourceFactory()...)</code> directly and assert: (1) <code>MediatorResult.Success</code> returned, (2) Room contains the expected posts, (3) remote_keys table has the correct next cursor. Test the error path by having the fake API throw an IOException and assert <code>MediatorResult.Error</code> is returned and Room is unchanged.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">19. How would you prevent showing stale like counts after the user refreshes the feed?</span>
-        <div class="iq-meta"><span class="iq-diff diff-medium">Medium</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>On <code>REFRESH</code>, RemoteMediator clears Room and inserts fresh server data in a single transaction. The fresh data contains server-authoritative <code>likeCount</code> and <code>isLiked</code> values. However, if a pending like is in the WorkManager queue (not yet synced), the server's <code>isLiked=false</code> would incorrectly show the un-liked state. Fix: before writing fresh posts, check the <code>action_queue</code> table for pending likes and merge them — overriding server <code>isLiked</code> with the local optimistic state for those posts.</p>
-      </div>
-    </div>
-
-    <div class="iq-card">
-      <div class="iq-header" onclick="toggleIQ(this)">
-        <span class="iq-q">20. How would you handle mixed content types (images, videos, carousels, ads) in one feed?</span>
-        <div class="iq-meta"><span class="iq-diff diff-hard">Hard</span><span class="iq-chevron">▾</span></div>
-      </div>
-      <div class="iq-body">
-        <p>Use a sealed class <code>FeedItem</code> with subtypes: <code>ImagePost</code>, <code>VideoPost</code>, <code>CarouselPost</code>, <code>AdPost</code>. In <code>PagingDataAdapter</code>, override <code>getItemViewType()</code> returning distinct integers per type. Create separate ViewHolder classes and inflate different layouts in <code>onCreateViewHolder()</code>. Room stores all types in one <code>posts</code> table with a <code>mediaType</code> column; a <code>PostTypeConverter</code> maps the enum. Server ads are injected at positions defined by the API response — they have a <code>mediaType=AD</code> field and a different layout (no like/comment row, has "Sponsored" label).</p>
-      </div>
-    </div>
-
-  </div><!-- /.iq-wrap -->
-
-</article>
-
-<!-- ═══════════════════════════════════ SIDEBAR ═══════════════════════════════════ -->
-<aside class="sidebar">
-  <div class="sidebar-inner">
-    <div class="sidebar-progress">
-      <div class="progress-label"><span>Reading progress</span><span id="pct">0%</span></div>
-      <div class="progress-track"><div class="progress-fill" id="pfill" style="width:0%"></div></div>
-    </div>
-
-    <div class="sidebar-title">On This Page</div>
-    <a class="toc-item" href="#s-problem">1. Understanding the Problem</a>
-    <a class="toc-item" href="#s-setup">2. The Set Up</a>
-    <a class="toc-item" href="#s-hld">3. High-Level Design</a>
-    <a class="toc-item" href="#s-lld">4. Low-Level Design</a>
-    <a class="toc-item" href="#s-deep">5. Deep Dives</a>
-    <a class="toc-item" href="#s-levels">6. Expected at Each Level</a>
-    <a class="toc-item" href="#s-qa">7. Interview Questions</a>
-
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-title">Asked At</div>
-    <div class="sidebar-companies">
-      <span class="co-chip">Meta</span>
-      <span class="co-chip">ShareChat</span>
-      <span class="co-chip">Snap</span>
-      <span class="co-chip">Zomato</span>
-      <span class="co-chip">Meesho</span>
-    </div>
-
-    <div class="sidebar-divider"></div>
-    <a href="questions.html?topic=sysdesign" style="font-size:13px; color:var(--accent); text-decoration:none;">← All System Design</a>
+  <div class="companies-label">Asked at</div>
+  <div class="company-chips">
+    <span class="chip">Meta</span>
+    <span class="chip">Snap</span>
+    <span class="chip">ShareChat</span>
+    <span class="chip">Zomato</span>
+    <span class="chip">Meesho</span>
   </div>
 </aside>
 
-</div><!-- /.page-wrap -->
+</div><!-- /page -->
 
 <script>
   // Reading progress
-  window.addEventListener('scroll', () => {
-    const doc = document.documentElement;
-    const scrolled = doc.scrollTop;
-    const total = doc.scrollHeight - doc.clientHeight;
-    const pct = total > 0 ? Math.round((scrolled / total) * 100) : 0;
-    document.getElementById('progress-bar').style.width = pct + '%';
-    document.getElementById('pfill').style.width = pct + '%';
-    document.getElementById('pct').textContent = pct + '%';
-
-    // Active TOC
-    const sections = ['s-problem','s-setup','s-hld','s-lld','s-deep','s-levels','s-qa'];
-    let active = sections[0];
-    for (const id of sections) {
-      const el = document.getElementById(id);
-      if (el && el.getBoundingClientRect().top < 120) active = id;
-    }
-    document.querySelectorAll('.toc-item').forEach(a => {
-      a.classList.toggle('active', a.getAttribute('href') === '#' + active);
-    });
-  });
+  const rpFill = document.getElementById('rpFill');
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? Math.round((scrollTop / docHeight) * 100) : 0;
+    if (rpFill) rpFill.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
 
   // IQ accordion
-  function toggleIQ(header) {
-    const card = header.closest('.iq-card');
+  function toggleIQ(card) {
     const isOpen = card.classList.contains('open');
     document.querySelectorAll('.iq-card.open').forEach(c => c.classList.remove('open'));
     if (!isOpen) card.classList.add('open');
   }
+
+  // Active TOC
+  const sections = [
+    'understanding','functional-req','nonfunctional-req',
+    'setup','planning','core-entities',
+    'high-level','hl-architecture','hl-pagination',
+    'lld','lld-coldstart','lld-scroll','lld-like','lld-code',
+    'edge-cases','deep-dives','dd-prefetch','dd-recycler','dd-offline','dd-ptr',
+    'expectations','interview-qs'
+  ];
+  const tocLinks = {};
+  sections.forEach(id => { tocLinks[id] = document.getElementById('toc-' + id); });
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        Object.values(tocLinks).forEach(l => l && l.classList.remove('active'));
+        const link = tocLinks[entry.target.id];
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-15% 0px -70% 0px' });
+
+  sections.forEach(id => { const el = document.getElementById(id); if (el) observer.observe(el); });
 </script>
+
+<!-- Auth -->
+<script>
+(function preRenderNav() {
+  try {
+    const raw = localStorage.getItem('sb-dquheflcmcppldrnckzf-auth-token');
+    if (!raw) return;
+    const session = JSON.parse(raw);
+    const user = session?.user;
+    if (!user) return;
+    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || '';
+    const initials = name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() || '?';
+    const el = id => document.getElementById(id);
+    if (el('navSignInBtn'))    el('navSignInBtn').style.display   = 'none';
+    if (el('navUserMenu'))     el('navUserMenu').style.display    = 'flex';
+    if (el('navAvatarInitial'))el('navAvatarInitial').textContent = initials;
+    if (el('navUserName'))     el('navUserName').textContent      = name.split(' ')[0];
+    if (el('navUserEmail'))    el('navUserEmail').textContent     = user.email;
+  } catch (e) {}
+})();
+
+(function () {
+  const SUPABASE_URL      = 'https://dquheflcmcppldrnckzf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function updateNavForUser(user) {
+    const signInBtn  = document.getElementById('navSignInBtn');
+    const userMenu   = document.getElementById('navUserMenu');
+    const avatarEl   = document.getElementById('navAvatarInitial');
+    const userNameEl = document.getElementById('navUserName');
+    const emailEl    = document.getElementById('navUserEmail');
+    const upgradeEl  = document.getElementById('upgrade-cta');
+    if (user) {
+      const name = user.user_metadata?.full_name || user.email.split('@')[0];
+      if (signInBtn) signInBtn.style.display = 'none';
+      if (userMenu)  userMenu.style.display  = 'flex';
+      if (avatarEl)  avatarEl.textContent    = name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+      if (userNameEl)userNameEl.textContent  = name.split(' ')[0];
+      if (emailEl)   emailEl.textContent     = user.email;
+    } else {
+      if (signInBtn) signInBtn.style.display = '';
+      if (userMenu)  userMenu.style.display  = 'none';
+      if (upgradeEl) upgradeEl.style.display = '';
+    }
+  }
+
+  sb.auth.onAuthStateChange((event, session) => updateNavForUser(session?.user ?? null));
+
+  window.handleSignOut = async function () {
+    await sb.auth.signOut();
+    updateNavForUser(null);
+  };
+  window.openAuthModal = function () {
+    window.location.href = 'index.html?auth=signin&return=sysdesign_instafeed';
+  };
+
+  document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
+    this.classList.toggle('open');
+    e.stopPropagation();
+  });
+  document.addEventListener('click', function() {
+    document.getElementById('navUserMenu')?.classList.remove('open');
+  });
+
+  (async () => {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      updateNavForUser(session?.user ?? null);
+    } catch(e) {}
+  })();
+})();
+</script>
+
 </body>
 </html>
