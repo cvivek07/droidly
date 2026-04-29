@@ -394,6 +394,120 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ─── RESPONSIVE ──────────────────────────────────── */
+    /* ─── PREMIUM CELEBRATION OVERLAY ────────────────────── */
+    .celebration-overlay {
+      position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    .celebration-overlay.show {
+      opacity: 1; pointer-events: all;
+    }
+
+    .celebration-card {
+      background: #fff;
+      border-radius: 28px;
+      padding: 48px 44px 40px;
+      max-width: 420px; width: 90%;
+      text-align: center;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.18);
+      transform: scale(0.8) translateY(24px);
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative; overflow: hidden;
+    }
+    .celebration-overlay.show .celebration-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .celebration-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, var(--green2), var(--green-mid), var(--green));
+    }
+
+    .cel-icon {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: var(--green-light);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      animation: cel-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+    }
+    @keyframes cel-pop {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    .cel-icon svg {
+      width: 38px; height: 38px;
+      stroke: var(--green); stroke-width: 2.5; fill: none;
+      stroke-dasharray: 60;
+      stroke-dashoffset: 60;
+      animation: cel-draw 0.5s ease 0.5s forwards;
+    }
+    @keyframes cel-draw {
+      to { stroke-dashoffset: 0; }
+    }
+
+    .cel-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
+      color: var(--ink); margin-bottom: 8px;
+      animation: cel-fadein 0.4s ease 0.4s both;
+    }
+    .cel-sub {
+      font-size: 15px; color: var(--muted); margin-bottom: 28px;
+      animation: cel-fadein 0.4s ease 0.5s both;
+    }
+    @keyframes cel-fadein {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .cel-features {
+      background: var(--green-pale);
+      border: 1px solid var(--border-green);
+      border-radius: 14px; padding: 16px 20px;
+      margin-bottom: 28px; text-align: left;
+      animation: cel-fadein 0.4s ease 0.6s both;
+    }
+    .cel-features li {
+      list-style: none; display: flex; align-items: center; gap: 10px;
+      font-size: 13px; font-weight: 500; color: var(--ink2);
+      padding: 5px 0;
+    }
+    .cel-features li svg {
+      width: 14px; height: 14px; stroke: var(--green);
+      stroke-width: 2.5; fill: none; flex-shrink: 0;
+    }
+
+    .cel-btn {
+      width: 100%; background: var(--green); color: white;
+      border: none; cursor: pointer; padding: 14px 24px;
+      border-radius: 12px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px; font-weight: 700;
+      animation: cel-fadein 0.4s ease 0.7s both;
+      transition: background 0.18s;
+    }
+    .cel-btn:hover { background: var(--green2); }
+
+    /* Confetti particles */
+    .confetti-wrap {
+      position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+    }
+    .confetti-dot {
+      position: absolute; top: -10px;
+      width: 8px; height: 8px; border-radius: 2px;
+      animation: confetti-fall linear forwards;
+    }
+    @keyframes confetti-fall {
+      0%   { transform: translateY(0) rotate(0deg);   opacity: 1; }
+      100% { transform: translateY(500px) rotate(720deg); opacity: 0; }
+    }
+
     @media (max-width: 768px) {
       .nav-center { display: none; }
     }
@@ -550,6 +664,25 @@
 
 </div>
 
+<!-- ─── PREMIUM CELEBRATION OVERLAY ──────────────────────── -->
+<div class="celebration-overlay" id="celebrationOverlay" onclick="closeCelebration()">
+  <div class="celebration-card" onclick="event.stopPropagation()">
+    <div class="confetti-wrap" id="confettiWrap"></div>
+    <div class="cel-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="cel-title">You're Premium now! 🎉</div>
+    <p class="cel-sub">Unlimited access, unlocked. Go build something great.</p>
+    <ul class="cel-features">
+      <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> All system design deep-dives</li>
+      <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Full explainer library</li>
+      <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 200+ interview questions with answers</li>
+      <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> New content every week</li>
+    </ul>
+    <button class="cel-btn" onclick="closeCelebration()">Start learning →</button>
+  </div>
+</div>
+
 <!-- ─── FOOTER ────────────────────────────────────────────── -->
 <footer>
   <span class="footer-brand">Droidly</span>
@@ -571,7 +704,7 @@
   const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   // ── Replace this with your real Razorpay Key ID ──────────
-  const RAZORPAY_KEY_ID = 'YOUR_RAZORPAY_KEY_ID';
+  const RAZORPAY_KEY_ID = 'rzp_test_Siu6XT1KQfV87D';
 
   const PLAN = { amount: 29900, currency: 'INR', name: 'Droidly Premium', description: 'All Access — Monthly' };
 
@@ -663,93 +796,156 @@
 
   // ── Check if user has premium ────────────────────────────
   async function checkPremium(userId) {
-    // Query your subscriptions table — adjust table/column names as needed
     const { data, error } = await db
-      .from('subscriptions')
-      .select('status')
-      .eq('user_id', userId)
-      .eq('status', 'active')
-      .maybeSingle();
-    return !error && data !== null;
+      .from('profiles')
+      .select('is_premium')
+      .eq('id', userId)
+      .single();
+    return !error && data?.is_premium === true;
   }
 
   // ── Razorpay payment flow ────────────────────────────────
+  const SPINNER_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.7s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
+  const PAY_BTN_HTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Get Premium — ₹299/month';
+
+  function setBtnLoading(btn, loading) {
+    if (!btn) return;
+    btn.disabled = loading;
+    btn.innerHTML = loading ? `${SPINNER_SVG} Processing…` : PAY_BTN_HTML;
+  }
+
   async function startPayment() {
     if (!currentUser) { redirectToSignIn(); return; }
 
     const btn = document.getElementById('payBtn');
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.7s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Processing…';
-    }
+    setBtnLoading(btn, true);
 
-    const options = {
-      key: RAZORPAY_KEY_ID,
-      amount: PLAN.amount,          // in paise (29900 = ₹299)
-      currency: PLAN.currency,
-      name: 'Droidly',
-      description: PLAN.description,
-      image: 'assets/logo.png',
-      prefill: {
-        email: currentUser.email,
-        name: currentUser.user_metadata?.full_name || '',
-      },
-      theme: { color: '#3d7a4f' },
+    try {
+      // ── Step 1: Create Razorpay order server-side ──────────
+      const { data: { session } } = await db.auth.getSession();
+      const token = session?.access_token;
 
-      handler: async function(response) {
-        // Payment successful — save to Supabase
-        await handlePaymentSuccess(response);
-      },
+      const orderRes = await fetch(`${SUPABASE_URL}/functions/v1/create-order`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'apikey': SUPABASE_KEY,
+          'Content-Type': 'application/json',
+        },
+      });
 
-      modal: {
-        ondismiss: function() {
-          if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Get Premium — ₹299/month';
-          }
+      if (!orderRes.ok) {
+        const err = await orderRes.json();
+        throw new Error(err.error || 'Could not create order. Please try again.');
+      }
+
+      const { order_id, amount, currency } = await orderRes.json();
+
+      // ── Step 2: Open Razorpay checkout with the order ──────
+      const options = {
+        key: RAZORPAY_KEY_ID,
+        amount,
+        currency,
+        order_id,
+        name: 'Droidly',
+        description: PLAN.description,
+        image: 'assets/logo.png',
+        prefill: {
+          email: currentUser.email,
+          name: currentUser.user_metadata?.full_name || '',
+        },
+        theme: { color: '#3d7a4f' },
+
+        handler: async function(response) {
+          await handlePaymentSuccess(response);
+        },
+
+        modal: {
+          ondismiss: function() { setBtnLoading(btn, false); }
         }
-      }
-    };
+      };
 
-    const rzp = new Razorpay(options);
-    rzp.on('payment.failed', function(response) {
-      showToast('Payment failed: ' + (response.error?.description || 'Please try again'), 'error');
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Get Premium — ₹299/month';
-      }
-    });
+      const rzp = new Razorpay(options);
+      rzp.on('payment.failed', function(response) {
+        showToast('Payment failed: ' + (response.error?.description || 'Please try again'), 'error');
+        setBtnLoading(btn, false);
+      });
+      rzp.open();
 
-    rzp.open();
+    } catch (err) {
+      console.error('startPayment error:', err);
+      showToast(err.message || 'Something went wrong. Please try again.', 'error');
+      setBtnLoading(btn, false);
+    }
   }
 
   // ── Handle successful payment ────────────────────────────
   async function handlePaymentSuccess(response) {
     try {
-      // Save subscription record to Supabase
-      // NOTE: In production, do this server-side after verifying the payment signature
-      const { error } = await db.from('subscriptions').upsert({
-        user_id: currentUser.id,
-        razorpay_payment_id: response.razorpay_payment_id,
-        razorpay_order_id:   response.razorpay_order_id   || null,
-        razorpay_signature:  response.razorpay_signature  || null,
-        status: 'active',
-        plan: 'premium_monthly',
-        amount: 299,
-        currency: 'INR',
-        created_at: new Date().toISOString(),
+      // Verify signature + write subscription server-side (secure)
+      const { data: { session } } = await db.auth.getSession();
+      const token = session?.access_token;
+
+      const verifyRes = await fetch(`${SUPABASE_URL}/functions/v1/verify-payment`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'apikey': SUPABASE_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_order_id:   response.razorpay_order_id,
+          razorpay_signature:  response.razorpay_signature,
+        }),
       });
 
-      if (error) throw error;
+      if (!verifyRes.ok) {
+        const err = await verifyRes.json();
+        throw new Error(err.error || 'Verification failed');
+      }
 
-      showToast('🎉 Welcome to Droidly Premium!', 'success');
-      setTimeout(() => renderCTA(currentUser, true), 1000);
+      showCelebration();
+      setTimeout(() => renderCTA(currentUser, true), 600);
 
     } catch (err) {
-      console.error('Error saving subscription:', err);
-      // Payment went through but DB save failed — still show success, handle manually
-      showToast('Payment received! Contact support if access is delayed.', 'info');
+      console.error('handlePaymentSuccess error:', err);
+      // Payment went through but verification failed — don't leave user hanging
+      showToast('Payment received! If access is delayed, please contact support.', 'info');
     }
+  }
+
+  // ── Celebration overlay ──────────────────────────────────
+  const CONFETTI_COLORS = ['#3d7a4f','#4caf70','#e8f2ec','#c47d2e','#fdf3e3','#0f1117'];
+
+  function spawnConfetti() {
+    const wrap = document.getElementById('confettiWrap');
+    wrap.innerHTML = '';
+    for (let i = 0; i < 48; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'confetti-dot';
+      dot.style.cssText = `
+        left: ${Math.random() * 100}%;
+        background: ${CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)]};
+        width: ${5 + Math.random() * 6}px;
+        height: ${5 + Math.random() * 6}px;
+        animation-duration: ${1.2 + Math.random() * 1.4}s;
+        animation-delay: ${Math.random() * 0.6}s;
+        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      `;
+      wrap.appendChild(dot);
+    }
+  }
+
+  function showCelebration() {
+    spawnConfetti();
+    document.getElementById('celebrationOverlay').classList.add('show');
+  }
+
+  function closeCelebration() {
+    const overlay = document.getElementById('celebrationOverlay');
+    overlay.classList.remove('show');
+    window.location.href = 'index.html';
   }
 
   // ── Boot ─────────────────────────────────────────────────
