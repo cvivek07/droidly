@@ -189,7 +189,6 @@
   <div class="callout">
     <div class="callout-label">📌 Pattern: Offline-First Architecture</div>
     <p>The defining principle: <strong>Room DB is always the single source of truth</strong>. The UI never reads from the network directly — it only reads from Room. The network exists solely to keep Room up to date. This pattern guarantees the app works regardless of connectivity.</p>
-    <a class="callout-cta" href="#">Learn This Pattern →</a>
   </div>
 
   <div class="req-grid">
@@ -771,7 +770,6 @@
   <div class="callout">
     <div class="callout-label">📌 Pattern: Conditional HTTP GET</div>
     <p><code>ETag</code> (content hash) and <code>Last-Modified</code> (timestamp) are the two HTTP cache validators. ETags are preferred because they're content-based, not time-based — a re-processed article with the same content won't look "changed" to ETag, but would to Last-Modified.</p>
-    <a class="callout-cta" href="#">Learn This Pattern →</a>
   </div>
 
   <h3>Storage Budget & Eviction Policy</h3>
