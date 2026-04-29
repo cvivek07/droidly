@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Design an Offline-First News App — Droidly</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
   :root {
     --accent: #3d7a4f; --accent-dark: #2e6040;
@@ -17,12 +18,24 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.7; }
 
-  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0%; z-index: 1000; transition: width 0.1s linear; }
-
-  .topnav { position: sticky; top: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 0 32px; height: 52px; display: flex; align-items: center; gap: 8px; z-index: 100; font-size: 14px; }
-  .topnav a { color: var(--text-muted); text-decoration: none; }
-  .topnav a:hover { color: var(--accent); }
-  .topnav .sep { color: var(--border); }
+  body { padding-top: 68px; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 900; height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; background: rgba(255,255,255,0.90); backdrop-filter: blur(20px) saturate(1.6); border-bottom: 1px solid var(--border); box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04); }
+  nav::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #2e6040, #4caf70, #3d7a4f); z-index: 1; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.5px; }
+  .logo-mark img { height: 32px; width: auto; display: block; }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .nav-cta { background: var(--accent); color: white; padding: 8px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; text-decoration: none; transition: opacity 0.2s; }
+  .nav-cta:hover { opacity: 0.88; }
+  .btn-nav { font-size: 13px; font-weight: 600; color: var(--text); background: var(--bg-secondary); border: 1px solid var(--border); padding: 6px 16px; border-radius: 100px; cursor: pointer; font-family: inherit; }
+  .nav-user { display: flex; align-items: center; gap: 8px; position: relative; cursor: pointer; }
+  .nav-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; }
+  .nav-user-name { font-size: 14px; font-weight: 600; color: var(--text-muted); }
+  .nav-caret { font-size: 10px; color: var(--text-muted); }
+  .user-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); min-width: 200px; overflow: hidden; z-index: 999; }
+  .nav-user.open .user-dropdown { display: block; }
+  .user-dropdown-email { padding: 12px 16px; font-size: 12px; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+  .user-dropdown-item { padding: 10px 16px; font-size: 14px; cursor: pointer; }
+  .user-dropdown-item.danger { color: #dc2626; }
 
   .page-wrap { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr var(--sidebar-w); gap: 48px; padding: 48px 24px; align-items: start; }
 
@@ -157,16 +170,24 @@
 </head>
 <body>
 
-<div id="progress-bar"></div>
-
-<nav class="topnav">
-  <a href="index.html">🤖 Droidly</a>
-  <span class="sep">›</span>
-  <a href="questions.html">Questions</a>
-  <span class="sep">›</span>
-  <a href="questions.html?topic=sysdesign">System Design</a>
-  <span class="sep">›</span>
-  <span style="color:var(--text)">Offline-First News App</span>
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="nav-right">
+    <a href="premium.html" class="nav-cta">⚡ Get Premium</a>
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <div class="user-dropdown-item danger" onclick="handleSignOut()">🚪 Sign Out</div>
+      </div>
+    </div>
+  </div>
 </nav>
 
 <div class="page-wrap">
@@ -1069,7 +1090,34 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  const SUPABASE_URL = 'https://ixqjhzxbpkrsphlmuqlv.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4cWpoenhi...';
+  try { const u = JSON.parse(localStorage.getItem('droidly_user')); if (u) showUser(u); } catch(e) {}
+  const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  _sb.auth.onAuthStateChange((_, session) => {
+    if (session?.user) { localStorage.setItem('droidly_user', JSON.stringify(session.user)); showUser(session.user); }
+    else { localStorage.removeItem('droidly_user'); showSignedOut(); }
+  });
+  function showUser(u) {
+    document.getElementById('navAvatarInitial').textContent = (u.email||'?')[0].toUpperCase();
+    document.getElementById('navUserName').textContent = u.email?.split('@')[0]||'';
+    document.getElementById('navUserEmail').textContent = u.email||'';
+    document.getElementById('navUserMenu').style.display = 'flex';
+    document.getElementById('navSignInBtn').style.display = 'none';
+  }
+  function showSignedOut() {
+    document.getElementById('navUserMenu').style.display = 'none';
+    document.getElementById('navSignInBtn').style.display = '';
+  }
+  function openAuthModal() { window.location.href = 'index.html#auth'; }
+  function handleSignOut() { _sb.auth.signOut(); }
+  document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('user-dropdown-item')) this.classList.toggle('open');
+  });
+  document.addEventListener('click', e => { if (!e.target.closest('#navUserMenu')) document.getElementById('navUserMenu')?.classList.remove('open'); });
+
   window.addEventListener('scroll', () => {
     const doc = document.documentElement;
     const pct = Math.round((doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100) || 0;
