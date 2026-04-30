@@ -20,23 +20,78 @@
     --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.7; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.7; padding-top: 68px; }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      background: rgba(255,255,255,0.90);
+      backdrop-filter: blur(20px) saturate(1.6);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04);
+    }
+    nav::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-dark), var(--accent));
+      z-index: 1;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800; font-size: 20px; letter-spacing: -0.5px;
+    }
+    .logo-mark { display: flex; align-items: center; flex-shrink: 0; }
+    .logo-mark img { height: 32px; width: auto; display: block; object-fit: contain; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-cta {
+      background: var(--accent);
+      color: white; padding: 8px 20px; border-radius: 100px;
+      font-size: 13px; font-weight: 700; text-decoration: none;
+      box-shadow: 0 2px 8px rgba(61,122,79,0.35);
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .nav-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-nav {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      padding: 6px 16px; border-radius: 100px; cursor: pointer;
+      transition: background 0.15s; font-family: inherit;
+    }
+    .btn-nav:hover { background: var(--border); }
+    .nav-user {
+      display: flex; align-items: center; gap: 8px;
+      position: relative; cursor: pointer;
+    }
+    .nav-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--accent); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+      border: 2px solid rgba(61,122,79,0.3);
+      flex-shrink: 0;
+    }
+    .nav-user-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .nav-caret { font-size: 10px; color: var(--text-muted); }
+    .user-dropdown {
+      display: none; position: absolute; top: calc(100% + 10px); right: 0;
+      background: white; border: 1px solid var(--border);
+      border-radius: 12px; padding: 6px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 200px; z-index: 999;
+    }
+    .nav-user:hover .user-dropdown, .nav-user.open .user-dropdown { display: block; }
+    .user-dropdown-email { font-size: 12px; color: var(--text-muted); padding: 8px 12px 6px; }
+    .user-dropdown-item {
+      padding: 8px 12px; border-radius: 8px; font-size: 13px;
+      font-weight: 500; cursor: pointer; color: var(--text);
+    }
+    .user-dropdown-item:hover { background: var(--bg-secondary); }
+    .user-dropdown-item.danger { color: #e53e3e; }
+    .user-dropdown-item.danger:hover { background: #fff0f0; color: #c53030; }
 
-  #progress-bar {
-    position: fixed; top: 0; left: 0; height: 3px;
-    background: var(--accent); width: 0%; z-index: 1000;
-    transition: width 0.1s linear;
-  }
-
-  .topnav {
-    position: sticky; top: 0; background: rgba(255,255,255,0.96);
-    backdrop-filter: blur(8px); border-bottom: 1px solid var(--border);
-    padding: 0 32px; height: 52px; display: flex; align-items: center;
-    gap: 8px; z-index: 100; font-size: 14px;
-  }
-  .topnav a { color: var(--text-muted); text-decoration: none; }
-  .topnav a:hover { color: var(--accent); }
-  .topnav .sep { color: var(--border); }
 
   .page-wrap {
     max-width: 1200px; margin: 0 auto;
@@ -176,20 +231,34 @@
     .req-grid, .levels-grid, .comp-grid { grid-template-columns: 1fr; }
   }
 </style>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
 <div id="progress-bar"></div>
 
-<nav class="topnav">
-  <a href="index.html">🤖 Droidly</a>
-  <span class="sep">›</span>
-  <a href="questions.html">Questions</a>
-  <span class="sep">›</span>
-  <a href="questions.html?topic=sysdesign">System Design</a>
-  <span class="sep">›</span>
-  <span style="color:var(--text)">Ride-sharing App</span>
+<!-- TOP NAV -->
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="nav-right" id="navRight">
+    <a href="premium.html" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <div class="user-dropdown-item danger" onclick="handleSignOut()">🚪 Sign Out</div>
+      </div>
+    </div>
+  </div>
 </nav>
+
 
 <div class="page-wrap">
 <article class="article">
@@ -211,7 +280,6 @@
   <div class="callout">
     <div class="callout-label">📌 Pattern: Real-Time Location Streaming</div>
     <p>The defining challenge is <strong>live driver position updates</strong> at low latency. The choice of transport protocol (WebSocket vs polling vs SSE) and how you animate the marker on the map without jank defines the entire architecture.</p>
-    <a class="callout-cta" href="#">Learn This Pattern →</a>
   </div>
 
   <div class="req-grid">
@@ -798,7 +866,6 @@
   <div class="callout">
     <div class="callout-label">📌 Pattern: Exponential Backoff with Jitter</div>
     <p>Add random jitter to reconnect delays: <code>delay = min(baseDelay * 2^attempt, maxDelay) + random(0..1000ms)</code>. Without jitter, thousands of clients that lost connection simultaneously all retry at the same moment — thundering herd. Jitter spreads the load.</p>
-    <a class="callout-cta" href="#">Learn This Pattern →</a>
   </div>
 
   <h3>Offline Graceful Degradation</h3>
@@ -1093,6 +1160,59 @@
 
 </div>
 
+<script>
+(function () {
+  try {
+    const raw = localStorage.getItem('sb-dquheflcmcppldrnckzf-auth-token');
+    if (!raw) return;
+    const session = JSON.parse(raw);
+    const user = session?.user;
+    if (!user) return;
+    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || '';
+    const initials = name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() || '?';
+    const el = id => document.getElementById(id);
+    if (el('navSignInBtn'))    el('navSignInBtn').style.display   = 'none';
+    if (el('navUserMenu'))     el('navUserMenu').style.display    = 'flex';
+    if (el('navAvatarInitial'))el('navAvatarInitial').textContent = initials;
+    if (el('navUserName'))     el('navUserName').textContent      = name.split(' ')[0];
+    if (el('navUserEmail'))    el('navUserEmail').textContent     = user.email;
+  } catch (e) {}
+})();
+
+(function () {
+  const SUPABASE_URL      = 'https://dquheflcmcppldrnckzf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function updateNav(user) {
+    const el = id => document.getElementById(id);
+    if (user) {
+      const name = user.user_metadata?.full_name || user.email.split('@')[0];
+      const initials = name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+      if (el('navSignInBtn'))    el('navSignInBtn').style.display   = 'none';
+      if (el('navUserMenu'))     el('navUserMenu').style.display    = 'flex';
+      if (el('navAvatarInitial'))el('navAvatarInitial').textContent = initials;
+      if (el('navUserName'))     el('navUserName').textContent      = name.split(' ')[0];
+      if (el('navUserEmail'))    el('navUserEmail').textContent     = user.email;
+    } else {
+      if (el('navSignInBtn')) el('navSignInBtn').style.display = '';
+      if (el('navUserMenu'))  el('navUserMenu').style.display  = 'none';
+    }
+  }
+
+  sb.auth.onAuthStateChange((_, session) => updateNav(session?.user ?? null));
+
+  window.handleSignOut = async function () { await sb.auth.signOut(); updateNav(null); };
+  window.openAuthModal = function () { window.location.href = 'index.html?auth=signin'; };
+
+  document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
+    this.classList.toggle('open'); e.stopPropagation();
+  });
+  document.addEventListener('click', function() {
+    document.getElementById('navUserMenu')?.classList.remove('open');
+  });
+})();
+</script>
 <script>
   window.addEventListener('scroll', () => {
     const doc = document.documentElement;
