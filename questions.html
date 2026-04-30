@@ -676,7 +676,7 @@
     <div class="tab" id="tab-buildtools" onclick="switchTopic('buildtools', event)">🔧 Build Tools <span class="tab-count">50</span><span class="tab-lock" id="lock-buildtools" style="display:none">🔒</span></div>
     <div class="tab" id="tab-performance" onclick="switchTopic('performance', event)">🚀 Performance <span class="tab-count">50</span><span class="tab-lock" id="lock-performance" style="display:none">🔒</span></div>
     <div class="tab" id="tab-hr" onclick="switchTopic('hr', event)">🤝 HR &amp; Behavioural <span class="tab-count">25</span><span class="tab-lock" id="lock-hr" style="display:none">🔒</span></div>
-    <div class="tab" id="tab-sysdesign" onclick="switchTopic('sysdesign', event)">🏗️ System Design <span class="tab-count">10</span><span class="tab-lock" id="lock-sysdesign" style="display:none">🔒</span></div>
+    <div class="tab" id="tab-sysdesign" onclick="switchTopic('sysdesign', event)">🏗️ System Design <span class="tab-count">11</span><span class="tab-lock" id="lock-sysdesign" style="display:none">🔒</span></div>
   </div>
   <button class="tabs-arrow right" onclick="scrollTabs(1)" aria-label="Scroll right">&#8250;</button>
 </div>
@@ -26508,12 +26508,31 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
           </div>
         </a>
 
+        <a class="sd-card" href="sysdesign_analyticsdk.html">
+          <div class="sd-card-top">
+            <div class="sd-emoji">📊</div>
+            <div class="sd-card-meta">
+              <div class="sd-card-title">Analytics SDK</div>
+            </div>
+          </div>
+          <div class="sd-card-desc">Design a production-grade analytics SDK covering event capture, in-memory buffering, offline persistence, batched transport, consent management, and guaranteed at-least-once delivery.</div>
+          <div class="sd-tags">
+            <span class="sd-tag">WorkManager</span>
+            <span class="sd-tag">Room</span>
+            <span class="sd-tag">Coroutines</span>
+            <span class="sd-tag">GDPR</span>
+          </div>
+          <div class="sd-card-footer">
+            <span class="sd-difficulty sd-diff-hard">Hard</span>
+            <span class="sd-cta">Deep dive</span>
+          </div>
+        </a>
+
         <!-- E-commerce Feed -->
         <a class="sd-card" href="sysdesign_ecommerce.html">
           <div class="sd-card-top">
             <div class="sd-emoji">🛒</div>
             <div class="sd-card-meta">
-              <div class="sd-card-label">System Design</div>
               <div class="sd-card-title">E-commerce Product Listing</div>
             </div>
           </div>
@@ -26535,7 +26554,6 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
           <div class="sd-card-top">
             <div class="sd-emoji">📥</div>
             <div class="sd-card-meta">
-              <div class="sd-card-label">System Design</div>
               <div class="sd-card-title">File Download Manager</div>
             </div>
           </div>
@@ -26557,7 +26575,6 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
           <div class="sd-card-top">
             <div class="sd-emoji">🖼️</div>
             <div class="sd-card-meta">
-              <div class="sd-card-label">System Design</div>
               <div class="sd-card-title">Image Loading Library</div>
             </div>
           </div>
@@ -26579,7 +26596,6 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
           <div class="sd-card-top">
             <div class="sd-emoji">📸</div>
             <div class="sd-card-meta">
-              <div class="sd-card-label">System Design</div>
               <div class="sd-card-title">Instagram-Style Feed</div>
             </div>
           </div>
@@ -26601,7 +26617,6 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
           <div class="sd-card-top">
             <div class="sd-emoji">📍</div>
             <div class="sd-card-meta">
-              <div class="sd-card-label">System Design</div>
               <div class="sd-card-title">Maps &amp; Live Location</div>
             </div>
           </div>
@@ -26623,7 +26638,6 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
           <div class="sd-card-top">
             <div class="sd-emoji">📰</div>
             <div class="sd-card-meta">
-              <div class="sd-card-label">System Design</div>
               <div class="sd-card-title">Offline-First News App</div>
             </div>
           </div>
@@ -26645,7 +26659,6 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
           <div class="sd-card-top">
             <div class="sd-emoji">🔔</div>
             <div class="sd-card-meta">
-              <div class="sd-card-label">System Design</div>
               <div class="sd-card-title">Push Notification System</div>
             </div>
           </div>
@@ -26667,7 +26680,6 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
           <div class="sd-card-top">
             <div class="sd-emoji">🚗</div>
             <div class="sd-card-meta">
-              <div class="sd-card-label">System Design</div>
               <div class="sd-card-title">Ride-Sharing App</div>
             </div>
           </div>
@@ -26689,7 +26701,6 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
           <div class="sd-card-top">
             <div class="sd-emoji">🎬</div>
             <div class="sd-card-meta">
-              <div class="sd-card-label">System Design</div>
               <div class="sd-card-title">Video Streaming App</div>
             </div>
           </div>
@@ -26726,7 +26737,7 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
     buildtools: { name: '🔧 Build Tools', questions: ['Gradle and the Android build pipeline','APK vs AAB — why Google prefers AAB','R8 vs ProGuard — shrinking, obfuscation, optimisation','ProGuard/R8 keep rules — when R8 breaks your app','Build types — debug vs release vs staging','Product flavors — dimensions, variants, source sets','🎯 Scenario: APK size reduction from 80MB to 30MB','KAPT vs KSP — why KSP is faster','Version Catalog — libs.versions.toml','🎯 Scenario: Reduce CI build time from 20 min to 8 min','implementation vs api vs compileOnly vs runtimeOnly','Convention Plugins — eliminate build script duplication','compileSdk vs minSdk vs targetSdk','🎯 Scenario: Debug-works-release-crashes R8 diagnosis','versionCode vs versionName — automation','🎯 Scenario: Signing config without hardcoded credentials','BuildConfig — fields, access, security','Dynamic Feature Modules','Lint — configuration and custom rules','🎯 Scenario: Multi-module project and CI pipeline setup','Gradle configuration cache — what breaks it','Library module vs application module','🎯 Scenario: APK/AAB size tracking in CI','R8 Full Mode vs standard R8','🎯 Scenario: Build system code review — 8 checks','Gradle task graph and task dependencies','Dependency resolution and conflict resolution','🎯 Scenario: Publishing a library to Maven or GitHub Packages','Version Catalog bundles','🎯 Scenario: Multi-flavour CI pipeline setup','64K method limit and multidex','Resource qualifiers and density-specific assets','🎯 Scenario: Baseline profiles for startup improvement','Android Gradle Plugin (AGP) — safe upgrade process','🎯 Scenario: Remote Gradle build cache setup','Debuggable vs non-debuggable builds — security implications','🎯 Scenario: Obfuscation configuration for IP protection','Source sets — how flavors and build types contribute code','🎯 Scenario: Refactoring a 200-line build script','Useful Gradle command-line options','Kotlin DSL vs Groovy DSL for build scripts','🎯 Scenario: Macrobenchmark for app performance','Managing secrets and API keys safely','🎯 Scenario: Native (.so) library integration and packaging','🎯 Scenario: Ideal Gradle setup for a new project','Android namespace in build.gradle.kts','🎯 Scenario: LeakCanary in debug builds only','nonTransitiveRClass — multi-module build speedup','🎯 Scenario: Vulnerable dependency — force safe version','🎯 Scenario: 3-month build system improvement plan'] },
     performance: { name: '🚀 Performance', questions: ['Memory leaks — causes and common patterns','Detecting memory leaks — LeakCanary and Memory Profiler','Overdraw — detection and reduction','ANR — causes, prevention, and diagnosis','🎯 Scenario: Cold startup 4 seconds — diagnose and fix','16ms frame budget — rendering pipeline and jank causes','🎯 Scenario: Janky RecyclerView — systematic fix','CPU Profiler — recording modes and when to use each','🎯 Scenario: OutOfMemoryError from Bitmaps','Cold vs warm vs hot start — TTID vs TTFD','🎯 Scenario: Splash screen without white flash','StrictMode — catching performance violations','🎯 Scenario: Compose recomposition performance','Android Performance Class — adaptive features','🎯 Scenario: Microbenchmark to measure a function','Layout inflation — reducing hierarchy and ViewStub','🎯 Scenario: Excessive GC causing frame drops','Play Console Android Vitals — startup metrics','🎯 Scenario: Thread contention causing jank','Battery optimisation — radio, wake locks, Doze','🎯 Scenario: Perfetto for complex jank diagnosis','Android Vitals dashboard — key metrics and thresholds','🎯 Scenario: Slow memory leak over long session','Tracing library — custom trace events in Perfetto','🎯 Scenario: Performance code review — 10 checks','Memory pressure — onTrimMemory and memory tiers','🎯 Scenario: Efficient image loading in a photo gallery','RenderThread — how it affects UI performance','🎯 Scenario: High-performance custom View at 60fps','invalidate() vs requestLayout() — when to use each','🎯 Scenario: FrameMetrics API for production monitoring','Compose LazyColumn performance optimisation','🎯 Scenario: High idle CPU — finding runaway work','Process death and SavedStateHandle for startup UX','🎯 Scenario: Background work without battery drain','Hardware acceleration — when it helps and breaks','🎯 Scenario: Complex Compose screen recomposition fix','Network Profiler — optimising API calls','🎯 Scenario: Unnecessary startup work before first frame','App size — download vs install vs memory footprint','🎯 Scenario: Automated performance regression alerts','Lazy loading in lists and navigation','🎯 Scenario: Real-time data updates at 60fps','Android GPU Inspector — GPU profiling','🎯 Scenario: Performance strategy from day one','Foreground services — types and Android 14 restrictions','🎯 Scenario: Multi-thread synchronisation bugs','Low-end device optimisation — adaptive performance','🎯 Scenario: Coroutine performance issues and fixes','🎯 Scenario: 8-week performance improvement plan'] },
     hr: { name: '🤝 HR & Behavioural', questions: ['Tell me about yourself','Challenging technical problem','Disagreed with a decision','Your biggest weakness','Led a project end-to-end','Tight deadline & quality','Career goals in 3-5 years','Giving critical feedback','Why leaving current company','Tell me about a failure','How you stay updated','Conflict with a teammate','Prioritising multiple tasks','Most impactful thing shipped','Mentoring junior engineers','Handling negative feedback','Decision with incomplete info','Collaborating with designers/PMs','Why do you want to work here','Improving a team process','What motivates you','Estimating tasks','Working in legacy codebases','Questions to ask at end','Salary expectations'] },
-    sysdesign: { name: '🏗️ System Design', questions: ['Chat App','E-commerce Product Listing','File Download Manager','Image Loading Library','Instagram-Style Feed','Maps & Live Location','Offline-First News App','Push Notification System','Ride-Sharing App','Video Streaming App'] }
+    sysdesign: { name: '🏗️ System Design', questions: ['Analytics SDK','Chat App','E-commerce Product Listing','File Download Manager','Image Loading Library','Instagram-Style Feed','Maps & Live Location','Offline-First News App','Push Notification System','Ride-Sharing App','Video Streaming App'] }
   };
 
   let currentTopic = 'android';

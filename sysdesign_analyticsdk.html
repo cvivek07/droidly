@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Design an Analytics SDK — Android System Design | Droidly</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #ffffff; --bg-subtle: #f9fafb; --bg-green: #e8f2ec; --bg-blue: #eff6ff; --bg-amber: #fffbeb;
+      --border: #e5e7eb; --border-green: #6aad82;
+      --ink: #111827; --ink2: #374151; --muted: #6b7280; --muted2: #9ca3af;
+      --accent: #3d7a4f; --accent-dark: #2e6040; --accent-light: #4caf70;
+      --green: #3d7a4f; --green-light: #e8f2ec;
+      --blue: #2563eb; --blue-light: #dbeafe;
+      --amber: #d97706; --red: #dc2626; --red-light: #fee2e2;
+      --code-bg: #1e1e2e;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--ink); font-family: 'Inter', -apple-system, sans-serif; font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; padding-top: 68px; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 900; height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; background: rgba(255,255,255,0.90); backdrop-filter: blur(20px) saturate(1.6); border-bottom: 1px solid var(--border); box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04); }
+    nav::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #2e6040, #4caf70, #3d7a4f); z-index: 1; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.5px; }
+    .logo-mark { display: flex; align-items: center; flex-shrink: 0; }
+    .logo-mark img { height: 32px; width: auto; display: block; object-fit: contain; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-cta { background: var(--accent); color: white; padding: 8px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; text-decoration: none; transition: opacity 0.2s, transform 0.15s; }
+    .nav-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-nav { font-size: 13px; font-weight: 600; color: var(--ink); background: var(--bg-subtle); border: 1px solid var(--border); padding: 6px 16px; border-radius: 100px; cursor: pointer; transition: background 0.15s; font-family: inherit; }
+    .btn-nav:hover { background: var(--border); }
+    .nav-user { display: flex; align-items: center; gap: 8px; position: relative; cursor: pointer; }
+    .nav-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; border: 2px solid rgba(61,122,79,0.3); flex-shrink: 0; }
+    .nav-user-name { font-size: 14px; font-weight: 600; color: var(--ink2); }
+    .nav-caret { font-size: 10px; color: var(--muted); }
+    .user-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); min-width: 200px; overflow: hidden; z-index: 999; }
+    .nav-user.open .user-dropdown { display: block; }
+    .user-dropdown-email { padding: 12px 16px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
+    .user-dropdown-item { padding: 10px 16px; font-size: 14px; cursor: pointer; transition: background 0.12s; }
+    .user-dropdown-item:hover { background: var(--bg-subtle); }
+    .user-dropdown-item.danger { color: var(--red); }
+
+    .page { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 260px; gap: 48px; padding: 40px 24px 80px; align-items: start; }
+    .content { min-width: 0; }
+
+    .article-eyebrow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; letter-spacing: 0.3px; }
+    .tag-topic { background: var(--bg-green); color: var(--accent-dark); }
+    .tag-hard  { background: #fee2e2; color: #991b1b; }
+    .tag-new   { background: var(--bg-subtle); color: var(--muted); border: 1px solid var(--border); }
+
+    .article-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(26px,4vw,36px); font-weight: 800; letter-spacing: -1px; line-height: 1.15; color: var(--ink); margin-bottom: 16px; }
+    .article-desc  { font-size: 16px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; max-width: 660px; }
+    .article-meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 36px; }
+    .meta-pill { font-size: 13px; color: var(--ink2); background: var(--bg-subtle); border: 1px solid var(--border); padding: 5px 12px; border-radius: 100px; }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+    .sec-h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--ink); margin: 40px 0 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border); scroll-margin-top: 90px; }
+    .sec-h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 17px; font-weight: 700; color: var(--ink); margin: 28px 0 12px; scroll-margin-top: 90px; }
+    .content p { margin-bottom: 14px; color: var(--ink2); line-height: 1.8; }
+    .content ol, .content ul { margin: 10px 0 16px 22px; color: var(--ink2); }
+    .content li { margin-bottom: 6px; }
+    .content strong { color: var(--ink); font-weight: 600; }
+
+    .pattern-box { border: 1px solid var(--border-green); border-left: 4px solid var(--accent); background: var(--bg-green); border-radius: 0 10px 10px 0; padding: 16px 20px; margin: 20px 0; }
+    .pattern-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .pattern-icon { font-size: 16px; }
+    .pattern-title { font-size: 13px; font-weight: 700; color: var(--accent-dark); text-transform: uppercase; letter-spacing: 0.5px; }
+    .pattern-box p { font-size: 14px; color: var(--ink2); margin-bottom: 0; }
+
+    .info-box { background: var(--bg-blue); border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px 20px; margin: 20px 0; }
+    .info-box p { font-size: 14px; color: var(--ink2); margin-bottom: 0; }
+    .warn-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 16px 20px; margin: 20px 0; }
+    .warn-box p { font-size: 14px; color: #78350f; margin-bottom: 0; }
+    .danger-box { background: #fff5f5; border: 1px solid #fca5a5; border-radius: 10px; padding: 16px 20px; margin: 20px 0; }
+    .danger-box p { font-size: 14px; color: #7f1d1d; margin-bottom: 0; }
+
+    .req-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--accent); margin: 20px 0 8px; }
+    .req-scope-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin: 16px 0 8px; }
+
+    .flow-wrap { margin: 24px 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .flow-title { padding: 12px 18px; font-size: 13px; font-weight: 700; background: var(--ink); color: white; }
+    .flow-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .flow-table th { padding: 10px 14px; font-size: 11px; font-weight: 700; text-align: left; letter-spacing: 0.5px; text-transform: uppercase; }
+    .flow-table td { padding: 10px 14px; vertical-align: top; border-top: 1px solid var(--border); color: var(--ink2); }
+    .flow-table tr:nth-child(even) td { background: var(--bg-subtle); }
+    .th-ui   { background: #dcfce7; color: #166534; }
+    .th-vm   { background: #d1fae5; color: #065f46; }
+    .th-repo { background: #dbeafe; color: #1e40af; }
+    .th-room { background: #fef3c7; color: #854d0e; }
+    .th-wm   { background: #fee2e2; color: #991b1b; }
+    .th-net  { background: #f3e8ff; color: #6b21a8; }
+    .step-num { font-weight: 700; color: var(--accent); margin-right: 4px; }
+
+    .decision-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .decision-table th { background: var(--bg-green); color: var(--accent-dark); padding: 10px 14px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .decision-table td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--ink2); }
+    .decision-table tr:nth-child(even) td { background: var(--bg-subtle); }
+    .check { color: #16a34a; font-weight: 700; }
+    .cross  { color: #dc2626; font-weight: 700; }
+    .chosen-row td { background: #f0fdf4 !important; font-weight: 600; }
+
+    .model-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 20px 0; }
+    .model-card { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .model-name { padding: 10px 16px; font-size: 13px; font-weight: 700; background: var(--ink); color: #f9e2af; font-family: 'JetBrains Mono', monospace; }
+    .model-field { display: flex; align-items: baseline; gap: 8px; padding: 6px 16px; border-top: 1px solid var(--border); font-size: 13px; }
+    .model-field:first-of-type { border-top: none; padding-top: 10px; }
+    .model-field:last-of-type { padding-bottom: 10px; }
+    .field-type { color: #89b4fa; font-family: 'JetBrains Mono', monospace; font-size: 12px; white-space: nowrap; }
+    .field-name { color: var(--ink2); }
+    .field-note { margin-left: auto; font-size: 11px; color: var(--muted); font-style: italic; }
+
+    .comp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+    .comp-card { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+    .comp-icon { font-size: 1.6rem; margin-bottom: 8px; }
+    .comp-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; color: var(--ink); }
+    .comp-sub  { font-size: 12px; color: var(--muted); }
+
+    .edge-grid { display: flex; flex-direction: column; gap: 16px; margin: 20px 0; }
+    .edge-card { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .edge-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: var(--bg-subtle); border-bottom: 1px solid var(--border); }
+    .edge-icon  { font-size: 20px; flex-shrink: 0; }
+    .edge-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+    .edge-body  { padding: 16px 18px; }
+    .edge-body p { font-size: 14px; color: var(--ink2); margin-bottom: 10px; line-height: 1.7; }
+    .edge-body p:last-child { margin-bottom: 0; }
+
+    .code-block { background: #1e1e2e; color: #cdd6f4; border-radius: 10px; padding: 20px; overflow-x: auto; font-size: 13px; line-height: 1.7; margin: 16px 0; font-family: 'JetBrains Mono', monospace; white-space: pre; }
+    .kw { color: #cba6f7; } .fn { color: #89b4fa; } .cl { color: #f9e2af; }
+    .cm { color: #6c7086; font-style: italic; } .st { color: #a6e3a1; }
+    .nm { color: #fab387; } .an { color: #89dceb; }
+
+    .levels-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+    .level-card { border-radius: 12px; border: 1px solid var(--border); padding: 20px; }
+    .level-card.mid    { border-top: 3px solid #60a5fa; }
+    .level-card.senior { border-top: 3px solid var(--accent); }
+    .level-card.staff  { border-top: 3px solid #a855f7; }
+    .level-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 12px; }
+    .level-card.mid    .level-title { color: #2563eb; }
+    .level-card.senior .level-title { color: var(--accent); }
+    .level-card.staff  .level-title { color: #9333ea; }
+    .level-card ul { margin-left: 16px; }
+    .level-card ul li { font-size: 13px; margin-bottom: 6px; color: var(--ink2); }
+
+    .iq-list { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .iq-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.18s; background: white; }
+    .iq-card:hover { border-color: var(--accent); }
+    .iq-card.open  { border-color: var(--accent); }
+    .iq-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; gap: 12px; user-select: none; }
+    .iq-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .iq-num  { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; color: var(--accent); background: var(--bg-green); padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
+    .iq-diff { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; white-space: nowrap; flex-shrink: 0; }
+    .iq-easy   { background: #dcfce7; color: #166534; }
+    .iq-medium { background: #fef9c3; color: #854d0e; }
+    .iq-hard   { background: #fee2e2; color: #991b1b; }
+    .iq-text   { font-size: 14px; font-weight: 500; color: var(--ink); line-height: 1.5; }
+    .iq-toggle { font-size: 16px; color: var(--muted); flex-shrink: 0; transition: transform 0.2s; }
+    .iq-card.open .iq-toggle { transform: rotate(180deg); color: var(--accent); }
+    .iq-answer { display: none; padding: 4px 18px 18px; border-top: 1px solid var(--border); background: var(--bg-subtle); }
+    .iq-card.open .iq-answer { display: block; }
+    .iq-answer p { font-size: 13.5px; color: var(--ink2); line-height: 1.8; margin-top: 12px; margin-bottom: 0; }
+
+    .sidebar { position: sticky; top: 88px; }
+    .reading-progress-wrap { margin-bottom: 20px; }
+    .rp-label { font-size: 11px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .rp-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .rp-fill  { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.2s; width: 0%; }
+    .toc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted2); margin-bottom: 10px; }
+    .toc-list  { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .toc-item a { display: block; padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 13px; color: var(--muted); border-left: 2px solid transparent; transition: all 0.15s; }
+    .toc-item a:hover { color: var(--ink); background: var(--bg-subtle); }
+    .toc-item a.active { color: var(--accent); font-weight: 600; border-left-color: var(--accent); background: var(--bg-green); }
+    .toc-item.sub a { padding-left: 22px; font-size: 12.5px; }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .companies-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted2); margin-bottom: 10px; }
+    .company-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { font-size: 11.5px; font-weight: 500; color: var(--ink2); background: var(--bg-subtle); border: 1px solid var(--border); padding: 3px 9px; border-radius: 4px; }
+
+    @media (max-width: 900px) { .page { grid-template-columns: 1fr; } .sidebar { display: none; } .comp-grid, .levels-grid, .model-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { nav { padding: 0 20px; } .page { padding: 24px 16px 60px; } .comp-grid, .levels-grid, .model-grid { grid-template-columns: 1fr; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="nav-right" id="navRight">
+    <a href="premium.html" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <div class="user-dropdown-item danger" onclick="handleSignOut()">🚪 Sign Out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+<main class="content">
+
+  <div class="article-eyebrow">
+    <span class="tag tag-topic">🏗️ System Design</span>
+    <span class="tag tag-hard">Hard</span>
+    <span class="tag tag-new">2025–26</span>
+  </div>
+  <h1 class="article-title">Design an Analytics SDK</h1>
+  <p class="article-desc">A comprehensive Android system design breakdown of a production-grade analytics SDK — covering event capture, in-memory buffering, offline persistence, batched transport, consent management, and every edge case that distinguishes principal engineers from mid-level candidates.</p>
+  <div class="article-meta-row">
+    <div class="meta-pill">⏱ <strong>45–60 min</strong> interview</div>
+    <div class="meta-pill">📖 <strong>~16 min</strong> read</div>
+    <div class="meta-pill">🎯 <strong>Senior / Staff+</strong></div>
+    <div class="meta-pill">🔥 Asked at <strong>Google, Meta, Flipkart, Swiggy</strong></div>
+  </div>
+
+  <!-- ─── UNDERSTANDING ──────────────────────────────── -->
+  <div id="understanding">
+    <div class="sec-h1">Understanding the Problem</div>
+
+    <p>An analytics SDK is one of the most infrastructure-heavy Android problems an interviewer can pose. It sits at the intersection of background processing, persistence, network reliability, privacy law, and performance — all without being visible to the user. The key insight interviewers are testing: <strong>the SDK must be invisible to the host app's UX while being absolutely reliable about event delivery.</strong></p>
+
+    <div class="info-box">
+      <p>💡 <strong>Clarifying questions to ask upfront:</strong> Is this a first-party SDK (you own the server) or third-party (you can't change the ingestion API)? Do we need real-time streaming or can we batch? What's the guaranteed delivery SLA — at-least-once or at-most-once? Does the SDK need to be consent-aware (GDPR/CCPA)?</p>
+    </div>
+
+    <div id="functional-req">
+      <div class="sec-h2">Functional Requirements</div>
+      <div class="req-label">Core Requirements</div>
+      <ol>
+        <li>Expose a <code>track(eventName, properties)</code> API that is non-blocking and safe to call from any thread, including the main thread</li>
+        <li>Persist events locally so they survive process death and can be delivered when network becomes available</li>
+        <li>Batch events and upload them to an ingestion endpoint — reducing battery and network overhead vs. per-event HTTP calls</li>
+        <li>Guarantee at-least-once delivery: an event that was accepted for tracking must reach the server eventually, even if the device is offline for days</li>
+      </ol>
+      <div class="req-scope-label">Below the line (out of scope for this session):</div>
+      <ol>
+        <li>Auto-capture of every View click (mention it: ViewTreeObserver + AccessibilityDelegate)</li>
+        <li>Real-time streaming via WebSocket (can be added as a "hot path" for critical events)</li>
+        <li>A/B experiment assignment (separate service, SDK would receive assignments via remote config)</li>
+        <li>Crash reporting (separate SDK concern — separate database table, separate flush path)</li>
+      </ol>
+    </div>
+
+    <div id="nonfunctional-req">
+      <div class="sec-h2">Non-Functional Requirements</div>
+      <div class="req-label">Core Requirements</div>
+      <ol>
+        <li><strong>Zero ANR risk:</strong> <code>track()</code> must return in under 1ms — write to an in-memory channel and return immediately</li>
+        <li><strong>Battery efficiency:</strong> No wake locks for analytics. Flush on natural triggers (network available, app background, periodic WorkManager) — never polling</li>
+        <li><strong>Disk quota:</strong> Max 50 MB of persisted events. When full, drop oldest events — never crash the host app due to analytics storage</li>
+        <li><strong>Idempotent delivery:</strong> Each batch carries a stable <code>batchId</code>. Server deduplicates on re-delivery after network timeout</li>
+        <li><strong>Privacy-safe:</strong> PII fields declared in schema are hashed/stripped before leaving the device. SDK stops all activity immediately when consent is revoked</li>
+      </ol>
+      <div class="req-scope-label">Below the line:</div>
+      <ol>
+        <li>Sub-100ms upload latency (batching already makes this a non-issue at scale)</li>
+        <li>End-to-end encryption of event payload (TLS is sufficient; field-level encryption is a separate concern)</li>
+      </ol>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ─── THE SET UP ─────────────────────────────────── -->
+  <div id="setup">
+    <div class="sec-h1">The Set Up</div>
+
+    <div id="sdk-principles">
+      <div class="sec-h2">SDK Architecture Principles</div>
+      <p>Before touching code, four design principles constrain every decision in this SDK:</p>
+      <ol>
+        <li><strong>Caller-thread safety.</strong> <code>track()</code> is called from UI code. It must never block, never throw, and never touch the network. Hand the event to a background channel in the same call and return.</li>
+        <li><strong>Room as the durability guarantee.</strong> An event that reaches Room is safe. Everything between <code>track()</code> and Room is best-effort in-memory. This is the exactly-once boundary for durability.</li>
+        <li><strong>Stateless flush workers.</strong> The flush logic reads from Room, sends to network, deletes on success. It must be fully restartable — if the process is killed mid-flush, the next flush picks up from the same Room state with no corruption.</li>
+        <li><strong>Backpressure by design.</strong> Every queue in the system has a maximum size. When full, the oldest data is evicted — analytics data is never worth OOM-killing the host app.</li>
+      </ol>
+
+      <div class="pattern-box">
+        <div class="pattern-header"><span class="pattern-icon">🔷</span><span class="pattern-title">Pattern: Bounded Channel as the Fast Path</span></div>
+        <p>The public <code>track()</code> function writes to a <code>Channel&lt;AnalyticsEvent&gt;(capacity = 2000)</code> with <code>onBufferOverflow = DROP_OLDEST</code>. It returns immediately — the caller never suspends. A single background coroutine drains this channel and writes to Room. This gives you lock-free, back-pressured ingestion with zero allocation on the hot path.</p>
+      </div>
+    </div>
+
+    <div id="core-entities">
+      <div class="sec-h2">Data Models</div>
+      <p>The SDK manages four entities. The <code>EventStatus</code> state machine is the most important — it tracks exactly where each event is in the delivery pipeline and makes the flush engine fully restartable.</p>
+
+      <div class="model-grid">
+        <div class="model-card">
+          <div class="model-name">AnalyticsEvent @Entity</div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">eventId</span><span class="field-note">@PrimaryKey, UUID</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">sessionId</span><span class="field-note">FK → SessionRecord</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">name</span><span class="field-note">e.g. "button_tap"</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">propertiesJson</span><span class="field-note">JSON blob, scrubbed</span></div>
+          <div class="model-field"><span class="field-type">Long</span><span class="field-name">deviceTimestamp</span><span class="field-note">currentTimeMillis</span></div>
+          <div class="model-field"><span class="field-type">Long</span><span class="field-name">elapsedMs</span><span class="field-note">elapsedRealtime()</span></div>
+          <div class="model-field"><span class="field-type">Int</span><span class="field-name">schemaVersion</span><span class="field-note">default = 1</span></div>
+          <div class="model-field"><span class="field-type">EventStatus</span><span class="field-name">status</span><span class="field-note">PENDING → IN_FLIGHT → SENT</span></div>
+          <div class="model-field"><span class="field-type">String?</span><span class="field-name">batchId</span><span class="field-note">set when IN_FLIGHT</span></div>
+          <div class="model-field"><span class="field-type">Int</span><span class="field-name">retryCount</span><span class="field-note">max 5 → DEAD_LETTER</span></div>
+        </div>
+        <div class="model-card">
+          <div class="model-name">SessionRecord @Entity</div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">sessionId</span><span class="field-note">@PrimaryKey, UUID</span></div>
+          <div class="model-field"><span class="field-type">Long</span><span class="field-name">startTime</span><span class="field-note">session start epoch ms</span></div>
+          <div class="model-field"><span class="field-type">Long</span><span class="field-name">lastActiveTime</span><span class="field-note">updated on each event</span></div>
+          <div class="model-field"><span class="field-type">String?</span><span class="field-name">userId</span><span class="field-note">null if anonymous</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">appVersion</span><span class="field-note">BuildConfig.VERSION_NAME</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">osVersion</span><span class="field-note">Build.VERSION.RELEASE</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">deviceModel</span><span class="field-note">Build.MODEL</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">locale</span><span class="field-note">Locale.getDefault()</span></div>
+          <div class="model-field"><span class="field-type">Boolean</span><span class="field-name">isBackground</span><span class="field-note">from ProcessLifecycle</span></div>
+        </div>
+        <div class="model-card">
+          <div class="model-name">EventBatch (Network DTO)</div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">batchId</span><span class="field-note">UUID, idempotency key</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">appKey</span><span class="field-note">SDK init token</span></div>
+          <div class="model-field"><span class="field-type">List&lt;EventPayload&gt;</span><span class="field-name">events</span><span class="field-note">max 100 per batch</span></div>
+          <div class="model-field"><span class="field-type">Long</span><span class="field-name">sentAt</span><span class="field-note">device time at send</span></div>
+          <div class="model-field"><span class="field-type">Int</span><span class="field-name">eventCount</span><span class="field-note">for quick server validation</span></div>
+        </div>
+        <div class="model-card">
+          <div class="model-name">ConsentState (DataStore)</div>
+          <div class="model-field"><span class="field-type">Boolean</span><span class="field-name">analyticsEnabled</span><span class="field-note">master kill-switch</span></div>
+          <div class="model-field"><span class="field-type">Boolean</span><span class="field-name">piiAllowed</span><span class="field-note">hash vs. drop PII fields</span></div>
+          <div class="model-field"><span class="field-type">Long</span><span class="field-name">consentTimestamp</span><span class="field-note">epoch ms of last change</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">consentVersion</span><span class="field-note">legal policy version</span></div>
+          <div class="model-field"><span class="field-type">Set&lt;String&gt;</span><span class="field-name">allowedCategories</span><span class="field-note">e.g. {"performance","ux"}</span></div>
+        </div>
+      </div>
+
+      <div class="warn-box">
+        <p>⚠️ <strong>Two timestamps per event, always.</strong> Store both <code>deviceTimestamp</code> (wall clock, <code>System.currentTimeMillis()</code>) and <code>elapsedMs</code> (<code>SystemClock.elapsedRealtime()</code>). Wall clock can drift or be changed by the user. <code>elapsedRealtime()</code> is monotonic since last boot — the server uses it to reconstruct correct event ordering even when the device clock is wrong.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr/>
+  <!-- ─── HIGH-LEVEL DESIGN ──────────────────────────── -->
+  <div id="high-level">
+    <div class="sec-h1">High-Level Design</div>
+
+    <div id="hl-components">
+      <div class="sec-h2">Component Overview</div>
+      <p>The SDK has five layers. Each has a single responsibility and communicates only downward — this is what makes the flush engine safely restartable with no shared mutable state between layers.</p>
+
+      <div class="comp-grid">
+        <div class="comp-card">
+          <div class="comp-icon">📡</div>
+          <div class="comp-name">Capture Layer</div>
+          <div class="comp-sub">Public <code>track()</code> API. Thread-safe. Writes to bounded Channel. Never blocks.</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-icon">🧠</div>
+          <div class="comp-name">Buffer Layer</div>
+          <div class="comp-sub">In-memory Channel&lt;AnalyticsEvent&gt;. Drains to Room on background coroutine. Survives config changes.</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-icon">🗄️</div>
+          <div class="comp-name">Persistence Layer</div>
+          <div class="comp-sub">Room database. PENDING → IN_FLIGHT → SENT state machine. Survives process death.</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-icon">⚙️</div>
+          <div class="comp-name">Flush Engine</div>
+          <div class="comp-sub">Triggered by 4 signals: batch size, timer, app background, network restored. Stateless and restartable.</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-icon">🌐</div>
+          <div class="comp-name">Transport Layer</div>
+          <div class="comp-sub">OkHttp with gzip. Retry with exponential backoff. Idempotency key per batch.</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-icon">🔒</div>
+          <div class="comp-name">Consent Guard</div>
+          <div class="comp-sub">Checks DataStore before every operation. Purges all data immediately on revocation.</div>
+        </div>
+      </div>
+    </div>
+
+      <div class="diagram-wrap">
+        <div style="padding: 28px 20px 20px; background: #fff;">
+          <svg viewBox="0 0 660 420" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif" font-size="12">
+            <defs>
+              <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L8,3 z" fill="#6b7280"/>
+              </marker>
+              <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L8,3 z" fill="#dc2626"/>
+              </marker>
+            </defs>
+
+            <!-- HOST APP -->
+            <rect x="20" y="10" width="620" height="40" rx="8" fill="#f3e8ff" stroke="#c084fc" stroke-width="1.5"/>
+            <text x="330" y="27" text-anchor="middle" font-weight="700" font-size="11" fill="#7e22ce" letter-spacing="1">HOST APP</text>
+            <text x="330" y="42" text-anchor="middle" font-size="10" fill="#9333ea">Activity / Fragment / ViewModel — calls Analytics.track("event", props)</text>
+
+            <!-- arrow down -->
+            <line x1="330" y1="50" x2="330" y2="68" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <!-- CAPTURE LAYER -->
+            <rect x="20" y="70" width="620" height="44" rx="8" fill="#e8f2ec" stroke="#6aad82" stroke-width="1.5"/>
+            <text x="120" y="88" text-anchor="middle" font-weight="700" font-size="11" fill="#2e6040" letter-spacing="0.8">CAPTURE LAYER</text>
+            <rect x="200" y="78" width="110" height="22" rx="4" fill="#fff" stroke="#6aad82"/>
+            <text x="255" y="93" text-anchor="middle" fill="#374151" font-size="10">ConsentGuard</text>
+            <rect x="320" y="78" width="110" height="22" rx="4" fill="#fff" stroke="#6aad82"/>
+            <text x="375" y="93" text-anchor="middle" fill="#374151" font-size="10">PiiScrubber</text>
+            <rect x="440" y="78" width="180" height="22" rx="4" fill="#fff" stroke="#6aad82"/>
+            <text x="530" y="93" text-anchor="middle" fill="#374151" font-size="10">Channel(2000, DROP_OLDEST)</text>
+
+            <!-- arrow down -->
+            <line x1="330" y1="114" x2="330" y2="132" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <!-- BUFFER LAYER -->
+            <rect x="20" y="134" width="620" height="36" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+            <text x="170" y="152" text-anchor="middle" font-weight="700" font-size="11" fill="#1d4ed8" letter-spacing="0.8">BUFFER LAYER</text>
+            <text x="420" y="152" text-anchor="middle" fill="#1d4ed8" font-size="10">Background coroutine drains Channel → batches of 50 → single Room transaction</text>
+            <text x="170" y="163" text-anchor="middle" fill="#3b82f6" font-size="10">Dispatchers.IO · SupervisorJob</text>
+
+            <!-- arrow down -->
+            <line x1="330" y1="170" x2="330" y2="188" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <!-- ROOM DB -->
+            <rect x="20" y="190" width="620" height="44" rx="8" fill="#fef3c7" stroke="#fcd34d" stroke-width="1.5"/>
+            <text x="120" y="208" text-anchor="middle" font-weight="700" font-size="11" fill="#92400e" letter-spacing="0.8">ROOM DATABASE</text>
+            <rect x="200" y="198" width="130" height="22" rx="4" fill="#fff" stroke="#fcd34d"/>
+            <text x="265" y="213" text-anchor="middle" fill="#374151" font-size="10">analytics_events</text>
+            <rect x="340" y="198" width="130" height="22" rx="4" fill="#fff" stroke="#fcd34d"/>
+            <text x="405" y="213" text-anchor="middle" fill="#374151" font-size="10">analytics_sessions</text>
+            <rect x="480" y="198" width="130" height="22" rx="4" fill="#fff" stroke="#fcd34d"/>
+            <text x="545" y="213" text-anchor="middle" fill="#374151" font-size="10">PENDING / IN_FLIGHT</text>
+
+            <!-- 4 flush arrows -->
+            <line x1="200" y1="234" x2="200" y2="256" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+            <line x1="310" y1="234" x2="310" y2="256" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+            <line x1="420" y1="234" x2="420" y2="256" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+            <line x1="530" y1="234" x2="530" y2="256" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+            <text x="200" y="252" text-anchor="middle" fill="#6b7280" font-size="9">batch size</text>
+            <text x="310" y="252" text-anchor="middle" fill="#6b7280" font-size="9">timer</text>
+            <text x="420" y="252" text-anchor="middle" fill="#6b7280" font-size="9">background</text>
+            <text x="530" y="252" text-anchor="middle" fill="#6b7280" font-size="9">network up</text>
+
+            <!-- FLUSH ENGINE -->
+            <rect x="20" y="260" width="620" height="36" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.5"/>
+            <text x="170" y="278" text-anchor="middle" font-weight="700" font-size="11" fill="#374151" letter-spacing="0.8">FLUSH ENGINE</text>
+            <text x="430" y="278" text-anchor="middle" fill="#6b7280" font-size="10">Mutex(tryLock) · resetInFlight on startup · marks IN_FLIGHT before send</text>
+            <text x="170" y="290" text-anchor="middle" fill="#6b7280" font-size="10">WorkManager · ProcessLifecycle · NetworkCallback</text>
+
+            <!-- arrow down -->
+            <line x1="330" y1="296" x2="330" y2="314" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <!-- TRANSPORT LAYER -->
+            <rect x="20" y="316" width="620" height="36" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
+            <text x="160" y="334" text-anchor="middle" font-weight="700" font-size="11" fill="#991b1b" letter-spacing="0.8">TRANSPORT LAYER</text>
+            <text x="430" y="334" text-anchor="middle" fill="#991b1b" font-size="10">OkHttp · gzip compression · X-Batch-ID header · exponential backoff</text>
+            <text x="160" y="347" text-anchor="middle" fill="#b91c1c" font-size="10">3 retries · 1s/2s/4s · 200=delete · 4xx=dead-letter · 5xx=retry</text>
+
+            <!-- arrow down -->
+            <line x1="330" y1="352" x2="330" y2="370" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <!-- SERVER -->
+            <rect x="160" y="372" width="340" height="36" rx="8" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+            <text x="330" y="390" text-anchor="middle" font-weight="700" font-size="11" fill="#cdd6f4" letter-spacing="1">INGESTION SERVER</text>
+            <text x="330" y="404" text-anchor="middle" fill="#6c7086" font-size="10">deduplicates by batchId · assigns receivedAt · schema registry</text>
+          </svg>
+        </div>
+        <div class="diagram-caption">
+          <span>Analytics SDK — full layer architecture</span>
+          <span style="font-size:11px; color:#9ca3af;">dashed arrows = flush triggers</span>
+        </div>
+      </div>
+
+    <div id="hl-event-lifecycle">
+      <div class="sec-h2">Event Lifecycle — end to end</div>
+
+      <div class="flow-wrap">
+        <div class="flow-title">📊 Event Journey: track() → Server</div>
+        <table class="flow-table">
+          <thead>
+            <tr>
+              <th class="th-ui">Step</th>
+              <th class="th-vm">Layer</th>
+              <th class="th-repo">What happens</th>
+              <th class="th-room">State after</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="step-num">1</span>track() called</td><td>Capture Layer</td><td>Consent checked (DataStore). Properties scrubbed of PII. Event wrapped with sessionId + timestamps. Sent to Channel.</td><td>In Channel buffer</td></tr>
+            <tr><td><span class="step-num">2</span>Channel drain</td><td>Buffer Layer</td><td>Background coroutine batches up to 50 events per Room transaction. Writes in one transaction for efficiency.</td><td>Room: PENDING</td></tr>
+            <tr><td><span class="step-num">3</span>Flush triggered</td><td>Flush Engine</td><td>Reads up to 100 PENDING events from Room. Assigns a batchId. Marks them IN_FLIGHT in a transaction.</td><td>Room: IN_FLIGHT</td></tr>
+            <tr><td><span class="step-num">4</span>HTTP POST</td><td>Transport Layer</td><td>Sends gzip-compressed JSON batch. Sets batchId header. Awaits response with 30s timeout.</td><td>Room: IN_FLIGHT</td></tr>
+            <tr><td><span class="step-num">5a</span>200 OK</td><td>Transport Layer</td><td>Deletes all events with this batchId from Room in one transaction.</td><td>Room: deleted ✓</td></tr>
+            <tr><td><span class="step-num">5b</span>5xx / timeout</td><td>Flush Engine</td><td>Resets events to PENDING. Increments retryCount. Schedules retry with exponential backoff.</td><td>Room: PENDING</td></tr>
+            <tr><td><span class="step-num">5c</span>4xx (perm fail)</td><td>Flush Engine</td><td>Marks events DEAD_LETTER. They are excluded from future flushes. Logged for diagnostics.</td><td>Room: DEAD_LETTER</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pattern-box">
+        <div class="pattern-header"><span class="pattern-icon">🔷</span><span class="pattern-title">Pattern: IN_FLIGHT State Prevents Double-Delivery</span></div>
+        <p>Marking events <code>IN_FLIGHT</code> before sending — not after — is critical. If the process is killed while the HTTP request is in flight, the events stay <code>IN_FLIGHT</code> in Room. On next launch, a startup check resets all <code>IN_FLIGHT</code> events back to <code>PENDING</code>. The server deduplicates using the stable <code>batchId</code>, so redelivery is safe.</p>
+      </div>
+    </div>
+
+      <div class="diagram-wrap">
+        <div style="padding: 28px 24px 20px; background: #fff;">
+          <svg viewBox="0 0 660 220" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif" font-size="12">
+            <defs>
+              <marker id="sarr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L8,3 z" fill="#6b7280"/>
+              </marker>
+              <marker id="sarr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L8,3 z" fill="#16a34a"/>
+              </marker>
+              <marker id="sarr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L8,3 z" fill="#dc2626"/>
+              </marker>
+              <marker id="sarr-amber" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L8,3 z" fill="#d97706"/>
+              </marker>
+            </defs>
+
+            <!-- PENDING -->
+            <rect x="30" y="80" width="120" height="50" rx="10" fill="#dbeafe" stroke="#93c5fd" stroke-width="2"/>
+            <text x="90" y="101" text-anchor="middle" font-weight="700" font-size="13" fill="#1d4ed8">PENDING</text>
+            <text x="90" y="118" text-anchor="middle" font-size="10" fill="#3b82f6">ready to send</text>
+
+            <!-- arrow PENDING → IN_FLIGHT -->
+            <line x1="150" y1="105" x2="238" y2="105" stroke="#6b7280" stroke-width="1.5" marker-end="url(#sarr)"/>
+            <text x="194" y="98" text-anchor="middle" fill="#6b7280" font-size="10">flush starts</text>
+            <text x="194" y="116" text-anchor="middle" fill="#6b7280" font-size="9">assign batchId</text>
+
+            <!-- IN_FLIGHT -->
+            <rect x="240" y="80" width="120" height="50" rx="10" fill="#fef3c7" stroke="#fcd34d" stroke-width="2"/>
+            <text x="300" y="101" text-anchor="middle" font-weight="700" font-size="13" fill="#92400e">IN_FLIGHT</text>
+            <text x="300" y="118" text-anchor="middle" font-size="10" fill="#d97706">HTTP in progress</text>
+
+            <!-- arrow IN_FLIGHT → SENT (200 OK) -->
+            <line x1="360" y1="92" x2="448" y2="70" stroke="#16a34a" stroke-width="1.5" marker-end="url(#sarr-green)"/>
+            <text x="410" y="74" text-anchor="middle" fill="#16a34a" font-size="10">200 OK</text>
+
+            <!-- SENT / DELETED -->
+            <rect x="450" y="38" width="140" height="50" rx="10" fill="#dcfce7" stroke="#86efac" stroke-width="2"/>
+            <text x="520" y="59" text-anchor="middle" font-weight="700" font-size="13" fill="#166534">SENT</text>
+            <text x="520" y="76" text-anchor="middle" font-size="10" fill="#16a34a">deleted from Room ✓</text>
+
+            <!-- arrow IN_FLIGHT → DEAD_LETTER (4xx / maxRetry) -->
+            <line x1="360" y1="118" x2="448" y2="152" stroke="#dc2626" stroke-width="1.5" marker-end="url(#sarr-red)"/>
+            <text x="406" y="148" text-anchor="middle" fill="#dc2626" font-size="10">4xx / max retries</text>
+
+            <!-- DEAD_LETTER -->
+            <rect x="450" y="148" width="140" height="50" rx="10" fill="#fee2e2" stroke="#fca5a5" stroke-width="2"/>
+            <text x="520" y="169" text-anchor="middle" font-weight="700" font-size="13" fill="#991b1b">DEAD_LETTER</text>
+            <text x="520" y="186" text-anchor="middle" font-size="10" fill="#dc2626">purged after 7 days</text>
+
+            <!-- arrow IN_FLIGHT → PENDING (5xx / process death) -->
+            <path d="M300,130 Q300,175 180,175 Q80,175 80,135" fill="none" stroke="#d97706" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#sarr-amber)"/>
+            <text x="188" y="193" text-anchor="middle" fill="#d97706" font-size="10">5xx / process killed</text>
+            <text x="188" y="205" text-anchor="middle" fill="#d97706" font-size="9">startup resets IN_FLIGHT → PENDING</text>
+
+            <!-- track() entry arrow -->
+            <line x1="30" y1="105" x2="10" y2="105" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="3,2"/>
+            <line x1="10" y1="30" x2="10" y2="105" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="3,2"/>
+            <line x1="10" y1="30" x2="28" y2="30" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="3,2" marker-end="url(#sarr)"/>
+            <rect x="29" y="14" width="92" height="22" rx="5" fill="#f3e8ff" stroke="#c084fc"/>
+            <text x="75" y="29" text-anchor="middle" fill="#7e22ce" font-size="10" font-weight="600">track() called</text>
+          </svg>
+        </div>
+        <div class="diagram-caption">
+          <span>Event status state machine — Room is the durability boundary</span>
+          <span style="font-size:11px; color:#9ca3af;">dashed line = startup recovery path</span>
+        </div>
+      </div>
+
+    <div id="hl-flush-triggers">
+      <div class="sec-h2">Flush Triggers</div>
+      <p>There are four independent flush triggers. They all funnel into the same <code>FlushEngine.flush()</code> coroutine, which is idempotent — concurrent triggers are fine, the second call exits immediately if a flush is already in progress.</p>
+
+      <div class="flow-wrap">
+        <div class="flow-title">⚡ Flush Trigger Matrix</div>
+        <table class="flow-table">
+          <thead>
+            <tr>
+              <th class="th-ui">Trigger</th>
+              <th class="th-vm">Mechanism</th>
+              <th class="th-repo">When fires</th>
+              <th class="th-room">Why needed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Batch size</td><td>Room <code>count(PENDING)</code> ≥ 100</td><td>During active use (heavy event rate)</td><td>Prevents unbounded memory/disk growth</td></tr>
+            <tr><td>Timer</td><td>WorkManager <code>PeriodicWorkRequest</code> every 15 min</td><td>Even if app is in background or killed</td><td>Guarantees delivery even for low-traffic apps</td></tr>
+            <tr><td>App background</td><td><code>ProcessLifecycleOwner</code> ON_STOP</td><td>User leaves app (home, task switch)</td><td>Flushes session-end events before process may be killed</td></tr>
+            <tr><td>Network restored</td><td><code>ConnectivityManager.NetworkCallback</code></td><td>Device comes back online after offline period</td><td>Delivers backlog immediately when connection returns</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="info-box">
+        <p>💡 <strong>WorkManager is the only trigger that survives process death.</strong> The other three require the app to be running. WorkManager's <code>NETWORK_CONNECTED</code> constraint means the timer-based flush also only runs when connectivity is available — no wasted wake-ups.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ─── LOW-LEVEL DESIGN ───────────────────────────── -->
+  <div id="lld">
+    <div class="sec-h1">Low-Level Design</div>
+
+    <p>The SDK is composed of six classes with strict one-directional dependencies. Each class owns exactly one responsibility and is independently testable. The diagram below shows every class, its key methods, and how they wire together at runtime.</p>
+
+    <!-- ── CLASS RELATIONSHIP DIAGRAM ── -->
+    <div class="diagram-wrap">
+      <div style="padding:28px 16px 20px; background:#fff; overflow-x:auto;">
+        <svg viewBox="0 0 760 430" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" font-size="11">
+          <defs>
+            <marker id="dep" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#6b7280"/></marker>
+            <marker id="dep-blue" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3b82f6"/></marker>
+            <marker id="dep-amber" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#d97706"/></marker>
+            <marker id="dep-green" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#16a34a"/></marker>
+            <marker id="comp" markerWidth="10" markerHeight="8" refX="0" refY="4" orient="auto"><path d="M0,4 L5,0 L10,4 L5,8 z" fill="#d97706" stroke="#d97706"/></marker>
+          </defs>
+
+          <!-- ── Analytics (central) ── -->
+          <rect x="210" y="10" width="340" height="78" rx="8" fill="#1e1e2e" stroke="#cba6f7" stroke-width="2"/>
+          <rect x="210" y="10" width="340" height="22" rx="8" fill="#cba6f7"/>
+          <rect x="210" y="28" width="340" height="4" fill="#cba6f7"/>
+          <text x="380" y="25" text-anchor="middle" font-weight="700" font-size="12" fill="#1e1e2e">«object»  Analytics</text>
+          <text x="222" y="48" fill="#89b4fa" font-size="10">track(name: String, props: Map)</text>
+          <text x="222" y="62" fill="#a6e3a1" font-size="10">startDrainLoop()  — Dispatchers.IO</text>
+          <text x="222" y="76" fill="#6c7086" font-size="10">Channel(2000, DROP_OLDEST) · CoroutineScope</text>
+
+          <!-- arrows Analytics → deps -->
+          <line x1="280" y1="88" x2="72" y2="140" stroke="#6b7280" stroke-width="1.3" marker-end="url(#dep)"/>
+          <line x1="330" y1="88" x2="197" y2="140" stroke="#6b7280" stroke-width="1.3" marker-end="url(#dep)"/>
+          <line x1="380" y1="88" x2="338" y2="140" stroke="#6b7280" stroke-width="1.3" marker-end="url(#dep)"/>
+          <line x1="440" y1="88" x2="494" y2="140" stroke="#6b7280" stroke-width="1.3" marker-end="url(#dep)"/>
+          <line x1="490" y1="88" x2="648" y2="140" stroke="#6b7280" stroke-width="1.3" marker-end="url(#dep)"/>
+
+          <!-- ── Row 2: five dependency classes ── -->
+
+          <!-- ConsentGuard -->
+          <rect x="8" y="140" width="128" height="74" rx="7" fill="#1e1e2e" stroke="#f38ba8" stroke-width="1.5"/>
+          <rect x="8" y="140" width="128" height="20" rx="7" fill="#f38ba8"/>
+          <rect x="8" y="156" width="128" height="4" fill="#f38ba8"/>
+          <text x="72" y="154" text-anchor="middle" font-weight="700" font-size="10.5" fill="#1e1e2e">ConsentGuard</text>
+          <text x="16" y="172" fill="#89b4fa" font-size="9.5">isAnalyticsEnabled(): Boolean</text>
+          <text x="16" y="184" fill="#89b4fa" font-size="9.5">onConsentRevoked()</text>
+          <text x="16" y="198" fill="#6c7086" font-size="9">@Volatile cachedConsent</text>
+          <text x="16" y="208" fill="#6c7086" font-size="9">consentFlow: Flow&lt;ConsentState&gt;</text>
+
+          <!-- PiiScrubber -->
+          <rect x="144" y="140" width="118" height="74" rx="7" fill="#1e1e2e" stroke="#fab387" stroke-width="1.5"/>
+          <rect x="144" y="140" width="118" height="20" rx="7" fill="#fab387"/>
+          <rect x="144" y="156" width="118" height="4" fill="#fab387"/>
+          <text x="203" y="154" text-anchor="middle" font-weight="700" font-size="10.5" fill="#1e1e2e">PiiScrubber</text>
+          <text x="152" y="172" fill="#89b4fa" font-size="9.5">scrub(props): Map</text>
+          <text x="152" y="184" fill="#a6e3a1" font-size="9.5">sha256(value): String</text>
+          <text x="152" y="198" fill="#6c7086" font-size="9">PiiSchema(piiFields)</text>
+          <text x="152" y="208" fill="#6c7086" font-size="9">HASH | STRIP policy</text>
+
+          <!-- SessionManager -->
+          <rect x="270" y="140" width="140" height="74" rx="7" fill="#1e1e2e" stroke="#a6e3a1" stroke-width="1.5"/>
+          <rect x="270" y="140" width="140" height="20" rx="7" fill="#a6e3a1"/>
+          <rect x="270" y="156" width="140" height="4" fill="#a6e3a1"/>
+          <text x="340" y="154" text-anchor="middle" font-weight="700" font-size="10.5" fill="#1e1e2e">SessionManager</text>
+          <text x="278" y="172" fill="#89b4fa" font-size="9.5">getOrCreateSession(): String</text>
+          <text x="278" y="184" fill="#89b4fa" font-size="9.5">invalidateSession()</text>
+          <text x="278" y="198" fill="#6c7086" font-size="9">Mutex · @Volatile session</text>
+          <text x="278" y="208" fill="#6c7086" font-size="9">30 min via elapsedRealtime()</text>
+
+          <!-- FlushEngine -->
+          <rect x="418" y="140" width="152" height="74" rx="7" fill="#1e1e2e" stroke="#f9e2af" stroke-width="1.5"/>
+          <rect x="418" y="140" width="152" height="20" rx="7" fill="#f9e2af"/>
+          <rect x="418" y="156" width="152" height="4" fill="#f9e2af"/>
+          <text x="494" y="154" text-anchor="middle" font-weight="700" font-size="10.5" fill="#1e1e2e">FlushEngine</text>
+          <text x="426" y="172" fill="#89b4fa" font-size="9.5">flush()  [Mutex guarded]</text>
+          <text x="426" y="184" fill="#89b4fa" font-size="9.5">requestFlush()</text>
+          <text x="426" y="198" fill="#6c7086" font-size="9">resetInFlightToPending()</text>
+          <text x="426" y="208" fill="#6c7086" font-size="9">flushMutex: Mutex</text>
+
+          <!-- AnalyticsEventDao -->
+          <rect x="578" y="140" width="174" height="74" rx="7" fill="#1e1e2e" stroke="#89dceb" stroke-width="1.5"/>
+          <rect x="578" y="140" width="174" height="20" rx="7" fill="#89dceb"/>
+          <rect x="578" y="156" width="174" height="4" fill="#89dceb"/>
+          <text x="665" y="154" text-anchor="middle" font-weight="700" font-size="10.5" fill="#1e1e2e">AnalyticsEventDao</text>
+          <text x="586" y="172" fill="#89b4fa" font-size="9.5">queryPending(limit): List</text>
+          <text x="586" y="184" fill="#89b4fa" font-size="9.5">markInFlight(ids, batchId)</text>
+          <text x="586" y="198" fill="#89b4fa" font-size="9.5">deleteByBatchId(batchId)</text>
+          <text x="586" y="208" fill="#6c7086" font-size="9">resetInFlightToPending()</text>
+
+          <!-- arrows Row 2 → Row 3 -->
+          <line x1="72" y1="214" x2="72" y2="270" stroke="#6b7280" stroke-width="1.3" marker-end="url(#dep)"/>
+          <line x1="340" y1="214" x2="340" y2="270" stroke="#6b7280" stroke-width="1.3" marker-end="url(#dep)"/>
+          <line x1="494" y1="214" x2="494" y2="270" stroke="#6b7280" stroke-width="1.3" marker-end="url(#dep)"/>
+
+          <!-- FlushEngine → EventDao (horizontal uses) -->
+          <line x1="570" y1="174" x2="578" y2="174" stroke="#f9e2af" stroke-width="1.5" marker-end="url(#dep-amber)"/>
+          <text x="570" y="168" text-anchor="middle" fill="#d97706" font-size="8">uses</text>
+
+          <!-- ── Row 3 ── -->
+
+          <!-- DataStore -->
+          <rect x="8" y="270" width="128" height="52" rx="7" fill="#1e1e2e" stroke="#b4befe" stroke-width="1.5"/>
+          <rect x="8" y="270" width="128" height="18" rx="7" fill="#b4befe"/>
+          <rect x="8" y="284" width="128" height="4" fill="#b4befe"/>
+          <text x="72" y="282" text-anchor="middle" font-weight="700" font-size="10" fill="#1e1e2e">DataStore&lt;Preferences&gt;</text>
+          <text x="16" y="300" fill="#6c7086" font-size="9">consentFlow: Flow</text>
+          <text x="16" y="312" fill="#6c7086" font-size="9">survives process death</text>
+
+          <!-- AnalyticsDatabase -->
+          <rect x="270" y="270" width="140" height="52" rx="7" fill="#1e1e2e" stroke="#a6e3a1" stroke-width="1.5"/>
+          <rect x="270" y="270" width="140" height="18" rx="7" fill="#a6e3a1"/>
+          <rect x="270" y="284" width="140" height="4" fill="#a6e3a1"/>
+          <text x="340" y="282" text-anchor="middle" font-weight="700" font-size="10" fill="#1e1e2e">AnalyticsDatabase</text>
+          <text x="278" y="300" fill="#6c7086" font-size="9">eventDao(): AnalyticsEventDao</text>
+          <text x="278" y="312" fill="#6c7086" font-size="9">sessionDao(): SessionDao</text>
+
+          <!-- AnalyticsDB ──◆ EventDao (composition) -->
+          <line x1="410" y1="292" x2="578" y2="190" stroke="#d97706" stroke-width="1.3" stroke-dasharray="5,3" marker-start="url(#comp)" marker-end="url(#dep-amber)"/>
+          <text x="500" y="235" fill="#d97706" font-size="8.5" transform="rotate(-32,500,235)">«contains»</text>
+
+          <!-- AnalyticsTransport -->
+          <rect x="418" y="270" width="152" height="52" rx="7" fill="#1e1e2e" stroke="#f38ba8" stroke-width="1.5"/>
+          <rect x="418" y="270" width="152" height="18" rx="7" fill="#f38ba8"/>
+          <rect x="418" y="284" width="152" height="4" fill="#f38ba8"/>
+          <text x="494" y="282" text-anchor="middle" font-weight="700" font-size="10" fill="#1e1e2e">AnalyticsTransport</text>
+          <text x="426" y="300" fill="#89b4fa" font-size="9">sendBatch(batch): SendResult</text>
+          <text x="426" y="312" fill="#6c7086" font-size="9">OkHttp · gzip · exp. backoff</text>
+
+          <!-- ── Trigger row ── -->
+          <line x1="494" y1="322" x2="494" y2="355" stroke="#6b7280" stroke-width="1.3" marker-end="url(#dep)"/>
+
+          <!-- OkHttpClient -->
+          <rect x="580" y="270" width="120" height="52" rx="7" fill="#1e1e2e" stroke="#585b70" stroke-width="1.5"/>
+          <rect x="580" y="270" width="120" height="18" rx="7" fill="#585b70"/>
+          <rect x="580" y="284" width="120" height="4" fill="#585b70"/>
+          <text x="640" y="282" text-anchor="middle" font-weight="700" font-size="10" fill="#cdd6f4">OkHttpClient</text>
+          <text x="588" y="300" fill="#6c7086" font-size="9">newCall(request).await()</text>
+          <text x="588" y="312" fill="#6c7086" font-size="9">TLS · 30s timeout</text>
+          <line x1="570" y1="292" x2="580" y2="292" stroke="#6b7280" stroke-width="1.3" marker-end="url(#dep)"/>
+
+          <!-- ── Trigger boxes ── -->
+          <rect x="140" y="358" width="148" height="42" rx="7" fill="#1e1e2e" stroke="#cba6f7" stroke-width="1.3" stroke-dasharray="5,3"/>
+          <text x="214" y="374" text-anchor="middle" fill="#cba6f7" font-size="10" font-weight="700">FlushWorker (WM)</text>
+          <text x="214" y="390" text-anchor="middle" fill="#6c7086" font-size="9">PeriodicWork · 15 min</text>
+
+          <rect x="300" y="358" width="148" height="42" rx="7" fill="#1e1e2e" stroke="#cba6f7" stroke-width="1.3" stroke-dasharray="5,3"/>
+          <text x="374" y="374" text-anchor="middle" fill="#cba6f7" font-size="10" font-weight="700">ProcessLifecycle</text>
+          <text x="374" y="390" text-anchor="middle" fill="#6c7086" font-size="9">ON_STOP → flush()</text>
+
+          <rect x="460" y="358" width="148" height="42" rx="7" fill="#1e1e2e" stroke="#cba6f7" stroke-width="1.3" stroke-dasharray="5,3"/>
+          <text x="534" y="374" text-anchor="middle" fill="#cba6f7" font-size="10" font-weight="700">NetworkCallback</text>
+          <text x="534" y="390" text-anchor="middle" fill="#6c7086" font-size="9">onAvailable → flush()</text>
+
+          <!-- trigger arrows → FlushEngine -->
+          <line x1="214" y1="358" x2="460" y2="214" stroke="#cba6f7" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#dep)"/>
+          <line x1="374" y1="358" x2="490" y2="214" stroke="#cba6f7" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#dep)"/>
+          <line x1="534" y1="358" x2="510" y2="214" stroke="#cba6f7" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#dep)"/>
+
+          <!-- legend -->
+          <line x1="8" y1="416" x2="30" y2="416" stroke="#6b7280" stroke-width="1.3" marker-end="url(#dep)"/>
+          <text x="34" y="420" fill="#6b7280" font-size="9" font-family="Inter,sans-serif">depends on</text>
+          <line x1="110" y1="416" x2="132" y2="416" stroke="#d97706" stroke-width="1.3" stroke-dasharray="4,2" marker-end="url(#dep-amber)"/>
+          <text x="136" y="420" fill="#d97706" font-size="9" font-family="Inter,sans-serif">composition</text>
+          <line x1="220" y1="416" x2="242" y2="416" stroke="#cba6f7" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#dep)"/>
+          <text x="246" y="420" fill="#cba6f7" font-size="9" font-family="Inter,sans-serif">triggers (external)</text>
+        </svg>
+      </div>
+      <div class="diagram-caption"><span>Class dependency graph — arrows show runtime dependencies</span><span style="font-size:11px;color:#9ca3af;">dashed purple = flush triggers that call FlushEngine.flush()</span></div>
+    </div>
+
+    <!-- ── 0) WIRING ── -->
+    <div id="lld-wiring">
+      <div class="sec-h2">0) SDK Initialization — wiring all classes together</div>
+      <p>All six classes are composed inside a single <code>AnalyticsSdk</code> container that is built once in <code>Application.onCreate()</code>. There is no service locator or global state beyond the <code>Analytics</code> object itself — every dependency is explicit and injected via the constructor, making each class independently unit-testable with fakes.</p>
+      <div class="code-block"><span class="cm">// AnalyticsSdk.kt — the composition root</span>
+<span class="kw">class</span> <span class="cl">AnalyticsSdk</span> <span class="kw">private constructor</span>(
+    <span class="kw">val</span> analytics: <span class="cl">Analytics</span>
+) {
+    <span class="kw">companion object</span> {
+        <span class="kw">fun</span> <span class="fn">init</span>(context: <span class="cl">Context</span>, config: <span class="cl">AnalyticsConfig</span>): <span class="cl">AnalyticsSdk</span> {
+            <span class="cm">// 1. persistence</span>
+            <span class="kw">val</span> db        = <span class="cl">AnalyticsDatabase</span>.build(context)
+            <span class="kw">val</span> eventDao   = db.eventDao()
+            <span class="kw">val</span> dataStore  = context.analyticsDataStore      <span class="cm">// extension val</span>
+
+            <span class="cm">// 2. privacy layer — built before anything can call track()</span>
+            <span class="kw">val</span> piiScrubber   = <span class="cl">PiiScrubber</span>(config.piiSchema)
+            <span class="kw">val</span> consentGuard  = <span class="cl">ConsentGuard</span>(dataStore)
+
+            <span class="cm">// 3. session management</span>
+            <span class="kw">val</span> sessionMgr = <span class="cl">SessionManager</span>(db)
+
+            <span class="cm">// 4. transport + flush engine</span>
+            <span class="kw">val</span> okHttp     = <span class="cl">OkHttpClient</span>.Builder()
+                .connectTimeout(<span class="nm">15</span>, <span class="cl">TimeUnit</span>.SECONDS)
+                .readTimeout(<span class="nm">30</span>, <span class="cl">TimeUnit</span>.SECONDS)
+                .build()
+            <span class="kw">val</span> transport  = <span class="cl">AnalyticsTransport</span>(okHttp, config.endpointUrl, config.appKey)
+            <span class="kw">val</span> flushEngine = <span class="cl">FlushEngine</span>(eventDao, transport, consentGuard)
+
+            <span class="cm">// 5. public entry point</span>
+            <span class="kw">val</span> analytics  = <span class="cl">Analytics</span>(consentGuard, piiScrubber, sessionMgr, eventDao, flushEngine)
+            analytics.start() <span class="cm">// launches drain coroutine + registers lifecycle observers</span>
+
+            <span class="cm">// 6. schedule WorkManager periodic flush (idempotent — KEEP policy)</span>
+            <span class="cl">AnalyticsFlushWorker</span>.schedule(<span class="cl">WorkManager</span>.getInstance(context))
+
+            <span class="kw">return</span> <span class="cl">AnalyticsSdk</span>(analytics)
+        }
+    }
+}
+
+<span class="cm">// Usage in Application.onCreate() — sub-millisecond, no I/O on main thread</span>
+<span class="kw">class</span> <span class="cl">App</span> : <span class="cl">Application</span>() {
+    <span class="kw">override fun</span> <span class="fn">onCreate</span>() {
+        <span class="kw">super</span>.onCreate()
+        <span class="cl">AnalyticsSdk</span>.init(<span class="kw">this</span>, <span class="cl">AnalyticsConfig</span>(
+            endpointUrl = <span class="st">"https://ingest.example.com"</span>,
+            appKey      = <span class="cl">BuildConfig</span>.ANALYTICS_KEY,
+            piiSchema   = <span class="cl">PiiSchema</span>(mapOf(
+                <span class="st">"email"</span>  <span class="kw">to</span> <span class="cl">PiiPolicy</span>.HASH,
+                <span class="st">"phone"</span>  <span class="kw">to</span> <span class="cl">PiiPolicy</span>.STRIP,
+                <span class="st">"userId"</span> <span class="kw">to</span> <span class="cl">PiiPolicy</span>.HASH
+            ))
+        ))
+    }
+}</span></div>
+    </div>
+
+    <!-- ── 1) CAPTURE LAYER ── -->
+    <div id="lld-capture">
+      <div class="sec-h2">1) Capture Layer — <code>Analytics.track()</code></div>
+      <p>The capture layer is the only public surface of the SDK. It must return in under 1ms on the main thread — no I/O, no locks, no suspension. The sequence below shows exactly what happens on each <code>track()</code> call, and how the event moves from the caller into Room asynchronously.</p>
+
+      <!-- track() sequence diagram -->
+      <div class="diagram-wrap">
+        <div style="padding:24px 12px 16px; background:#fff; overflow-x:auto;">
+          <svg viewBox="0 0 760 260" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter,sans-serif" font-size="11">
+            <defs>
+              <marker id="sa" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#374151"/></marker>
+              <marker id="sa-ret" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#9ca3af"/></marker>
+              <marker id="sa-green" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#16a34a"/></marker>
+            </defs>
+
+            <!-- participant headers -->
+            <rect x="10"  y="8" width="90"  height="28" rx="5" fill="#f3e8ff" stroke="#c084fc"/>
+            <text x="55"  y="27" text-anchor="middle" font-weight="700" font-size="10.5" fill="#7e22ce">UI Thread</text>
+            <rect x="120" y="8" width="90"  height="28" rx="5" fill="#1e1e2e" stroke="#cba6f7"/>
+            <text x="165" y="27" text-anchor="middle" font-weight="700" font-size="10.5" fill="#cba6f7">Analytics</text>
+            <rect x="230" y="8" width="90"  height="28" rx="5" fill="#1e1e2e" stroke="#f38ba8"/>
+            <text x="275" y="27" text-anchor="middle" font-weight="700" font-size="10.5" fill="#f38ba8">ConsentGuard</text>
+            <rect x="334" y="8" width="82"  height="28" rx="5" fill="#1e1e2e" stroke="#fab387"/>
+            <text x="375" y="27" text-anchor="middle" font-weight="700" font-size="10.5" fill="#fab387">PiiScrubber</text>
+            <rect x="428" y="8" width="96"  height="28" rx="5" fill="#1e1e2e" stroke="#a6e3a1"/>
+            <text x="476" y="27" text-anchor="middle" font-weight="700" font-size="10.5" fill="#a6e3a1">SessionMgr</text>
+            <rect x="536" y="8" width="80"  height="28" rx="5" fill="#1e1e2e" stroke="#89dceb"/>
+            <text x="576" y="27" text-anchor="middle" font-weight="700" font-size="10.5" fill="#89dceb">Channel</text>
+            <rect x="628" y="8" width="122" height="28" rx="5" fill="#1e1e2e" stroke="#f9e2af"/>
+            <text x="689" y="27" text-anchor="middle" font-weight="700" font-size="10.5" fill="#f9e2af">Drain Coroutine</text>
+
+            <!-- lifelines -->
+            <line x1="55"  y1="36" x2="55"  y2="255" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="165" y1="36" x2="165" y2="255" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="275" y1="36" x2="275" y2="255" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="375" y1="36" x2="375" y2="255" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="476" y1="36" x2="476" y2="255" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="576" y1="36" x2="576" y2="255" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="689" y1="36" x2="689" y2="255" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+
+            <!-- activation boxes on main thread path -->
+            <rect x="162" y="55" width="6" height="96" fill="#cba6f7" rx="2"/>
+            <rect x="272" y="66" width="6" height="20" fill="#f38ba8" rx="2"/>
+            <rect x="372" y="88" width="6" height="20" fill="#fab387" rx="2"/>
+            <rect x="473" y="110" width="6" height="20" fill="#a6e3a1" rx="2"/>
+
+            <!-- step 1: UI → Analytics: track() -->
+            <line x1="55" y1="60" x2="161" y2="60" stroke="#374151" stroke-width="1.5" marker-end="url(#sa)"/>
+            <text x="108" y="56" text-anchor="middle" fill="#374151" font-size="10" font-weight="600">track("btn_tap", props)</text>
+
+            <!-- step 2: Analytics → ConsentGuard -->
+            <line x1="168" y1="72" x2="271" y2="72" stroke="#374151" stroke-width="1.4" marker-end="url(#sa)"/>
+            <text x="220" y="68" text-anchor="middle" fill="#374151" font-size="9.5">isAnalyticsEnabled()</text>
+            <!-- return: true -->
+            <line x1="271" y1="82" x2="168" y2="82" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#sa-ret)"/>
+            <text x="220" y="79" text-anchor="middle" fill="#9ca3af" font-size="9">← true  [~50ns, @Volatile read]</text>
+
+            <!-- step 3: Analytics → PiiScrubber -->
+            <line x1="168" y1="95" x2="371" y2="95" stroke="#374151" stroke-width="1.4" marker-end="url(#sa)"/>
+            <text x="270" y="91" text-anchor="middle" fill="#374151" font-size="9.5">scrub(props)</text>
+            <line x1="371" y1="104" x2="168" y2="104" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#sa-ret)"/>
+            <text x="270" y="101" text-anchor="middle" fill="#9ca3af" font-size="9">← cleanedProps  [sha256 / null]</text>
+
+            <!-- step 4: Analytics → SessionMgr: currentSessionId -->
+            <line x1="168" y1="117" x2="472" y2="117" stroke="#374151" stroke-width="1.4" marker-end="url(#sa)"/>
+            <text x="320" y="113" text-anchor="middle" fill="#374151" font-size="9.5">currentSessionId  [@Volatile]</text>
+            <line x1="472" y1="126" x2="168" y2="126" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#sa-ret)"/>
+            <text x="320" y="122" text-anchor="middle" fill="#9ca3af" font-size="9">← "session-uuid"</text>
+
+            <!-- step 5: Analytics → Channel: trySend -->
+            <line x1="168" y1="139" x2="575" y2="139" stroke="#374151" stroke-width="1.4" marker-end="url(#sa)"/>
+            <text x="372" y="135" text-anchor="middle" fill="#374151" font-size="9.5">trySend(RawEvent)  [non-blocking]</text>
+            <line x1="575" y1="148" x2="168" y2="148" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#sa-ret)"/>
+            <text x="372" y="145" text-anchor="middle" fill="#9ca3af" font-size="9">← ChannelResult.success</text>
+
+            <!-- UI returns -->
+            <line x1="161" y1="158" x2="56" y2="158" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#sa-ret)"/>
+            <text x="108" y="154" text-anchor="middle" fill="#9ca3af" font-size="9">← returns  [total ~10µs on main thread]</text>
+
+            <!-- separator -->
+            <line x1="10" y1="168" x2="750" y2="168" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="2,4"/>
+            <text x="380" y="177" text-anchor="middle" fill="#9ca3af" font-size="9" font-style="italic">— background coroutine (Dispatchers.IO) —</text>
+
+            <!-- step 6: Channel → Drain: receive -->
+            <line x1="576" y1="184" x2="628" y2="184" stroke="#f9e2af" stroke-width="1.3" marker-end="url(#sa)"/>
+            <text x="602" y="180" text-anchor="middle" fill="#f9e2af" font-size="9">receive() [suspends]</text>
+
+            <!-- step 7: Drain batch → EventDao: insertAll -->
+            <rect x="656" y="188" width="66" height="14" rx="3" fill="#f9e2af22"/>
+            <text x="689" y="199" text-anchor="middle" fill="#f9e2af" font-size="9">batch up to 50</text>
+            <line x1="689" y1="204" x2="689" y2="218" stroke="#f9e2af" stroke-width="1.3"/>
+
+            <line x1="689" y1="218" x2="630" y2="218" stroke="#16a34a" stroke-width="1.3" marker-end="url(#sa-green)"/>
+            <text x="659" y="228" text-anchor="middle" fill="#16a34a" font-size="9">eventDao.insertAll()</text>
+            <text x="659" y="240" text-anchor="middle" fill="#16a34a" font-size="9">[single Room txn]</text>
+
+            <!-- step 8: if count >= 100 trigger flush -->
+            <rect x="614" y="244" width="146" height="11" rx="3" fill="#f9e2af22"/>
+            <text x="689" y="253" text-anchor="middle" fill="#9ca3af" font-size="9" font-style="italic">if count ≥ 100 → flushEngine.requestFlush()</text>
+          </svg>
+        </div>
+        <div class="diagram-caption"><span>track() call sequence — main thread returns after ~10µs, Room write happens off-thread</span></div>
+      </div>
+
+      <div class="code-block"><span class="cm">// Analytics.kt — the public entry point</span>
+<span class="kw">class</span> <span class="cl">Analytics</span>(
+    <span class="kw">private val</span> consentGuard:  <span class="cl">ConsentGuard</span>,
+    <span class="kw">private val</span> piiScrubber:   <span class="cl">PiiScrubber</span>,
+    <span class="kw">private val</span> sessionManager: <span class="cl">SessionManager</span>,
+    <span class="kw">private val</span> eventDao:       <span class="cl">AnalyticsEventDao</span>,
+    <span class="kw">private val</span> flushEngine:    <span class="cl">FlushEngine</span>
+) {
+    <span class="kw">private val</span> scope   = <span class="cl">CoroutineScope</span>(<span class="cl">SupervisorJob</span>() + <span class="cl">Dispatchers</span>.IO)
+    <span class="kw">private val</span> channel = <span class="cl">Channel</span>&lt;<span class="cl">RawEvent</span>&gt;(<span class="nm">2000</span>, <span class="cl">BufferOverflow</span>.DROP_OLDEST)
+
+    <span class="cm">// ← Called from UI thread. Returns in ~10µs. Never suspends.</span>
+    <span class="kw">fun</span> <span class="fn">track</span>(name: <span class="cl">String</span>, properties: <span class="cl">Map</span>&lt;<span class="cl">String</span>, <span class="cl">Any</span>?&gt; = emptyMap()) {
+        <span class="kw">if</span> (!consentGuard.isAnalyticsEnabled()) <span class="kw">return</span>    <span class="cm">// @Volatile — no I/O</span>
+        <span class="kw">val</span> event = <span class="cl">RawEvent</span>(
+            eventId         = <span class="cl">UUID</span>.randomUUID().toString(),
+            sessionId       = sessionManager.currentSessionId,  <span class="cm">// @Volatile</span>
+            name            = name,
+            properties      = piiScrubber.scrub(properties),    <span class="cm">// CPU only</span>
+            deviceTimestamp = <span class="cl">System</span>.currentTimeMillis(),
+            elapsedMs       = <span class="cl">SystemClock</span>.elapsedRealtime(),
+            schemaVersion   = <span class="nm">SCHEMA_VERSION</span>
+        )
+        channel.trySend(event)  <span class="cm">// non-blocking; DROP_OLDEST on overflow</span>
+    }
+
+    <span class="cm">// Started once in AnalyticsSdk.init() — runs for the lifetime of the app</span>
+    <span class="kw">fun</span> <span class="fn">start</span>() {
+        scope.launch { drainLoop() }
+        scope.launch { observeConsent() }
+        registerLifecycleObserver()
+        registerNetworkCallback()
+    }
+
+    <span class="kw">private suspend fun</span> <span class="fn">drainLoop</span>() {
+        <span class="kw">val</span> buffer = mutableListOf&lt;<span class="cl">RawEvent</span>&gt;()
+        <span class="kw">while</span> (isActive) {
+            buffer.clear()
+            buffer.add(channel.receive())                           <span class="cm">// suspend until ≥1</span>
+            repeat(<span class="nm">49</span>) { channel.tryReceive().getOrNull()?.let { buffer.add(it) } }
+            eventDao.insertAll(buffer.map { it.toEntity() })        <span class="cm">// single txn</span>
+            <span class="kw">if</span> (eventDao.countPending() >= <span class="nm">100</span>) flushEngine.requestFlush()
+        }
+    }
+
+    <span class="kw">private suspend fun</span> <span class="fn">observeConsent</span>() {
+        consentGuard.consentFlow.collect { state -&gt;
+            <span class="kw">if</span> (!state.analyticsEnabled) flushEngine.cancelAndPurge()
+        }
+    }
+}</span></div>
+    </div>
+
+    <!-- ── 2) SESSION MANAGEMENT ── -->
+    <div id="lld-session">
+      <div class="sec-h2">2) SessionManager — 30-minute inactivity window</div>
+      <p><code>SessionManager</code> maintains a single <code>@Volatile</code> field for the current session ID so <code>track()</code> can read it lock-free. The Mutex only activates on session creation or expiry — a rare path. Using <code>elapsedRealtime()</code> instead of wall clock means the timeout is immune to the user changing the device time.</p>
+
+      <div class="code-block"><span class="kw">class</span> <span class="cl">SessionManager</span>(<span class="kw">private val</span> db: <span class="cl">AnalyticsDatabase</span>) {
+
+    <span class="kw">private val</span> TIMEOUT_MS = <span class="nm">30</span> * <span class="nm">60_000L</span>
+    <span class="an">@Volatile</span> <span class="kw">var</span> currentSessionId: <span class="cl">String</span> = <span class="st">""</span>  <span class="cm">// read lock-free by track()</span>
+    <span class="kw">private val</span> mutex = <span class="cl">Mutex</span>()
+    <span class="kw">private var</span> lastActiveElapsed = <span class="nm">0L</span>
+
+    <span class="cm">// Called once on start() to eagerly create a session</span>
+    <span class="kw">suspend fun</span> <span class="fn">initSession</span>() = mutex.withLock { createNewSession() }
+
+    <span class="cm">// Called by the drain coroutine after each batch — checks expiry</span>
+    <span class="kw">suspend fun</span> <span class="fn">touchSession</span>() {
+        <span class="kw">val</span> now = <span class="cl">SystemClock</span>.elapsedRealtime()
+        <span class="kw">if</span> (now - lastActiveElapsed &lt; TIMEOUT_MS) {
+            lastActiveElapsed = now               <span class="cm">// still active — just update</span>
+            db.sessionDao().updateLastActive(currentSessionId, now)
+        } <span class="kw">else</span> {
+            mutex.withLock { createNewSession() } <span class="cm">// expired — new session</span>
+        }
+    }
+
+    <span class="kw">private suspend fun</span> <span class="fn">createNewSession</span>() {
+        <span class="kw">val</span> session = <span class="cl">SessionRecord</span>(
+            sessionId         = <span class="cl">UUID</span>.randomUUID().toString(),
+            startTime         = <span class="cl">System</span>.currentTimeMillis(),
+            lastActiveElapsed = <span class="cl">SystemClock</span>.elapsedRealtime(),
+            appVersion        = <span class="cl">BuildConfig</span>.VERSION_NAME,
+            osVersion         = <span class="cl">Build</span>.VERSION.RELEASE,
+            deviceModel       = <span class="cl">Build</span>.MODEL,
+            locale            = <span class="cl">Locale</span>.getDefault().toLanguageTag()
+        )
+        db.sessionDao().insert(session)
+        currentSessionId   = session.sessionId   <span class="cm">// @Volatile write — visible to track()</span>
+        lastActiveElapsed  = session.lastActiveElapsed
+    }
+}</span></div>
+    </div>
+
+    <!-- ── 3) FLUSH ENGINE ── -->
+    <div id="lld-flush">
+      <div class="sec-h2">3) FlushEngine — stateless, Mutex-guarded</div>
+      <p>The flush engine reads from Room, marks events <code>IN_FLIGHT</code>, sends to the server, and deletes on success. Every step is designed so it can be interrupted and replayed safely. The sequence below shows one complete flush cycle including the failure paths.</p>
+
+      <!-- flush() sequence diagram -->
+      <div class="diagram-wrap">
+        <div style="padding:24px 12px 16px; background:#fff; overflow-x:auto;">
+          <svg viewBox="0 0 760 310" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter,sans-serif" font-size="11">
+            <defs>
+              <marker id="fa" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#374151"/></marker>
+              <marker id="fa-ret" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#9ca3af"/></marker>
+              <marker id="fa-green" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#16a34a"/></marker>
+              <marker id="fa-red" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#dc2626"/></marker>
+              <marker id="fa-amber" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#d97706"/></marker>
+            </defs>
+
+            <!-- participant boxes -->
+            <rect x="8"   y="8" width="100" height="28" rx="5" fill="#f3e8ff" stroke="#c084fc"/>
+            <text x="58"  y="27" text-anchor="middle" font-weight="700" font-size="10.5" fill="#7e22ce">Trigger</text>
+            <rect x="122" y="8" width="110" height="28" rx="5" fill="#1e1e2e" stroke="#f9e2af"/>
+            <text x="177" y="27" text-anchor="middle" font-weight="700" font-size="10.5" fill="#f9e2af">FlushEngine</text>
+            <rect x="248" y="8" width="148" height="28" rx="5" fill="#1e1e2e" stroke="#89dceb"/>
+            <text x="322" y="27" text-anchor="middle" font-weight="700" font-size="10.5" fill="#89dceb">AnalyticsEventDao</text>
+            <rect x="412" y="8" width="148" height="28" rx="5" fill="#1e1e2e" stroke="#f38ba8"/>
+            <text x="486" y="27" text-anchor="middle" font-weight="700" font-size="10.5" fill="#f38ba8">AnalyticsTransport</text>
+            <rect x="576" y="8" width="120" height="28" rx="5" fill="#1e1e2e" stroke="#a6e3a1"/>
+            <text x="636" y="27" text-anchor="middle" font-weight="700" font-size="10.5" fill="#a6e3a1">Server</text>
+
+            <!-- lifelines -->
+            <line x1="58"  y1="36" x2="58"  y2="305" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="177" y1="36" x2="177" y2="305" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="322" y1="36" x2="322" y2="305" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="486" y1="36" x2="486" y2="305" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="636" y1="36" x2="636" y2="305" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+
+            <!-- activation box on FlushEngine -->
+            <rect x="174" y="52" width="6" height="235" fill="#f9e2af" rx="2" opacity="0.7"/>
+
+            <!-- step 1: Trigger → FlushEngine.flush() -->
+            <line x1="58" y1="57" x2="173" y2="57" stroke="#374151" stroke-width="1.5" marker-end="url(#fa)"/>
+            <text x="115" y="53" text-anchor="middle" fill="#374151" font-size="9.5" font-weight="600">flush()</text>
+
+            <!-- step 2: tryLock -->
+            <rect x="184" y="63" width="140" height="14" rx="3" fill="#f9e2af22"/>
+            <text x="254" y="74" text-anchor="middle" fill="#f9e2af" font-size="9">flushMutex.tryLock() → acquired</text>
+
+            <!-- step 3: resetInFlight -->
+            <line x1="180" y1="86" x2="321" y2="86" stroke="#374151" stroke-width="1.4" marker-end="url(#fa)"/>
+            <text x="250" y="82" text-anchor="middle" fill="#374151" font-size="9.5">resetInFlightToPending()</text>
+            <line x1="321" y1="95" x2="180" y2="95" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#fa-ret)"/>
+            <text x="250" y="92" text-anchor="middle" fill="#9ca3af" font-size="9">← n orphaned events reset</text>
+
+            <!-- loop box -->
+            <rect x="130" y="102" width="615" height="14" rx="3" fill="#1e1e2e" stroke="#e5e7eb"/>
+            <text x="240" y="113" fill="#9ca3af" font-size="9" font-style="italic">loop  [while PENDING events exist]</text>
+
+            <!-- step 4: queryPending -->
+            <line x1="180" y1="122" x2="321" y2="122" stroke="#374151" stroke-width="1.4" marker-end="url(#fa)"/>
+            <text x="250" y="118" text-anchor="middle" fill="#374151" font-size="9.5">queryPending(limit=100)</text>
+            <line x1="321" y1="131" x2="180" y2="131" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#fa-ret)"/>
+            <text x="250" y="128" text-anchor="middle" fill="#9ca3af" font-size="9">← List&lt;AnalyticsEvent&gt; [100 rows]</text>
+
+            <!-- step 5: markInFlight -->
+            <line x1="180" y1="144" x2="321" y2="144" stroke="#374151" stroke-width="1.4" marker-end="url(#fa)"/>
+            <text x="250" y="140" text-anchor="middle" fill="#374151" font-size="9.5">markInFlight(ids, batchId)</text>
+            <text x="250" y="153" text-anchor="middle" fill="#9ca3af" font-size="9">status=IN_FLIGHT, batchId set in Room</text>
+
+            <!-- step 6: sendBatch -->
+            <line x1="180" y1="163" x2="485" y2="163" stroke="#374151" stroke-width="1.4" marker-end="url(#fa)"/>
+            <text x="332" y="159" text-anchor="middle" fill="#374151" font-size="9.5">sendBatch(EventBatch(batchId, events))</text>
+
+            <!-- Transport → Server -->
+            <line x1="486" y1="175" x2="635" y2="175" stroke="#374151" stroke-width="1.4" marker-end="url(#fa)"/>
+            <text x="561" y="171" text-anchor="middle" fill="#374151" font-size="9.5">POST /v1/events (gzip)</text>
+            <text x="561" y="183" text-anchor="middle" fill="#6c7086" font-size="9">X-Batch-ID: {batchId}</text>
+
+            <!-- branch: 200 OK path -->
+            <rect x="540" y="192" width="186" height="11" rx="2" fill="#dcfce7"/>
+            <text x="633" y="201" text-anchor="middle" fill="#166534" font-size="9" font-weight="600">200 OK — success path</text>
+            <line x1="635" y1="205" x2="487" y2="205" stroke="#16a34a" stroke-width="1.3" stroke-dasharray="5,2" marker-end="url(#fa-green)"/>
+            <text x="561" y="201" text-anchor="middle" fill="#16a34a" font-size="9">← 200 OK</text>
+
+            <line x1="486" y1="216" x2="181" y2="216" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#fa-ret)"/>
+            <text x="334" y="213" text-anchor="middle" fill="#16a34a" font-size="9">← SendResult.Success</text>
+
+            <line x1="180" y1="226" x2="321" y2="226" stroke="#16a34a" stroke-width="1.4" marker-end="url(#fa-green)"/>
+            <text x="250" y="222" text-anchor="middle" fill="#16a34a" font-size="9.5">deleteByBatchId(batchId)</text>
+            <text x="250" y="237" text-anchor="middle" fill="#9ca3af" font-size="9">← events permanently removed from Room</text>
+
+            <!-- separator -->
+            <line x1="130" y1="245" x2="745" y2="245" stroke="#e5e7eb" stroke-width="0.8" stroke-dasharray="2,4"/>
+
+            <!-- branch: 5xx failure path -->
+            <rect x="350" y="250" width="186" height="11" rx="2" fill="#fef3c7"/>
+            <text x="443" y="259" text-anchor="middle" fill="#92400e" font-size="9" font-weight="600">5xx / timeout — retry path</text>
+            <line x1="486" y1="264" x2="181" y2="264" stroke="#d97706" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#fa-amber)"/>
+            <text x="334" y="261" text-anchor="middle" fill="#d97706" font-size="9">← TransientFailure</text>
+            <line x1="180" y1="274" x2="321" y2="274" stroke="#d97706" stroke-width="1.3" marker-end="url(#fa-amber)"/>
+            <text x="250" y="270" text-anchor="middle" fill="#d97706" font-size="9">resetToRetry(batchId)  [retryCount++]</text>
+            <text x="250" y="284" text-anchor="middle" fill="#6c7086" font-size="9">status=PENDING, loop breaks → backoff</text>
+
+            <!-- branch: 4xx dead letter -->
+            <rect x="540" y="250" width="186" height="11" rx="2" fill="#fee2e2"/>
+            <text x="633" y="259" text-anchor="middle" fill="#991b1b" font-size="9" font-weight="600">4xx — dead letter path</text>
+            <line x1="635" y1="264" x2="487" y2="264" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#fa-red)"/>
+            <text x="561" y="260" text-anchor="middle" fill="#dc2626" font-size="9">← 400/422</text>
+            <line x1="486" y1="274" x2="181" y2="274" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#fa-ret)"/>
+            <line x1="180" y1="285" x2="321" y2="285" stroke="#dc2626" stroke-width="1.3" marker-end="url(#fa-red)"/>
+            <text x="250" y="296" text-anchor="middle" fill="#dc2626" font-size="9">markDeadLetter(batchId)  [excluded forever]</text>
+          </svg>
+        </div>
+        <div class="diagram-caption"><span>flush() sequence — three outcome paths: success (green), transient retry (amber), permanent failure (red)</span></div>
+      </div>
+
+      <div class="code-block"><span class="kw">class</span> <span class="cl">FlushEngine</span>(
+    <span class="kw">private val</span> dao:          <span class="cl">AnalyticsEventDao</span>,
+    <span class="kw">private val</span> transport:    <span class="cl">AnalyticsTransport</span>,
+    <span class="kw">private val</span> consentGuard: <span class="cl">ConsentGuard</span>
+) {
+    <span class="kw">private val</span> flushMutex = <span class="cl">Mutex</span>()
+
+    <span class="kw">fun</span> <span class="fn">requestFlush</span>() { scope.launch { flush() } }  <span class="cm">// fire-and-forget</span>
+
+    <span class="kw">suspend fun</span> <span class="fn">flush</span>() {
+        <span class="kw">if</span> (!consentGuard.isAnalyticsEnabled()) <span class="kw">return</span>
+        <span class="kw">if</span> (!flushMutex.tryLock()) <span class="kw">return</span>           <span class="cm">// already flushing</span>
+        <span class="kw">try</span> {
+            dao.resetInFlightToPending()             <span class="cm">// recover from crash mid-send</span>
+            <span class="kw">while</span> (<span class="kw">true</span>) {
+                <span class="kw">val</span> events = dao.queryPending(limit = <span class="nm">100</span>)
+                <span class="kw">if</span> (events.isEmpty()) <span class="kw">break</span>
+                <span class="kw">val</span> batchId = <span class="cl">UUID</span>.randomUUID().toString()
+                dao.markInFlight(events.map { it.eventId }, batchId)
+
+                <span class="kw">when</span> (<span class="kw">val</span> result = transport.sendBatch(<span class="cl">EventBatch</span>(batchId, events))) {
+                    <span class="kw">is</span> <span class="cl">SendResult</span>.Success          -&gt; dao.deleteByBatchId(batchId)
+                    <span class="kw">is</span> <span class="cl">SendResult</span>.TransientFailure  -&gt; { dao.resetToRetry(batchId); <span class="kw">break</span> }
+                    <span class="kw">is</span> <span class="cl">SendResult</span>.PermanentFailure  -&gt; dao.markDeadLetter(batchId)
+                }
+            }
+        } <span class="kw">finally</span> {
+            flushMutex.unlock()
+        }
+    }
+
+    <span class="cm">// Called immediately on consent revocation</span>
+    <span class="kw">suspend fun</span> <span class="fn">cancelAndPurge</span>() {
+        flushMutex.withLock { dao.deleteAll() }
+    }
+}</span></div>
+    </div>
+
+    <!-- ── 4) TRANSPORT LAYER ── -->
+    <div id="lld-transport">
+      <div class="sec-h2">4) AnalyticsTransport — gzip + exponential backoff</div>
+      <p><code>AnalyticsTransport</code> is deliberately stateless — it receives a batch, sends it, and returns a typed <code>SendResult</code>. All retry state (attempt count, backoff timing) lives inside this function call, not in any field. This means it can be swapped for a fake in tests with zero ceremony, and the flush engine doesn't need to know anything about HTTP.</p>
+      <div class="code-block"><span class="kw">class</span> <span class="cl">AnalyticsTransport</span>(
+    <span class="kw">private val</span> httpClient:  <span class="cl">OkHttpClient</span>,
+    <span class="kw">private val</span> endpointUrl: <span class="cl">String</span>,
+    <span class="kw">private val</span> appKey:      <span class="cl">String</span>
+) {
+    <span class="kw">suspend fun</span> <span class="fn">sendBatch</span>(batch: <span class="cl">EventBatch</span>): <span class="cl">SendResult</span> {
+        <span class="kw">val</span> body = gson.toJson(batch).toByteArray().gzip()
+
+        repeat(<span class="nm">3</span>) { attempt -&gt;
+            <span class="kw">try</span> {
+                <span class="kw">val</span> response = httpClient.newCall(
+                    <span class="cl">Request</span>.Builder()
+                        .url(<span class="st">"$endpointUrl/v1/events"</span>)
+                        .header(<span class="st">"X-Batch-ID"</span>,     batch.batchId)     <span class="cm">// idempotency key</span>
+                        .header(<span class="st">"X-App-Key"</span>,      appKey)
+                        .header(<span class="st">"Content-Encoding"</span>, <span class="st">"gzip"</span>)
+                        .header(<span class="st">"X-SDK-Version"</span>,  <span class="cl">BuildConfig</span>.SDK_VERSION)
+                        .post(body.toRequestBody())
+                        .build()
+                ).await()
+
+                <span class="kw">return when</span> {
+                    response.isSuccessful      -&gt; <span class="cl">SendResult</span>.Success
+                    response.code <span class="kw">in</span> <span class="nm">400</span>..<span class="nm">499</span> -&gt; <span class="cl">SendResult</span>.PermanentFailure(response.code)
+                    <span class="kw">else</span>                       -&gt; <span class="cl">SendResult</span>.TransientFailure(response.code)
+                }
+            } <span class="kw">catch</span> (e: <span class="cl">IOException</span>) {
+                <span class="kw">if</span> (attempt &lt; <span class="nm">2</span>) delay(<span class="nm">1_000L</span> shl attempt)  <span class="cm">// 1s, 2s, 4s</span>
+            }
+        }
+        <span class="kw">return</span> <span class="cl">SendResult</span>.TransientFailure(<span class="nm">0</span>)
+    }
+}
+
+<span class="cm">// Sealed class — exhaustive when() in FlushEngine, no integer codes leaking out</span>
+<span class="kw">sealed class</span> <span class="cl">SendResult</span> {
+    <span class="kw">object</span>  <span class="cl">Success</span>                                      : <span class="cl">SendResult</span>()
+    <span class="kw">data class</span> <span class="cl">TransientFailure</span>(<span class="kw">val</span> code: <span class="cl">Int</span>)            : <span class="cl">SendResult</span>()
+    <span class="kw">data class</span> <span class="cl">PermanentFailure</span>(<span class="kw">val</span> code: <span class="cl">Int</span>)            : <span class="cl">SendResult</span>()
+}</span></div>
+    </div>
+
+    <!-- ── 5) CONSENT + PII ── -->
+    <div id="lld-consent">
+      <div class="sec-h2">5) ConsentGuard + PiiScrubber — privacy at the boundary</div>
+      <p><code>ConsentGuard</code> has two jobs: provide a zero-cost synchronous check on the <code>track()</code> hot path (via <code>@Volatile</code>), and react to consent changes via a DataStore Flow. <code>PiiScrubber</code> is pure — same input always gives the same output, no state — making it trivially testable.</p>
+      <div class="code-block"><span class="kw">class</span> <span class="cl">ConsentGuard</span>(<span class="kw">private val</span> dataStore: <span class="cl">DataStore</span>&lt;<span class="cl">Preferences</span>&gt;) {
+
+    <span class="an">@Volatile</span> <span class="kw">private var</span> _enabled = <span class="kw">true</span>
+
+    <span class="cm">// track() reads this — no I/O, no lock, ~1ns</span>
+    <span class="kw">fun</span> <span class="fn">isAnalyticsEnabled</span>(): <span class="cl">Boolean</span> = _enabled
+
+    <span class="cm">// Flow observed by Analytics.observeConsent() coroutine</span>
+    <span class="kw">val</span> consentFlow: <span class="cl">Flow</span>&lt;<span class="cl">ConsentState</span>&gt; = dataStore.data
+        .map { it.toConsentState() }
+        .onEach { _enabled = it.analyticsEnabled }    <span class="cm">// keep @Volatile in sync</span>
+        .distinctUntilChanged()
+}
+
+<span class="kw">class</span> <span class="cl">PiiScrubber</span>(<span class="kw">private val</span> schema: <span class="cl">PiiSchema</span>) {
+
+    <span class="cm">// Pure function — no state, safe to call from any thread</span>
+    <span class="kw">fun</span> <span class="fn">scrub</span>(props: <span class="cl">Map</span>&lt;<span class="cl">String</span>, <span class="cl">Any</span>?&gt;): <span class="cl">Map</span>&lt;<span class="cl">String</span>, <span class="cl">Any</span>?&gt; =
+        props.mapValues { (key, value) -&gt;
+            <span class="kw">when</span> (schema.piiFields[key]) {
+                <span class="cl">PiiPolicy</span>.HASH  -&gt; value?.toString()?.sha256()   <span class="cm">// one-way hash</span>
+                <span class="cl">PiiPolicy</span>.STRIP -&gt; <span class="kw">null</span>                          <span class="cm">// field removed entirely</span>
+                <span class="kw">null</span>            -&gt; value                          <span class="cm">// not PII — pass through</span>
+            }
+        }
+}
+
+<span class="cm">// PiiSchema is declared once at SDK init — not per track() call</span>
+<span class="kw">data class</span> <span class="cl">PiiSchema</span>(<span class="kw">val</span> piiFields: <span class="cl">Map</span>&lt;<span class="cl">String</span>, <span class="cl">PiiPolicy</span>&gt;)
+<span class="kw">enum class</span> <span class="cl">PiiPolicy</span> { HASH, STRIP }</span></div>
+
+      <div class="danger-box">
+        <p>🚨 <strong>Scrub at capture, not at flush.</strong> PII that reaches Room can be exfiltrated via ADB backup, crash dumps, or debug logging. The scrubbing boundary is the <code>track()</code> call — nothing downstream should ever see raw PII fields.</p>
+      </div>
+    </div>
+
+    <!-- ── 6) WORKMANAGER ── -->
+    <div id="lld-workmanager">
+      <div class="sec-h2">6) AnalyticsFlushWorker — the only crash-safe trigger</div>
+      <p>WorkManager is the only flush trigger that survives process death. The three in-process triggers (batch size, lifecycle, network callback) all require the app to be running. <code>AnalyticsFlushWorker</code> is a thin wrapper — it holds no state and just delegates to <code>FlushEngine.flush()</code>.</p>
+      <div class="code-block"><span class="kw">class</span> <span class="cl">AnalyticsFlushWorker</span>(
+    appContext: <span class="cl">Context</span>, params: <span class="cl">WorkerParameters</span>,
+    <span class="kw">private val</span> flushEngine: <span class="cl">FlushEngine</span>        <span class="cm">// injected via WorkerFactory</span>
+) : <span class="cl">CoroutineWorker</span>(appContext, params) {
+
+    <span class="kw">override suspend fun</span> <span class="fn">doWork</span>(): <span class="cl">Result</span> = <span class="kw">try</span> {
+        flushEngine.flush()
+        <span class="cl">Result</span>.success()
+    } <span class="kw">catch</span> (e: <span class="cl">Exception</span>) {
+        <span class="kw">if</span> (runAttemptCount &lt; <span class="nm">3</span>) <span class="cl">Result</span>.retry() <span class="kw">else</span> <span class="cl">Result</span>.failure()
+    }
+
+    <span class="kw">companion object</span> {
+        <span class="kw">fun</span> <span class="fn">schedule</span>(wm: <span class="cl">WorkManager</span>) = wm.enqueueUniquePeriodicWork(
+            <span class="st">"analytics_flush"</span>,
+            <span class="cl">ExistingPeriodicWorkPolicy</span>.KEEP,           <span class="cm">// don't reset if scheduled</span>
+            <span class="cl">PeriodicWorkRequestBuilder</span>&lt;<span class="cl">AnalyticsFlushWorker</span>&gt;(<span class="nm">15</span>, <span class="cl">TimeUnit</span>.MINUTES)
+                .setConstraints(<span class="cl">Constraints</span>(requiredNetworkType = <span class="cl">NetworkType</span>.CONNECTED))
+                .setBackoffCriteria(<span class="cl">BackoffPolicy</span>.EXPONENTIAL, <span class="nm">30</span>, <span class="cl">TimeUnit</span>.SECONDS)
+                .addTag(<span class="st">"analytics_flush"</span>)
+                .build()
+        )
+    }
+}</span></div>
+    </div>
+  </div>
+
+  <hr/>
+  <!-- ─── EDGE CASES ─────────────────────────────────── -->
+  <div id="edge-cases">
+    <div class="sec-h1">Edge Cases</div>
+    <p>These are the eight scenarios that separate senior engineers from staff — each one has caused real production incidents in analytics systems at scale.</p>
+
+    <div class="edge-grid">
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">💀</span>
+          <span class="edge-title">Process Killed Mid-Flush</span>
+        </div>
+        <div class="edge-body">
+          <p>The app is killed by the OS (OOM killer, user force-stop, or system resource pressure) while an HTTP request is in flight. The events are marked <code>IN_FLIGHT</code> in Room but no server acknowledgement was received. On the next app launch, these events remain <code>IN_FLIGHT</code> indefinitely — never retried, never delivered.</p>
+          <p><strong>Fix:</strong> On every SDK initialisation (in <code>Application.onCreate()</code>), run <code>eventDao.resetInFlightToPending()</code> synchronously before any other operation. This converts all orphaned <code>IN_FLIGHT</code> events back to <code>PENDING</code> so they're included in the next flush. The server deduplicates using the stable <code>batchId</code> if the original request actually completed — at-least-once delivery is preserved with no double-counting.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">🕐</span>
+          <span class="edge-title">Device Clock Skew</span>
+        </div>
+        <div class="edge-body">
+          <p>The user manually sets their device clock backward or forward — a common anti-pattern to exploit time-limited promotions. If you use <code>System.currentTimeMillis()</code> as the only timestamp, your event timeline will have events with impossible ordering: a button tap 3 days before the session started, or events timestamped in the future. This corrupts funnel analysis irreparably.</p>
+          <p><strong>Fix:</strong> Store two timestamps per event: <code>deviceTimestamp</code> (<code>System.currentTimeMillis()</code>) and <code>elapsedMs</code> (<code>SystemClock.elapsedRealtime()</code>). The elapsed time is monotonic since device boot — it cannot be altered by the user. The server computes the correct wall-clock time as: <code>serverReceivedAt - (batchSentElapsed - eventElapsedMs)</code>. This gives a monotonically consistent event timeline regardless of device clock manipulation.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">🔁</span>
+          <span class="edge-title">Duplicate Events on Network Retry</span>
+        </div>
+        <div class="edge-body">
+          <p>The SDK sends a batch, the server processes it successfully and returns 200, but the response is lost in transit (network drops after the ACK leaves the server). The SDK times out, treats it as a transient failure, resets the batch to <code>PENDING</code>, and resends. The server now processes the same 100 events twice — inflating pageview counts, double-counting purchases, corrupting cohort analysis.</p>
+          <p><strong>Fix:</strong> Every batch carries a UUID <code>batchId</code> that is generated once and remains stable across retries. The server maintains a deduplication index keyed by <code>(appKey, batchId)</code> with a 7-day TTL. On receipt of a duplicate <code>batchId</code>, the server returns 200 immediately without reprocessing. This is a standard idempotency key pattern — the same mechanism used for payment deduplication.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">🌊</span>
+          <span class="edge-title">Event Flood — High-Frequency Tracking</span>
+        </div>
+        <div class="edge-body">
+          <p>A game or animation-heavy app calls <code>track()</code> 50–100 times per second (frame events, position updates, collision callbacks). The in-memory Channel fills up, Room write throughput is exceeded, the database grows at 1 MB/min, and the app lags due to I/O contention on the SQLite WAL.</p>
+          <p><strong>Fix:</strong> Two mechanisms in concert. First, declare high-frequency event types as <strong>sampled</strong> in the SDK config — e.g., <code>SamplingConfig("frame_rendered", rate = 0.01f)</code> means only 1% of these events are tracked. The <code>track()</code> function checks the sampling rate before inserting into the Channel. Second, aggregate events client-side: instead of individual "scroll_pixel" events, emit "scroll_session" with <code>totalPx</code> and <code>durationMs</code> on scroll end. This reduces event volume by 99% with no loss of analytical signal.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">💾</span>
+          <span class="edge-title">Offline for Days — Disk Quota Exceeded</span>
+        </div>
+        <div class="edge-body">
+          <p>A field worker uses the app in an area without connectivity for 72 hours. The SDK accumulates thousands of events in Room. After 3 days, the analytics database is 200 MB — this competes with the host app's own Room databases, the image cache, and the OS low-storage threshold. At ~50 MB the OS may start restricting background operations.</p>
+          <p><strong>Fix:</strong> Enforce a hard disk quota of 50 MB (configurable at SDK init). Before every Room insert, check current database file size. When the quota is exceeded, execute <code>DELETE FROM analytics_events WHERE status = 'PENDING' ORDER BY deviceTimestamp ASC LIMIT 500</code> — drop the oldest 500 events to make room. Log a <code>quota_exceeded</code> meta-event (which itself is exempt from the quota) so the server knows data was trimmed. Run <code>VACUUM</code> to reclaim SQLite file space. This is intentional lossy behaviour — analytics data should never crash or degrade the host app.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">🚫</span>
+          <span class="edge-title">Consent Revoked Mid-Session</span>
+        </div>
+        <div class="edge-body">
+          <p>The user opens the privacy settings and toggles off analytics while the app is running. Under GDPR Article 17 (right to erasure), the app must stop collecting data and delete all stored personal data <em>immediately</em> — not at the next app restart. Events currently in the Channel, in Room, and potentially in-flight to the server must all be purged.</p>
+          <p><strong>Fix:</strong> The <code>ConsentGuard</code> exposes a <code>DataStore</code> Flow observed by the SDK. When it emits <code>analyticsEnabled = false</code>, the SDK executes a four-step purge: (1) set the cached consent flag so new <code>track()</code> calls drop immediately, (2) clear the in-memory Channel buffer, (3) delete all rows from Room in a single transaction, (4) cancel all WorkManager tasks tagged <code>"analytics_flush"</code>. If an HTTP request is currently in flight, the response is ignored on arrival — the SDK checks consent before acting on any HTTP callback. Send a DELETE request to the server to purge server-side data if the ingestion API supports it.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">📦</span>
+          <span class="edge-title">Schema Migration — Old Events, New Fields</span>
+        </div>
+        <div class="edge-body">
+          <p>You ship SDK v2 which adds a required <code>experimentGroup</code> field to all events. Events from SDK v1 devices don't have this field. The server-side pipeline expects <code>experimentGroup</code> and throws a parse error, sending all v1 events to a dead-letter queue. Weeks of data from users who haven't updated are silently lost.</p>
+          <p><strong>Fix:</strong> Every event carries a <code>schemaVersion: Int</code> field, set to the SDK version that produced it. The server applies a schema registry pattern — each <code>schemaVersion</code> maps to a transformer that fills in defaults for missing fields before the event enters the pipeline. This means old events are always processable. On the client, Room migration via <code>Migration(1, 2)</code> adds new columns with sensible defaults so the database doesn't break on upgrade. Never make new fields required in the server schema; always provide server-side defaults for absent fields.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">⛔</span>
+          <span class="edge-title">ANR from Synchronous Tracking</span>
+        </div>
+        <div class="edge-body">
+          <p>A junior engineer on the host app team calls <code>Analytics.track()</code> inside a <code>RecyclerView.onBindViewHolder()</code> loop for 200 items during fast fling. If the SDK performs any I/O — even a SharedPreferences read to check consent — the main thread stalls. At 200 items × even 1ms of I/O = 200ms lag, causing jank. A heavier SDK that hits Room synchronously causes an ANR (5s main thread block threshold on Android).</p>
+          <p><strong>Fix:</strong> The <code>track()</code> function must be provably non-blocking. The consent check reads from a <code>@Volatile</code> in-memory field updated by a background coroutine — never from DataStore directly. The Channel <code>trySend()</code> is non-blocking by design. No Room access, no SharedPreferences, no synchronisation primitives on the main-thread path. Include a <code>StrictMode.noteSlowCall("Analytics.track")</code> assertion in debug builds to immediately surface any regression that adds I/O to the hot path.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ─── WHAT INTERVIEWERS EXPECT ───────────────────── -->
+  <div id="expectations">
+    <div class="sec-h1">What Interviewers Expect at Each Level</div>
+
+    <div class="levels-grid">
+      <div class="level-card mid">
+        <div class="level-title">Mid-Level</div>
+        <ul>
+          <li>Can describe batching to reduce network calls</li>
+          <li>Knows WorkManager for background jobs</li>
+          <li>Aware of offline persistence with Room</li>
+          <li>Understands basic retry logic on failure</li>
+          <li>Mentions threading — doesn't block main thread</li>
+          <li>Can define basic Event and Session models</li>
+        </ul>
+      </div>
+      <div class="level-card senior">
+        <div class="level-title">Senior</div>
+        <ul>
+          <li>Designs the full state machine: PENDING → IN_FLIGHT → SENT → DEAD_LETTER</li>
+          <li>Articulates why IN_FLIGHT state prevents event loss on process death</li>
+          <li>Uses bounded Channel with DROP_OLDEST for back-pressure</li>
+          <li>Separates flush triggers (4 signals) and explains each tradeoff</li>
+          <li>Handles dual timestamps for clock skew resilience</li>
+          <li>Designs PII scrubbing at capture time, not flush time</li>
+          <li>Discusses idempotency keys and server-side deduplication</li>
+        </ul>
+      </div>
+      <div class="level-card staff">
+        <div class="level-title">Staff / Principal</div>
+        <ul>
+          <li>Designs the SDK as a reusable library with a clean public API surface</li>
+          <li>Discusses schema versioning and backwards-compatible server pipelines</li>
+          <li>Covers sampling strategies for high-frequency event sources</li>
+          <li>Addresses GDPR/CCPA consent with immediate purge guarantees</li>
+          <li>Designs for multi-process apps (separate DB connection per process)</li>
+          <li>Discusses cold-start telemetry: SDK must not delay <code>Application.onCreate()</code></li>
+          <li>Considers SDK size budget: analytics shouldn't add more than 200 KB to APK</li>
+          <li>Proposes a testing strategy: fake transport layer, Room in-memory, StrictMode validation</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ─── INTERVIEW Q&A ──────────────────────────────── -->
+  <div id="interview-qs">
+    <div class="sec-h1">Interview Q&amp;A</div>
+    <p>Tap any question to reveal the answer. These cover the questions most commonly asked at Google, Meta, Flipkart, and Swiggy for senior Android roles.</p>
+
+    <div class="iq-list">
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q1</span>
+            <span class="iq-diff iq-easy">Easy</span>
+            <span class="iq-text">Why should track() never touch Room or the network directly?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p><code>track()</code> is called from the UI thread — RecyclerView bind, button click handlers, Fragment lifecycle callbacks. Any I/O on the main thread risks ANR (Android kills the app if the main thread is blocked for 5 seconds). Even a 5ms SharedPreferences read repeated in a RecyclerView loop of 200 items equals 1 second of jank. The correct pattern is to write to an in-memory, non-blocking structure — a <code>Channel</code> with <code>trySend()</code> — and let a background coroutine drain it to Room asynchronously. The consent check must also be a <code>@Volatile</code> in-memory read, never a DataStore or SharedPreferences read on the call path.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q2</span>
+            <span class="iq-diff iq-easy">Easy</span>
+            <span class="iq-text">What is the difference between at-least-once and at-most-once delivery? Which does an analytics SDK need?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p><strong>At-most-once</strong>: an event is sent once and if lost (network failure), it is not retried. Zero duplicates guaranteed, but events can be dropped. <strong>At-least-once</strong>: an event is retried until the server acknowledges it. Events are guaranteed to arrive but may arrive more than once. Analytics SDKs need <strong>at-least-once</strong> delivery — a missing purchase event or funnel drop-off corrupts your metrics. Duplicates are handled server-side via idempotency keys (<code>batchId</code>). Exactly-once delivery would require distributed transactions which are impractical on a mobile client.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q3</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">Why do you need an IN_FLIGHT state? Why not just PENDING and SENT?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Without <code>IN_FLIGHT</code>, the flush engine has no way to know which events are currently being sent. If the process is killed during an HTTP request, those events stay <code>PENDING</code> and are re-selected by the next flush — but the original request may have already been received by the server. The SDK would continuously retry these events forever. <code>IN_FLIGHT</code> marks a "claim" on a set of events for a specific <code>batchId</code>. On startup, any orphaned <code>IN_FLIGHT</code> events (from a crashed previous session) are reset to <code>PENDING</code> and re-sent with the <em>same</em> <code>batchId</code>, allowing the server to deduplicate safely.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q4</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">How do you handle an app that generates 100 events per second?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Two strategies in combination: <strong>sampling</strong> and <strong>client-side aggregation</strong>. Sampling means the SDK only tracks 1 in N events for declared high-frequency event types — configured at SDK init via a <code>SamplingConfig</code>. For positional/animation events, client-side aggregation is better: instead of tracking every frame, track a single "scroll_session_ended" event with aggregated metrics (totalScrollPx, duration, direction changes). The bounded <code>Channel(capacity=2000, DROP_OLDEST)</code> also provides a hard circuit-breaker — at 100 events/second it would fill in 20 seconds and then drop the oldest, self-regulating the pipeline without any special logic.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q5</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">How do you guarantee the SDK doesn't delay Application.onCreate() cold-start time?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>SDK initialisation in <code>Application.onCreate()</code> must be sub-millisecond. Avoid any I/O, Room.build(), or OkHttp client creation on the main thread. Use lazy initialisation: the <code>AnalyticsDatabase</code> and <code>OkHttpClient</code> are built on first access inside a background coroutine, not at init time. The public <code>Analytics</code> object is created synchronously (just allocating the Channel and CoroutineScope), but the heavy lifting is deferred. A <code>ContentProvider</code> (like Firebase's <code>FirebaseInitProvider</code>) can auto-initialise the SDK without requiring a call in <code>Application.onCreate()</code> — but this must also be verified with Systrace to confirm it doesn't add to TTID.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q6</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">How does the SDK behave when the user is offline for 72 hours?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Events accumulate in Room with status <code>PENDING</code>. The WorkManager periodic task fires every 15 minutes but immediately exits because the <code>NETWORK_CONNECTED</code> constraint is not satisfied — no battery wasted. When connectivity is restored, two things happen simultaneously: the <code>NetworkCallback</code> fires an immediate flush, and the next WorkManager window opens. The flush engine processes batches of 100 events, deleting each confirmed batch before reading the next. For 72 hours of events, the flush may take several minutes — all in the background. A disk quota check prevents the 72-hour backlog from ever exceeding 50 MB by evicting the oldest events if the threshold is reached.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q7</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">Where do you scrub PII — at track() time or at flush time?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Always at <code>track()</code> time — before the event enters the Channel. If you scrub at flush time, PII data is stored unredacted in Room between capture and flush. Room databases are accessible via ADB backup, crash reporting tools (if you log Room contents), and if the device is compromised. Scrubbing at the capture boundary ensures PII never reaches any persistent store. The scrubbing function is synchronous and CPU-only (SHA-256 hash or null replacement) — it adds approximately 50–100µs, which is still safely non-blocking on the main thread.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q8</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">How do you handle a GDPR consent revocation while a flush is in progress?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>The consent revocation and the flush run concurrently on different coroutines, so you need a cooperative cancellation approach. The <code>ConsentGuard</code> sets a <code>@Volatile analyticsEnabled = false</code> immediately, then launches a coroutine to purge Room. The flush engine checks <code>consentGuard.isAnalyticsEnabled()</code> at the start of each batch loop iteration — it will exit after the current batch (which may already be in flight) completes. The in-flight batch response is ignored if consent is revoked before it arrives. This is a best-effort approach: GDPR allows a "reasonable time" for propagation. For stricter compliance, cancel the OkHttp call directly using <code>Call.cancel()</code>.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q9</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">How do you design the SDK for a multi-process Android app?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Multi-process apps (a main process + a <code>:background</code> process for a service, for example) have a critical constraint: Room cannot be safely shared across processes with write access from both. Each process gets its own in-process SQLite WAL writer. Two solutions: (1) <strong>Single writer process</strong> — only the main process writes to Room; the background process sends events to the main process via AIDL or ContentProvider-backed IPC, and the main process inserts them. (2) <strong>Separate databases per process</strong> with a periodic merge operation — simpler but causes duplicate session IDs and makes cross-process funnel analysis harder. Option 1 is preferred for correctness. The <code>ContentProvider</code> approach (exposing an <code>insert()</code> URI) is the cleanest Android-native IPC mechanism for this use case.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q10</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">How would you design a "critical event" fast path that bypasses batching?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Some events — payment confirmations, crash signals, security events — should be sent immediately rather than waiting for the next batch. Design a dual-path system: <code>track()</code> for standard events (goes through Channel → Room → batch flush) and <code>trackImmediate()</code> for critical events (writes to Room then immediately triggers a single-event flush coroutine, bypassing the batch size and timer conditions). The <code>trackImmediate()</code> path still writes to Room first to preserve durability — it just skips the wait. On the server, separate the ingestion endpoint for critical events so they can be prioritised in the processing pipeline without being blocked by high-volume standard event batches.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q11</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">How do you test an analytics SDK reliably?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Testing requires controlled substitution at every layer. Use a <strong>fake transport</strong> that records batches without making network calls — verify event names, property values, and batch sizing in unit tests. Use <strong>Room in-memory database</strong> (<code>Room.inMemoryDatabaseBuilder()</code>) for fast integration tests without disk I/O. For the flush engine, mock <code>SystemClock</code> to test timer-triggered flushes without actually waiting 15 minutes. Use <strong>StrictMode</strong> in instrumented tests with <code>detectDiskReads()</code> and <code>detectDiskWrites()</code> on the main thread — this catches any regression that adds I/O to the <code>track()</code> hot path. For WorkManager, use <code>TestWorkerBuilder</code> to run the flush worker synchronously in tests. Add a deliberate process-kill simulation test: insert events, mark them IN_FLIGHT, restart the SDK, verify they become PENDING again.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q12</span>
+            <span class="iq-diff iq-easy">Easy</span>
+            <span class="iq-text">Why use gzip compression on event payloads?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Analytics event JSON is highly repetitive — field names like <code>"eventId"</code>, <code>"sessionId"</code>, <code>"schemaVersion"</code> are repeated in every event in a batch of 100. gzip achieves 5–8× compression on typical event payloads, reducing a 40 KB batch to ~6 KB. This matters for three reasons: (1) faster upload on slow connections, (2) lower mobile data usage (important in price-sensitive markets), and (3) lower egress cost on the server side at scale (millions of devices × hundreds of events/day = significant bandwidth). OkHttp handles gzip transparently via <code>GzipRequestInterceptor</code> — one line of code, significant real-world impact.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q13</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">How do you define a session? What edge cases exist in session management?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>A session is a contiguous period of user engagement, typically defined as activity within a rolling 30-minute window. Session edge cases: (1) <strong>App backgrounded and resumed</strong> — if the app was in the background for less than 30 minutes, it should continue the existing session, not start a new one. Use <code>ProcessLifecycleOwner</code> to track background time via <code>elapsedRealtime()</code>. (2) <strong>Device restart</strong> — <code>elapsedRealtime()</code> resets to zero on reboot, so always start a new session after a device restart regardless of the timestamp comparison. (3) <strong>User identity change</strong> — if <code>Analytics.identify(userId)</code> is called mid-session (user logs in), consider starting a new session to avoid attributing pre-login events to the identified user. (4) <strong>Clock change during session</strong> — don't use wall clock for timeout calculation; always use <code>elapsedRealtime()</code>.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q14</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">How do you handle schema changes between SDK versions?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Every event carries a <code>schemaVersion</code> integer. The server maintains a schema registry mapping each version to a transformer function. When SDK v2 adds a new required field, the server-side transformer for v1 events fills in a sensible default (e.g., <code>experimentGroup = "unknown"</code>). Room database migrations use <code>Migration(1, 2) { database -&gt; database.execSQL("ALTER TABLE analytics_events ADD COLUMN schemaVersion INTEGER NOT NULL DEFAULT 1") }</code> to add new columns without dropping old events. The key principle: never make a field required on the server that didn't exist in older SDK versions. Always deploy server-side schema changes before releasing the SDK version that produces them (expand-then-migrate pattern).</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q15</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">How would you implement auto-capture of screen views without manual track() calls?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Register an <code>Application.ActivityLifecycleCallbacks</code> in the SDK initialisation. In <code>onActivityResumed(activity)</code>, automatically call <code>track("screen_view", mapOf("screen_name" to activity.localClassName))</code>. For Fragment tracking, attach a <code>FragmentManager.FragmentLifecycleCallbacks</code> recursively to every Activity via the lifecycle callback. The screen name can be derived from the Fragment class name, or from a custom annotation (<code>@ScreenName("Home Feed")</code>) if more readable names are needed. For Jetpack Compose, instrument via a custom <code>NavigationEventListener</code> on the <code>NavController</code>. The host app opts in to auto-capture at SDK init — it should be off by default since some apps have confidential screen names.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q16</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">What happens to events tracked during the very first cold start before the SDK is initialised?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>This is a classic bootstrap problem. Some events — "app_opened", "splash_screen_shown" — are logically the first events in any session, but they happen before <code>Analytics.init()</code> is called in <code>Application.onCreate()</code>. Solution: implement a <strong>pre-init buffer</strong>. Before initialisation, <code>track()</code> calls write to a simple in-memory list (not a Channel, not Room — just an <code>ArrayList</code>). When <code>init()</code> is called, the pre-init buffer is drained into the real Channel first, preserving event ordering. This buffer has a hard cap of 50 events and is discarded if <code>init()</code> is never called (e.g., if the SDK is not configured). The timestamps are captured at track() call time, so they're accurate even if replayed after init.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q17</span>
+            <span class="iq-diff iq-easy">Easy</span>
+            <span class="iq-text">Why use WorkManager instead of AlarmManager or a Foreground Service for periodic flush?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p><strong>AlarmManager</strong> can fire at exact times but requires the app to hold a wake lock, drains battery, and doesn't respect Doze mode constraints. <strong>Foreground Service</strong> requires a persistent notification — unacceptable UX for an analytics SDK that should be invisible. <strong>WorkManager</strong> is designed exactly for deferrable background work: it respects Doze mode and App Standby, coalesces work to minimise wake-ups, uses JobScheduler on API 23+ (battery-optimal), survives app restarts, and supports constraint-based execution (only run when network is available). For analytics, the 15-minute minimum interval is fine — there's no requirement to flush in real-time. WorkManager is the only correct answer here for a production SDK.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q18</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">How would you implement remote sampling configuration — changing sampling rates without an app update?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>The SDK fetches a sampling configuration from a remote config endpoint at initialisation and caches it in DataStore. The config maps event names (or categories) to sampling rates: <code>{"scroll_event": 0.01, "button_tap": 1.0, "purchase": 1.0}</code>. The <code>track()</code> function looks up the rate for the event name and uses a fast LCG random number generator (not <code>java.util.Random</code>, which is synchronized and slow on the hot path) to decide whether to accept the event. The remote config TTL should be short enough to respond to production incidents (e.g., a new event type flooding the pipeline) but long enough to avoid excessive network calls — 1-hour cache with background refresh is typical. Always default to <code>samplingRate = 1.0</code> if the remote config is unavailable, so you don't silently drop events on first install.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q19</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">How do you handle the case where retryCount exceeds the maximum and events become DEAD_LETTER?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Events are moved to <code>DEAD_LETTER</code> status after exceeding <code>maxRetryCount</code> (typically 5). They are excluded from all future flush queries. The SDK should: (1) emit a meta-event (<code>sdk_dead_letter</code>) with the count and event names — this reaches the server only if the SDK itself is working, providing a signal that something is wrong with specific event types. (2) Purge <code>DEAD_LETTER</code> events after 7 days via a scheduled cleanup query — they're consuming disk space with no hope of delivery. (3) Log the failure reason locally (via the host app's logging hook if provided) so developers can diagnose whether it was a 4xx schema error or a persistent network issue. Never silently drop <code>DEAD_LETTER</code> events before logging them.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q20</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">How do you ensure the analytics SDK adds minimal size to the host app's APK?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>SDK size budget is a real constraint — adding 2 MB to an APK can noticeably hurt install conversion rates. Strategies: (1) <strong>Minimise transitive dependencies.</strong> Avoid pulling in OkHttp if the host app already uses it — declare it as <code>compileOnly</code> and require the host to provide it, or use the platform's <code>HttpURLConnection</code> as a fallback. (2) <strong>ProGuard rules.</strong> Ship a <code>consumer-rules.pro</code> file that keeps only the public API and lets R8 shrink the rest. (3) <strong>No Gson/Moshi</strong> — write a minimal JSON serialiser for the fixed event schema using <code>JSONObject</code> or a handwritten serialiser to avoid pulling in a full JSON library. (4) <strong>Use Android's built-in APIs</strong> where possible: <code>DataStore</code> instead of custom SharedPreferences wrappers, WorkManager instead of a custom scheduler. Measure the AAR size with <code>./gradlew assembleRelease</code> and track it in CI. A well-optimised analytics SDK should add under 200 KB to the release APK.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="reading-progress-wrap">
+    <div class="rp-label">Reading Progress</div>
+    <div class="rp-track"><div class="rp-fill" id="pfill"></div></div>
+  </div>
+
+  <div class="toc-label">Contents</div>
+  <ul class="toc-list">
+    <li class="toc-item"><a href="#understanding" id="toc-understanding">Understanding the Problem</a></li>
+    <li class="toc-item sub"><a href="#functional-req" id="toc-functional-req">Functional Requirements</a></li>
+    <li class="toc-item sub"><a href="#nonfunctional-req" id="toc-nonfunctional-req">Non-Functional Requirements</a></li>
+    <li class="toc-item"><a href="#setup" id="toc-setup">The Set Up</a></li>
+    <li class="toc-item sub"><a href="#sdk-principles" id="toc-sdk-principles">SDK Principles</a></li>
+    <li class="toc-item sub"><a href="#core-entities" id="toc-core-entities">Data Models</a></li>
+    <li class="toc-item"><a href="#high-level" id="toc-high-level">High-Level Design</a></li>
+    <li class="toc-item sub"><a href="#hl-components" id="toc-hl-components">Component Overview</a></li>
+    <li class="toc-item sub"><a href="#hl-event-lifecycle" id="toc-hl-event-lifecycle">Event Lifecycle</a></li>
+    <li class="toc-item sub"><a href="#hl-flush-triggers" id="toc-hl-flush-triggers">Flush Triggers</a></li>
+    <li class="toc-item"><a href="#lld" id="toc-lld">Low-Level Design</a></li>
+    <li class="toc-item sub"><a href="#lld-capture" id="toc-lld-capture">Capture Layer</a></li>
+    <li class="toc-item sub"><a href="#lld-session" id="toc-lld-session">Session Management</a></li>
+    <li class="toc-item sub"><a href="#lld-flush" id="toc-lld-flush">Flush Engine</a></li>
+    <li class="toc-item sub"><a href="#lld-transport" id="toc-lld-transport">Transport Layer</a></li>
+    <li class="toc-item sub"><a href="#lld-consent" id="toc-lld-consent">Consent &amp; Privacy</a></li>
+    <li class="toc-item sub"><a href="#lld-workmanager" id="toc-lld-workmanager">WorkManager</a></li>
+    <li class="toc-item"><a href="#edge-cases" id="toc-edge-cases">Edge Cases</a></li>
+    <li class="toc-item"><a href="#expectations" id="toc-expectations">Interview Expectations</a></li>
+    <li class="toc-item"><a href="#interview-qs" id="toc-interview-qs">Q&amp;A (20 questions)</a></li>
+  </ul>
+
+  <div class="sidebar-divider"></div>
+  <div class="companies-label">Asked at</div>
+  <div class="company-chips">
+    <span class="chip">Google</span>
+    <span class="chip">Meta</span>
+    <span class="chip">Flipkart</span>
+    <span class="chip">Swiggy</span>
+    <span class="chip">Razorpay</span>
+    <span class="chip">Grab</span>
+  </div>
+</aside>
+
+</div><!-- /page -->
+
+<script>
+  // Reading progress
+  window.addEventListener('scroll', () => {
+    const doc = document.documentElement;
+    const pct = Math.round((doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100) || 0;
+    document.getElementById('pfill').style.width = pct + '%';
+  });
+
+  // TOC IntersectionObserver
+  const sections = [
+    'understanding','functional-req','nonfunctional-req',
+    'setup','sdk-principles','core-entities',
+    'high-level','hl-components','hl-event-lifecycle','hl-flush-triggers',
+    'lld','lld-capture','lld-session','lld-flush','lld-transport','lld-consent','lld-workmanager',
+    'edge-cases','expectations','interview-qs'
+  ];
+  const tocLinks = {};
+  sections.forEach(id => { tocLinks[id] = document.getElementById('toc-' + id); });
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        Object.values(tocLinks).forEach(l => l && l.classList.remove('active'));
+        const link = tocLinks[entry.target.id];
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-15% 0px -70% 0px' });
+  sections.forEach(id => { const el = document.getElementById(id); if (el) observer.observe(el); });
+
+  // Q&A toggle
+  function toggleIQ(card) {
+    const isOpen = card.classList.contains('open');
+    document.querySelectorAll('.iq-card.open').forEach(c => c.classList.remove('open'));
+    if (!isOpen) card.classList.add('open');
+  }
+</script>
+
+<!-- Auth -->
+<script>
+(function preRenderNav() {
+  try {
+    const raw = localStorage.getItem('sb-dquheflcmcppldrnckzf-auth-token');
+    if (!raw) return;
+    const session = JSON.parse(raw);
+    const user = session?.user;
+    if (!user) return;
+    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || '';
+    const initials = name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() || '?';
+    const el = id => document.getElementById(id);
+    if (el('navSignInBtn'))    el('navSignInBtn').style.display   = 'none';
+    if (el('navUserMenu'))     el('navUserMenu').style.display    = 'flex';
+    if (el('navAvatarInitial'))el('navAvatarInitial').textContent = initials;
+    if (el('navUserName'))     el('navUserName').textContent      = name.split(' ')[0];
+    if (el('navUserEmail'))    el('navUserEmail').textContent     = user.email;
+  } catch (e) {}
+})();
+
+(function () {
+  const SUPABASE_URL      = 'https://dquheflcmcppldrnckzf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function updateNavForUser(user) {
+    const signInBtn  = document.getElementById('navSignInBtn');
+    const userMenu   = document.getElementById('navUserMenu');
+    const avatarEl   = document.getElementById('navAvatarInitial');
+    const userNameEl = document.getElementById('navUserName');
+    const emailEl    = document.getElementById('navUserEmail');
+    const upgradeEl  = document.getElementById('upgrade-cta');
+    if (user) {
+      const name = user.user_metadata?.full_name || user.email.split('@')[0];
+      if (signInBtn) signInBtn.style.display = 'none';
+      if (userMenu)  userMenu.style.display  = 'flex';
+      if (avatarEl)  avatarEl.textContent    = name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+      if (userNameEl)userNameEl.textContent  = name.split(' ')[0];
+      if (emailEl)   emailEl.textContent     = user.email;
+    } else {
+      if (signInBtn) signInBtn.style.display = '';
+      if (userMenu)  userMenu.style.display  = 'none';
+      if (upgradeEl) upgradeEl.style.display = '';
+    }
+  }
+
+  sb.auth.onAuthStateChange((event, session) => updateNavForUser(session?.user ?? null));
+
+  window.handleSignOut = async function () { await sb.auth.signOut(); updateNavForUser(null); };
+  window.openAuthModal = function () { window.location.href = 'index.html?auth=signin&return=sysdesign_analyticsdk'; };
+
+  document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
+    this.classList.toggle('open'); e.stopPropagation();
+  });
+  document.addEventListener('click', function() {
+    document.getElementById('navUserMenu')?.classList.remove('open');
+  });
+
+  (async () => {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      updateNavForUser(session?.user ?? null);
+    } catch(e) {}
+  })();
+})();
+</script>
+
+</body>
+</html>
