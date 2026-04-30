@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Design a Payment System — Android System Design | Droidly</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #ffffff; --bg-subtle: #f9fafb; --bg-green: #e8f2ec; --bg-blue: #eff6ff; --bg-amber: #fffbeb;
+      --border: #e5e7eb; --border-green: #6aad82;
+      --ink: #111827; --ink2: #374151; --muted: #6b7280; --muted2: #9ca3af;
+      --accent: #3d7a4f; --accent-dark: #2e6040; --accent-light: #4caf70;
+      --green: #3d7a4f; --green-light: #e8f2ec;
+      --blue: #2563eb; --blue-light: #dbeafe;
+      --amber: #d97706; --red: #dc2626; --red-light: #fee2e2;
+      --code-bg: #1e1e2e;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--ink); font-family: 'Inter', -apple-system, sans-serif; font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; padding-top: 68px; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 900; height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; background: rgba(255,255,255,0.90); backdrop-filter: blur(20px) saturate(1.6); border-bottom: 1px solid var(--border); box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04); }
+    nav::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #2e6040, #4caf70, #3d7a4f); z-index: 1; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.5px; }
+    .logo-mark { display: flex; align-items: center; flex-shrink: 0; }
+    .logo-mark img { height: 32px; width: auto; display: block; object-fit: contain; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-cta { background: var(--accent); color: white; padding: 8px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; text-decoration: none; transition: opacity 0.2s, transform 0.15s; }
+    .nav-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-nav { font-size: 13px; font-weight: 600; color: var(--ink); background: var(--bg-subtle); border: 1px solid var(--border); padding: 6px 16px; border-radius: 100px; cursor: pointer; transition: background 0.15s; font-family: inherit; }
+    .btn-nav:hover { background: var(--border); }
+    .nav-user { display: flex; align-items: center; gap: 8px; position: relative; cursor: pointer; }
+    .nav-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; border: 2px solid rgba(61,122,79,0.3); flex-shrink: 0; }
+    .nav-user-name { font-size: 14px; font-weight: 600; color: var(--ink2); }
+    .nav-caret { font-size: 10px; color: var(--muted); }
+    .user-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); min-width: 200px; overflow: hidden; z-index: 999; }
+    .nav-user.open .user-dropdown { display: block; }
+    .user-dropdown-email { padding: 12px 16px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
+    .user-dropdown-item { padding: 10px 16px; font-size: 14px; cursor: pointer; transition: background 0.12s; }
+    .user-dropdown-item:hover { background: var(--bg-subtle); }
+    .user-dropdown-item.danger { color: var(--red); }
+
+    .page { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 260px; gap: 48px; padding: 40px 24px 80px; align-items: start; }
+    .content { min-width: 0; }
+
+    .article-eyebrow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; letter-spacing: 0.3px; }
+    .tag-topic { background: var(--bg-green); color: var(--accent-dark); }
+    .tag-hard  { background: #fee2e2; color: #991b1b; }
+    .tag-new   { background: var(--bg-subtle); color: var(--muted); border: 1px solid var(--border); }
+
+    .article-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(26px,4vw,36px); font-weight: 800; letter-spacing: -1px; line-height: 1.15; color: var(--ink); margin-bottom: 16px; }
+    .article-desc  { font-size: 16px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; max-width: 660px; }
+    .article-meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 36px; }
+    .meta-pill { font-size: 13px; color: var(--ink2); background: var(--bg-subtle); border: 1px solid var(--border); padding: 5px 12px; border-radius: 100px; }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+    .sec-h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--ink); margin: 40px 0 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border); scroll-margin-top: 90px; }
+    .sec-h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 17px; font-weight: 700; color: var(--ink); margin: 28px 0 12px; scroll-margin-top: 90px; }
+    .content p { margin-bottom: 14px; color: var(--ink2); line-height: 1.8; }
+    .content ol, .content ul { margin: 10px 0 16px 22px; color: var(--ink2); }
+    .content li { margin-bottom: 6px; }
+    .content strong { color: var(--ink); font-weight: 600; }
+
+    .pattern-box { border: 1px solid var(--border-green); border-left: 4px solid var(--accent); background: var(--bg-green); border-radius: 0 10px 10px 0; padding: 16px 20px; margin: 20px 0; }
+    .pattern-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .pattern-icon { font-size: 16px; }
+    .pattern-title { font-size: 13px; font-weight: 700; color: var(--accent-dark); text-transform: uppercase; letter-spacing: 0.5px; }
+    .pattern-box p { font-size: 14px; color: var(--ink2); margin-bottom: 0; }
+
+    .info-box { background: var(--bg-blue); border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px 20px; margin: 20px 0; }
+    .info-box p { font-size: 14px; color: var(--ink2); margin-bottom: 0; }
+    .warn-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 16px 20px; margin: 20px 0; }
+    .warn-box p { font-size: 14px; color: #78350f; margin-bottom: 0; }
+    .danger-box { background: #fff5f5; border: 1px solid #fca5a5; border-radius: 10px; padding: 16px 20px; margin: 20px 0; }
+    .danger-box p { font-size: 14px; color: #7f1d1d; margin-bottom: 0; }
+
+    .req-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--accent); margin: 20px 0 8px; }
+    .req-scope-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin: 16px 0 8px; }
+
+    .decision-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .decision-table th { background: var(--bg-green); color: var(--accent-dark); padding: 10px 14px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .decision-table td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--ink2); }
+    .decision-table tr:nth-child(even) td { background: var(--bg-subtle); }
+    .check { color: #16a34a; font-weight: 700; }
+    .cross  { color: #dc2626; font-weight: 700; }
+
+    .model-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 20px 0; }
+    .model-card { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .model-name { padding: 10px 16px; font-size: 13px; font-weight: 700; background: var(--ink); color: #f9e2af; font-family: 'JetBrains Mono', monospace; }
+    .model-field { display: flex; align-items: baseline; gap: 8px; padding: 6px 16px; border-top: 1px solid var(--border); font-size: 13px; }
+    .model-field:first-of-type { border-top: none; padding-top: 10px; }
+    .model-field:last-of-type { padding-bottom: 10px; }
+    .field-type { color: #89b4fa; font-family: 'JetBrains Mono', monospace; font-size: 12px; white-space: nowrap; }
+    .field-name { color: var(--ink2); }
+    .field-note { margin-left: auto; font-size: 11px; color: var(--muted); font-style: italic; }
+
+    .comp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+    .comp-card { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+    .comp-icon { font-size: 1.6rem; margin-bottom: 8px; }
+    .comp-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; color: var(--ink); }
+    .comp-sub  { font-size: 12px; color: var(--muted); }
+
+    .diagram-wrap { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 24px 0; }
+    .diagram-caption { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: var(--bg-subtle); border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+
+    .edge-grid { display: flex; flex-direction: column; gap: 16px; margin: 20px 0; }
+    .edge-card { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .edge-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: var(--bg-subtle); border-bottom: 1px solid var(--border); }
+    .edge-icon  { font-size: 20px; flex-shrink: 0; }
+    .edge-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+    .edge-body  { padding: 16px 18px; }
+    .edge-body p { font-size: 14px; color: var(--ink2); margin-bottom: 10px; line-height: 1.7; }
+    .edge-body p:last-child { margin-bottom: 0; }
+
+    .code-block { background: #1e1e2e; color: #cdd6f4; border-radius: 10px; padding: 20px; overflow-x: auto; font-size: 13px; line-height: 1.7; margin: 16px 0; font-family: 'JetBrains Mono', monospace; white-space: pre; }
+    .kw { color: #cba6f7; } .fn { color: #89b4fa; } .cl { color: #f9e2af; }
+    .cm { color: #6c7086; font-style: italic; } .st { color: #a6e3a1; }
+    .nm { color: #fab387; } .an { color: #89dceb; }
+
+    .levels-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+    .level-card { border-radius: 12px; border: 1px solid var(--border); padding: 20px; }
+    .level-card.mid    { border-top: 3px solid #60a5fa; }
+    .level-card.senior { border-top: 3px solid var(--accent); }
+    .level-card.staff  { border-top: 3px solid #a855f7; }
+    .level-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 12px; }
+    .level-card.mid    .level-title { color: #2563eb; }
+    .level-card.senior .level-title { color: var(--accent); }
+    .level-card.staff  .level-title { color: #9333ea; }
+    .level-card ul { margin-left: 16px; }
+    .level-card ul li { font-size: 13px; margin-bottom: 6px; color: var(--ink2); }
+
+    .iq-list { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .iq-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.18s; background: white; }
+    .iq-card:hover { border-color: var(--accent); }
+    .iq-card.open  { border-color: var(--accent); }
+    .iq-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; gap: 12px; user-select: none; }
+    .iq-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .iq-num  { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; color: var(--accent); background: var(--bg-green); padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
+    .iq-diff { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; white-space: nowrap; flex-shrink: 0; }
+    .iq-easy   { background: #dcfce7; color: #166534; }
+    .iq-medium { background: #fef9c3; color: #854d0e; }
+    .iq-hard   { background: #fee2e2; color: #991b1b; }
+    .iq-text   { font-size: 14px; font-weight: 500; color: var(--ink); line-height: 1.5; }
+    .iq-toggle { font-size: 16px; color: var(--muted); flex-shrink: 0; transition: transform 0.2s; }
+    .iq-card.open .iq-toggle { transform: rotate(180deg); color: var(--accent); }
+    .iq-answer { display: none; padding: 4px 18px 18px; border-top: 1px solid var(--border); background: var(--bg-subtle); }
+    .iq-card.open .iq-answer { display: block; }
+    .iq-answer p { font-size: 13.5px; color: var(--ink2); line-height: 1.8; margin-top: 12px; margin-bottom: 0; }
+
+    .sidebar { position: sticky; top: 88px; }
+    .reading-progress-wrap { margin-bottom: 20px; }
+    .rp-label { font-size: 11px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .rp-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .rp-fill  { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.2s; width: 0%; }
+    .toc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted2); margin-bottom: 10px; }
+    .toc-list  { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .toc-item a { display: block; padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 13px; color: var(--muted); border-left: 2px solid transparent; transition: all 0.15s; }
+    .toc-item a:hover { color: var(--ink); background: var(--bg-subtle); }
+    .toc-item a.active { color: var(--accent); font-weight: 600; border-left-color: var(--accent); background: var(--bg-green); }
+    .toc-item.sub a { padding-left: 22px; font-size: 12.5px; }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .companies-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted2); margin-bottom: 10px; }
+    .company-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { font-size: 11.5px; font-weight: 500; color: var(--ink2); background: var(--bg-subtle); border: 1px solid var(--border); padding: 3px 9px; border-radius: 4px; }
+
+    @media (max-width: 900px) { .page { grid-template-columns: 1fr; } .sidebar { display: none; } .comp-grid, .levels-grid, .model-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { nav { padding: 0 20px; } .page { padding: 24px 16px 60px; } .comp-grid, .levels-grid, .model-grid { grid-template-columns: 1fr; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="nav-right" id="navRight">
+    <a href="premium.html" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <div class="user-dropdown-item danger" onclick="handleSignOut()">🚪 Sign Out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+<main class="content">
+
+  <div class="article-eyebrow">
+    <span class="tag tag-topic">💳 System Design</span>
+    <span class="tag tag-hard">Hard</span>
+    <span class="tag tag-new">2025–26</span>
+  </div>
+  <h1 class="article-title">Design a Payment System</h1>
+  <p class="article-desc">A comprehensive Android system design covering the client-side payment SDK (checkout orchestration, card tokenisation, PCI DSS compliance), UPI intent flows, wallet integration, and the server-side payment gateway — including idempotency, transaction state machines, double-charge prevention, and reconciliation.</p>
+  <div class="article-meta-row">
+    <div class="meta-pill">⏱ <strong>50–60 min</strong> interview</div>
+    <div class="meta-pill">📖 <strong>~18 min</strong> read</div>
+    <div class="meta-pill">🎯 <strong>Senior / Staff+</strong></div>
+    <div class="meta-pill">🔥 Asked at <strong>Razorpay, PhonePe, Paytm, Flipkart</strong></div>
+  </div>
+
+  <!-- ─── UNDERSTANDING ──────────────────────────────── -->
+  <div id="understanding">
+    <div class="sec-h1">Understanding the Problem</div>
+
+    <p>Payment systems are where software failures have immediate financial consequences. An interviewer posing this question is testing whether you understand the <strong>three-sided complexity</strong>: the Android client (security, UX, state recovery), the payment gateway (idempotency, atomic state transitions), and the PSP integration (UPI, card networks, wallets). The critical insight: <strong>the client must never be trusted as the source of truth for payment status</strong> — always verify with the server, always assume the network can fail mid-transaction.</p>
+
+    <div id="functional-req">
+      <div class="req-label">✅ Functional Requirements</div>
+      <ul>
+        <li>Support three payment methods: <strong>saved/new card</strong> (tokenised, PCI-safe), <strong>UPI</strong> (intent-based via installed UPI apps), and <strong>wallet</strong> (in-app balance)</li>
+        <li>Initiate a checkout flow from any screen — product detail, cart, subscription — with a consistent UI</li>
+        <li>Track transaction status end-to-end: from initiation through PSP processing to final confirmation</li>
+        <li>Retry transient failures automatically; surface permanent failures (card declined, invalid VPA) to the user immediately</li>
+        <li>Support refunds: full and partial, initiated server-side, reflected in transaction history</li>
+        <li>Allow users to save payment methods (card tokens, linked UPI VPAs) for one-tap future payments</li>
+        <li>Support split payments: e.g., ₹200 from wallet + ₹800 from UPI</li>
+      </ul>
+    </div>
+
+    <div id="nonfunctional-req">
+      <div class="req-label">📐 Non-Functional Requirements</div>
+      <ul>
+        <li><strong>PCI DSS compliance:</strong> raw PAN and CVV must never touch application code, logs, or local storage — only PSP-issued tokens are stored</li>
+        <li><strong>Idempotency:</strong> a network retry must never cause a double charge — guaranteed by stable idempotency keys and server-side deduplication</li>
+        <li><strong>Checkout latency:</strong> payment sheet must open in &lt;500ms; total checkout flow including PSP round-trip &lt;3s on 4G</li>
+        <li><strong>Zero-trust client:</strong> payment status is determined only by the server — a malicious client cannot report a fake "success"</li>
+        <li><strong>Crash recovery:</strong> if the app is killed during a payment, the transaction must be recoverable on next launch without requiring user re-entry</li>
+        <li><strong>GDPR / RBI compliance:</strong> payment data must be localised (India), consent required for saving card tokens, 7-year audit log retention</li>
+      </ul>
+      <div class="req-scope-label">Out of scope</div>
+      <ul>
+        <li>EMI / BNPL schemes, international cards, multi-currency</li>
+        <li>Merchant dashboard, settlement reporting, dispute resolution</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ─── THE SET UP ──────────────────────────────────── -->
+  <div id="setup">
+    <div class="sec-h1">The Set Up</div>
+
+    <div id="payment-principles">
+      <div class="sec-h2">Architecture Principles</div>
+      <p>Before drawing any boxes, establish the non-negotiable rules that every design decision must respect:</p>
+      <ul>
+        <li><strong>Never store raw card data.</strong> PAN, CVV, and expiry must never appear in your database, logs, or crash reports. Tokenise at the point of capture using the PSP's hosted fields or direct tokenisation API. Store only the PSP-issued token.</li>
+        <li><strong>Idempotency keys are immutable.</strong> Generate one UUID per payment intent and keep it for the lifetime of that transaction — including all retries. The server uses it to return the same result rather than processing twice.</li>
+        <li><strong>Client is not the source of truth.</strong> The UPI intent result, the card payment callback, and any local status — all of these are <em>hints</em> to be verified with a server status poll. The database is updated only after server confirmation.</li>
+        <li><strong>State machine, not ad-hoc flags.</strong> Transaction state transitions must be an explicit enum, not a collection of booleans. Only valid transitions are allowed; invalid ones are logged as anomalies.</li>
+        <li><strong>Certificate pinning for all payment endpoints.</strong> Standard TLS is insufficient for financial APIs — pin the leaf certificate and rotate with a shadow pin strategy.</li>
+      </ul>
+    </div>
+
+    <div id="core-entities">
+      <div class="sec-h2">Data Models</div>
+      <p>These are the entities stored locally on the device. Sensitive data (tokens) are encrypted at rest using Android Keystore before writing to Room.</p>
+
+      <div class="model-grid">
+        <div class="model-card">
+          <div class="model-name">Transaction @Entity</div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">txnId</span><span class="field-note">@PrimaryKey, UUID</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">orderId</span><span class="field-note">server order ref</span></div>
+          <div class="model-field"><span class="field-type">Long</span><span class="field-name">amountPaise</span><span class="field-note">never floating point</span></div>
+          <div class="model-field"><span class="field-type">TransactionStatus</span><span class="field-name">status</span><span class="field-note">state machine</span></div>
+          <div class="model-field"><span class="field-type">PaymentMethod</span><span class="field-name">method</span><span class="field-note">CARD / UPI / WALLET</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">idempotencyKey</span><span class="field-note">stable across retries</span></div>
+          <div class="model-field"><span class="field-type">Int</span><span class="field-name">retryCount</span><span class="field-note">for exponential backoff</span></div>
+          <div class="model-field"><span class="field-type">Long</span><span class="field-name">createdAt</span></div>
+          <div class="model-field"><span class="field-type">Long</span><span class="field-name">updatedAt</span></div>
+          <div class="model-field"><span class="field-type">String?</span><span class="field-name">failureReason</span><span class="field-note">for declined/error</span></div>
+        </div>
+        <div class="model-card">
+          <div class="model-name">SavedPaymentMethod @Entity</div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">methodId</span><span class="field-note">@PrimaryKey</span></div>
+          <div class="model-field"><span class="field-type">PaymentMethod</span><span class="field-name">type</span><span class="field-note">CARD / UPI</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">displayLabel</span><span class="field-note">e.g. "Visa ••4242"</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">encryptedToken</span><span class="field-note">AES-GCM, Keystore key</span></div>
+          <div class="model-field"><span class="field-type">String?</span><span class="field-name">vpa</span><span class="field-note">UPI Virtual Payment Address</span></div>
+          <div class="model-field"><span class="field-type">Boolean</span><span class="field-name">isDefault</span></div>
+          <div class="model-field"><span class="field-type">Long</span><span class="field-name">savedAt</span></div>
+        </div>
+        <div class="model-card">
+          <div class="model-name">UpiTransaction (embedded)</div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">vpa</span><span class="field-note">payer VPA</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">txnRefId</span><span class="field-note">from UPI intent response</span></div>
+          <div class="model-field"><span class="field-type">String?</span><span class="field-name">rrn</span><span class="field-note">bank reference number</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">upiStatus</span><span class="field-note">SUCCESS / FAILURE / PENDING</span></div>
+          <div class="model-field"><span class="field-type">String</span><span class="field-name">upiAppPackage</span><span class="field-note">which UPI app was used</span></div>
+        </div>
+        <div class="model-card">
+          <div class="model-name">WalletInfo (server DTO)</div>
+          <div class="model-field"><span class="field-type">Long</span><span class="field-name">balancePaise</span><span class="field-note">cached, not authoritative</span></div>
+          <div class="model-field"><span class="field-type">Boolean</span><span class="field-name">isKycComplete</span><span class="field-note">KYC gating</span></div>
+          <div class="model-field"><span class="field-type">Long</span><span class="field-name">dailyLimitPaise</span><span class="field-note">RBI ₹10k/day limit</span></div>
+          <div class="model-field"><span class="field-type">Long</span><span class="field-name">cachedAt</span><span class="field-note">staleness check</span></div>
+        </div>
+      </div>
+
+      <div class="danger-box">
+        <p>🚨 <strong>Never store amounts as Float or Double.</strong> Floating-point arithmetic causes rounding errors that translate directly to financial discrepancies. Always store monetary amounts in the smallest currency unit (paise in India) as a <code>Long</code>. Only format to a decimal string at the display layer.</p>
+      </div>
+
+      <p>The <strong>TransactionStatus</strong> state machine defines which transitions are valid. Any attempt to move to a non-adjacent state is an error and must be logged for audit:</p>
+
+      <div class="diagram-wrap">
+        <div style="padding: 24px 16px 16px; background:#fff; overflow-x:auto;">
+          <svg viewBox="0 0 700 200" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" font-size="12">
+            <!-- States -->
+            <rect x="10" y="80" width="110" height="36" rx="6" fill="#1e1e2e" stroke="#6c7086" stroke-width="1"/>
+            <text x="65" y="103" text-anchor="middle" fill="#cba6f7" font-weight="bold">INITIATED</text>
+
+            <rect x="155" y="80" width="110" height="36" rx="6" fill="#1e1e2e" stroke="#89b4fa" stroke-width="1.5"/>
+            <text x="210" y="103" text-anchor="middle" fill="#89b4fa" font-weight="bold">PROCESSING</text>
+
+            <rect x="300" y="80" width="130" height="36" rx="6" fill="#1e1e2e" stroke="#f9e2af" stroke-width="1.5"/>
+            <text x="365" y="103" text-anchor="middle" fill="#f9e2af" font-weight="bold">PENDING_VERIFY</text>
+
+            <rect x="465" y="30" width="100" height="36" rx="6" fill="#1e1e2e" stroke="#a6e3a1" stroke-width="2"/>
+            <text x="515" y="53" text-anchor="middle" fill="#a6e3a1" font-weight="bold">SUCCESS</text>
+
+            <rect x="465" y="116" width="100" height="36" rx="6" fill="#1e1e2e" stroke="#f38ba8" stroke-width="2"/>
+            <text x="515" y="139" text-anchor="middle" fill="#f38ba8" font-weight="bold">FAILED</text>
+
+            <rect x="610" y="80" width="80" height="36" rx="6" fill="#1e1e2e" stroke="#cba6f7" stroke-width="1.5"/>
+            <text x="650" y="103" text-anchor="middle" fill="#cba6f7" font-weight="bold">REFUNDED</text>
+
+            <!-- Arrows -->
+            <line x1="120" y1="98" x2="152" y2="98" stroke="#6c7086" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="265" y1="98" x2="297" y2="98" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="430" y1="88" x2="462" y2="60" stroke="#a6e3a1" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="430" y1="108" x2="462" y2="128" stroke="#f38ba8" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="565" y1="48" x2="607" y2="88" stroke="#cba6f7" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+            <!-- Timeout label -->
+            <text x="210" y="74" text-anchor="middle" fill="#fab387" font-size="9">PSP call</text>
+            <text x="360" y="72" text-anchor="middle" fill="#f9e2af" font-size="9">await callback / poll</text>
+            <text x="445" y="78" text-anchor="middle" fill="#a6e3a1" font-size="9">verified ✓</text>
+            <text x="448" y="118" text-anchor="middle" fill="#f38ba8" font-size="9">declined / error</text>
+            <text x="600" y="72" text-anchor="middle" fill="#cba6f7" font-size="9">refund</text>
+
+            <!-- TIMED_OUT branch -->
+            <rect x="300" y="155" width="100" height="36" rx="6" fill="#1e1e2e" stroke="#fab387" stroke-width="1.5"/>
+            <text x="350" y="178" text-anchor="middle" fill="#fab387" font-weight="bold">TIMED_OUT</text>
+            <line x1="350" y1="116" x2="350" y2="152" stroke="#fab387" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+            <text x="358" y="143" fill="#6c7086" font-size="9">30s timeout</text>
+
+            <defs>
+              <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L8,3 z" fill="#6c7086"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <div class="diagram-caption"><span>TransactionStatus state machine — only shown transitions are valid; all others throw an IllegalStateException</span></div>
+      </div>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ─── HIGH-LEVEL DESIGN ──────────────────────────── -->
+  <div id="high-level">
+    <div class="sec-h1">High-Level Design</div>
+
+    <div id="hl-components">
+      <div class="sec-h2">System Components</div>
+      <p>The system has three distinct layers. Understanding which layer owns which responsibility is the first thing an interviewer evaluates:</p>
+
+      <div class="comp-grid">
+        <div class="comp-card">
+          <div class="comp-icon">📱</div>
+          <div class="comp-name">Android Payment SDK</div>
+          <div class="comp-sub">Checkout UI, tokenisation, UPI intent handling, local transaction persistence, status polling</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-icon">🏦</div>
+          <div class="comp-name">Payment Gateway</div>
+          <div class="comp-sub">Order creation, idempotency store, PSP routing, transaction ledger, reconciliation, fraud scoring</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-icon">🔌</div>
+          <div class="comp-name">PSP / Bank Networks</div>
+          <div class="comp-sub">Razorpay / Stripe / NPCI (UPI), card network (Visa/Mastercard), bank core banking systems</div>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div style="padding: 28px 16px 16px; background:#fff; overflow-x:auto;">
+          <svg viewBox="0 0 760 300" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter,sans-serif" font-size="11">
+            <!-- Android layer -->
+            <rect x="20" y="20" width="200" height="260" rx="10" fill="#f0fdf4" stroke="#6aad82" stroke-width="1.5"/>
+            <text x="120" y="44" text-anchor="middle" fill="#166534" font-size="12" font-weight="700">Android SDK</text>
+
+            <rect x="36" y="54" width="168" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="120" y="72" text-anchor="middle" fill="#cba6f7" font-size="10" font-weight="600">PaymentSdk (root)</text>
+
+            <rect x="36" y="90" width="168" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="120" y="108" text-anchor="middle" fill="#89b4fa" font-size="10" font-weight="600">CheckoutOrchestrator</text>
+
+            <rect x="36" y="126" width="78" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="75" y="144" text-anchor="middle" fill="#f9e2af" font-size="10" font-weight="600">Tokenization</text>
+
+            <rect x="126" y="126" width="78" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="165" y="144" text-anchor="middle" fill="#a6e3a1" font-size="10" font-weight="600">UpiHandler</text>
+
+            <rect x="36" y="162" width="78" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="75" y="180" text-anchor="middle" fill="#fab387" font-size="10" font-weight="600">TxnRepository</text>
+
+            <rect x="126" y="162" width="78" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="165" y="180" text-anchor="middle" fill="#89dceb" font-size="10" font-weight="600">PaymentTransport</text>
+
+            <rect x="36" y="198" width="168" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="120" y="216" text-anchor="middle" fill="#f38ba8" font-size="10" font-weight="600">WalletManager</text>
+
+            <rect x="36" y="234" width="168" height="28" rx="5" fill="#1e1e2e" opacity="0.6"/>
+            <text x="120" y="252" text-anchor="middle" fill="#6c7086" font-size="10">Room DB (encrypted)</text>
+
+            <!-- Gateway layer -->
+            <rect x="280" y="20" width="200" height="260" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+            <text x="380" y="44" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="700">Payment Gateway</text>
+
+            <rect x="296" y="54" width="168" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="380" y="72" text-anchor="middle" fill="#89b4fa" font-size="10" font-weight="600">Order Service</text>
+
+            <rect x="296" y="90" width="168" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="380" y="108" text-anchor="middle" fill="#cba6f7" font-size="10" font-weight="600">Idempotency Store (Redis)</text>
+
+            <rect x="296" y="126" width="78" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="335" y="144" text-anchor="middle" fill="#f9e2af" font-size="10" font-weight="600">PSP Router</text>
+
+            <rect x="386" y="126" width="78" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="425" y="144" text-anchor="middle" fill="#f38ba8" font-size="10" font-weight="600">Fraud Engine</text>
+
+            <rect x="296" y="162" width="168" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="380" y="180" text-anchor="middle" fill="#a6e3a1" font-size="10" font-weight="600">Transaction Ledger (Postgres)</text>
+
+            <rect x="296" y="198" width="168" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="380" y="216" text-anchor="middle" fill="#89dceb" font-size="10" font-weight="600">Notification Service</text>
+
+            <rect x="296" y="234" width="168" height="28" rx="5" fill="#1e1e2e" opacity="0.6"/>
+            <text x="380" y="252" text-anchor="middle" fill="#6c7086" font-size="10">Reconciliation (batch)</text>
+
+            <!-- PSP layer -->
+            <rect x="540" y="20" width="200" height="260" rx="10" fill="#fefce8" stroke="#fcd34d" stroke-width="1.5"/>
+            <text x="640" y="44" text-anchor="middle" fill="#78350f" font-size="12" font-weight="700">PSP / Networks</text>
+
+            <rect x="556" y="54" width="168" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="640" y="72" text-anchor="middle" fill="#f9e2af" font-size="10" font-weight="600">Razorpay / Stripe</text>
+
+            <rect x="556" y="90" width="168" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="640" y="108" text-anchor="middle" fill="#a6e3a1" font-size="10" font-weight="600">NPCI (UPI / IMPS)</text>
+
+            <rect x="556" y="126" width="168" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="640" y="144" text-anchor="middle" fill="#89b4fa" font-size="10" font-weight="600">Visa / Mastercard</text>
+
+            <rect x="556" y="162" width="168" height="28" rx="5" fill="#1e1e2e"/>
+            <text x="640" y="180" text-anchor="middle" fill="#cba6f7" font-size="10" font-weight="600">Core Banking Systems</text>
+
+            <!-- Arrows Android → Gateway -->
+            <line x1="220" y1="108" x2="278" y2="108" stroke="#6aad82" stroke-width="1.5" marker-end="url(#a2)"/>
+            <text x="249" y="103" text-anchor="middle" fill="#6aad82" font-size="9">HTTPS + pin</text>
+
+            <!-- Arrows Gateway → PSP -->
+            <line x1="480" y1="108" x2="538" y2="108" stroke="#93c5fd" stroke-width="1.5" marker-end="url(#a2)"/>
+            <text x="509" y="103" text-anchor="middle" fill="#93c5fd" font-size="9">PSP SDK</text>
+
+            <!-- Webhook back arrow -->
+            <path d="M540,198 Q510,230 480,216" fill="none" stroke="#fab387" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#a2)"/>
+            <text x="516" y="240" text-anchor="middle" fill="#fab387" font-size="9">webhook</text>
+
+            <defs>
+              <marker id="a2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L7,3 z" fill="#6c7086"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <div class="diagram-caption"><span>Three-layer architecture — Android SDK ↔ Payment Gateway ↔ PSP/Networks</span><span style="font-size:11px;color:#9ca3af;">dashed = async webhook / callback</span></div>
+      </div>
+    </div>
+
+    <div id="hl-payment-flows">
+      <div class="sec-h2">Payment Method Flows</div>
+      <p>Each payment method has a fundamentally different flow. Understanding all three — and their failure modes — is what interviewers test at the senior level.</p>
+
+      <table class="decision-table">
+        <tr><th>Method</th><th>Initiation</th><th>Auth</th><th>Result</th><th>Verification</th></tr>
+        <tr>
+          <td><strong>Card</strong></td>
+          <td>Collect card details via PSP hosted fields → tokenise</td>
+          <td>3DS2 OTP in WebView or redirect</td>
+          <td>Synchronous PSP callback</td>
+          <td>Server confirms with PSP webhook</td>
+        </tr>
+        <tr>
+          <td><strong>UPI</strong></td>
+          <td>Build <code>upi://pay?...</code> URL → launch intent chooser</td>
+          <td>User authenticates inside UPI app (PIN)</td>
+          <td><code>onActivityResult</code> intent extras</td>
+          <td>Server polls NPCI for txnRefId status</td>
+        </tr>
+        <tr>
+          <td><strong>Wallet</strong></td>
+          <td>Load wallet balance → confirm if sufficient</td>
+          <td>Optional: app PIN for high-value txns</td>
+          <td>Synchronous server response</td>
+          <td>Ledger debit is atomic; no PSP needed</td>
+        </tr>
+      </table>
+
+      <div class="warn-box">
+        <p>⚠️ <strong>Never trust the UPI intent result directly.</strong> The <code>onActivityResult</code> extras (<code>Status=SUCCESS</code>) are provided by the UPI app and can be tampered with. Always poll the NPCI status API with the <code>txnRefId</code> returned in the intent — the server confirms the actual bank debit before marking the transaction successful.</p>
+      </div>
+    </div>
+
+    <div id="hl-server-gateway">
+      <div class="sec-h2">Server-Side Gateway Design</div>
+      <p>The payment gateway has five critical responsibilities that prevent double-charging, data corruption, and fraud:</p>
+      <ul>
+        <li><strong>Idempotency store (Redis):</strong> Before forwarding any payment to a PSP, check if the <code>idempotencyKey</code> already exists. If yes, return the cached response immediately. If no, process and store result atomically. TTL = 24 hours. This is the single mechanism that prevents double charges on network retries.</li>
+        <li><strong>Transaction ledger (Postgres):</strong> Double-entry bookkeeping — every payment creates two rows: a debit on the customer account and a credit on the merchant account. The two rows share a <code>transactionId</code> and must be written in a single database transaction. If either fails, neither commits (atomicity).</li>
+        <li><strong>PSP Router:</strong> Routes to Razorpay for UPI/cards, direct NPCI for high-volume UPI, or Stripe for international. Maintains PSP health scores and falls back to secondary PSP if primary returns 5xx for &gt;5 consecutive requests.</li>
+        <li><strong>Webhook handler:</strong> PSPs send status updates asynchronously (payment confirmed, refund processed). The webhook must be idempotent — duplicate deliveries (PSPs retry webhooks) must not double-update the ledger. Use a webhook event ID as a deduplication key.</li>
+        <li><strong>Reconciliation (daily batch):</strong> Compare your ledger with the PSP's settlement report. Flag discrepancies — a payment that succeeded at the PSP but failed on your side, or vice versa. These are the "stuck transactions" that require manual resolution.</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr/>
+  <!-- ─── LOW-LEVEL DESIGN ─────────────────────────────── -->
+  <div id="lld">
+    <div class="sec-h1">Low-Level Design</div>
+
+    <p>The SDK is composed of seven classes with strict one-directional dependencies. Each class owns exactly one responsibility and is independently testable. The diagram below shows every class, its key methods, and how they wire together at runtime.</p>
+
+    <!-- ── CLASS DEPENDENCY GRAPH ── -->
+    <div class="diagram-wrap">
+      <div style="padding:28px 16px 20px; background:#fff; overflow-x:auto;">
+        <svg viewBox="0 0 760 400" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" font-size="11">
+
+          <!-- PaymentSdk (root) -->
+          <rect x="290" y="10" width="180" height="64" rx="6" fill="#1e1e2e" stroke="#cba6f7" stroke-width="2"/>
+          <rect x="290" y="10" width="180" height="20" rx="6" fill="#cba6f7"/>
+          <rect x="290" y="24" width="180" height="6" fill="#cba6f7"/>
+          <text x="380" y="24" text-anchor="middle" fill="#1e1e2e" font-weight="700" font-size="11">PaymentSdk</text>
+          <text x="300" y="44" fill="#89b4fa" font-size="9">init(context, config)</text>
+          <text x="300" y="56" fill="#a6e3a1" font-size="9">checkout(orderId, amount)</text>
+          <text x="300" y="68" fill="#f38ba8" font-size="9">recoverPendingTxns()</text>
+
+          <!-- Row 2: CheckoutOrchestrator -->
+          <rect x="140" y="120" width="180" height="64" rx="6" fill="#1e1e2e" stroke="#89b4fa" stroke-width="1.5"/>
+          <rect x="140" y="120" width="180" height="20" rx="6" fill="#89b4fa"/>
+          <rect x="140" y="134" width="180" height="6" fill="#89b4fa"/>
+          <text x="230" y="134" text-anchor="middle" fill="#1e1e2e" font-weight="700" font-size="11">CheckoutOrchestrator</text>
+          <text x="150" y="154" fill="#cdd6f4" font-size="9">startCheckout(method)</text>
+          <text x="150" y="166" fill="#cdd6f4" font-size="9">onUpiResult(intent)</text>
+          <text x="150" y="178" fill="#6c7086" font-size="9">CheckoutState machine</text>
+
+          <!-- Row 2: WalletManager -->
+          <rect x="440" y="120" width="160" height="64" rx="6" fill="#1e1e2e" stroke="#f38ba8" stroke-width="1.5"/>
+          <rect x="440" y="120" width="160" height="20" rx="6" fill="#f38ba8"/>
+          <rect x="440" y="134" width="160" height="6" fill="#f38ba8"/>
+          <text x="520" y="134" text-anchor="middle" fill="#1e1e2e" font-weight="700" font-size="11">WalletManager</text>
+          <text x="450" y="154" fill="#cdd6f4" font-size="9">fetchBalance(): WalletInfo</text>
+          <text x="450" y="166" fill="#cdd6f4" font-size="9">pay(amount): TxnResult</text>
+          <text x="450" y="178" fill="#6c7086" font-size="9">@Volatile cachedBalance</text>
+
+          <!-- Row 3 -->
+          <rect x="20" y="240" width="160" height="64" rx="6" fill="#1e1e2e" stroke="#f9e2af" stroke-width="1.5"/>
+          <rect x="20" y="240" width="160" height="20" rx="6" fill="#f9e2af"/>
+          <rect x="20" y="254" width="160" height="6" fill="#f9e2af"/>
+          <text x="100" y="254" text-anchor="middle" fill="#1e1e2e" font-weight="700" font-size="11">TokenizationService</text>
+          <text x="30" y="274" fill="#cdd6f4" font-size="9">tokenize(cardData)</text>
+          <text x="30" y="286" fill="#cdd6f4" font-size="9">getToken(methodId)</text>
+          <text x="30" y="298" fill="#6c7086" font-size="9">PSP hosted fields</text>
+
+          <rect x="200" y="240" width="150" height="64" rx="6" fill="#1e1e2e" stroke="#a6e3a1" stroke-width="1.5"/>
+          <rect x="200" y="240" width="150" height="20" rx="6" fill="#a6e3a1"/>
+          <rect x="200" y="254" width="150" height="6" fill="#a6e3a1"/>
+          <text x="275" y="254" text-anchor="middle" fill="#1e1e2e" font-weight="700" font-size="11">UpiIntentHandler</text>
+          <text x="210" y="274" fill="#cdd6f4" font-size="9">buildUpiUrl(params)</text>
+          <text x="210" y="286" fill="#cdd6f4" font-size="9">parseResult(intent)</text>
+          <text x="210" y="298" fill="#6c7086" font-size="9">resolveInstalledApps()</text>
+
+          <rect x="370" y="240" width="160" height="64" rx="6" fill="#1e1e2e" stroke="#89dceb" stroke-width="1.5"/>
+          <rect x="370" y="240" width="160" height="20" rx="6" fill="#89dceb"/>
+          <rect x="370" y="254" width="160" height="6" fill="#89dceb"/>
+          <text x="450" y="254" text-anchor="middle" fill="#1e1e2e" font-weight="700" font-size="11">PaymentTransport</text>
+          <text x="380" y="274" fill="#cdd6f4" font-size="9">createOrder()</text>
+          <text x="380" y="286" fill="#cdd6f4" font-size="9">charge(idempotencyKey)</text>
+          <text x="380" y="298" fill="#6c7086" font-size="9">pollStatus(txnId)</text>
+
+          <rect x="550" y="240" width="160" height="64" rx="6" fill="#1e1e2e" stroke="#fab387" stroke-width="1.5"/>
+          <rect x="550" y="240" width="160" height="20" rx="6" fill="#fab387"/>
+          <rect x="550" y="254" width="160" height="6" fill="#fab387"/>
+          <text x="630" y="254" text-anchor="middle" fill="#1e1e2e" font-weight="700" font-size="11">TransactionRepository</text>
+          <text x="560" y="274" fill="#cdd6f4" font-size="9">save(transaction)</text>
+          <text x="560" y="286" fill="#cdd6f4" font-size="9">updateStatus(id, status)</text>
+          <text x="560" y="298" fill="#6c7086" font-size="9">Room @Dao</text>
+
+          <!-- Row 4: infrastructure -->
+          <rect x="370" y="350" width="120" height="28" rx="5" fill="#181825" stroke="#6c7086" stroke-width="1"/>
+          <text x="430" y="368" text-anchor="middle" fill="#6c7086" font-size="9">PaymentDatabase</text>
+          <rect x="500" y="350" width="100" height="28" rx="5" fill="#181825" stroke="#6c7086" stroke-width="1"/>
+          <text x="550" y="368" text-anchor="middle" fill="#6c7086" font-size="9">OkHttpClient</text>
+
+          <!-- Dependency arrows PaymentSdk → children -->
+          <line x1="330" y1="74" x2="250" y2="118" stroke="#cba6f7" stroke-width="1.2" marker-end="url(#da)"/>
+          <line x1="380" y1="74" x2="380" y2="118" stroke="#cba6f7" stroke-width="1.2" marker-end="url(#da)"/>
+          <line x1="430" y1="74" x2="490" y2="118" stroke="#cba6f7" stroke-width="1.2" marker-end="url(#da)"/>
+
+          <!-- CheckoutOrchestrator → TokenizationService, UpiIntentHandler, PaymentTransport, TransactionRepository -->
+          <line x1="190" y1="184" x2="120" y2="238" stroke="#89b4fa" stroke-width="1.2" marker-end="url(#da)"/>
+          <line x1="220" y1="184" x2="255" y2="238" stroke="#89b4fa" stroke-width="1.2" marker-end="url(#da)"/>
+          <line x1="260" y1="184" x2="400" y2="238" stroke="#89b4fa" stroke-width="1.2" marker-end="url(#da)"/>
+          <line x1="280" y1="184" x2="580" y2="238" stroke="#89b4fa" stroke-width="1.2" marker-end="url(#da)"/>
+
+          <!-- WalletManager → PaymentTransport, TransactionRepository -->
+          <line x1="500" y1="184" x2="470" y2="238" stroke="#f38ba8" stroke-width="1.2" marker-end="url(#da)"/>
+          <line x1="560" y1="184" x2="610" y2="238" stroke="#f38ba8" stroke-width="1.2" marker-end="url(#da)"/>
+
+          <!-- TransactionRepository → PaymentDatabase (composition) -->
+          <line x1="630" y1="304" x2="470" y2="348" stroke="#fab387" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#da)"/>
+          <!-- PaymentTransport → OkHttpClient -->
+          <line x1="480" y1="304" x2="530" y2="348" stroke="#89dceb" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#da)"/>
+
+          <defs>
+            <marker id="da" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L7,3 z" fill="#6c7086"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+      <div class="diagram-caption"><span>Class dependency graph — arrows show constructor dependencies injected at SDK init</span><span style="font-size:11px;color:#9ca3af;">dashed = infrastructure dependencies</span></div>
+    </div>
+
+    <!-- ── 0) SDK INIT ── -->
+    <div id="lld-init">
+      <div class="sec-h2">0) SDK Initialization — the composition root</div>
+      <p>All dependencies are wired in a single <code>init()</code> factory method. No dependency is created anywhere else — this is constructor injection without a DI framework, keeping the SDK self-contained and testable with fakes.</p>
+      <div class="code-block"><span class="cm">// PaymentSdk.kt — composition root</span>
+<span class="kw">class</span> <span class="cl">PaymentSdk</span> <span class="kw">private constructor</span>(
+    <span class="kw">val</span> orchestrator: <span class="cl">CheckoutOrchestrator</span>
+) {
+    <span class="kw">companion object</span> {
+        <span class="kw">fun</span> <span class="fn">init</span>(context: <span class="cl">Context</span>, config: <span class="cl">PaymentConfig</span>): <span class="cl">PaymentSdk</span> {
+            <span class="kw">val</span> db         = <span class="cl">PaymentDatabase</span>.build(context)
+            <span class="kw">val</span> okHttp     = <span class="cl">OkHttpClient</span>.Builder()
+                                .certificatePinner(<span class="cl">CertificatePinner</span>.Builder()
+                                    .add(config.apiHost, config.certPin)    <span class="cm">// cert pin</span>
+                                    .add(config.apiHost, config.shadowPin)  <span class="cm">// rotation shadow</span>
+                                    .build())
+                                .build()
+            <span class="kw">val</span> transport  = <span class="cl">PaymentTransport</span>(okHttp, config.apiBase, config.apiKey)
+            <span class="kw">val</span> txnRepo    = <span class="cl">TransactionRepository</span>(db.txnDao())
+            <span class="kw">val</span> tokenizer  = <span class="cl">TokenizationService</span>(config.pspPublicKey)
+            <span class="kw">val</span> upiHandler = <span class="cl">UpiIntentHandler</span>(context)
+            <span class="kw">val</span> wallet     = <span class="cl">WalletManager</span>(transport)
+            <span class="kw">val</span> orchestrator = <span class="cl">CheckoutOrchestrator</span>(
+                txnRepo, tokenizer, upiHandler, transport, wallet
+            )
+            orchestrator.recoverPendingTransactions()    <span class="cm">// reset IN_FLIGHT on startup</span>
+            <span class="kw">return</span> <span class="cl">PaymentSdk</span>(orchestrator)
+        }
+    }
+}</div>
+    </div>
+
+    <!-- ── 1) CHECKOUT ORCHESTRATOR ── -->
+    <div id="lld-orchestrator">
+      <div class="sec-h2">1) CheckoutOrchestrator — the state machine</div>
+      <p>The orchestrator owns the checkout state machine and coordinates all other classes. It exposes a single public entry point — <code>startCheckout()</code> — and a <code>Flow&lt;CheckoutState&gt;</code> that the UI layer observes. A <code>Mutex</code> ensures only one checkout can be active at a time, preventing double-submission.</p>
+
+      <!-- Checkout sequence diagram -->
+      <div class="diagram-wrap">
+        <div style="padding: 20px 16px 12px; background:#fff; overflow-x:auto;">
+          <svg viewBox="0 0 760 280" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter,sans-serif" font-size="11">
+            <!-- Participant boxes -->
+            <rect x="10" y="10" width="80" height="28" rx="5" fill="#1e1e2e" stroke="#89b4fa" stroke-width="1.5"/>
+            <text x="50" y="28" text-anchor="middle" fill="#89b4fa" font-weight="700">UI / VM</text>
+
+            <rect x="130" y="10" width="100" height="28" rx="5" fill="#1e1e2e" stroke="#cba6f7" stroke-width="1.5"/>
+            <text x="180" y="28" text-anchor="middle" fill="#cba6f7" font-weight="700">Orchestrator</text>
+
+            <rect x="270" y="10" width="110" height="28" rx="5" fill="#1e1e2e" stroke="#f9e2af" stroke-width="1.5"/>
+            <text x="325" y="28" text-anchor="middle" fill="#f9e2af" font-weight="700">Tokenization</text>
+
+            <rect x="420" y="10" width="110" height="28" rx="5" fill="#1e1e2e" stroke="#89dceb" stroke-width="1.5"/>
+            <text x="475" y="28" text-anchor="middle" fill="#89dceb" font-weight="700">Transport</text>
+
+            <rect x="570" y="10" width="100" height="28" rx="5" fill="#1e1e2e" stroke="#fab387" stroke-width="1.5"/>
+            <text x="620" y="28" text-anchor="middle" fill="#fab387" font-weight="700">TxnRepository</text>
+
+            <!-- Lifelines -->
+            <line x1="50" y1="38" x2="50" y2="275" stroke="#374151" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="180" y1="38" x2="180" y2="275" stroke="#374151" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="325" y1="38" x2="325" y2="275" stroke="#374151" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="475" y1="38" x2="475" y2="275" stroke="#374151" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="620" y1="38" x2="620" y2="275" stroke="#374151" stroke-width="1" stroke-dasharray="4,3"/>
+
+            <!-- Activation bar on Orchestrator -->
+            <rect x="175" y="60" width="10" height="195" rx="2" fill="#cba6f7" opacity="0.3"/>
+
+            <!-- Step 1: startCheckout -->
+            <line x1="50" y1="66" x2="173" y2="66" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#sa)"/>
+            <text x="112" y="61" text-anchor="middle" fill="#374151" font-size="9.5">startCheckout(method, orderId)</text>
+
+            <!-- Step 2: mutex guard -->
+            <text x="195" y="82" fill="#6c7086" font-size="9" font-style="italic">tryLock() — reject if already active</text>
+
+            <!-- Step 3: save INITIATED -->
+            <line x1="185" y1="92" x2="613" y2="92" stroke="#fab387" stroke-width="1.2" marker-end="url(#sa)"/>
+            <text x="400" y="87" text-anchor="middle" fill="#374151" font-size="9.5">save(txn: INITIATED)</text>
+
+            <!-- Step 4: emit state -->
+            <line x1="175" y1="108" x2="57" y2="108" stroke="#cba6f7" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#sa)"/>
+            <text x="112" y="103" text-anchor="middle" fill="#6c7086" font-size="9">emit(COLLECTING)</text>
+
+            <!-- Step 5: tokenize (card path) -->
+            <line x1="185" y1="124" x2="318" y2="124" stroke="#f9e2af" stroke-width="1.2" marker-end="url(#sa)"/>
+            <text x="252" y="119" text-anchor="middle" fill="#374151" font-size="9.5">tokenize(cardData)</text>
+            <line x1="318" y1="138" x2="185" y2="138" stroke="#f9e2af" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#sa)"/>
+            <text x="252" y="133" text-anchor="middle" fill="#6c7086" font-size="9">PaymentToken</text>
+
+            <!-- Step 6: createOrder -->
+            <line x1="185" y1="154" x2="468" y2="154" stroke="#89dceb" stroke-width="1.2" marker-end="url(#sa)"/>
+            <text x="327" y="149" text-anchor="middle" fill="#374151" font-size="9.5">createOrder(orderId, amount)</text>
+            <line x1="468" y1="168" x2="185" y2="168" stroke="#89dceb" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#sa)"/>
+            <text x="327" y="163" text-anchor="middle" fill="#6c7086" font-size="9">gatewayOrderId</text>
+
+            <!-- Step 7: charge -->
+            <line x1="185" y1="184" x2="468" y2="184" stroke="#89dceb" stroke-width="1.5" marker-end="url(#sa)"/>
+            <text x="327" y="179" text-anchor="middle" fill="#374151" font-size="9.5">charge(token, idempotencyKey)</text>
+
+            <!-- Step 8: update PROCESSING -->
+            <line x1="185" y1="200" x2="613" y2="200" stroke="#fab387" stroke-width="1.2" marker-end="url(#sa)"/>
+            <text x="400" y="195" text-anchor="middle" fill="#374151" font-size="9.5">updateStatus(PROCESSING)</text>
+
+            <!-- Step 9: PSP response + PENDING_VERIFY -->
+            <line x1="468" y1="216" x2="185" y2="216" stroke="#a6e3a1" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#sa)"/>
+            <text x="327" y="211" text-anchor="middle" fill="#6c7086" font-size="9">PSP response (or poll)</text>
+
+            <!-- Step 10: update SUCCESS/FAILED -->
+            <line x1="185" y1="232" x2="613" y2="232" stroke="#fab387" stroke-width="1.2" marker-end="url(#sa)"/>
+            <text x="400" y="227" text-anchor="middle" fill="#374151" font-size="9.5">updateStatus(SUCCESS / FAILED)</text>
+
+            <!-- Step 11: emit result to UI -->
+            <line x1="175" y1="248" x2="57" y2="248" stroke="#cba6f7" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#sa)"/>
+            <text x="112" y="243" text-anchor="middle" fill="#6c7086" font-size="9">emit(COMPLETE / ERROR)</text>
+
+            <defs>
+              <marker id="sa" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L7,3 z" fill="#6c7086"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <div class="diagram-caption"><span>Card payment checkout sequence — Mutex ensures single active checkout; status written to Room at every state transition</span></div>
+      </div>
+
+      <div class="code-block"><span class="kw">class</span> <span class="cl">CheckoutOrchestrator</span>(
+    <span class="kw">private val</span> txnRepo:    <span class="cl">TransactionRepository</span>,
+    <span class="kw">private val</span> tokenizer:  <span class="cl">TokenizationService</span>,
+    <span class="kw">private val</span> upiHandler: <span class="cl">UpiIntentHandler</span>,
+    <span class="kw">private val</span> transport:  <span class="cl">PaymentTransport</span>,
+    <span class="kw">private val</span> wallet:     <span class="cl">WalletManager</span>
+) {
+    <span class="kw">private val</span> scope       = <span class="cl">CoroutineScope</span>(<span class="cl">SupervisorJob</span>() + <span class="cl">Dispatchers</span>.IO)
+    <span class="kw">private val</span> checkoutMutex = <span class="cl">Mutex</span>()            <span class="cm">// prevents double-submission</span>
+    <span class="kw">private val</span> _state      = <span class="cl">MutableStateFlow</span>&lt;<span class="cl">CheckoutState</span>&gt;(<span class="cl">CheckoutState</span>.Idle)
+    <span class="kw">val</span> state: <span class="cl">StateFlow</span>&lt;<span class="cl">CheckoutState</span>&gt; = _state.asStateFlow()
+
+    <span class="kw">fun</span> <span class="fn">startCheckout</span>(method: <span class="cl">PaymentMethod</span>, orderId: <span class="cl">String</span>, amountPaise: <span class="cl">Long</span>) {
+        <span class="kw">if</span> (!checkoutMutex.tryLock()) {
+            <span class="cm">// already processing — ignore duplicate tap</span>
+            <span class="kw">return</span>
+        }
+        scope.launch {
+            <span class="kw">try</span> {
+                <span class="kw">val</span> txn = <span class="cl">Transaction</span>(
+                    txnId           = <span class="cl">UUID</span>.randomUUID().toString(),
+                    orderId         = orderId,
+                    amountPaise     = amountPaise,
+                    status          = <span class="cl">TransactionStatus</span>.INITIATED,
+                    method          = method,
+                    idempotencyKey  = <span class="cl">UUID</span>.randomUUID().toString(),   <span class="cm">// stable for retries</span>
+                    createdAt       = <span class="cl">System</span>.currentTimeMillis()
+                )
+                txnRepo.save(txn)
+                _state.value = <span class="cl">CheckoutState</span>.Processing
+
+                <span class="kw">val</span> result = <span class="kw">when</span> (method) {
+                    <span class="kw">is</span> <span class="cl">PaymentMethod</span>.Card   -> processCard(txn, method)
+                    <span class="kw">is</span> <span class="cl">PaymentMethod</span>.Upi    -> processUpi(txn, method)
+                    <span class="kw">is</span> <span class="cl">PaymentMethod</span>.Wallet -> processWallet(txn)
+                }
+                txnRepo.updateStatus(txn.txnId, result.status)
+                _state.value = <span class="kw">if</span> (result.status == <span class="cl">TransactionStatus</span>.SUCCESS)
+                    <span class="cl">CheckoutState</span>.Success(txn.txnId)
+                <span class="kw">else</span>
+                    <span class="cl">CheckoutState</span>.Failed(result.failureReason)
+            } <span class="kw">finally</span> {
+                checkoutMutex.unlock()
+            }
+        }
+    }
+
+    <span class="kw">fun</span> <span class="fn">recoverPendingTransactions</span>() = scope.launch {
+        <span class="cm">// On startup: reset any IN_FLIGHT txns from a prior process kill</span>
+        txnRepo.resetInFlightToInitiated()
+    }
+}</div>
+    </div>
+
+    <!-- ── 2) TOKENIZATION ── -->
+    <div id="lld-tokenization">
+      <div class="sec-h2">2) TokenizationService — PCI DSS at the boundary</div>
+      <p>PCI DSS requires that raw card data (PAN, CVV) never enter your application stack. <code>TokenizationService</code> is the single class that touches card details, and it immediately hands them to the PSP's tokenisation API. The class has no state and no persistence — it returns a PSP-issued token that is safe to store, log, and transmit.</p>
+
+      <div class="danger-box">
+        <p>🚨 <strong>The PSP hosted fields approach is safest.</strong> Rather than collecting card details in your own <code>EditText</code> views, use the PSP's Android SDK to render input fields in an isolated WebView or native component that communicates directly with the PSP server. Your application code never sees the PAN — only the resulting token. This reduces your PCI scope from SAQ D (complex) to SAQ A (minimal).</p>
+      </div>
+
+      <div class="code-block"><span class="kw">class</span> <span class="cl">TokenizationService</span>(<span class="kw">private val</span> pspPublicKey: <span class="cl">String</span>) {
+
+    <span class="cm">/**
+     * Tokenizes card data using the PSP's tokenisation endpoint.
+     * Raw PAN/CVV exist in memory ONLY for the duration of this call.
+     * The returned PaymentToken is safe to persist in Room.
+     */</span>
+    <span class="kw">suspend fun</span> <span class="fn">tokenize</span>(cardData: <span class="cl">CardInput</span>): <span class="cl">Result</span>&lt;<span class="cl">PaymentToken</span>&gt; {
+        <span class="kw">return try</span> {
+            <span class="kw">val</span> encrypted = <span class="fn">encryptWithPspPublicKey</span>(cardData, pspPublicKey)
+            <span class="kw">val</span> response = pspApi.tokenize(encrypted)    <span class="cm">// HTTPS to PSP only</span>
+            cardData.clear()                               <span class="cm">// zero memory immediately</span>
+            <span class="cl">Result</span>.success(<span class="cl">PaymentToken</span>(
+                token        = response.token,
+                last4        = response.last4,          <span class="cm">// display-safe</span>
+                network      = response.network,
+                expiryMonth  = response.expiryMonth,
+                expiryYear   = response.expiryYear
+            ))
+        } <span class="kw">catch</span> (e: <span class="cl">Exception</span>) {
+            cardData.clear()                               <span class="cm">// always clear on failure too</span>
+            <span class="cl">Result</span>.failure(e)
+        }
+    }
+
+    <span class="kw">private fun</span> <span class="fn">encryptWithPspPublicKey</span>(card: <span class="cl">CardInput</span>, key: <span class="cl">String</span>): <span class="cl">String</span> {
+        <span class="cm">// RSA-OAEP encrypt PAN+CVV using PSP's JWK public key</span>
+        <span class="cm">// PSP decrypts on their server — your servers never see plaintext</span>
+        <span class="kw">val</span> jwk = <span class="cl">ECKey</span>.parse(key)
+        <span class="kw">return</span> <span class="cl">JWEObject</span>(<span class="cl">JWEHeader</span>(<span class="cl">JWEAlgorithm</span>.RSA_OAEP_256, <span class="cl">EncryptionMethod</span>.A256GCM),
+            <span class="cl">Payload</span>(card.toJson())).also { it.encrypt(<span class="cl">RSAEncrypter</span>(jwk)) }.serialize()
+    }
+}</div>
+    </div>
+
+    <!-- ── 3) UPI INTENT HANDLER ── -->
+    <div id="lld-upi">
+      <div class="sec-h2">3) UpiIntentHandler — the intent-based payment flow</div>
+      <p>UPI on Android works via <code>Intent</code> — your app fires a <code>upi://pay</code> deep link, the OS shows an app chooser (PhonePe, GPay, Paytm…), the user authenticates in their UPI app, and the result is returned via <code>onActivityResult</code>. The flow has three critical design requirements: build the URL correctly, handle the case where no UPI app is installed, and <em>never trust the intent result</em>.</p>
+
+      <!-- UPI sequence diagram -->
+      <div class="diagram-wrap">
+        <div style="padding: 20px 16px 12px; background:#fff; overflow-x:auto;">
+          <svg viewBox="0 0 760 240" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter,sans-serif" font-size="11">
+            <rect x="10" y="10" width="80" height="28" rx="5" fill="#1e1e2e" stroke="#89b4fa" stroke-width="1.5"/>
+            <text x="50" y="28" text-anchor="middle" fill="#89b4fa" font-weight="700">Android SDK</text>
+
+            <rect x="130" y="10" width="90" height="28" rx="5" fill="#1e1e2e" stroke="#a6e3a1" stroke-width="1.5"/>
+            <text x="175" y="28" text-anchor="middle" fill="#a6e3a1" font-weight="700">UPI App</text>
+
+            <rect x="260" y="10" width="110" height="28" rx="5" fill="#1e1e2e" stroke="#89dceb" stroke-width="1.5"/>
+            <text x="315" y="28" text-anchor="middle" fill="#89dceb" font-weight="700">Our Server</text>
+
+            <rect x="420" y="10" width="90" height="28" rx="5" fill="#1e1e2e" stroke="#f9e2af" stroke-width="1.5"/>
+            <text x="465" y="28" text-anchor="middle" fill="#f9e2af" font-weight="700">NPCI</text>
+
+            <rect x="560" y="10" width="90" height="28" rx="5" fill="#1e1e2e" stroke="#fab387" stroke-width="1.5"/>
+            <text x="605" y="28" text-anchor="middle" fill="#fab387" font-weight="700">Payer Bank</text>
+
+            <!-- Lifelines -->
+            <line x1="50" y1="38" x2="50" y2="235" stroke="#374151" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="175" y1="38" x2="175" y2="235" stroke="#374151" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="315" y1="38" x2="315" y2="235" stroke="#374151" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="465" y1="38" x2="465" y2="235" stroke="#374151" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="605" y1="38" x2="605" y2="235" stroke="#374151" stroke-width="1" stroke-dasharray="4,3"/>
+
+            <!-- Step 1: create order -->
+            <line x1="55" y1="56" x2="308" y2="56" stroke="#89dceb" stroke-width="1.2" marker-end="url(#ua)"/>
+            <text x="182" y="51" text-anchor="middle" fill="#374151" font-size="9.5">POST /orders → gatewayOrderId</text>
+
+            <!-- Step 2: build UPI URL + launch intent -->
+            <line x1="55" y1="76" x2="168" y2="76" stroke="#a6e3a1" stroke-width="1.5" marker-end="url(#ua)"/>
+            <text x="112" y="71" text-anchor="middle" fill="#374151" font-size="9.5">startActivityForResult(upi://pay?...)</text>
+
+            <!-- Step 3: UPI app → NPCI -->
+            <line x1="180" y1="96" x2="458" y2="96" stroke="#f9e2af" stroke-width="1.2" marker-end="url(#ua)"/>
+            <text x="320" y="91" text-anchor="middle" fill="#374151" font-size="9.5">collect UPI PIN → route via NPCI</text>
+
+            <!-- Step 4: NPCI → bank -->
+            <line x1="470" y1="112" x2="598" y2="112" stroke="#fab387" stroke-width="1.2" marker-end="url(#ua)"/>
+            <text x="534" y="107" text-anchor="middle" fill="#374151" font-size="9.5">debit payer account</text>
+
+            <!-- Step 5: bank → NPCI response -->
+            <line x1="598" y1="128" x2="470" y2="128" stroke="#fab387" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#ua)"/>
+            <text x="534" y="123" text-anchor="middle" fill="#6c7086" font-size="9">txn success + RRN</text>
+
+            <!-- Step 6: NPCI → UPI app response -->
+            <line x1="458" y1="144" x2="180" y2="144" stroke="#f9e2af" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#ua)"/>
+            <text x="320" y="139" text-anchor="middle" fill="#6c7086" font-size="9">txnRefId + status</text>
+
+            <!-- Step 7: UPI app → onActivityResult -->
+            <line x1="168" y1="160" x2="55" y2="160" stroke="#a6e3a1" stroke-width="1.2" stroke-dasharray="3,2" marker-end="url(#ua)"/>
+            <text x="112" y="155" text-anchor="middle" fill="#6c7086" font-size="9">onActivityResult(txnRefId, Status=SUCCESS) ← DO NOT TRUST</text>
+
+            <!-- Step 8: verify with server -->
+            <line x1="55" y1="180" x2="308" y2="180" stroke="#89dceb" stroke-width="1.5" marker-end="url(#ua)"/>
+            <text x="182" y="175" text-anchor="middle" fill="#374151" font-size="9.5">POST /verify?txnRefId= (server polls NPCI)</text>
+
+            <!-- Step 9: verified response -->
+            <line x1="308" y1="196" x2="55" y2="196" stroke="#a6e3a1" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#ua)"/>
+            <text x="182" y="191" text-anchor="middle" fill="#6c7086" font-size="9">{ status: SUCCESS, rrn: "..." } ← authoritative</text>
+
+            <!-- Step 10: update Room -->
+            <text x="60" y="218" fill="#fab387" font-size="9">update Room: SUCCESS + rrn</text>
+
+            <defs>
+              <marker id="ua" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L7,3 z" fill="#6c7086"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <div class="diagram-caption"><span>UPI payment flow — client result is always verified server-side before status is written to Room</span></div>
+      </div>
+
+      <div class="code-block"><span class="kw">class</span> <span class="cl">UpiIntentHandler</span>(<span class="kw">private val</span> context: <span class="cl">Context</span>) {
+
+    <span class="kw">fun</span> <span class="fn">buildPayUri</span>(params: <span class="cl">UpiPaymentParams</span>): <span class="cl">Uri</span> = <span class="cl">Uri</span>.Builder()
+        .scheme(<span class="st">"upi"</span>).authority(<span class="st">"pay"</span>)
+        .appendQueryParameter(<span class="st">"pa"</span>,  params.payeeVpa)      <span class="cm">// payee VPA (merchant)</span>
+        .appendQueryParameter(<span class="st">"pn"</span>,  params.payeeName)
+        .appendQueryParameter(<span class="st">"am"</span>,  params.amountRupees)   <span class="cm">// "199.00" — UPI expects rupees</span>
+        .appendQueryParameter(<span class="st">"cu"</span>,  <span class="st">"INR"</span>)
+        .appendQueryParameter(<span class="st">"tr"</span>,  params.txnRefId)       <span class="cm">// our transaction reference</span>
+        .appendQueryParameter(<span class="st">"tn"</span>,  params.note)
+        .build()
+
+    <span class="kw">fun</span> <span class="fn">getInstalledUpiApps</span>(): <span class="cl">List</span>&lt;<span class="cl">ResolveInfo</span>&gt; {
+        <span class="kw">val</span> intent = <span class="cl">Intent</span>(<span class="cl">Intent</span>.ACTION_VIEW, <span class="fn">buildPayUri</span>(<span class="cl">UpiPaymentParams</span>.dummy()))
+        <span class="kw">return</span> context.packageManager.queryIntentActivities(intent, <span class="cl">PackageManager</span>.MATCH_DEFAULT_ONLY)
+    }
+
+    <span class="cm">/**
+     * Parse onActivityResult extras — returns a HINT only.
+     * MUST be verified server-side before trusting the status.
+     */</span>
+    <span class="kw">fun</span> <span class="fn">parseResult</span>(data: <span class="cl">Intent</span>?): <span class="cl">UpiIntentResult</span> {
+        <span class="kw">if</span> (data == <span class="kw">null</span>) <span class="kw">return</span> <span class="cl">UpiIntentResult</span>.NoResponse   <span class="cm">// app killed/back pressed</span>
+        <span class="kw">val</span> status   = data.getStringExtra(<span class="st">"Status"</span>) ?: <span class="st">""</span>
+        <span class="kw">val</span> txnRefId = data.getStringExtra(<span class="st">"txnRef"</span>) ?: <span class="st">""</span>
+        <span class="kw">return when</span> (status.uppercase()) {
+            <span class="st">"SUCCESS"</span>  -> <span class="cl">UpiIntentResult</span>.PossibleSuccess(txnRefId)  <span class="cm">// needs server verify</span>
+            <span class="st">"FAILURE"</span>  -> <span class="cl">UpiIntentResult</span>.ClientFailure(txnRefId)
+            <span class="kw">else</span>       -> <span class="cl">UpiIntentResult</span>.Unknown(txnRefId)           <span class="cm">// always poll server</span>
+        }
+    }
+}</div>
+    </div>
+
+    <!-- ── 4) PAYMENT TRANSPORT ── -->
+    <div id="lld-transport">
+      <div class="sec-h2">4) PaymentTransport — idempotency and safe retry</div>
+      <p><code>PaymentTransport</code> is the boundary between your app and the payment gateway. Every mutating request (create order, charge, refund) carries an <code>idempotencyKey</code> header. The retry logic distinguishes <strong>safe-to-retry</strong> errors (network timeout, 5xx) from <strong>never-retry</strong> errors (4xx: card declined, invalid VPA, insufficient funds). Retrying a declined card doesn't help and frustrates the user.</p>
+      <div class="code-block"><span class="kw">class</span> <span class="cl">PaymentTransport</span>(
+    <span class="kw">private val</span> okHttp:   <span class="cl">OkHttpClient</span>,
+    <span class="kw">private val</span> baseUrl:  <span class="cl">String</span>,
+    <span class="kw">private val</span> apiKey:   <span class="cl">String</span>
+) {
+    <span class="kw">private val</span> MAX_RETRIES = <span class="nm">3</span>
+
+    <span class="kw">suspend fun</span> <span class="fn">charge</span>(
+        orderId:        <span class="cl">String</span>,
+        token:          <span class="cl">PaymentToken</span>,
+        amountPaise:    <span class="cl">Long</span>,
+        idempotencyKey: <span class="cl">String</span>         <span class="cm">// stable UUID — same on every retry</span>
+    ): <span class="cl">ChargeResult</span> {
+        <span class="kw">var</span> attempt = <span class="nm">0</span>
+        <span class="kw">while</span> (<span class="kw">true</span>) {
+            <span class="kw">val</span> response = <span class="fn">executeCharge</span>(orderId, token, amountPaise, idempotencyKey)
+            <span class="kw">when</span> {
+                response.isSuccessful -> <span class="kw">return</span> <span class="fn">parseSuccess</span>(response)
+                response.code <span class="kw">in</span> <span class="nm">400</span>..<span class="nm">499</span> -> {
+                    <span class="cm">// 4xx: permanent failure — card declined, invalid token, fraud block</span>
+                    <span class="cm">// DO NOT RETRY — return immediately with failure reason</span>
+                    <span class="kw">return</span> <span class="cl">ChargeResult</span>.Declined(<span class="fn">parseDeclineCode</span>(response))
+                }
+                attempt &gt;= MAX_RETRIES -> <span class="kw">return</span> <span class="cl">ChargeResult</span>.NetworkError
+                <span class="kw">else</span> -> {
+                    <span class="cm">// 5xx or IOException — safe to retry with same idempotencyKey</span>
+                    attempt++
+                    <span class="kw">val</span> backoff = (<span class="nm">1000L</span> * (attempt * attempt)) + <span class="cl">Random</span>.nextLong(<span class="nm">500</span>) <span class="cm">// jitter</span>
+                    delay(backoff)
+                }
+            }
+        }
+    }
+
+    <span class="kw">suspend fun</span> <span class="fn">pollStatus</span>(txnId: <span class="cl">String</span>): <span class="cl">TransactionStatus</span> {
+        <span class="cm">// Used for UPI (async result) and card 3DS flows</span>
+        <span class="cm">// Polls with exponential backoff: 1s, 2s, 4s, 8s, 16s (max 30s total)</span>
+        <span class="kw">val</span> deadline = <span class="cl">SystemClock</span>.elapsedRealtime() + <span class="nm">30_000L</span>
+        <span class="kw">var</span> interval = <span class="nm">1000L</span>
+        <span class="kw">while</span> (<span class="cl">SystemClock</span>.elapsedRealtime() &lt; deadline) {
+            <span class="kw">val</span> result = <span class="fn">fetchStatus</span>(txnId)
+            <span class="kw">if</span> (result != <span class="cl">TransactionStatus</span>.PENDING_VERIFY) <span class="kw">return</span> result
+            delay(interval)
+            interval = (interval * <span class="nm">2</span>).coerceAtMost(<span class="nm">8000L</span>)
+        }
+        <span class="kw">return</span> <span class="cl">TransactionStatus</span>.TIMED_OUT
+    }
+}</div>
+    </div>
+
+    <!-- ── 5) TRANSACTION REPOSITORY ── -->
+    <div id="lld-repository">
+      <div class="sec-h2">5) TransactionRepository — encrypted local persistence</div>
+      <p>The repository wraps the Room DAO and adds two responsibilities: <strong>encryption of sensitive fields</strong> (tokens are encrypted with an Android Keystore-backed key before writing) and <strong>startup recovery</strong> (resetting any <code>IN_FLIGHT</code> transactions left by a process kill). Payment data must be readable across app restarts — a transaction started in a previous session must be recoverable without user re-entry.</p>
+      <div class="code-block"><span class="kw">class</span> <span class="cl">TransactionRepository</span>(<span class="kw">private val</span> dao: <span class="cl">TransactionDao</span>) {
+
+    <span class="kw">private val</span> keystore = <span class="cl">AndroidKeyStoreEncryptor</span>(<span class="st">"payment_keystore_alias"</span>)
+
+    <span class="kw">suspend fun</span> <span class="fn">save</span>(txn: <span class="cl">Transaction</span>) {
+        <span class="kw">val</span> encrypted = txn.copy(
+            <span class="cm">// encrypt token before Room insert — key lives in Keystore, never exported</span>
+            encryptedToken = keystore.encrypt(txn.rawToken ?: <span class="st">""</span>),
+            rawToken       = <span class="kw">null</span>          <span class="cm">// never persist raw token</span>
+        )
+        dao.insert(encrypted)
+    }
+
+    <span class="kw">suspend fun</span> <span class="fn">updateStatus</span>(txnId: <span class="cl">String</span>, status: <span class="cl">TransactionStatus</span>, reason: <span class="cl">String</span>? = <span class="kw">null</span>) {
+        <span class="cm">// Validate transition before writing — throw on illegal state move</span>
+        <span class="kw">val</span> current = dao.getById(txnId)?.status ?: <span class="kw">return</span>
+        <span class="kw">require</span>(current.canTransitionTo(status)) {
+            <span class="st">"Illegal transition: $current → $status for txn $txnId"</span>
+        }
+        dao.updateStatus(txnId, status, reason, <span class="cl">System</span>.currentTimeMillis())
+    }
+
+    <span class="cm">/**
+     * Called on every SDK init. Resets transactions stuck in PROCESSING/IN_FLIGHT
+     * from a previous process kill. They will be re-verified on next network call.
+     */</span>
+    <span class="kw">suspend fun</span> <span class="fn">resetInFlightToInitiated</span>() {
+        dao.resetStatusWhere(
+            from   = listOf(<span class="cl">TransactionStatus</span>.PROCESSING, <span class="cl">TransactionStatus</span>.PENDING_VERIFY),
+            to     = <span class="cl">TransactionStatus</span>.INITIATED,
+            before = <span class="cl">System</span>.currentTimeMillis() - <span class="nm">5 * 60 * 1000L</span>  <span class="cm">// older than 5 min</span>
+        )
+    }
+}</div>
+    </div>
+
+    <!-- ── 6) WALLET MANAGER ── -->
+    <div id="lld-wallet">
+      <div class="sec-h2">6) WalletManager — balance and atomic deduction</div>
+      <p>Wallet balance is stored server-side — the client caches it for display only and must <em>never</em> use the cached balance to decide whether to allow a payment. The cache is a UX hint ("you have ₹450 in your wallet") — the server enforces the actual balance atomically at deduction time using optimistic locking. This prevents the classic double-spend race condition where two simultaneous payments both see sufficient balance before either deducts.</p>
+      <div class="code-block"><span class="kw">class</span> <span class="cl">WalletManager</span>(<span class="kw">private val</span> transport: <span class="cl">PaymentTransport</span>) {
+
+    <span class="an">@Volatile</span> <span class="kw">private var</span> _cachedBalance: <span class="cl">WalletInfo</span>? = <span class="kw">null</span>
+    <span class="kw">private val</span> CACHE_TTL_MS = <span class="nm">5 * 60 * 1000L</span>    <span class="cm">// 5 minutes</span>
+
+    <span class="kw">suspend fun</span> <span class="fn">getBalance</span>(forceRefresh: <span class="cl">Boolean</span> = <span class="kw">false</span>): <span class="cl">WalletInfo</span> {
+        <span class="kw">val</span> cached = _cachedBalance
+        <span class="kw">if</span> (!forceRefresh
+            &amp;&amp; cached != <span class="kw">null</span>
+            &amp;&amp; (<span class="cl">System</span>.currentTimeMillis() - cached.cachedAt) &lt; CACHE_TTL_MS) {
+            <span class="kw">return</span> cached
+        }
+        <span class="kw">return</span> transport.fetchWalletInfo().also { _cachedBalance = it }
+    }
+
+    <span class="kw">suspend fun</span> <span class="fn">pay</span>(
+        orderId:        <span class="cl">String</span>,
+        amountPaise:    <span class="cl">Long</span>,
+        idempotencyKey: <span class="cl">String</span>
+    ): <span class="cl">WalletPayResult</span> {
+        <span class="cm">// Server checks real balance and deducts atomically using optimistic lock:</span>
+        <span class="cm">// UPDATE wallet SET balance = balance - amount, version = version + 1</span>
+        <span class="cm">// WHERE id = ? AND balance >= amount AND version = ?</span>
+        <span class="kw">val</span> result = transport.walletCharge(orderId, amountPaise, idempotencyKey)
+        <span class="kw">if</span> (result.success) _cachedBalance = <span class="kw">null</span>    <span class="cm">// invalidate cache after deduction</span>
+        <span class="kw">return</span> result
+    }
+}</div>
+    </div>
+  </div>
+
+  <hr/>
+  <!-- ─── EDGE CASES ─────────────────────────────────── -->
+  <div id="edge-cases">
+    <div class="sec-h1">Edge Cases</div>
+    <p>These are the eight scenarios that cause real production incidents in payment systems. Each one has either resulted in customer double-charges, silent payment failures, or financial reconciliation discrepancies at scale.</p>
+
+    <div class="edge-grid">
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">💸</span>
+          <span class="edge-title">Double Charge on Network Retry</span>
+        </div>
+        <div class="edge-body">
+          <p>The SDK sends a charge request. The server processes it, debits the customer's card, and sends a 200 OK. The response is lost in transit. The SDK times out, treats it as a 5xx, and retries. The server processes the second request — now the customer is charged twice. This is the most catastrophic payment failure mode.</p>
+          <p><strong>Fix:</strong> Every charge request includes an <code>Idempotency-Key</code> header containing a UUID that is generated once when the transaction is created (at <code>INITIATED</code> state) and is immutable for the lifetime of that transaction. The server stores <code>(idempotencyKey → chargeResult)</code> in Redis before returning the response. On receipt of a duplicate key, it returns the cached result immediately without processing. The idempotency store has a 24-hour TTL — sufficient for all realistic retry windows. The client's <code>PaymentTransport</code> always uses the same key on retry, making charge operations idempotent by construction.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">📱</span>
+          <span class="edge-title">UPI App Killed — No onActivityResult</span>
+        </div>
+        <div class="edge-body">
+          <p>The user selects PhonePe, enters their UPI PIN, and the OS kills your app (low memory) while the UPI flow is in progress. When the user returns to your app, there is no <code>onActivityResult</code> callback — the transaction is stuck in <code>PROCESSING</code> state with no resolution. The bank may have already debited the customer.</p>
+          <p><strong>Fix:</strong> On every app resume (<code>onResume</code> of the payment Activity and <code>Application.onCreate()</code>), query the repository for any transactions in <code>PROCESSING</code> or <code>PENDING_VERIFY</code> state older than 30 seconds. For each, immediately call <code>transport.pollStatus(txnId)</code> to fetch the actual state from the server. Display a "Checking your payment status…" UI during this recovery. This ensures the user always gets a definitive result even after process death. The server-side status is the ground truth — the client just needs to catch up.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">👆</span>
+          <span class="edge-title">Double-Tap on Pay Button</span>
+        </div>
+        <div class="edge-body">
+          <p>A user on a slow network taps "Pay ₹999" and nothing happens visually for 300ms (network round-trip to create order). They tap again. Two <code>startCheckout()</code> calls are in flight simultaneously. Both create separate transactions. One succeeds — but which one the user sees depends on a race condition. The other may also succeed, silently double-charging.</p>
+          <p><strong>Fix:</strong> <code>CheckoutOrchestrator</code> uses a <code>Mutex</code> with <code>tryLock()</code> on every <code>startCheckout()</code> call. If the lock is already held, the second call returns immediately without starting a new transaction — it emits a <code>CheckoutState.AlreadyInProgress</code> to the UI, which ignores the second tap. The UI should also disable the Pay button immediately on first tap and restore it only on completion or failure. Two-layer guard: UI disabling (UX) and Mutex (correctness).</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">🔋</span>
+          <span class="edge-title">Process Death Mid-Payment (3DS WebView)</span>
+        </div>
+        <div class="edge-body">
+          <p>For card payments requiring 3DS authentication, your app opens a WebView for the bank's OTP page. The OS kills your app during this WebView session (common on low-RAM devices with many background apps). On restart, the transaction is stuck in <code>PROCESSING</code> — the 3DS callback URL never fired, but the bank may have already authorised the payment pending OTP entry.</p>
+          <p><strong>Fix:</strong> Save the <code>txnId</code> and <code>gatewayOrderId</code> to Room before launching the 3DS WebView (already done by state machine). On <code>Application.onCreate()</code>, <code>recoverPendingTransactions()</code> resets any <code>PROCESSING</code> transaction older than 5 minutes to <code>INITIATED</code> and immediately calls <code>pollStatus()</code>. If the bank already authorised the 3DS, the gateway will return <code>SUCCESS</code> — the transaction completes without user re-entry. If not, show the user a "Resume payment" button that re-launches the WebView with the same <code>gatewayOrderId</code>.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">🚫</span>
+          <span class="edge-title">No UPI App Installed</span>
+        </div>
+        <div class="edge-body">
+          <p>The user selects UPI payment. <code>getInstalledUpiApps()</code> returns an empty list — no UPI app is installed on the device (older Android, international device, fresh factory reset). If you fire the intent blindly, the OS throws <code>ActivityNotFoundException</code>, crashing the app or showing a confusing system error dialog.</p>
+          <p><strong>Fix:</strong> Always call <code>getInstalledUpiApps()</code> before showing the UPI option. If the list is empty, hide the UPI payment method in the checkout sheet and show a toast: "UPI not available on this device — try card or wallet". On Android 11+, you must also declare the <code>upi</code> scheme in your <code>AndroidManifest.xml</code> under <code>&lt;queries&gt;</code> to query intent resolvers. Additionally, after <code>startActivityForResult</code>, always wrap in a <code>try-catch ActivityNotFoundException</code> as a safety net — the installed app list can change between the check and the launch.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">💰</span>
+          <span class="edge-title">Wallet Insufficient Funds — Race Condition</span>
+        </div>
+        <div class="edge-body">
+          <p>A user has ₹500 in their wallet. They open two tabs (or the app on two devices) and initiate ₹400 payments simultaneously. The client-side balance check on both sees ₹500 (sufficient). Both send charge requests to the server. Without server-side protection, both deductions succeed, leaving the balance at -₹300.</p>
+          <p><strong>Fix:</strong> The server executes wallet deduction as a single atomic SQL statement with optimistic locking: <code>UPDATE wallet SET balance = balance - 400, version = version + 1 WHERE user_id = ? AND balance &gt;= 400 AND version = ?</code>. Only one concurrent request will match the <code>version</code> predicate and succeed; the other receives a 409 Conflict response. The client must never use its cached balance to gate payment attempts — only the server's atomic check is authoritative. On 409, the client refreshes the balance and shows "Insufficient wallet balance".</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">🔑</span>
+          <span class="edge-title">Certificate Pin Rotation — App Doesn't Update</span>
+        </div>
+        <div class="edge-body">
+          <p>You certificate-pin your payment API endpoint against your current TLS leaf certificate. The certificate expires (typically 1–2 years). You rotate to a new certificate and update the app. But 30% of your users haven't updated — their pinned certificate no longer matches, and all payment requests fail with an SSLPeerUnverifiedException. Every payment in those app versions is broken until users update.</p>
+          <p><strong>Fix:</strong> Always pin two certificates simultaneously: the current leaf cert and a <em>shadow pin</em> (your next certificate, already generated but not yet deployed). When you rotate, the new cert is already trusted by all app versions. OkHttp's <code>CertificatePinner</code> accepts multiple pins per hostname: <code>.add("api.example.com", "sha256/CURRENT==").add("api.example.com", "sha256/NEXT==")</code>. Implement a server-side pin announcement endpoint that apps check periodically — when the new cert is 30 days from deployment, update the live pins. Never ship a new certificate to production without its shadow already pinned in the current app version.</p>
+        </div>
+      </div>
+
+      <div class="edge-card">
+        <div class="edge-header">
+          <span class="edge-icon">📊</span>
+          <span class="edge-title">Reconciliation Mismatch — Ghost Transactions</span>
+        </div>
+        <div class="edge-body">
+          <p>End-of-day reconciliation reveals 47 transactions where your database shows <code>FAILED</code> but the PSP settlement report shows them as successful debits — the customer was charged but your system never marked the order as paid. This happens when the PSP webhook was lost (your webhook endpoint was down for 2 minutes), and your in-app polling timed out before the bank confirmed.</p>
+          <p><strong>Fix:</strong> Three-layer reconciliation: (1) <strong>Webhook retry:</strong> PSPs retry failed webhooks with exponential backoff for up to 72 hours — make your webhook endpoint idempotent and highly available (separate from your main API). (2) <strong>Proactive polling:</strong> Any transaction in <code>PENDING_VERIFY</code> for &gt;2 minutes triggers a server-side cron that polls the PSP directly. (3) <strong>Daily batch reconciliation:</strong> Compare your ledger against the PSP's T+1 settlement file. Any mismatch triggers an alert to the payments ops team with the transaction IDs. The three layers together ensure zero ghost transactions in steady state.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ─── WHAT INTERVIEWERS EXPECT ───────────────────── -->
+  <div id="expectations">
+    <div class="sec-h1">What Interviewers Expect at Each Level</div>
+
+    <div class="levels-grid">
+      <div class="level-card mid">
+        <div class="level-title">Mid-Level</div>
+        <ul>
+          <li>Knows the three payment methods: card, UPI, wallet</li>
+          <li>Understands that card data must not be stored (PCI compliance awareness)</li>
+          <li>Describes basic retry logic with a fixed delay</li>
+          <li>Knows UPI intent flow at a high level</li>
+          <li>Uses Room for transaction persistence</li>
+          <li>Aware that payments can fail and user should see a status</li>
+        </ul>
+      </div>
+      <div class="level-card senior">
+        <div class="level-title">Senior</div>
+        <ul>
+          <li>Designs the complete TransactionStatus state machine with valid transitions</li>
+          <li>Explains idempotency keys and why they prevent double charges</li>
+          <li>Never trusts the UPI intent result — always server-verify with txnRefId</li>
+          <li>Handles process death recovery on startup (resetInFlightToInitiated)</li>
+          <li>Prevents double-tap with Mutex.tryLock()</li>
+          <li>Uses Android Keystore for token encryption at rest</li>
+          <li>Describes certificate pinning with shadow pin rotation</li>
+          <li>Distinguishes retriable (5xx) from non-retriable (4xx) failures</li>
+        </ul>
+      </div>
+      <div class="level-card staff">
+        <div class="level-title">Staff / Principal</div>
+        <ul>
+          <li>Reduces PCI scope to SAQ A using PSP hosted fields (no PAN in app)</li>
+          <li>Designs server-side double-entry ledger with atomic debits</li>
+          <li>Addresses wallet race condition with optimistic locking (version column)</li>
+          <li>Designs three-layer reconciliation (webhook retry + proactive polling + daily batch)</li>
+          <li>Covers certificate pin rotation strategy end-to-end</li>
+          <li>Discusses PSP redundancy: primary/secondary routing with health scoring</li>
+          <li>Addresses split payments (wallet + UPI) as two linked transactions with saga pattern</li>
+          <li>Proposes fraud scoring integration: ML model runs server-side before PSP call</li>
+          <li>Considers RBI mandate compliance: stored card tokenisation (CoF) regulations</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- ─── INTERVIEW Q&A ──────────────────────────────── -->
+  <div id="interview-qs">
+    <div class="sec-h1">Interview Q&amp;A</div>
+    <p>Tap any question to reveal the answer. These cover the questions most commonly asked at Razorpay, PhonePe, Paytm, and Flipkart for senior Android roles.</p>
+
+    <div class="iq-list">
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q1</span>
+            <span class="iq-diff iq-easy">Easy</span>
+            <span class="iq-text">Why should you never store raw card numbers (PAN) in your database?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>PCI DSS (Payment Card Industry Data Security Standard) prohibits storing raw PAN, CVV, or PIN data. Violation results in fines up to $100,000/month, loss of card processing privileges, and mandatory forensic audits after a breach. Practically: storing raw card data makes your entire database a high-value target — a single SQL injection exposes every customer's card. The solution is tokenisation: the PSP converts the raw PAN into an opaque token (e.g., <code>tok_1Abc23XYZ</code>) that is useless to an attacker because it can only be charged through your PSP account. The token is safe to store, log, and transmit.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q2</span>
+            <span class="iq-diff iq-easy">Easy</span>
+            <span class="iq-text">What is an idempotency key and why is it critical for payments?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>An idempotency key is a UUID generated once per payment intent, included as a header (<code>Idempotency-Key: uuid</code>) on every mutating API call. The server stores a mapping of <code>idempotencyKey → result</code> in a fast store (Redis). If the same key arrives again — from a client retry after a network timeout — the server returns the stored result immediately without reprocessing the payment. Without idempotency keys, a network timeout during a successful charge causes the client to retry and the customer is charged twice. With them, the retry returns "already charged" with the original transaction ID, and the customer is never double-billed.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q3</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">Why can't you trust the UPI intent result from onActivityResult?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>The intent extras returned by the UPI app (<code>Status=SUCCESS</code>, <code>txnRef=...</code>) are populated by third-party applications running on the user's device. A modified or malicious UPI app could return <code>Status=SUCCESS</code> for a payment that never happened — or was intentionally failed. On a rooted device, an attacker could intercept and modify the intent. The correct pattern is: parse the intent only to extract the <code>txnRefId</code> (a reference ID provided by NPCI), then immediately call your server with that ID. Your server queries NPCI's payment status API to get the actual bank debit confirmation. Only after the server verifies the debit do you update the transaction to SUCCESS. The client's intent result is a hint, not a fact.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q4</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">How do you handle a payment that was in progress when the app was killed?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Every transaction state is persisted in Room as it changes. On <code>Application.onCreate()</code>, <code>PaymentSdk.init()</code> calls <code>recoverPendingTransactions()</code>, which queries Room for any transactions in <code>PROCESSING</code> or <code>PENDING_VERIFY</code> state older than 5 minutes. For each, it calls <code>PaymentTransport.pollStatus(txnId)</code> to fetch the current status from the payment gateway. The result updates Room. When the user next sees the payment screen, they see the correct final state — success, failure, or an actionable "resume payment" prompt — rather than a stuck spinner. The 5-minute threshold avoids incorrectly recovering a transaction that is still actively processing in a background thread.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q5</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">How do you prevent a user from being charged twice if they tap "Pay" twice?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Two-layer guard: (1) <strong>UI layer</strong> — disable the Pay button immediately on first tap and restore it only on completion or failure. This prevents most duplicate taps. (2) <strong>SDK layer</strong> — <code>CheckoutOrchestrator</code> holds a <code>Mutex</code>. Every <code>startCheckout()</code> call attempts <code>mutex.tryLock()</code>. If the lock is already held (checkout in progress), the call returns <code>CheckoutState.AlreadyInProgress</code> and nothing is executed. Even if the UI layer fails (configuration change, programmatic duplicate call), the Mutex ensures at most one checkout executes at a time. On the server side, the idempotency key provides a third layer: even if two charge requests reach the server, the second is deduplicated.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q6</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">What is certificate pinning and why is it especially important for payment apps?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Certificate pinning means your app only trusts a specific TLS certificate (or its public key hash), rather than any certificate signed by a trusted CA. A standard HTTPS implementation trusts hundreds of CAs — if any of them is compromised or issues a rogue certificate for your domain, an attacker can perform a MITM attack and intercept your payment requests. With certificate pinning, the app rejects any certificate not matching its pinned hash, even if it's CA-signed. For payment apps this is critical because a MITM attack against a payment endpoint exposes transaction amounts, card tokens, and payment method details. OkHttp implements pinning via <code>CertificatePinner</code>. The pin is the SHA-256 hash of the certificate's public key — changing the certificate but keeping the same key pair allows you to rotate the certificate without updating the pin.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q7</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">Why should monetary amounts always be stored as integers (Long) rather than Float or Double?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Floating-point numbers (Float, Double) cannot represent most decimal fractions exactly in binary. For example, <code>0.1 + 0.2</code> in IEEE 754 floating point equals <code>0.30000000000000004</code>. Across thousands of transactions, these rounding errors accumulate into real financial discrepancies — a ₹0.01 error per transaction across 10 million transactions is ₹100,000. The solution is to store all monetary values in the smallest currency unit as a <code>Long</code>: ₹199.50 is stored as <code>19950</code> paise. All arithmetic is exact integer arithmetic. The decimal representation is only computed at the display layer, formatted once as a string. Never pass monetary values through Float/Double — use <code>BigDecimal</code> for display formatting if needed, but persist and compute on the integer representation.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q8</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">How do you handle a split payment where ₹200 comes from wallet and ₹800 from UPI?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>A split payment is a distributed transaction — two separate deductions that must either both succeed or both roll back (atomicity). The classic solution is the <strong>Saga pattern</strong>: execute each step sequentially with compensating transactions for rollback. Step 1: deduct ₹200 from wallet (immediate, server-side). Step 2: initiate ₹800 UPI payment. If Step 2 fails, execute compensation: refund ₹200 to wallet. The saga coordinator lives server-side, not on the client. The client submits a single "split payment" request with the amounts per method. The server orchestrates the two deductions. The idempotency key covers the entire saga — a retry of the split payment request replays only the steps that haven't yet succeeded. Never attempt to coordinate a split payment entirely client-side — network failures between steps leave you in an inconsistent state with no way to guarantee compensation.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q9</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">How does the server-side ledger prevent double-spend using double-entry bookkeeping?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Double-entry bookkeeping means every transaction creates exactly two ledger rows: a debit and a credit. For a ₹999 purchase: DEBIT ₹999 from customer_account_balance, CREDIT ₹999 to merchant_escrow_balance. Both rows share a <code>transaction_id</code> and are written in a single database transaction (atomic). If either write fails, neither commits. The sum of all credits must equal the sum of all debits at all times — this is an invariant enforced by the database. Double-spend is prevented because the debit reduces the customer balance before the credit reaches the merchant; any concurrent transaction reading the customer balance sees the reduced amount. For wallet payments, the debit uses optimistic locking (<code>WHERE balance &gt;= amount AND version = ?</code>) to prevent two concurrent debits from both seeing sufficient balance.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q10</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">What is the reconciliation problem and how do you solve it?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Reconciliation is the process of verifying that your internal transaction records match the PSP's settlement records. Mismatches occur because: (1) your webhook receiver was down when the PSP sent the callback, (2) the PSP processed a payment but your server crashed before recording the result, (3) a refund was processed at the PSP but not in your DB. The solution is three-layer: (1) <strong>Real-time webhook with retry:</strong> make the webhook endpoint highly available and idempotent; PSPs retry for 72 hours. (2) <strong>Proactive polling:</strong> any transaction in PENDING_VERIFY for &gt;2 minutes is polled server-side. (3) <strong>Daily batch reconciliation:</strong> download the PSP's T+1 settlement file (CSV/SFTP), compare every PSP transaction ID against your ledger, and flag discrepancies as "ghost charges" (PSP charged, you didn't record) or "phantom credits" (you recorded success, PSP didn't charge) — both require manual resolution by a payments ops team.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q11</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">How do you distinguish retriable from non-retriable payment failures?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p><strong>Retriable failures</strong> are transient — the payment might succeed on a second attempt: network timeout (IOException), 500 Internal Server Error, 503 Service Unavailable, 504 Gateway Timeout. These warrant exponential backoff with jitter (e.g. 1s, 2s, 4s + random 0–500ms) up to 3–5 retries. <strong>Non-retriable failures</strong> are permanent — retrying will produce the same result: 402 Payment Required (insufficient funds), 422 Unprocessable Entity (invalid card number, expired card), 400 Bad Request (malformed VPA), a specific PSP decline code (card blocked, suspected fraud). Retrying these wastes time, frustrates users, and in the case of fraud-blocked cards, may trigger additional fraud flags. The SDK must parse the HTTP status code and the PSP's decline code from the response body to categorise correctly, then surface a human-readable reason to the user immediately for non-retriable failures.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q12</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">What Android API must you use to store card tokens securely, and why?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Card tokens (and any payment credentials) stored on-device must be encrypted using the <strong>Android Keystore System</strong>. The Keystore stores cryptographic key material in secure hardware (TEE — Trusted Execution Environment, or StrongBox on Pixel devices) that is isolated from the application processor. An attacker with root access or an ADB backup of the device cannot export the key material — they can only use it through the Keystore API, which can enforce authentication requirements (biometric/PIN required before each use). The recommended cipher is AES-256-GCM (authenticated encryption — provides both confidentiality and integrity). SharedPreferences, files, or Room without encryption are not acceptable for payment credentials — they are readable by anyone with ADB access or a rooted device. Use the <code>EncryptedSharedPreferences</code> or <code>EncryptedFile</code> Jetpack Security library as a convenience wrapper over Keystore.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q13</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">How does PSP failover work, and what risks must you manage?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>PSP failover means routing a payment to a secondary PSP (e.g., Stripe) when the primary (e.g., Razorpay) returns 5xx or times out. The gateway maintains a health score per PSP: after N consecutive failures within a 60-second window, mark the PSP as degraded and shift traffic to the secondary. The risks: (1) <strong>Partial charges:</strong> if the primary processed the payment but returned a timeout, retrying on the secondary double-charges. Solution: check the idempotency store before failover — if the primary has a result stored, return it without calling the secondary. (2) <strong>Different PSP capabilities:</strong> Razorpay supports UPI; Stripe does not. Failover logic must be payment-method-aware. (3) <strong>Token incompatibility:</strong> a card token issued by Razorpay cannot be charged by Stripe — tokenisation is PSP-specific. For saved cards, maintain dual tokens if multi-PSP failover is needed. PSP failover is complex and should only be attempted for high-criticality flows where PSP downtime is unacceptable.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q14</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">How do you handle the 30-second UPI timeout when the user hasn't completed their PIN?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>NPCI mandates a maximum 30-second window for a UPI transaction. If the user hasn't entered their PIN within 30 seconds, the transaction is auto-expired at the NPCI layer. The client-side handling: set a 30-second timer when the UPI intent is launched. If <code>onActivityResult</code> hasn't returned by 30 seconds and there's no valid <code>txnRefId</code>, update the local transaction to <code>TIMED_OUT</code>. Show the user: "Your UPI payment expired. Please try again." The user can initiate a new transaction with a fresh <code>idempotencyKey</code>. On the server, poll the timed-out transaction once more — occasionally the UPI app returns late and the transaction did succeed within the window. If the server confirms success, update to SUCCESS immediately even though the client had already marked it timed out. The Room state update propagates to the UI via Flow.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q15</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">What is the RBI's CoF tokenisation mandate and how does it affect your stored card implementation?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>The RBI's Card-on-File (CoF) Tokenisation mandate (effective October 2022) prohibits merchants from storing raw card data. All saved cards must be tokenised through the card networks (Visa/Mastercard) or their certified TSPs (Token Service Providers). Key implementation changes: (1) You can no longer store even the last-4 digits and expiry date for display — these must come from the network-issued token's metadata. (2) Tokenisation must happen via the card network's API (network tokenisation), not just a PSP token. A PSP token is a network-specific alias — a Razorpay token cannot be charged through another PSP. A network token (Visa Token Service) can be charged through any Visa-certified acquirer. (3) For existing saved cards, you must migrate from PSP tokens to network tokens or delete them. (4) The RBI mandate applies to any entity storing card data for Indian cardholders, including international PSPs serving Indian merchants.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q16</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">How do you implement a payment timeout with automatic cancellation?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Use Kotlin coroutines' <code>withTimeout()</code> wrapping the entire checkout coroutine. When the timeout fires, a <code>TimeoutCancellationException</code> is thrown, caught in the <code>finally</code> block, and the transaction is marked <code>TIMED_OUT</code> in Room. But — and this is the critical part — cancellation must also notify the server. A locally-timed-out transaction may still be processing at the PSP. Silently abandoning it leaves a ghost transaction. On timeout, immediately call <code>POST /cancel?txnId=&amp;idempotencyKey=</code>. If the PSP has already confirmed success, the cancel will fail — the server returns the existing SUCCESS status and the client corrects its local state. If the cancel succeeds, the transaction is voided at the PSP. The gateway's cancel endpoint must also be idempotent — a retry on cancel must not double-void.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q17</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">How do you design the fraud detection integration to minimise latency impact?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Fraud scoring must happen server-side — never client-side where it can be bypassed. Placement in the flow: the fraud engine runs <strong>after order creation but before PSP call</strong>. This means a high-risk transaction is blocked before any money moves. The fraud model inputs: device fingerprint (from the Android SDK), IP address, transaction amount, payment method, merchant category, velocity (transactions per hour for this user), card BIN data. Latency target: the fraud check must complete in &lt;200ms to keep total checkout under 3s. To hit this: (1) Pre-compute velocity features in Redis (updated on every transaction, read in O(1)). (2) Run the ML model on a low-latency inference server (e.g., ONNX Runtime) co-located with the gateway. (3) Use async scoring for post-hoc review: for borderline risk scores, allow the transaction and flag it for manual review within 2 hours — zero latency impact. Block only clear high-risk (score &gt; 0.9). This tiered approach maximises fraud catch rate while maintaining acceptable false-positive rate.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q18</span>
+            <span class="iq-diff iq-medium">Medium</span>
+            <span class="iq-text">How do you handle a refund that needs to be reflected immediately in the UI?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Refunds are initiated server-side (by merchant or customer support) and are asynchronous — the actual bank reversal takes 5–7 business days for card refunds (2 hours for UPI). The UI update chain: (1) The server initiates the refund with the PSP and immediately updates the transaction status to <code>REFUND_INITIATED</code>. (2) A push notification (FCM) is sent to the user's device with the refund ID. (3) The SDK receives the FCM, calls <code>transport.pollStatus(txnId)</code>, and updates Room. (4) The UI observes the Room Flow and shows "Refund Initiated — ₹999 will be credited in 5–7 days." When the actual bank reversal completes, the PSP sends a webhook (<code>refund.processed</code>), the server updates to <code>REFUNDED</code>, sends another FCM, and the UI updates to "Refund Complete". The local transaction history in Room reflects each status change as it happens — the user sees a live timeline.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q19</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">How do you test a payment SDK without making real bank transactions?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Testing strategy has four layers: (1) <strong>Unit tests with fakes:</strong> <code>FakePaymentTransport</code> implements the same interface as <code>PaymentTransport</code> and returns configurable responses (success, decline, timeout). All tests in the orchestrator and repository use fakes — no network, no PSP sandbox calls, runs in milliseconds. (2) <strong>Integration tests with PSP sandbox:</strong> Each major PSP (Razorpay, Stripe) provides a sandbox environment with test card numbers that simulate specific outcomes: <code>4111111111111111</code> always succeeds, specific test cards simulate decline codes, 3DS triggers. These tests run in CI on every PR, take 30–60 seconds. (3) <strong>UPI test harness:</strong> Build a test UPI app (debug-only) that responds to the same intent with configurable status — useful for testing the no-response edge case and the "don't trust the intent" flow. (4) <strong>Chaos testing:</strong> Intercept OkHttp calls in debug builds with an interceptor that randomly drops responses, returns 500s, or delays by 5 seconds. Run the full checkout flow against the chaos interceptor to verify state recovery works correctly. Never run real transactions in automated tests.</p>
+        </div>
+      </div>
+
+      <div class="iq-card" onclick="toggleIQ(this)">
+        <div class="iq-header">
+          <div class="iq-left">
+            <span class="iq-num">Q20</span>
+            <span class="iq-diff iq-hard">Hard</span>
+            <span class="iq-text">How does your checkout SDK handle a network change mid-payment (WiFi → 4G)?</span>
+          </div>
+          <span class="iq-toggle">▾</span>
+        </div>
+        <div class="iq-answer">
+          <p>Mid-payment network changes have two dangerous moments: (1) <strong>During the PSP charge request:</strong> if the TCP connection drops, the OkHttp call throws an IOException. <code>PaymentTransport</code> retries with the same idempotency key on the new network interface — the idempotency store at the server prevents double-charging. The retry succeeds transparently. (2) <strong>During the UPI intent (user is in PhonePe):</strong> if the network drops while the UPI app is processing, the UPI app may show an error and <code>onActivityResult</code> returns with <code>Status=FAILURE</code>. Your parser returns <code>UpiIntentResult.ClientFailure</code> — but you must still poll the server because the bank debit may have succeeded before the network dropped. Register a <code>ConnectivityManager.NetworkCallback</code>: when network is restored, immediately re-run the status check for any transaction in <code>PENDING_VERIFY</code>. The correct heuristic: on any network change, immediately poll all unresolved transactions. Never rely on a client-side timeout to discover that a transaction resolved during a network outage.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="reading-progress-wrap">
+    <div class="rp-label">Reading Progress</div>
+    <div class="rp-track"><div class="rp-fill" id="pfill"></div></div>
+  </div>
+
+  <div class="toc-label">Contents</div>
+  <ul class="toc-list">
+    <li class="toc-item"><a href="#understanding" id="toc-understanding">Understanding the Problem</a></li>
+    <li class="toc-item sub"><a href="#functional-req" id="toc-functional-req">Functional Requirements</a></li>
+    <li class="toc-item sub"><a href="#nonfunctional-req" id="toc-nonfunctional-req">Non-Functional Requirements</a></li>
+    <li class="toc-item"><a href="#setup" id="toc-setup">The Set Up</a></li>
+    <li class="toc-item sub"><a href="#payment-principles" id="toc-payment-principles">Architecture Principles</a></li>
+    <li class="toc-item sub"><a href="#core-entities" id="toc-core-entities">Data Models</a></li>
+    <li class="toc-item"><a href="#high-level" id="toc-high-level">High-Level Design</a></li>
+    <li class="toc-item sub"><a href="#hl-components" id="toc-hl-components">System Components</a></li>
+    <li class="toc-item sub"><a href="#hl-payment-flows" id="toc-hl-payment-flows">Payment Method Flows</a></li>
+    <li class="toc-item sub"><a href="#hl-server-gateway" id="toc-hl-server-gateway">Server-Side Gateway</a></li>
+    <li class="toc-item"><a href="#lld" id="toc-lld">Low-Level Design</a></li>
+    <li class="toc-item sub"><a href="#lld-orchestrator" id="toc-lld-orchestrator">Checkout Orchestrator</a></li>
+    <li class="toc-item sub"><a href="#lld-tokenization" id="toc-lld-tokenization">Tokenization (PCI DSS)</a></li>
+    <li class="toc-item sub"><a href="#lld-upi" id="toc-lld-upi">UPI Intent Handler</a></li>
+    <li class="toc-item sub"><a href="#lld-transport" id="toc-lld-transport">Payment Transport</a></li>
+    <li class="toc-item sub"><a href="#lld-repository" id="toc-lld-repository">Transaction Repository</a></li>
+    <li class="toc-item sub"><a href="#lld-wallet" id="toc-lld-wallet">Wallet Manager</a></li>
+    <li class="toc-item"><a href="#edge-cases" id="toc-edge-cases">Edge Cases</a></li>
+    <li class="toc-item"><a href="#expectations" id="toc-expectations">Interview Expectations</a></li>
+    <li class="toc-item"><a href="#interview-qs" id="toc-interview-qs">Q&amp;A (20 questions)</a></li>
+  </ul>
+
+  <div class="sidebar-divider"></div>
+  <div class="companies-label">Asked at</div>
+  <div class="company-chips">
+    <span class="chip">Razorpay</span>
+    <span class="chip">PhonePe</span>
+    <span class="chip">Paytm</span>
+    <span class="chip">Flipkart</span>
+    <span class="chip">Swiggy</span>
+    <span class="chip">CRED</span>
+  </div>
+</aside>
+
+</div><!-- /page -->
+
+<script>
+  // Reading progress
+  window.addEventListener('scroll', () => {
+    const doc = document.documentElement;
+    const pct = Math.round((doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100) || 0;
+    document.getElementById('pfill').style.width = pct + '%';
+  });
+
+  // TOC IntersectionObserver
+  const sections = [
+    'understanding','functional-req','nonfunctional-req',
+    'setup','payment-principles','core-entities',
+    'high-level','hl-components','hl-payment-flows','hl-server-gateway',
+    'lld','lld-init','lld-orchestrator','lld-tokenization','lld-upi','lld-transport','lld-repository','lld-wallet',
+    'edge-cases','expectations','interview-qs'
+  ];
+  const tocLinks = {};
+  sections.forEach(id => { tocLinks[id] = document.getElementById('toc-' + id); });
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        Object.values(tocLinks).forEach(l => l && l.classList.remove('active'));
+        const link = tocLinks[entry.target.id];
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+
+  // Nav user menu toggle
+  const navUser = document.getElementById('navUserMenu');
+  if (navUser) {
+    navUser.addEventListener('click', e => { e.stopPropagation(); navUser.classList.toggle('open'); });
+    document.addEventListener('click', () => navUser.classList.remove('open'));
+  }
+
+  // Q&A toggle
+  function toggleIQ(card) {
+    card.classList.toggle('open');
+  }
+
+  // Supabase auth
+  const SUPABASE_URL = 'https://gvbxhkhzuaiamwwuswzq.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2Ynhoa2h6dWFpYW13d3Vzd3pxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0MDAxNjksImV4cCI6MjA2Mjk3NjE2OX0.UuHFTa1GCknP47r8DxQDGMDHmSrlWJnkUlLBnquPlLM';
+  const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Pre-render auth state from localStorage
+  (function() {
+    try {
+      const raw = localStorage.getItem('sb-gvbxhkhzuaiamwwuswzq-auth-token');
+      if (!raw) return;
+      const session = JSON.parse(raw);
+      const user = session?.user;
+      if (!user) return;
+      const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+      const email = user.email || '';
+      document.getElementById('navSignInBtn').style.display = 'none';
+      document.getElementById('upgrade-cta').style.display = 'none';
+      const menu = document.getElementById('navUserMenu');
+      menu.style.display = 'flex';
+      document.getElementById('navAvatarInitial').textContent = name[0].toUpperCase();
+      document.getElementById('navUserName').textContent = name;
+      document.getElementById('navUserEmail').textContent = email;
+    } catch(e) {}
+  })();
+
+  sbClient.auth.onAuthStateChange((event, session) => {
+    const user = session?.user;
+    if (user) {
+      const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+      const email = user.email || '';
+      document.getElementById('navSignInBtn').style.display = 'none';
+      document.getElementById('upgrade-cta').style.display = 'none';
+      const menu = document.getElementById('navUserMenu');
+      menu.style.display = 'flex';
+      document.getElementById('navAvatarInitial').textContent = name[0].toUpperCase();
+      document.getElementById('navUserName').textContent = name;
+      document.getElementById('navUserEmail').textContent = email;
+    } else {
+      document.getElementById('navSignInBtn').style.display = '';
+      document.getElementById('upgrade-cta').style.display = '';
+      document.getElementById('navUserMenu').style.display = 'none';
+    }
+  });
+
+  async function handleSignOut() {
+    await sbClient.auth.signOut();
+  }
+
+  function openAuthModal() {
+    window.location.href = 'index.html#auth';
+  }
+</script>
+</body>
+</html>
