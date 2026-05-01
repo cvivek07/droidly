@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Core Android Fundamentals — Android Core Concepts | Droidly</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #ffffff; --bg-subtle: #f9fafb; --bg-green: #e8f2ec; --bg-blue: #eff6ff; --bg-amber: #fffbeb; --bg-purple: #f5f3ff;
+      --border: #e5e7eb;
+      --ink: #111827; --ink2: #374151; --muted: #6b7280; --muted2: #9ca3af;
+      --accent: #3d7a4f; --accent-dark: #2e6040;
+      --blue: #2563eb; --red: #dc2626; --purple: #7c3aed; --amber: #d97706;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--ink); font-family: 'Inter', -apple-system, sans-serif; font-size: 16px; line-height: 1.8; -webkit-font-smoothing: antialiased; padding-top: 68px; }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 900; height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; background: rgba(255,255,255,0.90); backdrop-filter: blur(20px) saturate(1.6); border-bottom: 1px solid var(--border); box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04); }
+    nav::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #2e6040, #4caf70, #3d7a4f); z-index: 1; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.5px; }
+    .logo-mark img { height: 32px; width: auto; display: block; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-cta { background: var(--accent); color: white; padding: 8px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; text-decoration: none; }
+    .btn-nav { font-size: 13px; font-weight: 600; color: var(--ink); background: var(--bg-subtle); border: 1px solid var(--border); padding: 6px 16px; border-radius: 100px; cursor: pointer; font-family: inherit; }
+    .nav-user { display: flex; align-items: center; gap: 8px; position: relative; cursor: pointer; }
+    .nav-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; border: 2px solid rgba(61,122,79,0.3); }
+    .nav-user-name { font-size: 14px; font-weight: 600; color: var(--ink2); }
+    .nav-caret { font-size: 10px; color: var(--muted); }
+    .user-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); min-width: 200px; overflow: hidden; z-index: 999; }
+    .nav-user.open .user-dropdown { display: block; }
+    .user-dropdown-email { padding: 12px 16px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
+    .user-dropdown-item { padding: 10px 16px; font-size: 14px; cursor: pointer; }
+    .user-dropdown-item.danger { color: var(--red); }
+    .page { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 260px; gap: 64px; padding: 48px 24px 100px; align-items: start; }
+    .content { min-width: 0; }
+    .concept-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .eyebrow-tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--accent); background: var(--bg-green); padding: 4px 12px; border-radius: 100px; }
+    .eyebrow-sep { color: var(--muted2); }
+    .eyebrow-meta { font-size: 13px; color: var(--muted); }
+    .article-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 4vw, 42px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; color: var(--ink); margin-bottom: 20px; }
+    .article-subtitle { font-size: 18px; color: var(--muted); line-height: 1.7; margin-bottom: 32px; max-width: 640px; font-weight: 400; }
+    .article-meta-strip { display: flex; flex-wrap: wrap; gap: 20px; padding: 16px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 48px; }
+    .meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+    .meta-item strong { color: var(--ink2); }
+    .content h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; color: var(--ink); margin: 56px 0 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border); scroll-margin-top: 90px; }
+    .content h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 700; color: var(--ink); margin: 36px 0 12px; scroll-margin-top: 90px; }
+    .content p { margin-bottom: 20px; color: var(--ink2); line-height: 1.85; font-size: 16px; }
+    .content p:last-child { margin-bottom: 0; }
+    .content strong { color: var(--ink); font-weight: 600; }
+    .content ul, .content ol { margin: 12px 0 20px 24px; color: var(--ink2); }
+    .content li { margin-bottom: 8px; line-height: 1.75; font-size: 16px; }
+    .content a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+    .content code { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; background: #f3f4f6; color: #be185d; padding: 2px 6px; border-radius: 4px; }
+    .callout { border-radius: 12px; padding: 20px 24px; margin: 28px 0; }
+    .callout-analogy { background: var(--bg-amber); border-left: 4px solid #f59e0b; }
+    .callout-tip    { background: var(--bg-green); border-left: 4px solid var(--accent); }
+    .callout-warn   { background: #fff5f5; border-left: 4px solid var(--red); }
+    .callout-info   { background: var(--bg-blue); border-left: 4px solid var(--blue); }
+    .callout-purple { background: var(--bg-purple); border-left: 4px solid var(--purple); }
+    .callout-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+    .callout-analogy .callout-label { color: #92400e; }
+    .callout-tip    .callout-label { color: var(--accent-dark); }
+    .callout-warn   .callout-label { color: #991b1b; }
+    .callout-info   .callout-label { color: #1e40af; }
+    .callout-purple .callout-label { color: #5b21b6; }
+    .callout p { font-size: 15px; line-height: 1.75; margin-bottom: 8px; }
+    .callout p:last-child { margin-bottom: 0; }
+    .code-wrap { margin: 24px 0; border-radius: 12px; overflow: hidden; border: 1px solid #2a2a3e; }
+    .code-label { background: #13131f; color: #6c7086; font-size: 11px; font-family: 'JetBrains Mono', monospace; padding: 8px 16px; border-bottom: 1px solid #2a2a3e; display: flex; justify-content: space-between; }
+    .code-block { background: #1e1e2e; color: #cdd6f4; padding: 20px; overflow-x: auto; font-size: 13.5px; line-height: 1.75; font-family: 'JetBrains Mono', monospace; white-space: pre; margin: 0; }
+    .kw { color: #cba6f7; } .fn { color: #89b4fa; } .cl { color: #f9e2af; }
+    .cm { color: #6c7086; font-style: italic; } .st { color: #a6e3a1; }
+    .nm { color: #fab387; } .an { color: #89dceb; }
+    .comp-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+    .comp-table th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: var(--ink); color: #f9e2af; }
+    .comp-table td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--ink2); vertical-align: top; }
+    .comp-table tr:nth-child(even) td { background: var(--bg-subtle); }
+    .comp-table tr td:first-child { font-weight: 600; color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+    .wb-wrap { margin: 36px 0; background: #f7f6f1; border-radius: 16px; border: 1px solid #e0ddd5; box-shadow: 0 4px 24px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.8); overflow: hidden; }
+    .wb-title { font-family: 'Caveat', cursive; font-size: 15px; color: #666; padding: 10px 20px 0; font-weight: 600; }
+    .wb-wrap svg { display: block; width: 100%; height: auto; }
+    .sidebar { position: sticky; top: 88px; }
+    .rp-label { font-size: 11px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .rp-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 24px; }
+    .rp-fill  { height: 100%; background: var(--accent); border-radius: 4px; width: 0%; transition: width 0.2s; }
+    .toc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted2); margin-bottom: 10px; }
+    .toc-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+    .toc-item a { display: block; padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 13px; color: var(--muted); border-left: 2px solid transparent; transition: all 0.15s; }
+    .toc-item a:hover { color: var(--ink); background: var(--bg-subtle); }
+    .toc-item a.active { color: var(--accent); font-weight: 600; border-left-color: var(--accent); background: var(--bg-green); }
+    .toc-item.sub a { padding-left: 20px; font-size: 12px; }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .section-rule { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+    @media (max-width: 900px) { .page { grid-template-columns: 1fr; } .sidebar { display: none; } }
+    @media (max-width: 600px) { nav { padding: 0 20px; } .page { padding: 24px 16px 60px; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="nav-right" id="navRight">
+    <a href="premium.html" class="nav-cta" id="upgrade-cta">&#x26A1; Get Premium</a>
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">&#x25BE;</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <div class="user-dropdown-item danger" onclick="handleSignOut()">&#x1F6AA; Sign Out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+<main class="content">
+
+  <div class="concept-eyebrow">
+    <span class="eyebrow-tag">&#x1F4F1; Core Concept</span>
+    <span class="eyebrow-sep">&middot;</span>
+    <span class="eyebrow-meta">~45 min read</span>
+    <span class="eyebrow-sep">&middot;</span>
+    <span class="eyebrow-meta">Beginner &#x2192; Advanced</span>
+  </div>
+  <h1 class="article-title">Core Android Fundamentals</h1>
+  <p class="article-subtitle">The building blocks every Android engineer is expected to know cold&#x202F;&#x2014;&#x202F;Activity &amp; Fragment lifecycles, Intents, Context, Services, Broadcast Receivers, and Content Providers explained with the depth interviewers probe for.</p>
+  <div class="article-meta-strip">
+    <div class="meta-item">&#x267B;&#xFE0F; <strong>Activity Lifecycle</strong></div>
+    <div class="meta-item">&#x1F9E9; <strong>Fragments</strong></div>
+    <div class="meta-item">&#x1F4E8; <strong>Intents</strong></div>
+    <div class="meta-item">&#x1F30D; <strong>Context</strong></div>
+    <div class="meta-item">&#x2699;&#xFE0F; <strong>Services</strong></div>
+  </div>
+
+  <!-- ─── ACTIVITY LIFECYCLE ─── -->
+  <h2 id="activity-lifecycle">Activity lifecycle</h2>
+
+  <p>The Activity lifecycle is the most-asked Android interview topic, full stop. Android can destroy and recreate your Activity at any time&#x202F;&#x2014;&#x202F;on rotation, when the user navigates away, when the system is low on memory. The lifecycle callbacks are the OS&#x2019;s way of telling you where you are so you can manage resources correctly. Get this wrong and you leak memory, crash on rotation, or drain the battery.</p>
+
+  <p>There are seven core callbacks. Think of them in three concentric circles: the <strong>entire lifetime</strong> (<code>onCreate</code> &#x2192; <code>onDestroy</code>), the <strong>visible lifetime</strong> (<code>onStart</code> &#x2192; <code>onStop</code>), and the <strong>foreground lifetime</strong> (<code>onResume</code> &#x2192; <code>onPause</code>).</p>
+
+  <!-- DIAGRAM 1: Activity Lifecycle -->
+  <div class="wb-wrap">
+    <div class="wb-title">&#x1F4CB; Activity lifecycle &#x2014; state machine with all seven callbacks</div>
+    <svg viewBox="0 0 820 560" xmlns="http://www.w3.org/2000/svg" font-family="Caveat, cursive">
+      <defs>
+        <filter id="al1" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="4" seed="6"/>
+          <feDisplacementMap in="SourceGraphic" scale="1.1" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <marker id="aal" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#555"/></marker>
+        <marker id="aalg" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#3d7a4f"/></marker>
+        <marker id="aalr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#dc2626"/></marker>
+        <marker id="aalb" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#2563eb"/></marker>
+      </defs>
+      <g opacity="0.06" stroke="#999" stroke-width="1">
+        <line x1="0" y1="40" x2="820" y2="40"/><line x1="0" y1="80" x2="820" y2="80"/>
+        <line x1="0" y1="120" x2="820" y2="120"/><line x1="0" y1="160" x2="820" y2="160"/>
+        <line x1="0" y1="200" x2="820" y2="200"/><line x1="0" y1="240" x2="820" y2="240"/>
+        <line x1="0" y1="280" x2="820" y2="280"/><line x1="0" y1="320" x2="820" y2="320"/>
+        <line x1="0" y1="360" x2="820" y2="360"/><line x1="0" y1="400" x2="820" y2="400"/>
+        <line x1="0" y1="440" x2="820" y2="440"/><line x1="0" y1="480" x2="820" y2="480"/>
+        <line x1="0" y1="520" x2="820" y2="520"/>
+      </g>
+
+      <!-- State boxes (left column) -->
+      <!-- Activity launched -->
+      <rect x="290" y="8" width="240" height="38" rx="7" fill="#1e1e2e" stroke="#4caf70" stroke-width="2.5" filter="url(#al1)"/>
+      <text x="410" y="32" text-anchor="middle" font-size="16" font-weight="700" fill="#a6e3a1">Activity Launched</text>
+
+      <!-- onCreate -->
+      <line x1="410" y1="46" x2="410" y2="72" stroke="#3d7a4f" stroke-width="2" marker-end="url(#aalg)"/>
+      <rect x="290" y="72" width="240" height="40" rx="7" fill="#dcfce7" stroke="#3d7a4f" stroke-width="2" filter="url(#al1)"/>
+      <text x="410" y="90" text-anchor="middle" font-size="16" font-weight="700" fill="#2e6040">onCreate()</text>
+      <text x="410" y="106" text-anchor="middle" font-size="11" fill="#374151">Inflate layout, init ViewModel, setup binding</text>
+
+      <!-- onStart -->
+      <line x1="410" y1="112" x2="410" y2="138" stroke="#3d7a4f" stroke-width="2" marker-end="url(#aalg)"/>
+      <rect x="290" y="138" width="240" height="40" rx="7" fill="#dcfce7" stroke="#3d7a4f" stroke-width="2" filter="url(#al1)"/>
+      <text x="410" y="156" text-anchor="middle" font-size="16" font-weight="700" fill="#2e6040">onStart()</text>
+      <text x="410" y="172" text-anchor="middle" font-size="11" fill="#374151">Activity visible. Start UI-bound work.</text>
+
+      <!-- onResume -->
+      <line x1="410" y1="178" x2="410" y2="204" stroke="#3d7a4f" stroke-width="2" marker-end="url(#aalg)"/>
+      <rect x="290" y="204" width="240" height="40" rx="7" fill="#1e1e2e" stroke="#4caf70" stroke-width="3" filter="url(#al1)"/>
+      <text x="410" y="222" text-anchor="middle" font-size="16" font-weight="700" fill="#a6e3a1">onResume()</text>
+      <text x="410" y="238" text-anchor="middle" font-size="11" fill="#89b4fa">&#x25B6; RUNNING &#x2014; user interacting</text>
+
+      <!-- onPause -->
+      <line x1="410" y1="244" x2="410" y2="270" stroke="#d97706" stroke-width="2" marker-end="url(#aal)"/>
+      <rect x="290" y="270" width="240" height="40" rx="7" fill="#fef3c7" stroke="#d97706" stroke-width="2" filter="url(#al1)"/>
+      <text x="410" y="288" text-anchor="middle" font-size="16" font-weight="700" fill="#92400e">onPause()</text>
+      <text x="410" y="304" text-anchor="middle" font-size="11" fill="#374151">Partially hidden. Pause animations, sensors.</text>
+
+      <!-- onStop -->
+      <line x1="410" y1="310" x2="410" y2="336" stroke="#d97706" stroke-width="2" marker-end="url(#aal)"/>
+      <rect x="290" y="336" width="240" height="40" rx="7" fill="#fef3c7" stroke="#d97706" stroke-width="2" filter="url(#al1)"/>
+      <text x="410" y="354" text-anchor="middle" font-size="16" font-weight="700" fill="#92400e">onStop()</text>
+      <text x="410" y="370" text-anchor="middle" font-size="11" fill="#374151">Fully hidden. Release heavy resources.</text>
+
+      <!-- onDestroy -->
+      <line x1="410" y1="376" x2="410" y2="402" stroke="#dc2626" stroke-width="2" marker-end="url(#aalr)"/>
+      <rect x="290" y="402" width="240" height="40" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="2" filter="url(#al1)"/>
+      <text x="410" y="420" text-anchor="middle" font-size="16" font-weight="700" fill="#991b1b">onDestroy()</text>
+      <text x="410" y="436" text-anchor="middle" font-size="11" fill="#374151">Final cleanup. Release all resources.</text>
+
+      <!-- Destroyed -->
+      <line x1="410" y1="442" x2="410" y2="468" stroke="#dc2626" stroke-width="2" marker-end="url(#aalr)"/>
+      <rect x="290" y="468" width="240" height="38" rx="7" fill="#1e1e2e" stroke="#dc2626" stroke-width="2" filter="url(#al1)"/>
+      <text x="410" y="492" text-anchor="middle" font-size="16" font-weight="700" fill="#f38ba8">Activity Destroyed</text>
+
+      <!-- Right side: onRestart arc -->
+      <path d="M 530 336 Q 660 300 660 224 Q 660 150 530 138" stroke="#7c3aed" stroke-width="2" fill="none" stroke-dasharray="6,3" marker-end="url(#aal)"/>
+      <rect x="655" y="225" width="140" height="34" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="725" y="247" text-anchor="middle" font-size="13" font-weight="700" fill="#5b21b6">onRestart()</text>
+      <text x="725" y="215" text-anchor="middle" font-size="11" fill="#7c3aed">Coming back</text>
+      <text x="725" y="229" text-anchor="middle" font-size="11" fill="#7c3aed">from Stopped</text>
+
+      <!-- Left side: back to foreground arc (onPause → onResume) -->
+      <path d="M 290 280 Q 150 260 150 224 Q 150 195 290 214" stroke="#2563eb" stroke-width="2" fill="none" stroke-dasharray="6,3" marker-end="url(#aalb)"/>
+      <text x="80" y="248" text-anchor="middle" font-size="12" fill="#2563eb">Another</text>
+      <text x="80" y="263" text-anchor="middle" font-size="12" fill="#2563eb">activity</text>
+      <text x="80" y="278" text-anchor="middle" font-size="12" fill="#2563eb">finishes</text>
+
+      <!-- Legend -->
+      <rect x="10" y="490" width="250" height="62" rx="7" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.5"/>
+      <text x="20" y="510" font-size="12" font-weight="700" fill="#374151">Entire lifetime:</text>
+      <text x="20" y="527" font-size="11" fill="#6b7280">onCreate &#x2192; onDestroy</text>
+      <text x="20" y="543" font-size="12" font-weight="700" fill="#374151">Visible lifetime: onStart &#x2192; onStop</text>
+      <text x="20" y="559" font-size="12" font-weight="700" fill="#3d7a4f">Foreground: onResume &#x2192; onPause</text>
+    </svg>
+  </div>
+
+  <h3 id="lifecycle-what-to-do">What to do in each callback</h3>
+  <table class="comp-table">
+    <thead><tr><th>Callback</th><th>What happens</th><th>Do here</th><th>Don&#x2019;t do here</th></tr></thead>
+    <tbody>
+      <tr><td>onCreate</td><td>Activity created (or recreated after kill)</td><td>Inflate layout, set binding, init ViewModel, setup RecyclerView</td><td>Heavy I/O, network calls directly</td></tr>
+      <tr><td>onStart</td><td>Activity visible but not interactive</td><td>Register UI-bound listeners, start animations that need visibility</td><td>Camera, GPS (needs foreground)</td></tr>
+      <tr><td>onResume</td><td>Activity in foreground, user can interact</td><td>Start camera, resume playback, register sensors, request location</td><td>Slow operations (blocks UI thread)</td></tr>
+      <tr><td>onPause</td><td>Activity losing focus (dialog/nav appearing)</td><td>Pause camera, pause playback, release sensors, commit unsaved data</td><td>Slow saves, heavy operations (must be fast)</td></tr>
+      <tr><td>onStop</td><td>Activity fully hidden</td><td>Release heavy resources, cancel non-critical network requests, save state</td><td>Nothing that must survive process death</td></tr>
+      <tr><td>onDestroy</td><td>Activity being torn down permanently or recreated</td><td>Final cleanup, cancel coroutines if needed (though ViewModel scope handles most)</td><td>UI operations (view is gone)</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="lifecycle-rotation">Configuration changes &amp; saved state</h3>
+  <p>By default, Android destroys and recreates the Activity on rotation. Your UI state is lost unless you protect it. There are two mechanisms:</p>
+
+  <p><strong>ViewModel</strong> survives configuration changes because it&#x2019;s stored in a <code>ViewModelStore</code> that outlives individual Activity instances. This is the right place for all UI-related state that needs to survive rotation &#x2014; lists, selected items, search queries. The ViewModel is destroyed only when the user navigates away or calls <code>finish()</code>.</p>
+
+  <p><strong>onSaveInstanceState / onRestoreInstanceState</strong> survive both configuration changes <em>and</em> process death. Use this for transient UI state that the ViewModel shouldn&#x2019;t hold &#x2014; scroll position, expanded state of an accordion, text field content. The bundle size is limited (~1MB) and it&#x2019;s serialisation-based, so only small primitives and Parcelables belong here.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Activity lifecycle &#x2014; key patterns</span></div>
+    <div class="code-block"><span class="kw">class</span> <span class="cl">ProductActivity</span> : <span class="cl">AppCompatActivity</span>() {
+
+    <span class="kw">private val</span> vm: <span class="cl">ProductViewModel</span> <span class="kw">by</span> <span class="fn">viewModels</span>()
+    <span class="kw">private lateinit var</span> binding: <span class="cl">ActivityProductBinding</span>
+
+    <span class="kw">override fun</span> <span class="fn">onCreate</span>(savedInstanceState: <span class="cl">Bundle</span>?) {
+        <span class="kw">super</span>.<span class="fn">onCreate</span>(savedInstanceState)
+        binding = <span class="cl">ActivityProductBinding</span>.<span class="fn">inflate</span>(layoutInflater)
+        <span class="fn">setContentView</span>(binding.root)
+        <span class="cm">// ViewModel survives rotation — observe, don&#x2019;t re-fetch</span>
+        vm.products.<span class="fn">observe</span>(this) { adapter.<span class="fn">submitList</span>(it) }
+        <span class="cm">// Restore transient UI state</span>
+        savedInstanceState?.<span class="fn">getString</span>(<span class="st">"query"</span>)?.<span class="fn">let</span> { binding.searchBar.setText(it) }
+    }
+
+    <span class="kw">override fun</span> <span class="fn">onResume</span>() {
+        <span class="kw">super</span>.<span class="fn">onResume</span>()
+        <span class="cm">// Start things that need the foreground: camera, sensors, location</span>
+    }
+
+    <span class="kw">override fun</span> <span class="fn">onPause</span>() {
+        <span class="kw">super</span>.<span class="fn">onPause</span>()
+        <span class="cm">// MUST be fast — next activity&#x2019;s onResume blocks until this returns</span>
+        <span class="cm">// Release camera, pause media player</span>
+    }
+
+    <span class="kw">override fun</span> <span class="fn">onStop</span>() {
+        <span class="kw">super</span>.<span class="fn">onStop</span>()
+        <span class="cm">// Activity fully hidden &#x2014; release heavy resources</span>
+    }
+
+    <span class="kw">override fun</span> <span class="fn">onSaveInstanceState</span>(outState: <span class="cl">Bundle</span>) {
+        <span class="kw">super</span>.<span class="fn">onSaveInstanceState</span>(outState)
+        <span class="cm">// Save small transient UI state (scroll position, input text)</span>
+        outState.<span class="fn">putString</span>(<span class="st">"query"</span>, binding.searchBar.text.<span class="fn">toString</span>())
+    }
+}</div>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-label">&#x26A0;&#xFE0F; The onPause performance trap</div>
+    <p>The system will not show the next Activity until your <code>onPause()</code> returns. If you do anything slow here &#x2014; disk writes, network calls, long loops &#x2014; there&#x2019;s a visible delay before the next screen appears. Keep <code>onPause()</code> fast. Move saves and cleanup to <code>onStop()</code> where there&#x2019;s no user-visible impact.</p>
+  </div>
+
+  <!-- ─── FRAGMENT LIFECYCLE ─── -->
+  <h2 id="fragment-lifecycle">Fragment lifecycle</h2>
+
+  <p>A Fragment has its own lifecycle, but it&#x2019;s nested inside the host Activity&#x2019;s lifecycle and must always be considered relative to it. When the Activity is paused, all its Fragments are paused too. Fragments add several extra callbacks to manage their views separately from their own existence &#x2014; the most important being <code>onCreateView</code> / <code>onDestroyView</code>, which let a Fragment&#x2019;s view be destroyed and recreated without destroying the Fragment itself (common in the back stack).</p>
+
+  <!-- DIAGRAM 2: Fragment lifecycle -->
+  <div class="wb-wrap">
+    <div class="wb-title">&#x1F4CB; Fragment lifecycle &#x2014; the extra view layer and host Activity relationship</div>
+    <svg viewBox="0 0 820 480" xmlns="http://www.w3.org/2000/svg" font-family="Caveat, cursive">
+      <defs>
+        <filter id="fl1" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="4" seed="8"/>
+          <feDisplacementMap in="SourceGraphic" scale="1.1" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <marker id="afl" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#555"/></marker>
+        <marker id="aflg" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#3d7a4f"/></marker>
+      </defs>
+      <g opacity="0.06" stroke="#999" stroke-width="1">
+        <line x1="0" y1="40" x2="820" y2="40"/><line x1="0" y1="80" x2="820" y2="80"/>
+        <line x1="0" y1="120" x2="820" y2="120"/><line x1="0" y1="160" x2="820" y2="160"/>
+        <line x1="0" y1="200" x2="820" y2="200"/><line x1="0" y1="240" x2="820" y2="240"/>
+        <line x1="0" y1="280" x2="820" y2="280"/><line x1="0" y1="320" x2="820" y2="320"/>
+        <line x1="0" y1="360" x2="820" y2="360"/><line x1="0" y1="400" x2="820" y2="400"/>
+        <line x1="0" y1="440" x2="820" y2="440"/>
+      </g>
+
+      <!-- Activity column header -->
+      <rect x="10" y="8" width="200" height="32" rx="6" fill="#1e1e2e" stroke="#4caf70" stroke-width="2"/>
+      <text x="110" y="29" text-anchor="middle" font-size="14" font-weight="700" fill="#a6e3a1">Activity</text>
+
+      <!-- Fragment column header -->
+      <rect x="230" y="8" width="200" height="32" rx="6" fill="#1e1e2e" stroke="#89b4fa" stroke-width="2"/>
+      <text x="330" y="29" text-anchor="middle" font-size="14" font-weight="700" fill="#89b4fa">Fragment</text>
+
+      <!-- What to do column -->
+      <rect x="450" y="8" width="355" height="32" rx="6" fill="#1e1e2e" stroke="#6c7086" stroke-width="1.5"/>
+      <text x="627" y="29" text-anchor="middle" font-size="13" font-weight="600" fill="#cdd6f4">What to do</text>
+
+      <!-- onAttach -->
+      <rect x="230" y="50" width="200" height="32" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5" filter="url(#fl1)"/>
+      <text x="330" y="71" text-anchor="middle" font-size="14" font-weight="600" fill="#1e40af">onAttach()</text>
+      <text x="455" y="71" font-size="12" fill="#374151">Context available. Get args/Activity reference.</text>
+
+      <!-- onCreate -->
+      <line x1="330" y1="82" x2="330" y2="98" stroke="#555" stroke-width="1.5" marker-end="url(#afl)"/>
+      <rect x="230" y="98" width="200" height="32" rx="5" fill="#dcfce7" stroke="#3d7a4f" stroke-width="1.5" filter="url(#fl1)"/>
+      <text x="330" y="119" text-anchor="middle" font-size="14" font-weight="600" fill="#2e6040">onCreate()</text>
+      <text x="455" y="119" font-size="12" fill="#374151">Init ViewModel, restore arguments. NO view yet.</text>
+
+      <!-- onCreateView -->
+      <line x1="330" y1="130" x2="330" y2="146" stroke="#555" stroke-width="1.5" marker-end="url(#afl)"/>
+      <rect x="230" y="146" width="200" height="32" rx="5" fill="#dcfce7" stroke="#3d7a4f" stroke-width="2" filter="url(#fl1)"/>
+      <text x="330" y="167" text-anchor="middle" font-size="14" font-weight="700" fill="#2e6040">onCreateView()</text>
+      <text x="455" y="167" font-size="12" fill="#374151">Inflate and return the Fragment&#x2019;s view.</text>
+
+      <!-- onViewCreated -->
+      <line x1="330" y1="178" x2="330" y2="194" stroke="#555" stroke-width="1.5" marker-end="url(#afl)"/>
+      <rect x="230" y="194" width="200" height="32" rx="5" fill="#dcfce7" stroke="#3d7a4f" stroke-width="2.5" filter="url(#fl1)"/>
+      <text x="330" y="215" text-anchor="middle" font-size="14" font-weight="700" fill="#2e6040">onViewCreated()</text>
+      <text x="455" y="207" font-size="12" fill="#374151">&#x2B50; Best place: setup RecyclerView, click listeners,</text>
+      <text x="455" y="222" font-size="12" fill="#374151">observe ViewModel, bind views.</text>
+
+      <!-- Activity onStart aligns here -->
+      <rect x="10" y="242" width="200" height="32" rx="5" fill="#dcfce7" stroke="#3d7a4f" stroke-width="1.5" filter="url(#fl1)"/>
+      <text x="110" y="263" text-anchor="middle" font-size="14" font-weight="600" fill="#2e6040">onStart()</text>
+      <line x1="330" y1="226" x2="330" y2="242" stroke="#555" stroke-width="1.5" marker-end="url(#afl)"/>
+      <rect x="230" y="242" width="200" height="32" rx="5" fill="#dcfce7" stroke="#3d7a4f" stroke-width="1.5" filter="url(#fl1)"/>
+      <text x="330" y="263" text-anchor="middle" font-size="14" font-weight="600" fill="#2e6040">onStart()</text>
+
+      <!-- Activity onResume aligns -->
+      <rect x="10" y="290" width="200" height="32" rx="5" fill="#1e1e2e" stroke="#4caf70" stroke-width="2.5" filter="url(#fl1)"/>
+      <text x="110" y="311" text-anchor="middle" font-size="14" font-weight="700" fill="#a6e3a1">onResume()</text>
+      <line x1="330" y1="274" x2="330" y2="290" stroke="#555" stroke-width="1.5" marker-end="url(#afl)"/>
+      <rect x="230" y="290" width="200" height="32" rx="5" fill="#1e1e2e" stroke="#4caf70" stroke-width="2.5" filter="url(#fl1)"/>
+      <text x="330" y="311" text-anchor="middle" font-size="14" font-weight="700" fill="#a6e3a1">onResume() &#x25B6;</text>
+
+      <!-- Pause -->
+      <rect x="10" y="338" width="200" height="32" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.5" filter="url(#fl1)"/>
+      <text x="110" y="359" text-anchor="middle" font-size="14" font-weight="600" fill="#92400e">onPause()</text>
+      <line x1="330" y1="322" x2="330" y2="338" stroke="#555" stroke-width="1.5" marker-end="url(#afl)"/>
+      <rect x="230" y="338" width="200" height="32" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.5" filter="url(#fl1)"/>
+      <text x="330" y="359" text-anchor="middle" font-size="14" font-weight="600" fill="#92400e">onPause()</text>
+
+      <!-- onStop -->
+      <rect x="10" y="386" width="200" height="32" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.5" filter="url(#fl1)"/>
+      <text x="110" y="407" text-anchor="middle" font-size="14" font-weight="600" fill="#92400e">onStop()</text>
+      <line x1="330" y1="370" x2="330" y2="386" stroke="#555" stroke-width="1.5" marker-end="url(#afl)"/>
+      <rect x="230" y="386" width="200" height="32" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.5" filter="url(#fl1)"/>
+      <text x="330" y="407" text-anchor="middle" font-size="14" font-weight="600" fill="#92400e">onStop()</text>
+
+      <!-- onDestroyView -->
+      <line x1="330" y1="418" x2="330" y2="434" stroke="#555" stroke-width="1.5" marker-end="url(#afl)"/>
+      <rect x="230" y="434" width="200" height="32" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="2" filter="url(#fl1)"/>
+      <text x="330" y="455" text-anchor="middle" font-size="14" font-weight="700" fill="#991b1b">onDestroyView()</text>
+      <text x="455" y="440" font-size="12" fill="#dc2626">&#x2B50; Null your binding reference here!</text>
+      <text x="455" y="455" font-size="12" fill="#374151">View is gone but Fragment may still exist.</text>
+    </svg>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-label">&#x26A0;&#xFE0F; The viewBinding memory leak</div>
+    <p>When using ViewBinding in Fragments, you <strong>must</strong> null out the binding reference in <code>onDestroyView()</code>. A Fragment can outlive its view &#x2014; it stays in the back stack while its view is destroyed. If you hold a non-null binding, you&#x2019;re holding a reference to the destroyed view hierarchy, leaking the entire view tree.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Fragment &#x2014; correct lifecycle usage with ViewBinding</span></div>
+    <div class="code-block"><span class="kw">class</span> <span class="cl">ProductFragment</span> : <span class="cl">Fragment</span>(<span class="cl">R</span>.layout.fragment_product) {
+
+    <span class="kw">private</span> <span class="kw">var</span> _binding: <span class="cl">FragmentProductBinding</span>? = <span class="kw">null</span>
+    <span class="kw">private val</span> binding <span class="kw">get</span>() = _binding!!   <span class="cm">// safe to use between onCreateView and onDestroyView</span>
+    <span class="kw">private val</span> vm: <span class="cl">ProductViewModel</span> <span class="kw">by</span> <span class="fn">viewModels</span>()
+
+    <span class="kw">override fun</span> <span class="fn">onCreateView</span>(inflater: <span class="cl">LayoutInflater</span>, container: <span class="cl">ViewGroup</span>?, state: <span class="cl">Bundle</span>?): <span class="cl">View</span> {
+        _binding = <span class="cl">FragmentProductBinding</span>.<span class="fn">inflate</span>(inflater, container, <span class="kw">false</span>)
+        <span class="kw">return</span> binding.root
+    }
+
+    <span class="kw">override fun</span> <span class="fn">onViewCreated</span>(view: <span class="cl">View</span>, savedInstanceState: <span class="cl">Bundle</span>?) {
+        <span class="kw">super</span>.<span class="fn">onViewCreated</span>(view, savedInstanceState)
+        <span class="cm">// &#x2B50; Best place for ALL view setup: RecyclerView, click listeners, observers</span>
+        <span class="cm">// Use viewLifecycleOwner (not this!) for LiveData observation</span>
+        vm.products.<span class="fn">observe</span>(viewLifecycleOwner) { adapter.<span class="fn">submitList</span>(it) }
+        binding.btnLoad.<span class="fn">setOnClickListener</span> { vm.<span class="fn">loadProducts</span>() }
+    }
+
+    <span class="kw">override fun</span> <span class="fn">onDestroyView</span>() {
+        <span class="kw">super</span>.<span class="fn">onDestroyView</span>()
+        _binding = <span class="kw">null</span>   <span class="cm">// prevent memory leak &#x2014; MANDATORY</span>
+    }
+}</div>
+  </div>
+
+  <h3 id="fragment-vs-activity">Fragment vs Activity &#x2014; when to use each</h3>
+  <table class="comp-table">
+    <thead><tr><th></th><th>Activity</th><th>Fragment</th></tr></thead>
+    <tbody>
+      <tr><td>Represents</td><td>A full screen / app entry point</td><td>A reusable portion of a screen</td></tr>
+      <tr><td>Navigation</td><td>Intent-based, separate back stack per task</td><td>FragmentManager back stack, Navigation component</td></tr>
+      <tr><td>Sharing data</td><td>Via Intent extras or SharedViewModel (complex)</td><td>Shared ViewModel trivial across Fragments in same Activity</td></tr>
+      <tr><td>Reuse</td><td>Low &#x2014; heavyweight, owns a window</td><td>High &#x2014; same Fragment in different screens / tablets</td></tr>
+      <tr><td>Modern guidance</td><td>Single-Activity app preferred</td><td>Navigation Component + Fragments per screen</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─── INTENTS ─── -->
+  <h2 id="intents">Intents</h2>
+
+  <p>An Intent is a messaging object that requests an action from another app component. It&#x2019;s the glue between components &#x2014; Activities, Services, and Broadcast Receivers all communicate via Intents. The key distinction interviewers probe: <strong>explicit</strong> (you specify the exact component) vs <strong>implicit</strong> (you describe what you want done and let the system find a matching component).</p>
+
+  <!-- DIAGRAM 3: Intent types -->
+  <div class="wb-wrap">
+    <div class="wb-title">&#x1F4CB; Intents &#x2014; explicit vs implicit resolution flow</div>
+    <svg viewBox="0 0 820 340" xmlns="http://www.w3.org/2000/svg" font-family="Caveat, cursive">
+      <defs>
+        <filter id="it1" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="4" seed="12"/>
+          <feDisplacementMap in="SourceGraphic" scale="1.1" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <marker id="ait" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#555"/></marker>
+        <marker id="aitg" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#3d7a4f"/></marker>
+        <marker id="aitr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#2563eb"/></marker>
+      </defs>
+      <g opacity="0.06" stroke="#999" stroke-width="1">
+        <line x1="0" y1="40" x2="820" y2="40"/><line x1="0" y1="80" x2="820" y2="80"/>
+        <line x1="0" y1="120" x2="820" y2="120"/><line x1="0" y1="160" x2="820" y2="160"/>
+        <line x1="0" y1="200" x2="820" y2="200"/><line x1="0" y1="240" x2="820" y2="240"/>
+        <line x1="0" y1="280" x2="820" y2="280"/><line x1="0" y1="320" x2="820" y2="320"/>
+      </g>
+
+      <!-- Explicit left side -->
+      <rect x="10" y="10" width="370" height="44" rx="8" fill="#1e1e2e" stroke="#4caf70" stroke-width="2" filter="url(#it1)"/>
+      <text x="195" y="37" text-anchor="middle" font-size="16" font-weight="700" fill="#a6e3a1">Explicit Intent</text>
+
+      <rect x="10" y="70" width="370" height="52" rx="7" fill="#dcfce7" stroke="#3d7a4f" stroke-width="2" filter="url(#it1)"/>
+      <text x="195" y="93" text-anchor="middle" font-size="14" fill="#374151">Intent(this, DetailActivity::class.java)</text>
+      <text x="195" y="113" text-anchor="middle" font-size="13" fill="#2e6040">You name the exact component class.</text>
+
+      <line x1="195" y1="122" x2="195" y2="148" stroke="#3d7a4f" stroke-width="2" marker-end="url(#aitg)"/>
+      <rect x="60" y="148" width="270" height="44" rx="7" fill="#1e1e2e" stroke="#4caf70" stroke-width="2.5" filter="url(#it1)"/>
+      <text x="195" y="171" text-anchor="middle" font-size="15" font-weight="700" fill="#a6e3a1">DetailActivity launched</text>
+      <text x="195" y="188" text-anchor="middle" font-size="12" fill="#6c7086">Direct. Used within your own app.</text>
+
+      <!-- Implicit right side -->
+      <rect x="440" y="10" width="370" height="44" rx="8" fill="#1e1e2e" stroke="#89b4fa" stroke-width="2" filter="url(#it1)"/>
+      <text x="625" y="37" text-anchor="middle" font-size="16" font-weight="700" fill="#89b4fa">Implicit Intent</text>
+
+      <rect x="440" y="70" width="370" height="52" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="2" filter="url(#it1)"/>
+      <text x="625" y="90" text-anchor="middle" font-size="13" fill="#374151">Intent(Intent.ACTION_VIEW, Uri.parse(url))</text>
+      <text x="625" y="110" text-anchor="middle" font-size="13" fill="#1e40af">Describe action + data. System finds handler.</text>
+
+      <line x1="625" y1="122" x2="625" y2="148" stroke="#2563eb" stroke-width="2" marker-end="url(#aitr)"/>
+
+      <!-- Intent filter matching -->
+      <rect x="440" y="148" width="370" height="52" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" filter="url(#it1)"/>
+      <text x="625" y="168" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">System checks &lt;intent-filter&gt; in manifests</text>
+      <text x="625" y="185" text-anchor="middle" font-size="13" fill="#374151">action + category + data must all match</text>
+
+      <line x1="540" y1="200" x2="490" y2="230" stroke="#2563eb" stroke-width="1.8" marker-end="url(#aitr)"/>
+      <line x1="625" y1="200" x2="625" y2="230" stroke="#2563eb" stroke-width="1.8" marker-end="url(#aitr)"/>
+      <line x1="720" y1="200" x2="760" y2="230" stroke="#2563eb" stroke-width="1.8" marker-end="url(#aitr)"/>
+
+      <rect x="448" y="230" width="100" height="36" rx="5" fill="#dcfce7" stroke="#3d7a4f" stroke-width="1.5" filter="url(#it1)"/>
+      <text x="498" y="253" text-anchor="middle" font-size="12" fill="#2e6040">Browser</text>
+      <rect x="565" y="230" width="120" height="36" rx="5" fill="#dcfce7" stroke="#3d7a4f" stroke-width="1.5" filter="url(#it1)"/>
+      <text x="625" y="253" text-anchor="middle" font-size="12" fill="#2e6040">1 match &#x2192; opens</text>
+      <rect x="700" y="230" width="110" height="36" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.5" filter="url(#it1)"/>
+      <text x="755" y="253" text-anchor="middle" font-size="12" fill="#92400e">Multiple &#x2192; chooser</text>
+
+      <!-- No match -->
+      <rect x="440" y="290" width="370" height="36" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5" filter="url(#it1)"/>
+      <text x="625" y="313" text-anchor="middle" font-size="13" font-weight="700" fill="#991b1b">No match &#x2192; ActivityNotFoundException &#x2014; always check resolveActivity()!</text>
+    </svg>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Intents &#x2014; explicit, implicit, PendingIntent, ActivityResultLauncher</span></div>
+    <div class="code-block"><span class="cm">// Explicit Intent &#x2014; within your app, you know the target</span>
+<span class="kw">val</span> intent = <span class="cl">Intent</span>(<span class="kw">this</span>, <span class="cl">DetailActivity</span>::<span class="kw">class</span>.java).<span class="fn">apply</span> {
+    <span class="fn">putExtra</span>(<span class="st">"product_id"</span>, product.id)
+    <span class="fn">putExtra</span>(<span class="st">"product"</span>, product)   <span class="cm">// must be Parcelable or Serializable</span>
+}
+<span class="fn">startActivity</span>(intent)
+
+<span class="cm">// Implicit Intent &#x2014; request an action, let system find the handler</span>
+<span class="kw">val</span> shareIntent = <span class="cl">Intent</span>(<span class="cl">Intent</span>.ACTION_SEND).<span class="fn">apply</span> {
+    type = <span class="st">"text/plain"</span>
+    <span class="fn">putExtra</span>(<span class="cl">Intent</span>.EXTRA_TEXT, <span class="st">"Check out this product!"</span>)
+}
+<span class="cm">// Always check a handler exists before firing implicit intents</span>
+<span class="kw">if</span> (shareIntent.<span class="fn">resolveActivity</span>(packageManager) != <span class="kw">null</span>) {
+    <span class="fn">startActivity</span>(<span class="cl">Intent</span>.<span class="fn">createChooser</span>(shareIntent, <span class="st">"Share via"</span>))
+}
+
+<span class="cm">// Common implicit intents</span>
+<span class="cm">// Open URL</span>
+<span class="cl">Intent</span>(<span class="cl">Intent</span>.ACTION_VIEW, <span class="cl">Uri</span>.<span class="fn">parse</span>(<span class="st">"https://example.com"</span>))
+<span class="cm">// Dial phone</span>
+<span class="cl">Intent</span>(<span class="cl">Intent</span>.ACTION_DIAL, <span class="cl">Uri</span>.<span class="fn">parse</span>(<span class="st">"tel:+91-9999999999"</span>))
+<span class="cm">// Send email</span>
+<span class="cl">Intent</span>(<span class="cl">Intent</span>.ACTION_SENDTO, <span class="cl">Uri</span>.<span class="fn">parse</span>(<span class="st">"mailto:support@example.com"</span>))
+
+<span class="cm">// ActivityResultLauncher &#x2014; modern replacement for startActivityForResult</span>
+<span class="kw">private val</span> pickImageLauncher = <span class="fn">registerForActivityResult</span>(
+    <span class="cl">ActivityResultContracts.PickVisualMedia</span>()
+) { uri ->
+    uri?.<span class="fn">let</span> { binding.ivProduct.<span class="fn">setImageURI</span>(it) }
+}
+<span class="cm">// Launch it</span>
+pickImageLauncher.<span class="fn">launch</span>(<span class="cl">PickVisualMediaRequest</span>(<span class="cl">ActivityResultContracts.PickVisualMedia.ImageOnly</span>))
+
+<span class="cm">// PendingIntent &#x2014; a token that lets another app/system fire an Intent on your behalf</span>
+<span class="cm">// Used in: Notifications, AlarmManager, Widgets, Shortcuts</span>
+<span class="kw">val</span> pendingIntent = <span class="cl">PendingIntent</span>.<span class="fn">getActivity</span>(
+    context, <span class="nm">0</span>, intent,
+    <span class="cl">PendingIntent</span>.FLAG_UPDATE_CURRENT <span class="kw">or</span> <span class="cl">PendingIntent</span>.FLAG_IMMUTABLE
+)</div>
+  </div>
+
+  <!-- ─── CONTEXT ─── -->
+  <h2 id="context">Context</h2>
+
+  <p>Context is Android&#x2019;s god object &#x2014; it provides access to resources, the filesystem, system services, and the ability to launch Activities, send Broadcasts, and bind Services. Every operation that touches Android&#x2019;s OS layer needs a Context. The distinction between Application context and Activity context is one of the most common interview questions, and getting it wrong in production causes memory leaks.</p>
+
+  <!-- DIAGRAM 4: Context hierarchy -->
+  <div class="wb-wrap">
+    <div class="wb-title">&#x1F4CB; Context hierarchy &#x2014; what each type can and cannot do</div>
+    <svg viewBox="0 0 820 310" xmlns="http://www.w3.org/2000/svg" font-family="Caveat, cursive">
+      <defs>
+        <filter id="ctx1" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="4" seed="2"/>
+          <feDisplacementMap in="SourceGraphic" scale="1.1" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <marker id="actx" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#555"/></marker>
+      </defs>
+      <g opacity="0.06" stroke="#999" stroke-width="1">
+        <line x1="0" y1="40" x2="820" y2="40"/><line x1="0" y1="80" x2="820" y2="80"/>
+        <line x1="0" y1="120" x2="820" y2="120"/><line x1="0" y1="160" x2="820" y2="160"/>
+        <line x1="0" y1="200" x2="820" y2="200"/><line x1="0" y1="240" x2="820" y2="240"/><line x1="0" y1="280" x2="820" y2="280"/>
+      </g>
+      <!-- Context base -->
+      <rect x="310" y="8" width="200" height="40" rx="7" fill="#1e1e2e" stroke="#4caf70" stroke-width="2.5" filter="url(#ctx1)"/>
+      <text x="410" y="33" text-anchor="middle" font-size="16" font-weight="700" fill="#a6e3a1">Context (abstract)</text>
+
+      <line x1="320" y1="48" x2="180" y2="90" stroke="#555" stroke-width="1.8" marker-end="url(#actx)"/>
+      <line x1="410" y1="48" x2="410" y2="90" stroke="#555" stroke-width="1.8" marker-end="url(#actx)"/>
+      <line x1="500" y1="48" x2="640" y2="90" stroke="#555" stroke-width="1.8" marker-end="url(#actx)"/>
+
+      <!-- ContextWrapper -->
+      <rect x="80" y="90" width="200" height="40" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="2" filter="url(#ctx1)"/>
+      <text x="180" y="115" text-anchor="middle" font-size="15" font-weight="600" fill="#1e40af">ContextWrapper</text>
+
+      <!-- Application -->
+      <rect x="310" y="90" width="200" height="40" rx="7" fill="#dcfce7" stroke="#3d7a4f" stroke-width="2" filter="url(#ctx1)"/>
+      <text x="410" y="115" text-anchor="middle" font-size="15" font-weight="600" fill="#2e6040">Application</text>
+
+      <!-- ContextThemeWrapper -->
+      <rect x="540" y="90" width="200" height="40" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" filter="url(#ctx1)"/>
+      <text x="640" y="115" text-anchor="middle" font-size="15" font-weight="600" fill="#5b21b6">ContextThemeWrapper</text>
+
+      <line x1="120" y1="130" x2="120" y2="158" stroke="#555" stroke-width="1.8" marker-end="url(#actx)"/>
+      <line x1="640" y1="130" x2="640" y2="158" stroke="#555" stroke-width="1.8" marker-end="url(#actx)"/>
+
+      <!-- Service -->
+      <rect x="30" y="158" width="170" height="40" rx="7" fill="#fef3c7" stroke="#d97706" stroke-width="2" filter="url(#ctx1)"/>
+      <text x="115" y="183" text-anchor="middle" font-size="15" font-weight="600" fill="#92400e">Service</text>
+
+      <!-- Activity -->
+      <rect x="530" y="158" width="220" height="40" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="2" filter="url(#ctx1)"/>
+      <text x="640" y="183" text-anchor="middle" font-size="15" font-weight="700" fill="#991b1b">Activity &#x2605;</text>
+
+      <!-- Capability table -->
+      <rect x="10" y="222" width="245" height="80" rx="7" fill="#dcfce7" stroke="#3d7a4f" stroke-width="1.5" filter="url(#ctx1)"/>
+      <text x="132" y="242" text-anchor="middle" font-size="13" font-weight="700" fill="#2e6040">Application Context</text>
+      <text x="20" y="260" font-size="12" fill="#374151">&#x2713; Resources, strings, files</text>
+      <text x="20" y="276" font-size="12" fill="#374151">&#x2713; startService, sendBroadcast</text>
+      <text x="20" y="292" font-size="12" fill="#dc2626">&#x2717; Show dialogs  &#x2717; Themed UI</text>
+
+      <rect x="280" y="222" width="245" height="80" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5" filter="url(#ctx1)"/>
+      <text x="402" y="242" text-anchor="middle" font-size="13" font-weight="700" fill="#991b1b">Activity Context</text>
+      <text x="290" y="260" font-size="12" fill="#374151">&#x2713; Everything Application can do</text>
+      <text x="290" y="276" font-size="12" fill="#374151">&#x2713; Show dialogs, inflate views</text>
+      <text x="290" y="292" font-size="12" fill="#374151">&#x2713; Themed resources (correct theme)</text>
+
+      <rect x="550" y="222" width="255" height="80" rx="7" fill="#fff5f5" stroke="#dc2626" stroke-width="2" filter="url(#ctx1)"/>
+      <text x="677" y="242" text-anchor="middle" font-size="13" font-weight="700" fill="#991b1b">&#x26A0; Memory Leak Risk</text>
+      <text x="560" y="260" font-size="12" fill="#374151">Holding Activity context in a singleton</text>
+      <text x="560" y="276" font-size="12" fill="#374151">or static field keeps the Activity alive</text>
+      <text x="560" y="292" font-size="12" fill="#374151">even after finish() &#x2014; use Application ctx.</text>
+    </svg>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Context &#x2014; when to use which, and avoiding leaks</span></div>
+    <div class="code-block"><span class="cm">// Application context &#x2014; lives as long as the app process</span>
+<span class="cm">// Safe to store in singletons, repositories, ViewModels</span>
+<span class="kw">class</span> <span class="cl">ImageCache</span>(<span class="kw">private val</span> context: <span class="cl">Context</span>) {
+    <span class="cm">// &#x2714; Pass applicationContext when creating singletons</span>
+    <span class="kw">private val</span> diskCache = <span class="cl">DiskCache</span>(context.<span class="fn">applicationContext</span>)
+}
+
+<span class="cm">// Activity context &#x2014; tied to that Activity&#x2019;s lifecycle</span>
+<span class="cm">// Use for: inflating views, showing dialogs, accessing themed resources</span>
+<span class="kw">val</span> dialog = <span class="cl">AlertDialog.Builder</span>(<span class="kw">this</span>)  <span class="cm">// &#x2714; Activity context — dialog needs a window</span>
+<span class="kw">val</span> inflater = <span class="cl">LayoutInflater</span>.<span class="fn">from</span>(<span class="kw">this</span>)  <span class="cm">// &#x2714; Activity context — correct theme</span>
+
+<span class="cm">// &#x26A0; Common leak: storing Activity context in a singleton</span>
+<span class="kw">object</span> <span class="cl">BadSingleton</span> {
+    <span class="kw">var</span> context: <span class="cl">Context</span>? = <span class="kw">null</span>    <span class="cm">// &#x2717; If you store an Activity here, it never GC&#x2019;d</span>
+}
+<span class="cm">// Fix: store applicationContext instead</span>
+<span class="kw">object</span> <span class="cl">GoodSingleton</span> {
+    <span class="kw">lateinit var</span> appContext: <span class="cl">Context</span>
+    <span class="kw">fun</span> <span class="fn">init</span>(context: <span class="cl">Context</span>) { appContext = context.<span class="fn">applicationContext</span> }
+}
+
+<span class="cm">// getSystemService &#x2014; get OS-level services via Context</span>
+<span class="kw">val</span> connectivityManager = context.<span class="fn">getSystemService</span>(<span class="cl">ConnectivityManager</span>::<span class="kw">class</span>.java)
+<span class="kw">val</span> notificationManager = context.<span class="fn">getSystemService</span>(<span class="cl">NotificationManager</span>::<span class="kw">class</span>.java)
+<span class="kw">val</span> inputMethodManager = context.<span class="fn">getSystemService</span>(<span class="cl">InputMethodManager</span>::<span class="kw">class</span>.java)</div>
+  </div>
+
+  <table class="comp-table">
+    <thead><tr><th>Use case</th><th>Context to use</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Inflate a layout / View</td><td>Activity</td><td>Needs the Activity&#x2019;s theme for correct styling</td></tr>
+      <tr><td>Show an AlertDialog</td><td>Activity</td><td>Dialog must attach to an Activity&#x2019;s window</td></tr>
+      <tr><td>Room database / Retrofit singleton</td><td>Application</td><td>Lives forever; Activity context would leak</td></tr>
+      <tr><td>WorkManager / AlarmManager</td><td>Application</td><td>May fire when Activity is gone</td></tr>
+      <tr><td>getResources / getString</td><td>Either</td><td>Activity gives theme-aware resources</td></tr>
+      <tr><td>startActivity from ViewModel</td><td>Application + FLAG_NEW_TASK</td><td>ViewModel shouldn&#x2019;t hold Activity; needs new task flag</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─── SERVICES ─── -->
+  <h2 id="services">Services</h2>
+
+  <p>A Service is an app component that performs long-running operations in the background without a UI. It runs on the <strong>main thread by default</strong> &#x2014; this catches many developers off guard. If you do network or disk work in a Service, you still need to offload it to a coroutine or thread. There are three flavours of service that map to three distinct use cases.</p>
+
+  <!-- DIAGRAM 5: Services -->
+  <div class="wb-wrap">
+    <div class="wb-title">&#x1F4CB; Services &#x2014; started, bound, and foreground</div>
+    <svg viewBox="0 0 820 300" xmlns="http://www.w3.org/2000/svg" font-family="Caveat, cursive">
+      <defs>
+        <filter id="sv1" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="4" seed="16"/>
+          <feDisplacementMap in="SourceGraphic" scale="1.1" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <marker id="asv" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#555"/></marker>
+      </defs>
+      <g opacity="0.06" stroke="#999" stroke-width="1">
+        <line x1="0" y1="40" x2="820" y2="40"/><line x1="0" y1="80" x2="820" y2="80"/>
+        <line x1="0" y1="120" x2="820" y2="120"/><line x1="0" y1="160" x2="820" y2="160"/>
+        <line x1="0" y1="200" x2="820" y2="200"/><line x1="0" y1="240" x2="820" y2="240"/><line x1="0" y1="280" x2="820" y2="280"/>
+      </g>
+
+      <!-- Started service -->
+      <rect x="10" y="10" width="250" height="44" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5" filter="url(#sv1)"/>
+      <text x="135" y="37" text-anchor="middle" font-size="16" font-weight="700" fill="#1e40af">Started Service</text>
+      <text x="135" y="74" text-anchor="middle" font-size="12" fill="#374151">startService() &#x2192; onCreate &#x2192; onStartCommand</text>
+      <text x="135" y="92" text-anchor="middle" font-size="12" fill="#374151">Runs until stopSelf() or stopService()</text>
+      <text x="135" y="110" text-anchor="middle" font-size="12" fill="#374151">Independent of calling component</text>
+      <rect x="20" y="120" width="230" height="32" rx="5" fill="#1e1e2e" stroke="#2563eb" stroke-width="1.5"/>
+      <text x="135" y="141" text-anchor="middle" font-size="12" fill="#89b4fa">Use: fire-and-forget background work</text>
+      <text x="135" y="165" text-anchor="middle" font-size="12" fill="#374151">onStartCommand return values:</text>
+      <text x="135" y="183" text-anchor="middle" font-size="12" fill="#2563eb">START_STICKY &#x2014; restart, null intent</text>
+      <text x="135" y="200" text-anchor="middle" font-size="12" fill="#2563eb">START_NOT_STICKY &#x2014; don&#x2019;t restart</text>
+      <text x="135" y="217" text-anchor="middle" font-size="12" fill="#2563eb">START_REDELIVER_INTENT &#x2014; restart + intent</text>
+
+      <!-- Bound service -->
+      <rect x="285" y="10" width="250" height="44" rx="8" fill="#dcfce7" stroke="#3d7a4f" stroke-width="2.5" filter="url(#sv1)"/>
+      <text x="410" y="37" text-anchor="middle" font-size="16" font-weight="700" fill="#2e6040">Bound Service</text>
+      <text x="410" y="74" text-anchor="middle" font-size="12" fill="#374151">bindService() &#x2192; onCreate &#x2192; onBind()</text>
+      <text x="410" y="92" text-anchor="middle" font-size="12" fill="#374151">Returns IBinder for direct method calls</text>
+      <text x="410" y="110" text-anchor="middle" font-size="12" fill="#374151">Destroyed when all clients unbind</text>
+      <rect x="295" y="120" width="230" height="32" rx="5" fill="#1e1e2e" stroke="#3d7a4f" stroke-width="1.5"/>
+      <text x="410" y="141" text-anchor="middle" font-size="12" fill="#a6e3a1">Use: client-server, music controls, IPC</text>
+      <text x="410" y="165" text-anchor="middle" font-size="12" fill="#374151">Client calls: bindService(intent, conn, flags)</text>
+      <text x="410" y="183" text-anchor="middle" font-size="12" fill="#2e6040">onServiceConnected &#x2014; get IBinder</text>
+      <text x="410" y="200" text-anchor="middle" font-size="12" fill="#92400e">onServiceDisconnected &#x2014; handle crash</text>
+      <text x="410" y="217" text-anchor="middle" font-size="12" fill="#374151">unbindService(conn) when done</text>
+
+      <!-- Foreground service -->
+      <rect x="560" y="10" width="250" height="44" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2.5" filter="url(#sv1)"/>
+      <text x="685" y="37" text-anchor="middle" font-size="16" font-weight="700" fill="#92400e">Foreground Service</text>
+      <text x="685" y="74" text-anchor="middle" font-size="12" fill="#374151">startForeground(id, notification)</text>
+      <text x="685" y="92" text-anchor="middle" font-size="12" fill="#374151">Shown to user via persistent notification</text>
+      <text x="685" y="110" text-anchor="middle" font-size="12" fill="#374151">System won&#x2019;t kill when memory low</text>
+      <rect x="570" y="120" width="230" height="32" rx="5" fill="#1e1e2e" stroke="#d97706" stroke-width="1.5"/>
+      <text x="685" y="141" text-anchor="middle" font-size="12" fill="#f9e2af">Use: music, navigation, file download</text>
+      <text x="685" y="165" text-anchor="middle" font-size="12" fill="#374151">API 26+: must call startForeground()</text>
+      <text x="685" y="183" text-anchor="middle" font-size="12" fill="#374151">within 5 seconds of start</text>
+      <text x="685" y="200" text-anchor="middle" font-size="12" fill="#d97706">API 34: must declare foregroundServiceType</text>
+      <text x="685" y="217" text-anchor="middle" font-size="12" fill="#374151">in manifest (&lt;service android:foregroundServiceType&gt;)</text>
+
+      <!-- Bottom note -->
+      <rect x="10" y="245" width="800" height="46" rx="7" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.5" filter="url(#sv1)"/>
+      <text x="410" y="265" text-anchor="middle" font-size="13" font-weight="700" fill="#374151">Services run on main thread by default &#x2014; always offload I/O to coroutines or threads!</text>
+      <text x="410" y="283" text-anchor="middle" font-size="12" fill="#6b7280">For deferred/periodic work prefer WorkManager over started services &#x2014; it survives process death and handles retries.</text>
+    </svg>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Services &#x2014; started, bound, and foreground patterns</span></div>
+    <div class="code-block"><span class="cm">// ── Started Service ────────────────────────────────────────────────────────</span>
+<span class="kw">class</span> <span class="cl">SyncService</span> : <span class="cl">Service</span>() {
+    <span class="kw">private val</span> scope = <span class="cl">CoroutineScope</span>(<span class="cl">SupervisorJob</span>() + <span class="cl">Dispatchers</span>.IO)
+
+    <span class="kw">override fun</span> <span class="fn">onStartCommand</span>(intent: <span class="cl">Intent</span>?, flags: <span class="cl">Int</span>, startId: <span class="cl">Int</span>): <span class="cl">Int</span> {
+        scope.<span class="fn">launch</span> { <span class="fn">performSync</span>() }       <span class="cm">// offload to coroutine &#x2014; service is on main thread!</span>
+        <span class="kw">return</span> <span class="cl">START_NOT_STICKY</span>              <span class="cm">// don&#x2019;t restart after kill</span>
+    }
+    <span class="kw">override fun</span> <span class="fn">onBind</span>(intent: <span class="cl">Intent</span>?) = <span class="kw">null</span>   <span class="cm">// not a bound service</span>
+    <span class="kw">override fun</span> <span class="fn">onDestroy</span>() { scope.<span class="fn">cancel</span>() }
+}
+
+<span class="cm">// ── Bound Service ─────────────────────────────────────────────────────────</span>
+<span class="kw">class</span> <span class="cl">MusicService</span> : <span class="cl">Service</span>() {
+    <span class="kw">inner class</span> <span class="cl">MusicBinder</span> : <span class="cl">Binder</span>() {
+        <span class="kw">fun</span> <span class="fn">getService</span>() = <span class="kw">this</span>@MusicService
+    }
+    <span class="kw">private val</span> binder = <span class="cl">MusicBinder</span>()
+    <span class="kw">override fun</span> <span class="fn">onBind</span>(intent: <span class="cl">Intent</span>?): <span class="cl">IBinder</span> = binder
+    <span class="kw">fun</span> <span class="fn">play</span>(track: <span class="cl">String</span>) { <span class="cm">/* start playback */</span> }
+}
+<span class="cm">// In Activity/Fragment:</span>
+<span class="kw">private var</span> musicService: <span class="cl">MusicService</span>? = <span class="kw">null</span>
+<span class="kw">private val</span> conn = <span class="kw">object</span> : <span class="cl">ServiceConnection</span> {
+    <span class="kw">override fun</span> <span class="fn">onServiceConnected</span>(name: <span class="cl">ComponentName</span>, binder: <span class="cl">IBinder</span>) {
+        musicService = (binder <span class="kw">as</span> <span class="cl">MusicService.MusicBinder</span>).<span class="fn">getService</span>()
+    }
+    <span class="kw">override fun</span> <span class="fn">onServiceDisconnected</span>(name: <span class="cl">ComponentName</span>) { musicService = <span class="kw">null</span> }
+}
+
+<span class="cm">// ── Foreground Service ────────────────────────────────────────────────────</span>
+<span class="kw">class</span> <span class="cl">DownloadService</span> : <span class="cl">Service</span>() {
+    <span class="kw">override fun</span> <span class="fn">onStartCommand</span>(intent: <span class="cl">Intent</span>?, flags: <span class="cl">Int</span>, startId: <span class="cl">Int</span>): <span class="cl">Int</span> {
+        <span class="kw">val</span> notification = <span class="fn">buildNotification</span>()
+        <span class="fn">startForeground</span>(<span class="nm">1</span>, notification)   <span class="cm">// must call within 5s on API 26+</span>
+        <span class="kw">return</span> <span class="cl">START_STICKY</span>
+    }
+    <span class="kw">override fun</span> <span class="fn">onBind</span>(intent: <span class="cl">Intent</span>?) = <span class="kw">null</span>
+}</div>
+  </div>
+
+  <!-- ─── BROADCAST RECEIVERS ─── -->
+  <h2 id="broadcast-receivers">Broadcast Receivers</h2>
+
+  <p>A Broadcast Receiver listens for system-wide or app-level events delivered as Intents. Think of it as a publish-subscribe bus at the Android OS level &#x2014; the battery going low, the network coming back online, the screen turning off, or your own app sending a custom event. The receiver runs on the main thread and has a very tight time budget: you have about <strong>10 seconds before the system ANRs</strong>. Anything heavier than a quick state change must be handed off immediately to a coroutine, Service, or WorkManager.</p>
+
+  <h3 id="br-static-vs-dynamic">Static vs dynamic registration</h3>
+
+  <p><strong>Static (manifest) registration</strong> &#x2014; declared in <code>AndroidManifest.xml</code> with an <code>&lt;intent-filter&gt;</code>. The receiver can be triggered even when your app is not running (the system starts it). Since Android 8.0 (API 26), most implicit broadcasts can no longer be received via static registration for battery reasons &#x2014; only a small allowlist of broadcasts (like <code>BOOT_COMPLETED</code>, <code>ACTION_LOCKED_BOOT_COMPLETED</code>, SMS) still work this way.</p>
+
+  <p><strong>Dynamic (code) registration</strong> &#x2014; register and unregister programmatically via <code>registerReceiver()</code> / <code>unregisterReceiver()</code>. The receiver only fires while your component is alive. This is the recommended approach for most broadcasts in modern Android. Always unregister in the symmetric lifecycle callback to avoid leaks: register in <code>onStart</code>, unregister in <code>onStop</code>; register in <code>onCreate</code>, unregister in <code>onDestroy</code>.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Broadcast Receivers &#x2014; dynamic, local, ordered, and custom</span></div>
+    <div class="code-block"><span class="cm">// ── Basic BroadcastReceiver ───────────────────────────────────────────────</span>
+<span class="kw">class</span> <span class="cl">NetworkReceiver</span> : <span class="cl">BroadcastReceiver</span>() {
+    <span class="kw">override fun</span> <span class="fn">onReceive</span>(context: <span class="cl">Context</span>, intent: <span class="cl">Intent</span>) {
+        <span class="cm">// Runs on main thread &#x2014; must be fast (&lt;10 seconds)</span>
+        <span class="kw">if</span> (intent.action == <span class="cl">ConnectivityManager</span>.CONNECTIVITY_ACTION) {
+            <span class="kw">val</span> isConnected = <span class="fn">isNetworkAvailable</span>(context)
+            <span class="cm">// Hand off heavy work immediately</span>
+            <span class="kw">if</span> (isConnected) <span class="cl">WorkManager</span>.<span class="fn">getInstance</span>(context).<span class="fn">enqueue</span>(syncRequest)
+        }
+    }
+}
+
+<span class="cm">// ── Dynamic registration ──────────────────────────────────────────────────</span>
+<span class="kw">class</span> <span class="cl">MainActivity</span> : <span class="cl">AppCompatActivity</span>() {
+    <span class="kw">private val</span> networkReceiver = <span class="cl">NetworkReceiver</span>()
+
+    <span class="kw">override fun</span> <span class="fn">onStart</span>() {
+        <span class="kw">super</span>.<span class="fn">onStart</span>()
+        <span class="kw">val</span> filter = <span class="cl">IntentFilter</span>(<span class="cl">ConnectivityManager</span>.CONNECTIVITY_ACTION)
+        <span class="fn">registerReceiver</span>(networkReceiver, filter)
+    }
+
+    <span class="kw">override fun</span> <span class="fn">onStop</span>() {
+        <span class="kw">super</span>.<span class="fn">onStop</span>()
+        <span class="fn">unregisterReceiver</span>(networkReceiver)   <span class="cm">// symmetric unregister &#x2014; MANDATORY</span>
+    }
+}
+
+<span class="cm">// ── LocalBroadcastManager &#x2014; in-process only, more secure, faster</span>
+<span class="cm">// Deprecated in API 29 but still common in interviews. Use Flow/EventBus instead.</span>
+<span class="kw">val</span> localBM = <span class="cl">LocalBroadcastManager</span>.<span class="fn">getInstance</span>(context)
+localBM.<span class="fn">registerReceiver</span>(myReceiver, <span class="cl">IntentFilter</span>(<span class="st">"MY_ACTION"</span>))
+localBM.<span class="fn">sendBroadcast</span>(<span class="cl">Intent</span>(<span class="st">"MY_ACTION"</span>).<span class="fn">apply</span> { <span class="fn">putExtra</span>(<span class="st">"key"</span>, <span class="st">"value"</span>) })
+
+<span class="cm">// ── Ordered broadcast &#x2014; receivers run sequentially, can abort chain</span>
+<span class="kw">val</span> resultReceiver = <span class="kw">object</span> : <span class="cl">BroadcastReceiver</span>() {
+    <span class="kw">override fun</span> <span class="fn">onReceive</span>(ctx: <span class="cl">Context</span>, intent: <span class="cl">Intent</span>) {
+        <span class="cm">// Gets final result after all receivers have processed</span>
+        <span class="kw">val</span> result = resultData
+    }
+}
+<span class="fn">sendOrderedBroadcast</span>(<span class="cl">Intent</span>(<span class="st">"MY_ORDERED_ACTION"</span>), <span class="kw">null</span>, resultReceiver, <span class="kw">null</span>, <span class="cl">Activity</span>.RESULT_OK, <span class="kw">null</span>, <span class="kw">null</span>)
+
+<span class="cm">// ── goAsync() &#x2014; extend execution time beyond the 10s window</span>
+<span class="kw">class</span> <span class="cl">HeavyReceiver</span> : <span class="cl">BroadcastReceiver</span>() {
+    <span class="kw">override fun</span> <span class="fn">onReceive</span>(context: <span class="cl">Context</span>, intent: <span class="cl">Intent</span>) {
+        <span class="kw">val</span> pending = <span class="fn">goAsync</span>()   <span class="cm">// tells system: I&#x2019;m not done yet</span>
+        <span class="cl">CoroutineScope</span>(<span class="cl">Dispatchers</span>.IO).<span class="fn">launch</span> {
+            <span class="kw">try</span> { <span class="fn">doHeavyWork</span>() }
+            <span class="kw">finally</span> { pending.<span class="fn">finish</span>() }   <span class="cm">// MUST call finish() or you leak</span>
+        }
+    }
+}</div>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-label">&#x1F4A1; Modern alternative to broadcasts</div>
+    <p>For in-app event communication, prefer <strong>SharedFlow</strong> or <strong>StateFlow</strong> over LocalBroadcastManager &#x2014; they&#x2019;re lifecycle-aware, type-safe, and don&#x2019;t require Intent serialisation. For system events like network changes, use <strong>ConnectivityManager.registerNetworkCallback()</strong> (API 21+) instead of the deprecated <code>CONNECTIVITY_ACTION</code> broadcast.</p>
+  </div>
+
+  <!-- ─── CONTENT PROVIDERS ─── -->
+  <h2 id="content-providers">Content Providers</h2>
+
+  <p>A Content Provider is Android&#x2019;s structured mechanism for sharing data between apps. It wraps a data source (typically a Room/SQLite database, but can be files, in-memory structures, or any data store) behind a standard URI-based CRUD interface. The system routes all access through the Content Provider, which enforces permissions, allowing controlled cross-app data sharing.</p>
+
+  <p>You interact with other apps&#x2019; Content Providers via a <strong>ContentResolver</strong>, which you get from Context. You don&#x2019;t talk to the provider directly &#x2014; the ContentResolver is the broker. Common examples you use without realising: reading contacts (<code>ContactsContract</code>), querying media files (<code>MediaStore</code>), and reading calendar events.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Content Providers &#x2014; ContentResolver queries and custom provider</span></div>
+    <div class="code-block"><span class="cm">// ── ContentResolver &#x2014; querying another app&#x2019;s provider ──────────────────────</span>
+<span class="cm">// URI structure: content://authority/path/id</span>
+<span class="cm">//                         ^           ^    ^</span>
+<span class="cm">//              identifies provider  table  row</span>
+
+<span class="cm">// Query contacts (requires READ_CONTACTS permission)</span>
+<span class="kw">val</span> cursor: <span class="cl">Cursor</span>? = contentResolver.<span class="fn">query</span>(
+    <span class="cl">ContactsContract.Contacts</span>.CONTENT_URI,    <span class="cm">// URI</span>
+    <span class="fn">arrayOf</span>(<span class="cl">ContactsContract.Contacts</span>.DISPLAY_NAME),  <span class="cm">// projection (columns)</span>
+    <span class="kw">null</span>,   <span class="cm">// selection (WHERE clause)</span>
+    <span class="kw">null</span>,   <span class="cm">// selectionArgs</span>
+    <span class="st">"${ContactsContract.Contacts.DISPLAY_NAME} ASC"</span>  <span class="cm">// sortOrder</span>
+)
+cursor?.<span class="fn">use</span> {           <span class="cm">// use {} auto-closes the cursor</span>
+    <span class="kw">while</span> (it.<span class="fn">moveToNext</span>()) {
+        <span class="kw">val</span> name = it.<span class="fn">getString</span>(it.<span class="fn">getColumnIndexOrThrow</span>(<span class="cl">ContactsContract.Contacts</span>.DISPLAY_NAME))
+        contacts.<span class="fn">add</span>(name)
+    }
+}
+
+<span class="cm">// CRUD operations via ContentResolver</span>
+<span class="cm">// Insert</span>
+<span class="kw">val</span> values = <span class="cl">ContentValues</span>().<span class="fn">apply</span> { <span class="fn">put</span>(<span class="st">"name"</span>, <span class="st">"Alice"</span>); <span class="fn">put</span>(<span class="st">"age"</span>, <span class="nm">30</span>) }
+<span class="kw">val</span> newUri = contentResolver.<span class="fn">insert</span>(<span class="cl">MyProvider</span>.CONTENT_URI, values)
+<span class="cm">// Update</span>
+contentResolver.<span class="fn">update</span>(<span class="cl">MyProvider</span>.CONTENT_URI, values, <span class="st">"id = ?"</span>, <span class="fn">arrayOf</span>(<span class="st">"1"</span>))
+<span class="cm">// Delete</span>
+contentResolver.<span class="fn">delete</span>(<span class="cl">MyProvider</span>.CONTENT_URI, <span class="st">"id = ?"</span>, <span class="fn">arrayOf</span>(<span class="st">"1"</span>))
+
+<span class="cm">// ── Custom ContentProvider ────────────────────────────────────────────────</span>
+<span class="kw">class</span> <span class="cl">ProductProvider</span> : <span class="cl">ContentProvider</span>() {
+    <span class="kw">companion object</span> {
+        <span class="kw">const val</span> AUTHORITY = <span class="st">"com.example.app.provider"</span>
+        <span class="kw">val</span> CONTENT_URI: <span class="cl">Uri</span> = <span class="cl">Uri</span>.<span class="fn">parse</span>(<span class="st">"content://$AUTHORITY/products"</span>)
+    }
+    <span class="kw">override fun</span> <span class="fn">onCreate</span>(): <span class="cl">Boolean</span> { <span class="cm">/* init database */</span>; <span class="kw">return true</span> }
+    <span class="kw">override fun</span> <span class="fn">query</span>(uri: <span class="cl">Uri</span>, projection: <span class="cl">Array</span>&lt;<span class="cl">String</span>&gt;?, selection: <span class="cl">String</span>?, selectionArgs: <span class="cl">Array</span>&lt;<span class="cl">String</span>&gt;?, sortOrder: <span class="cl">String</span>?): <span class="cl">Cursor</span>? {
+        <span class="kw">return</span> db.<span class="fn">query</span>(<span class="st">"products"</span>, projection, selection, selectionArgs, <span class="kw">null</span>, <span class="kw">null</span>, sortOrder)
+    }
+    <span class="kw">override fun</span> <span class="fn">getType</span>(uri: <span class="cl">Uri</span>): <span class="cl">String</span> = <span class="st">"vnd.android.cursor.dir/vnd.$AUTHORITY.products"</span>
+    <span class="kw">override fun</span> <span class="fn">insert</span>(uri: <span class="cl">Uri</span>, values: <span class="cl">ContentValues</span>?): <span class="cl">Uri</span>? = <span class="kw">null</span>
+    <span class="kw">override fun</span> <span class="fn">update</span>(uri: <span class="cl">Uri</span>, values: <span class="cl">ContentValues</span>?, selection: <span class="cl">String</span>?, args: <span class="cl">Array</span>&lt;<span class="cl">String</span>&gt;?): <span class="cl">Int</span> = <span class="nm">0</span>
+    <span class="kw">override fun</span> <span class="fn">delete</span>(uri: <span class="cl">Uri</span>, selection: <span class="cl">String</span>?, args: <span class="cl">Array</span>&lt;<span class="cl">String</span>&gt;?): <span class="cl">Int</span> = <span class="nm">0</span>
+}
+
+<span class="cm">// FileProvider &#x2014; share private app files with other apps securely (API 24+)</span>
+<span class="cm">// In AndroidManifest.xml:</span>
+<span class="cm">// &lt;provider android:name="androidx.core.content.FileProvider"</span>
+<span class="cm">//           android:authorities="${applicationId}.fileprovider"</span>
+<span class="cm">//           android:exported="false" android:grantUriPermissions="true"&gt;</span>
+<span class="kw">val</span> photoUri = <span class="cl">FileProvider</span>.<span class="fn">getUriForFile</span>(context, <span class="st">"${packageName}.fileprovider"</span>, photoFile)
+<span class="kw">val</span> cameraIntent = <span class="cl">Intent</span>(<span class="cl">MediaStore</span>.ACTION_IMAGE_CAPTURE).<span class="fn">apply</span> {
+    <span class="fn">putExtra</span>(<span class="cl">MediaStore</span>.EXTRA_OUTPUT, photoUri)
+    <span class="fn">addFlags</span>(<span class="cl">Intent</span>.FLAG_GRANT_WRITE_URI_PERMISSION)
+}</div>
+  </div>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">&#x2705; When you actually need a Content Provider</div>
+    <p>You only need to <em>implement</em> a Content Provider if you want to <strong>expose your data to other apps</strong>. If you&#x2019;re just storing data for your own app&#x2019;s use, Room + Repository is sufficient. The most common real-world use of Content Providers is <code>FileProvider</code> for sharing files with the camera or email apps, and reading system providers like Contacts and MediaStore.</p>
+  </div>
+
+  <!-- ─── COMMON MISTAKES ─── -->
+  <h2 id="common-mistakes">Common interview gotchas</h2>
+
+  <h3 id="mistake-viewlifecycle">viewLifecycleOwner vs this in Fragments</h3>
+  <p>When observing LiveData or Flow in a Fragment, always use <code>viewLifecycleOwner</code> &#x2014; not <code>this</code> (the Fragment itself). A Fragment can be in the back stack with a destroyed view but an active Fragment lifecycle. If you observe with <code>this</code>, the observer keeps receiving updates and trying to update a null binding. <code>viewLifecycleOwner</code> is tied to the view&#x2019;s lifecycle and is automatically cancelled in <code>onDestroyView</code>.</p>
+
+  <h3 id="mistake-context-in-vm">Context in ViewModel</h3>
+  <p>Never hold a plain <code>Activity</code> or <code>Fragment</code> context in a ViewModel. The ViewModel outlives configuration changes &#x2014; the Activity is recreated but the ViewModel persists. Holding the old Activity context leaks it. If you need context in a ViewModel, extend <code>AndroidViewModel</code> which receives the <code>Application</code> context (which is safe to hold), or inject <code>@ApplicationContext</code> via Hilt.</p>
+
+  <h3 id="mistake-implicit-api26">Implicit broadcasts after API 26</h3>
+  <p>Since Android 8.0, apps can no longer register for most implicit broadcasts via the manifest. <code>CONNECTIVITY_CHANGE</code>, <code>BATTERY_CHANGED</code>, and hundreds of others are on the restriction list. Only a small set remain (full list in docs). Dynamic registration still works but only while your app is running. For background network monitoring use <code>ConnectivityManager.registerNetworkCallback()</code>; for scheduled work use WorkManager.</p>
+
+  <h3 id="mistake-service-main-thread">Service runs on the main thread</h3>
+  <p>This is the #1 Service gotcha. <code>Service.onStartCommand()</code> runs on the main thread. Without launching a coroutine or thread, any blocking call (network, disk) ANRs your app. Always start a <code>CoroutineScope(SupervisorJob() + Dispatchers.IO)</code> in the Service and cancel it in <code>onDestroy()</code>.</p>
+
+  <h3 id="mistake-activity-leak">Activity context in a singleton</h3>
+  <p>Passing <code>this</code> (Activity) to a singleton, static field, or long-lived object creates a memory leak. The Activity can never be garbage collected because the singleton holds a strong reference to it. Even after <code>finish()</code>, the entire view hierarchy and all its resources remain in memory. Always pass <code>applicationContext</code> to objects that outlive the Activity.</p>
+
+  <!-- ─── SYSTEM DESIGN ─── -->
+  <h2 id="system-design">How these connect to Android architecture</h2>
+
+  <p>These fundamentals aren&#x2019;t isolated topics &#x2014; they compose into every Android architecture interview answer. A typical system design question (&#x201C;design an offline-first news app&#x201D;) touches all of them: a single Activity hosts Fragments (one per screen); the Activity lifecycle manages navigation; ViewModels (scoped to the Fragment) survive rotation; Intents handle deep links into specific screens; a Service or WorkManager handles background sync; a BroadcastReceiver (or <code>NetworkCallback</code>) triggers sync when connectivity is restored; Room (accessed via a ContentProvider if sharing with widgets) stores the cache; and Application context wires together the Hilt dependency graph.</p>
+
+  <p>The lifecycle callbacks are load-bearing architecture: <code>onResume</code>/<code>onPause</code> guard foreground resources (camera, GPS, sensors); <code>onStart</code>/<code>onStop</code> guard visible-lifetime resources (location updates, animation); <code>onViewCreated</code>/<code>onDestroyView</code> in Fragments guard view bindings. Getting these wrong doesn&#x2019;t just lose points in an interview &#x2014; it causes real crashes and battery drain in production.</p>
+
+  <div class="callout callout-purple">
+    <div class="callout-label">&#x1F3AF; Interview Summary</div>
+    <p><strong>Activity lifecycle</strong>: onCreate (inflate, ViewModel) &#x2192; onStart (visible) &#x2192; onResume (foreground, camera/GPS) &#x2192; onPause (release foreground, FAST) &#x2192; onStop (release heavy) &#x2192; onDestroy (final cleanup). ViewModel survives rotation; onSaveInstanceState survives process death.<br/><br/>
+    <strong>Fragment lifecycle</strong>: adds onAttach / onCreateView / <strong>onViewCreated</strong> (setup views + observe here!) / onDestroyView (null binding!). Use <code>viewLifecycleOwner</code> for observers, never <code>this</code>.<br/><br/>
+    <strong>Intent</strong>: Explicit = specify class (within app). Implicit = describe action/data (cross-app). Always check <code>resolveActivity()</code> before implicit. PendingIntent = deferred intent token for notifications/alarms. Use <code>ActivityResultLauncher</code> not <code>startActivityForResult</code>.<br/><br/>
+    <strong>Context</strong>: Activity context for dialogs/inflation (theme-aware). Application context for singletons/long-lived objects. Never store Activity context in a static field &#x2014; memory leak.<br/><br/>
+    <strong>Services</strong>: Started (fire-and-forget, stopSelf). Bound (client-server, IBinder). Foreground (persistent notification, survives low memory). ALL run on main thread &#x2014; always coroutine off. Prefer WorkManager for deferrable work.<br/><br/>
+    <strong>BroadcastReceiver</strong>: Static (manifest, API 26+ restrictions). Dynamic (registerReceiver, must unregister). 10-second window &#x2014; use goAsync() + WorkManager for heavy work. LocalBroadcastManager deprecated &#x2014; use SharedFlow.<br/><br/>
+    <strong>ContentProvider</strong>: URI-based CRUD API for cross-app data sharing. Access via ContentResolver (query/insert/update/delete). FileProvider for secure file sharing. Only implement if exposing data to other apps.</p>
+  </div>
+
+  <hr class="section-rule"/>
+
+</main>
+
+<aside class="sidebar">
+  <div class="rp-label">Reading Progress</div>
+  <div class="rp-track"><div class="rp-fill" id="rpFill"></div></div>
+  <div class="toc-label">On this page</div>
+  <ul class="toc-list">
+    <li class="toc-item"><a href="#activity-lifecycle">Activity Lifecycle</a></li>
+    <li class="toc-item sub"><a href="#lifecycle-what-to-do">What to do when</a></li>
+    <li class="toc-item sub"><a href="#lifecycle-rotation">Config changes</a></li>
+    <li class="toc-item"><a href="#fragment-lifecycle">Fragment Lifecycle</a></li>
+    <li class="toc-item sub"><a href="#fragment-vs-activity">Fragment vs Activity</a></li>
+    <li class="toc-item"><a href="#intents">Intents</a></li>
+    <li class="toc-item"><a href="#context">Context</a></li>
+    <li class="toc-item"><a href="#services">Services</a></li>
+    <li class="toc-item"><a href="#broadcast-receivers">Broadcast Receivers</a></li>
+    <li class="toc-item sub"><a href="#br-static-vs-dynamic">Static vs dynamic</a></li>
+    <li class="toc-item"><a href="#content-providers">Content Providers</a></li>
+    <li class="toc-item"><a href="#common-mistakes">Gotchas</a></li>
+    <li class="toc-item sub"><a href="#mistake-viewlifecycle">viewLifecycleOwner</a></li>
+    <li class="toc-item sub"><a href="#mistake-context-in-vm">Context in ViewModel</a></li>
+    <li class="toc-item sub"><a href="#mistake-implicit-api26">Implicit broadcasts</a></li>
+    <li class="toc-item sub"><a href="#mistake-service-main-thread">Service main thread</a></li>
+    <li class="toc-item sub"><a href="#mistake-activity-leak">Activity context leak</a></li>
+    <li class="toc-item"><a href="#system-design">Architecture connection</a></li>
+  </ul>
+  <div class="sidebar-divider"></div>
+  <div style="font-size:12px; color: var(--muted); line-height: 1.8;">
+    <strong style="color:var(--ink2);">Related articles</strong><br/>
+    <a href="concept_mvvm.html" style="color:var(--accent);">MVVM Architecture &#x2192;</a><br/>
+    <a href="concept_di.html" style="color:var(--accent);">Dependency Injection &#x2192;</a><br/>
+    <a href="concept_kotlin.html" style="color:var(--accent);">Kotlin Deep Dive &#x2192;</a>
+  </div>
+</aside>
+</div>
+
+<script>
+  window.addEventListener('scroll', () => {
+    const total = document.documentElement.scrollHeight - window.innerHeight;
+    document.getElementById('rpFill').style.width = (window.scrollY / total * 100) + '%';
+  });
+  const sections = [
+    'activity-lifecycle','lifecycle-what-to-do','lifecycle-rotation',
+    'fragment-lifecycle','fragment-vs-activity','intents','context','services',
+    'broadcast-receivers','br-static-vs-dynamic','content-providers','common-mistakes',
+    'mistake-viewlifecycle','mistake-context-in-vm','mistake-implicit-api26',
+    'mistake-service-main-thread','mistake-activity-leak','system-design'
+  ];
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        document.querySelectorAll('.toc-item a').forEach(a => a.classList.remove('active'));
+        const m = document.querySelector(`.toc-item a[href="#${e.target.id}"]`);
+        if (m) m.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
+  const navUser = document.getElementById('navUserMenu');
+  if (navUser) {
+    navUser.addEventListener('click', e => { e.stopPropagation(); navUser.classList.toggle('open'); });
+    document.addEventListener('click', () => navUser.classList.remove('open'));
+  }
+  const SUPABASE_URL = 'https://gvbxhkhzuaiamwwuswzq.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2Ynhoa2h6dWFpYW13d3Vzd3pxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0MDAxNjksImV4cCI6MjA2Mjk3NjE2OX0.UuHFTa1GCknP47r8DxQDGMDHmSrlWJnkUlLBnquPlLM';
+  const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  (function() {
+    try {
+      const raw = localStorage.getItem('sb-gvbxhkhzuaiamwwuswzq-auth-token');
+      if (!raw) return;
+      const user = JSON.parse(raw)?.user;
+      if (!user) return;
+      const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+      document.getElementById('navSignInBtn').style.display = 'none';
+      document.getElementById('upgrade-cta').style.display = 'none';
+      const menu = document.getElementById('navUserMenu');
+      menu.style.display = 'flex';
+      document.getElementById('navAvatarInitial').textContent = name[0].toUpperCase();
+      document.getElementById('navUserName').textContent = name;
+      document.getElementById('navUserEmail').textContent = user.email;
+    } catch(e) {}
+  })();
+  sbClient.auth.onAuthStateChange((event, session) => {
+    const user = session?.user;
+    if (user) {
+      const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+      document.getElementById('navSignInBtn').style.display = 'none';
+      document.getElementById('upgrade-cta').style.display = 'none';
+      document.getElementById('navUserMenu').style.display = 'flex';
+      document.getElementById('navAvatarInitial').textContent = name[0].toUpperCase();
+      document.getElementById('navUserName').textContent = name;
+      document.getElementById('navUserEmail').textContent = user.email;
+    } else {
+      document.getElementById('navSignInBtn').style.display = '';
+      document.getElementById('upgrade-cta').style.display = '';
+      document.getElementById('navUserMenu').style.display = 'none';
+    }
+  });
+  async function handleSignOut() { await sbClient.auth.signOut(); }
+  function openAuthModal() { window.location.href = 'index.html#auth'; }
+</script>
+</body>
+</html>
