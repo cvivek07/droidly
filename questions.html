@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+  <link rel="manifest" href="/site.webmanifest"/>
+  <meta name="theme-color" content="#3d7a4f"/>
   <title>Droidly — Android Interview Prep</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -26527,19 +26534,25 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
             <span class="sd-cta">Deep dive</span>
           </div>
         </a>
-      <a href="sysdesign_payment.html" class="q-card">
-        <div class="q-top">
-          <span class="q-emoji">💳</span>
-          <span class="q-diff q-hard">Hard</span>
-        </div>
-        <div class="q-title">Payment System</div>
-        <div class="q-tags">
-          <span class="q-tag">Idempotency</span>
-          <span class="q-tag">UPI</span>
-          <span class="q-tag">PCI DSS</span>
-          <span class="q-tag">Room</span>
-        </div>
-      </a>
+        <a class="sd-card" href="sysdesign_payment.html">
+          <div class="sd-card-top">
+            <div class="sd-emoji">💳</div>
+            <div class="sd-card-meta">
+              <div class="sd-card-title">Payment System</div>
+            </div>
+          </div>
+          <div class="sd-card-desc">Design a secure Android payment flow covering UPI, cards, and wallets — idempotency keys, PCI DSS compliance, biometric confirmation, offline queue, and retry logic.</div>
+          <div class="sd-tags">
+            <span class="sd-tag">Idempotency</span>
+            <span class="sd-tag">UPI</span>
+            <span class="sd-tag">PCI DSS</span>
+            <span class="sd-tag">Room</span>
+          </div>
+          <div class="sd-card-footer">
+            <span class="sd-difficulty sd-diff-hard">Hard</span>
+            <span class="sd-cta">Deep dive</span>
+          </div>
+        </a>
 
         <!-- E-commerce Feed -->
         <a class="sd-card" href="sysdesign_ecommerce.html">

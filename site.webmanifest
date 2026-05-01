@@ -1,0 +1,11 @@
+{
+  "name": "Droidly — Android Interview Prep",
+  "short_name": "Droidly",
+  "icons": [
+    { "src": "/favicon-96x96.png", "sizes": "96x96", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ],
+  "theme_color": "#3d7a4f",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}
