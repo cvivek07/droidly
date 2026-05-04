@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://droidly.io/sitemap.xml

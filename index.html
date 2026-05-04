@@ -10,7 +10,65 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
   <link rel="manifest" href="/site.webmanifest"/>
   <meta name="theme-color" content="#3d7a4f"/>
-  <title>Droidly — Android Interview Prep</title>
+  <title>Droidly — Android Interview Prep | Crack Android Developer Interviews</title>
+  <meta name="description" content="Droidly is the best Android interview prep platform. Deep-dive concept guides on Kotlin, Coroutines, Jetpack Compose, MVVM, Room, WorkManager, Hilt, RecyclerView and more. Used by engineers at Google, Flipkart, Swiggy and top startups."/>
+  <meta name="keywords" content="Android interview prep, Android developer interview, Kotlin interview questions, Jetpack Compose, MVVM Android, Coroutines Flow, Room database, WorkManager, Hilt dependency injection, RecyclerView, Android system design"/>
+  <link rel="canonical" href="https://droidly.io/"/>
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://droidly.io/"/>
+  <meta property="og:title" content="Droidly — Android Interview Prep"/>
+  <meta property="og:description" content="Deep-dive guides on Kotlin, Coroutines, Compose, MVVM, Room, WorkManager and more. The most thorough Android interview prep platform."/>
+  <meta property="og:image" content="https://droidly.io/assets/og-image.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:site_name" content="Droidly"/>
+  <meta property="og:locale" content="en_IN"/>
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:site" content="@droidlyio"/>
+  <meta name="twitter:title" content="Droidly — Android Interview Prep"/>
+  <meta name="twitter:description" content="Deep-dive guides on Kotlin, Coroutines, Compose, MVVM, Room, WorkManager and more."/>
+  <meta name="twitter:image" content="https://droidly.io/assets/og-image.png"/>
+
+  <!-- JSON-LD: Organization (makes Google show logo in search results) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Droidly",
+    "url": "https://droidly.io",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://droidly.io/assets/logo.png",
+      "width": 180,
+      "height": 180
+    },
+    "sameAs": [],
+    "description": "Android interview prep platform with deep-dive concept guides, system design walkthroughs, and practice questions for Android developer interviews."
+  }
+  </script>
+
+  <!-- JSON-LD: WebSite (enables Google Sitelinks Search Box) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Droidly",
+    "url": "https://droidly.io",
+    "description": "Android interview prep — concept guides, system design, and practice questions for Android developer interviews.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Droidly",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://droidly.io/assets/logo.png"
+      }
+    }
+  }
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -2246,10 +2304,10 @@
       </div>
     </a>
 
-    <a href="#" class="concept-card reveal cc-soon">
+    <a href="concept_room.html" class="concept-card reveal">
       <div class="cc-top">
         <span class="cc-icon">🗄️</span>
-        <span class="cc-badge-soon">Coming soon</span>
+        <span class="cc-meta">~35 min read</span>
       </div>
       <div class="cc-title">Room &amp; SQLite</div>
       <p class="cc-desc">WAL mode, migrations, TypeConverters, transactions, and how Room's Flow integration creates a fully reactive persistence layer without polling.</p>
@@ -2265,34 +2323,36 @@
       </div>
     </a>
 
-    <a href="#" class="concept-card reveal cc-soon">
+    <a href="concept_workmanager.html" class="concept-card reveal">
       <div class="cc-top">
         <span class="cc-icon">⚙️</span>
-        <span class="cc-badge-soon">Coming soon</span>
+        <span class="cc-meta">~40 min read</span>
       </div>
       <div class="cc-title">WorkManager</div>
-      <p class="cc-desc">Constraints, chaining, idempotency, periodic work, and why WorkManager is the only flush trigger that survives process death.</p>
+      <p class="cc-desc">Constraints, chaining, idempotency, periodic work, JobScheduler, AlarmManager, and Doze mode — every background scheduling API explained and compared.</p>
       <div class="cc-tags">
         <span class="cc-tag">Constraints</span>
         <span class="cc-tag">PeriodicWork</span>
         <span class="cc-tag">Chaining</span>
+        <span class="cc-tag">AlarmManager</span>
       </div>
       <div class="cc-footer">
-        <span class="cc-readtime">Intermediate</span>
+        <span class="cc-readtime">Intermediate → Advanced</span>
         <span class="cc-arrow">→</span>
       </div>
     </a>
 
-    <a href="#" class="concept-card reveal cc-soon">
+    <a href="concept_networking.html" class="concept-card reveal">
       <div class="cc-top">
         <span class="cc-icon">🌐</span>
-        <span class="cc-badge-soon">Coming soon</span>
+        <span class="cc-meta">~30 min read</span>
       </div>
       <div class="cc-title">OkHttp &amp; Networking</div>
-      <p class="cc-desc">Interceptors, connection pooling, certificate pinning, shadow pin rotation, caching, and why you should almost never use a custom HTTP client.</p>
+      <p class="cc-desc">Interceptors, connection pooling, certificate pinning, shadow pin rotation, caching, Retrofit wiring, and how to handle auth token refresh without race conditions.</p>
       <div class="cc-tags">
         <span class="cc-tag">Interceptors</span>
         <span class="cc-tag">Cert Pinning</span>
+        <span class="cc-tag">Retrofit</span>
         <span class="cc-tag">Caching</span>
       </div>
       <div class="cc-footer">
@@ -2301,23 +2361,6 @@
       </div>
     </a>
 
-    <a href="#" class="concept-card reveal cc-soon">
-      <div class="cc-top">
-        <span class="cc-icon">🔑</span>
-        <span class="cc-badge-soon">Coming soon</span>
-      </div>
-      <div class="cc-title">Android Keystore &amp; Security</div>
-      <p class="cc-desc">TEE-backed keys, AES-GCM encryption, biometric auth gating, ProGuard rules for SDKs, and the Network Security Config.</p>
-      <div class="cc-tags">
-        <span class="cc-tag">Keystore</span>
-        <span class="cc-tag">AES-GCM</span>
-        <span class="cc-tag">Biometric</span>
-      </div>
-      <div class="cc-footer">
-        <span class="cc-readtime">Advanced</span>
-        <span class="cc-arrow">→</span>
-      </div>
-    </a>
 
   </div>
 </section>
