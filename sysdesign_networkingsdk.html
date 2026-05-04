@@ -44,6 +44,8 @@
     .user-dropdown-item{padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:var(--ink)}
     .user-dropdown-item:hover{background:var(--bg-subtle)}
     .user-dropdown-item.danger{color:#e53e3e}
+    .nav-user-name{font-size:14px;font-weight:600;color:var(--ink)}
+    .nav-caret{font-size:10px;color:var(--muted)}
 
     /* PAGE GRID */
     .page{display:grid;grid-template-columns:1fr 260px;max-width:1080px;margin:0 auto;min-height:calc(100vh - 68px)}
@@ -154,8 +156,17 @@
     Droidly
   </a>
   <div class="nav-right" id="navRight">
-    <a href="premium.html" class="nav-cta" id="upgrade-cta">⚡ Get Premium</a>
+    <a href="premium.html" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
     <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <div class="user-dropdown-item danger" onclick="handleSignOut()">🚪 Sign Out</div>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -1013,7 +1024,69 @@
 </footer>
 
 <script>
-  // Reading progress
+  // ── Auth ─────────────────────────────────────────────────
+  (function () {
+    const SUPABASE_URL      = 'https://dquheflcmcppldrnckzf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let isPremium = false;
+
+    function updateNavForUser(user) {
+      const signInBtn  = document.getElementById('navSignInBtn');
+      const userMenu   = document.getElementById('navUserMenu');
+      const avatarEl   = document.getElementById('navAvatarInitial');
+      const userNameEl = document.getElementById('navUserName');
+      const emailEl    = document.getElementById('navUserEmail');
+      const upgradeEl  = document.getElementById('upgrade-cta');
+      if (user) {
+        const name = user.user_metadata?.full_name || user.email.split('@')[0];
+        signInBtn.style.display = 'none';
+        userMenu.style.display  = 'flex';
+        avatarEl.textContent    = name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+        userNameEl.textContent  = name.split(' ')[0];
+        emailEl.textContent     = user.email;
+        if (isPremium && upgradeEl) upgradeEl.style.display = 'none';
+      } else {
+        signInBtn.style.display = '';
+        userMenu.style.display  = 'none';
+        if (upgradeEl) upgradeEl.style.display = '';
+      }
+    }
+
+    async function refreshAuth() {
+      try {
+        const raw = localStorage.getItem('sb-dquheflcmcppldrnckzf-auth-token');
+        const session = raw ? JSON.parse(raw) : null;
+        updateNavForUser(session?.user ?? null);
+      } catch (e) {}
+    }
+
+    sb.auth.onAuthStateChange((event, session) => {
+      updateNavForUser(session?.user ?? null);
+    });
+
+    window.handleSignOut = async function () {
+      await sb.auth.signOut();
+      updateNavForUser(null);
+    };
+
+    window.openAuthModal = function () {
+      window.location.href = 'index.html?auth=signin&return=sysdesign_networkingsdk';
+    };
+
+    document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
+      this.classList.toggle('open');
+      e.stopPropagation();
+    });
+    document.addEventListener('click', function() {
+      document.getElementById('navUserMenu')?.classList.remove('open');
+    });
+
+    refreshAuth();
+  })();
+
+  // ── Reading progress
   const rpFill = document.getElementById('rpFill');
   function updateProgress() {
     const pct = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
