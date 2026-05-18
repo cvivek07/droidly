@@ -112,6 +112,27 @@
     .how-title{font-weight:700;font-size:15px;color:var(--ink);margin-bottom:8px}
     .how-desc{font-size:13px;color:var(--muted);line-height:1.6}
 
+    /* SAMPLE QUESTIONS */
+    .sq-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:28px;margin-top:36px}
+    .sq-tab{padding:7px 18px;border-radius:100px;font-size:13px;font-weight:600;border:1.5px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;transition:all 0.18s}
+    .sq-tab:hover{border-color:var(--border-green);color:var(--green)}
+    .sq-tab.active{background:var(--green);color:#fff;border-color:var(--green)}
+    .sq-list{display:none;flex-direction:column;gap:10px}
+    .sq-list.active{display:flex}
+    .sq-item{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all 0.18s;user-select:none}
+    .sq-item:hover{border-color:var(--border-green);background:var(--green-pale);transform:translateX(3px)}
+    .sq-item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .sq-q{font-size:14px;font-weight:600;color:var(--ink);line-height:1.5;flex:1}
+    .sq-diff{font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px;flex-shrink:0;margin-top:2px}
+    .sq-diff.easy{background:#e8f5e9;color:#2e7d32}
+    .sq-diff.medium{background:#fff3e0;color:#e65100}
+    .sq-diff.hard{background:#fce4ec;color:#c62828}
+    .sq-answer{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--ink2);line-height:1.7}
+    .sq-item.open .sq-answer{display:block}
+    .sq-chevron{font-size:12px;color:var(--muted);transition:transform 0.2s;margin-top:4px;flex-shrink:0}
+    .sq-item.open .sq-chevron{transform:rotate(180deg)}
+    .sq-note{margin-top:24px;padding:14px 18px;background:var(--green-light);border:1px solid var(--border-green);border-radius:12px;font-size:13px;color:var(--green);font-weight:500}
+
     /* WHAT WE COVER */
     .cover-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:40px}
     .cover-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;align-items:flex-start;gap:14px;transition:all 0.18s}
@@ -393,6 +414,178 @@
       <div class="how-desc">You receive a written feedback report within 48 hours covering strengths, gaps, and a prioritised study plan. Plus 30-day Q&A access.</div>
     </div>
   </div>
+</section>
+
+<section class="reveal" style="display:none">
+  <div class="section-eyebrow">Sample Questions</div>
+  <div class="section-title">The kind of questions you'll face</div>
+  <div class="section-sub">These are real questions asked in Android interviews at top product companies. Click any to see the kind of depth expected.</div>
+
+  <div class="sq-tabs">
+    <button class="sq-tab active" onclick="switchSqTab('kotlin',this)">Kotlin</button>
+    <button class="sq-tab" onclick="switchSqTab('coroutines',this)">Coroutines & Flow</button>
+    <button class="sq-tab" onclick="switchSqTab('compose',this)">Jetpack Compose</button>
+    <button class="sq-tab" onclick="switchSqTab('arch',this)">Architecture</button>
+    <button class="sq-tab" onclick="switchSqTab('sysdesign',this)">System Design</button>
+  </div>
+
+  <!-- KOTLIN -->
+  <div class="sq-list active" id="sq-kotlin">
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What is the difference between <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">inline</code> and <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">noinline</code> in Kotlin? When would you use each?</div>
+        <span class="sq-diff medium">Medium</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Inline functions copy their body to call sites, eliminating lambda object allocation. <code>noinline</code> opts a specific lambda parameter out of inlining — needed when you want to store the lambda, pass it elsewhere, or return it. Good candidates use <code>reified</code> in the same breath, since reified type parameters only work in inline functions.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">Explain Kotlin delegation — <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">by</code> keyword, <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">lazy</code>, <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">observable</code>. What problem does each solve?</div>
+        <span class="sq-diff medium">Medium</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Class delegation via <code>by</code> forwards interface calls to a wrapped instance without inheritance. Property delegation separates "how a value is stored/computed" from the property itself. <code>lazy</code> defers init to first access (thread-safe by default). <code>observable</code> fires a callback on every write. Strong candidates mention <code>ReadWriteProperty</code> and how to write custom delegates — useful for Shared Preferences or Room-backed properties.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What is the difference between <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">object</code>, <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">companion object</code>, and a top-level function in Kotlin?</div>
+        <span class="sq-diff easy">Easy</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer"><code>object</code> is a singleton — one instance, lazily initialised. <code>companion object</code> is tied to a class and its members are accessed via the class name (like Java static). Top-level functions have no enclosing class at all. The Java interop implications matter here: companion members need <code>@JvmStatic</code> to look like statics from Java; top-level functions compile to a class named after the file.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">How does Kotlin's type system prevent null pointer exceptions? What are the edge cases where you can still get an NPE?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">The compiler tracks nullability at the type level and disallows unsafe dereferencing. Edge cases: Java interop (platform types have no nullability info), <code>lateinit var</code> accessed before initialisation, not-null assertion <code>!!</code>, and generics with nullable upper bounds. Strong candidates mention <code>requireNotNull</code> vs <code>checkNotNull</code> and how to use sealed types instead of nulls for domain modelling.</div>
+    </div>
+  </div>
+
+  <!-- COROUTINES -->
+  <div class="sq-list" id="sq-coroutines">
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What is structured concurrency? How does <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">coroutineScope</code> differ from <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">supervisorScope</code>?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Structured concurrency means a parent scope outlives all its children, and cancellation propagates both up and down. <code>coroutineScope</code> cancels all children if any one fails. <code>supervisorScope</code> isolates failures — one child failing doesn't cancel its siblings. You'd use <code>supervisorScope</code> when children are independent (e.g. loading multiple feed sections in parallel where one failing shouldn't kill the others).</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What is the difference between <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">StateFlow</code>, <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">SharedFlow</code>, and <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">Channel</code>? When would you choose each?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer"><code>StateFlow</code> holds a single value, always has a current state, and replays it to new collectors — great for UI state. <code>SharedFlow</code> is a hot stream with configurable replay and buffer — good for one-shot events. <code>Channel</code> is a rendezvous point — designed for producer/consumer with backpressure. Common mistake: using <code>SharedFlow</code> for navigation events without handling configuration changes properly.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">How do you handle exceptions in coroutines? What happens if you throw inside <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">launch</code> vs <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">async</code>?</div>
+        <span class="sq-diff medium">Medium</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">In <code>launch</code>, uncaught exceptions propagate to the parent immediately and crash the scope unless a <code>CoroutineExceptionHandler</code> is installed. In <code>async</code>, the exception is held until <code>.await()</code> is called — so you must wrap <code>await()</code> in try/catch or the exception is swallowed. Strong answers mention that <code>CoroutineExceptionHandler</code> doesn't help in <code>supervisorScope</code> children by default.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">Your ViewModel launches a coroutine that makes a network call. The user rotates the screen. What happens and what should you do?</div>
+        <span class="sq-diff easy">Easy</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">The ViewModel survives rotation, so <code>viewModelScope</code> coroutines continue running — the network call is not restarted. The new Activity/Fragment resubscribes to the StateFlow/LiveData and gets the current state. The job is only cancelled when <code>onCleared()</code> fires (user navigates away). This is one of the core reasons ViewModels exist.</div>
+    </div>
+  </div>
+
+  <!-- COMPOSE -->
+  <div class="sq-list" id="sq-compose">
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What triggers recomposition and how do you prevent unnecessary recompositions?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Recomposition is triggered when a State object read during composition changes. Compose skips recomposing a composable if all its inputs are equal (stability). To prevent unnecessary recompositions: mark data classes <code>@Stable</code> or <code>@Immutable</code> when safe, hoist state correctly, use <code>remember</code> to cache derived values, avoid reading unstable types inside composables, and use <code>derivedStateOf</code> when a computation depends on multiple states.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">Explain the three phases of Compose rendering: composition, layout, drawing. Why does this matter for performance?</div>
+        <span class="sq-diff medium">Medium</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Composition: builds the UI tree and observes state. Layout: measures and places nodes. Drawing: renders to canvas. Phases are incremental — Compose can skip earlier phases if only later ones are affected. For example, an animation that only changes a translation can skip composition and layout entirely (using <code>Modifier.graphicsLayer</code>) and run only the draw phase, keeping it on the render thread at 60fps.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What is the difference between <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">LaunchedEffect</code>, <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">SideEffect</code>, and <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">DisposableEffect</code>?</div>
+        <span class="sq-diff medium">Medium</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer"><code>LaunchedEffect</code> runs a suspend block tied to a key — relaunches when the key changes, cancels when leaving composition. <code>SideEffect</code> runs after every successful recomposition — used to sync Compose state to non-Compose code (analytics, etc). <code>DisposableEffect</code> is for non-coroutine side effects that need cleanup (listeners, observers) — its <code>onDispose</code> runs when the composable leaves composition.</div>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <div class="sq-list" id="sq-arch">
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">How does Clean Architecture apply to Android? Where exactly do you draw the boundaries?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Three concentric layers: Data (repositories, data sources, DTOs), Domain (use cases, entities, repository interfaces), Presentation (ViewModel, UI state, composables). The dependency rule: inner layers never reference outer ones. Domain has zero Android imports. Use cases are plain Kotlin classes the ViewModel calls. Data layer implements domain interfaces. Common mistake: putting business logic in the ViewModel or referencing Android SDK classes in domain.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">How do you handle one-shot UI events (navigation, snackbars) in MVVM without leaking them on rotation?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">The classic problem: <code>StateFlow</code> replays its last value, so a "navigate to Detail" event re-fires on rotation. Options: <code>SharedFlow</code> with <code>replay=0</code> (events lost if no collector), <code>Channel</code> (buffered, consumed once), or the "consumed event wrapper" pattern (<code>Event&lt;T&gt;</code>). Google's current recommendation is <code>SharedFlow</code> combined with collecting only when the UI is in STARTED state using <code>repeatOnLifecycle</code>.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What is the Repository pattern? Why is it important even when you only have one data source?</div>
+        <span class="sq-diff easy">Easy</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Repository abstracts data access behind a single interface, letting the ViewModel remain agnostic about whether data comes from network, cache, or DB. Even with one source today, the pattern pays off immediately in testing — you can inject a fake repository without touching Room or Retrofit. It also makes adding a cache layer trivial later: the ViewModel never changes, only the repository implementation does.</div>
+    </div>
+  </div>
+
+  <!-- SYSTEM DESIGN -->
+  <div class="sq-list" id="sq-sysdesign">
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">Design an image loading library for Android from scratch. What are the core components?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Key components: Request queue (manages concurrent loads), Memory cache (LRU, bitmap pool to avoid GC pressure), Disk cache (bounded, LRU eviction), Decoder pipeline (BitmapFactory with inSampleSize for downsampling, hardware bitmaps for Compose), Network fetcher (OkHttp, HTTP cache headers), Lifecycle-aware request cancellation (cancels on Fragment/View detach), Placeholder/error state management. Strong answers address bitmap size estimation and why you must downsample before decoding.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">Design a real-time chat feature for an Android app. How do you handle message ordering and offline delivery?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Transport layer: WebSocket for real-time (long-lived), with SSE or HTTP polling as fallback. Local DB: Room stores all messages with a <code>status</code> column (sending / sent / delivered / read). Offline: write to Room first, enqueue with WorkManager (guaranteed delivery). Message ordering: server-assigned monotonic sequence ID, client uses local timestamp only for optimistic display. Conflicts resolved by server sequence on sync. Strong answers cover idempotency keys to prevent duplicate sends.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">How would you build a robust Payment SDK as an internal platform service for an Android super-app?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Core design: gateway-agnostic API contract (your SDK exposes <code>PaymentProvider</code> interface), pluggable adapters per gateway (Razorpay, Stripe, UPI), and a state machine for payment lifecycle (IDLE → INITIATING → PENDING → SUCCESS/FAILED/CANCELLED). Retry logic with idempotency keys so a network failure doesn't double-charge. Expose a result as a sealed class. Surface a <code>PaymentResult</code> callback and a webhook reconciliation path. Strong answers mention 3DS redirect handling and deep-link return flow.</div>
+    </div>
+  </div>
+
+  <div class="sq-note">💡 In your session, questions will be tailored to your resume and target companies — these are just a flavour of the depth expected.</div>
 </section>
 
 <div class="section-divider"></div>
@@ -1129,6 +1322,22 @@ function toggleFaq(qEl){
   const wasOpen=item.classList.contains('open');
   document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
   if(!wasOpen)item.classList.add('open');
+}
+
+/* ══════════════════════════════════════════════
+   SAMPLE QUESTIONS
+══════════════════════════════════════════════ */
+function switchSqTab(key, btn) {
+  document.querySelectorAll('.sq-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sq-list').forEach(l => l.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sq-' + key).classList.add('active');
+}
+
+function toggleSqItem(item) {
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.sq-item.open').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
 }
 
 /* ══════════════════════════════════════════════
