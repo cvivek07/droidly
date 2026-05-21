@@ -3049,13 +3049,49 @@
   }
 
   async function handleGoogleAuth() {
-    const { error } = await db.auth.signInWithOAuth({
+    // Open popup FIRST before any await — browsers block popups opened after async calls
+    const w = 500, h = 620;
+    const left = Math.round((window.screen.width  - w) / 2);
+    const top  = Math.round((window.screen.height - h) / 2);
+    const popup = window.open(
+      'about:blank', 'GoogleSignIn',
+      `width=${w},height=${h},left=${left},top=${top},scrollbars=yes,resizable=yes`
+    );
+
+    const redirectTo = window.location.origin + '/index.html';
+    const { data, error } = await db.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: window.location.href.split('?')[0].split('#')[0]
-      }
+      options: { redirectTo, skipBrowserRedirect: true }
     });
-    if (error) showToast('Google sign-in failed: ' + error.message, 'error');
+
+    if (error) {
+      if (popup) popup.close();
+      showToast('Google sign-in failed: ' + error.message, 'error');
+      return;
+    }
+
+    if (!popup || popup.closed) {
+      // Popup was blocked — fall back to full-page redirect
+      window.location.href = data.url;
+      return;
+    }
+
+    // Point the already-open popup to the OAuth URL
+    popup.location.href = data.url;
+
+    // Poll until popup closes, then recheck session
+    const poll = setInterval(async () => {
+      if (!popup || popup.closed) {
+        clearInterval(poll);
+        const { data: { session } } = await db.auth.getSession();
+        if (session) {
+          gtag('event', 'login', { method: 'google' });
+          closeAuthModal();
+          updateNavForUser(session.user);
+          showToast('✓ Welcome, ' + (session.user.user_metadata?.full_name || session.user.email).split(' ')[0] + '!', 'success');
+        }
+      }
+    }, 600);
   }
 
   // ── Sign Out ────────────────────────────────────────
