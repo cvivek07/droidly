@@ -14,6 +14,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <!-- Google Analytics 4 — replace G-61G11MD574 with your Measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-61G11MD574');
+  </script>
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -727,7 +737,12 @@
 
   // ── FAQ toggle ───────────────────────────────────────────
   function toggleFaq(btn) {
-    btn.closest('.faq-item').classList.toggle('open');
+    const item = btn.closest('.faq-item');
+    const isOpening = !item.classList.contains('open');
+    item.classList.toggle('open');
+    if (isOpening) {
+      gtag('event', 'faq_opened', { question: btn.textContent.trim().slice(0, 80) });
+    }
   }
 
   // ── Render CTA based on auth + premium state ─────────────
@@ -797,7 +812,7 @@
   }
 
   function redirectToSignIn() {
-    // Go to index.html which has the auth modal, pass return URL
+    gtag('event', 'sign_in_prompted', { source: 'premium_page' });
     window.location.href = 'index.html?return=premium';
   }
 
@@ -823,6 +838,8 @@
 
   async function startPayment() {
     if (!currentUser) { redirectToSignIn(); return; }
+
+    gtag('event', 'begin_checkout', { currency: 'INR', value: 299, items: [{ item_name: 'Droidly Premium', item_id: 'premium_monthly' }] });
 
     const btn = document.getElementById('payBtn');
     setBtnLoading(btn, true);
@@ -868,12 +885,16 @@
         },
 
         modal: {
-          ondismiss: function() { setBtnLoading(btn, false); }
+          ondismiss: function() {
+            gtag('event', 'payment_dismissed');
+            setBtnLoading(btn, false);
+          }
         }
       };
 
       const rzp = new Razorpay(options);
       rzp.on('payment.failed', function(response) {
+        gtag('event', 'payment_failed', { error_description: response.error?.description || 'unknown' });
         showToast('Payment failed: ' + (response.error?.description || 'Please try again'), 'error');
         setBtnLoading(btn, false);
       });
@@ -912,6 +933,12 @@
         throw new Error(err.error || 'Verification failed');
       }
 
+      gtag('event', 'purchase', {
+        transaction_id: response.razorpay_payment_id,
+        currency: 'INR',
+        value: 299,
+        items: [{ item_name: 'Droidly Premium', item_id: 'premium_monthly', price: 299, quantity: 1 }]
+      });
       showCelebration();
       setTimeout(() => renderCTA(currentUser, true), 600);
 

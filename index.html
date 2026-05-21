@@ -71,6 +71,16 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Google Analytics 4 — replace G-61G11MD574 with your Measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-61G11MD574');
+  </script>
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1746,7 +1756,7 @@
     <a href="#how-it-works" class="nav-link">How it works</a>
   </div>
   <div class="nav-right" id="navRight">
-    <a href="premium.html" class="nav-pill" style="text-decoration:none; cursor:pointer;">⚡ Get Premium</a>
+    <a href="premium.html" class="nav-pill" style="text-decoration:none; cursor:pointer;" onclick="gtag('event','cta_click',{button:'nav_get_premium'})">⚡ Get Premium</a>
     <!-- Logged-out state -->
     <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal('signin')" style="cursor:pointer; border:none; font-family:inherit;">Sign In</button>
     <!-- Logged-in state (hidden by default) -->
@@ -2925,6 +2935,7 @@
     setLoading('siBtn', false, 'Sign In →');
 
     if (error) {
+      gtag('event', 'sign_in_error', { error_message: error.message });
       if (error.message.toLowerCase().includes('email not confirmed')) {
         showToast('📧 Please verify your email first — check your inbox!', 'error-toast');
       } else {
@@ -2935,6 +2946,7 @@
     }
 
     const name = data.user.user_metadata?.full_name || email.split('@')[0];
+    gtag('event', 'login', { method: 'email' });
     closeAuthModal();
     updateNavForUser(data.user);
     const returnTo = new URLSearchParams(window.location.search).get('return');
@@ -2981,6 +2993,7 @@
       showVerifyState(email);
     } else if (data.session) {
       // Email confirmation disabled in Supabase → logged in immediately
+      gtag('event', 'sign_up', { method: 'email' });
       closeAuthModal();
       updateNavForUser(data.user);
       const returnTo = new URLSearchParams(window.location.search).get('return');
@@ -3008,6 +3021,7 @@
 
     const redirectTo = window.location.href.split('?')[0];
     const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo });
+    if (!error) gtag('event', 'forgot_password_requested');
     showToast(
       error ? error.message : '📧 Password reset link sent to ' + email,
       error ? 'error-toast' : 'success'
@@ -3046,6 +3060,7 @@
 
   // ── Sign Out ────────────────────────────────────────
   async function signOut() {
+    gtag('event', 'sign_out');
     await db.auth.signOut();
     updateNavForUser(null);
     showToast('You\'ve been signed out.', '');
@@ -3060,6 +3075,7 @@
   // ── Auth gate: go to questions or prompt sign-in ────
   let currentUser = null;
   function goToQuestions(hash) {
+    gtag('event', 'topic_card_click', { topic: hash ? hash.replace('#', '') : 'all' });
     if (currentUser) {
       window.location.href = 'questions.html' + (hash || '');
     } else {
@@ -3235,6 +3251,23 @@
     });
   }, { threshold: 0.08 });
   document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+  // ── Scroll depth tracking ────────────────────────────
+  (function() {
+    const depths = [25, 50, 75, 100];
+    const reached = new Set();
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY + window.innerHeight;
+      const total = document.documentElement.scrollHeight;
+      const pct = Math.round((scrolled / total) * 100);
+      depths.forEach(d => {
+        if (pct >= d && !reached.has(d)) {
+          reached.add(d);
+          gtag('event', 'scroll_depth', { percent: d });
+        }
+      });
+    }, { passive: true });
+  })();
 </script>
 </body>
 </html>
