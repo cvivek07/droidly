@@ -4,181 +4,195 @@
   <!-- Home -->
   <url>
     <loc>https://droidly.io/</loc>
-    <lastmod>2026-05-04</lastmod>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
-  <!-- Concept articles -->
+  <!-- Question bank — core product page -->
   <url>
-    <loc>https://droidly.io/concept_coroutines.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/questions</loc>
+    <lastmod>2026-05-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <!-- Concept deep-dive articles (high SEO value — fully crawlable) -->
+  <url>
+    <loc>https://droidly.io/concept_coroutines</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://droidly.io/concept_mvvm.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/concept_mvvm</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://droidly.io/concept_compose.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/concept_compose</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://droidly.io/concept_di.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/concept_di</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://droidly.io/concept_recyclerview.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/concept_recyclerview</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://droidly.io/concept_kotlin.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/concept_kotlin</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://droidly.io/concept_android_fundamentals.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/concept_android_fundamentals</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://droidly.io/concept_networking.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/concept_networking</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://droidly.io/concept_room.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/concept_room</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://droidly.io/concept_workmanager.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/concept_workmanager</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
-  <!-- System design articles -->
+  <!-- System design deep-dives -->
   <url>
-    <loc>https://droidly.io/sysdesign_instafeed.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/sysdesign_chat_hi_style</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/sysdesign_chat_hi_style.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/sysdesign_instafeed</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/sysdesign_ecommerce.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/sysdesign_ecommerce</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/sysdesign_imageloader.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/sysdesign_imageloader</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/sysdesign_videostreaming.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/sysdesign_videostreaming</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/sysdesign_payment.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/sysdesign_payment</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/sysdesign_pushnotif.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/sysdesign_pushnotif</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/sysdesign_analyticsdk.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/sysdesign_analyticsdk</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/sysdesign_filedownload.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/sysdesign_filedownload</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/sysdesign_mapslocation.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/sysdesign_mapslocation</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/sysdesign_offlinenews.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/sysdesign_offlinenews</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/sysdesign_ridesharing.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/sysdesign_ridesharing</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/sysdesign_networkingsdk.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/sysdesign_networkingsdk</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Other pages -->
   <url>
-    <loc>https://droidly.io/mock_interview.html</loc>
-    <lastmod>2026-05-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://droidly.io/machine_coding.html</loc>
-    <lastmod>2026-05-05</lastmod>
+    <loc>https://droidly.io/machine_coding</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/questions.html</loc>
-    <lastmod>2026-05-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://droidly.io/mock_interview</loc>
+    <lastmod>2026-05-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://droidly.io/premium.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/premium</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://droidly.io/privacy.html</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://droidly.io/privacy</loc>
+    <lastmod>2026-05-22</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://droidly.io/terms</loc>
+    <lastmod>2026-05-22</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://droidly.io/refund</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
