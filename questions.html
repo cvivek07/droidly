@@ -620,6 +620,211 @@
 .modal-toggle a { color: var(--accent); cursor: pointer; text-decoration: underline; }
 
 </style>
+
+<style>
+/* ═══════════════════════════════════════════════════════════
+   REDESIGN — App-shell layout (LeetCode/HackerRank style)
+═══════════════════════════════════════════════════════════ */
+
+/* Hide marketing sections */
+.page-header  { display: none; }
+.tabs-wrapper { display: none; }
+
+/* Main grid — adjust for removed header+tabs */
+.main {
+  margin-top: 68px;
+  min-height: calc(100vh - 68px);
+  grid-template-columns: 280px 1fr;
+}
+
+/* Sidebar — stick from nav bottom */
+.sidebar {
+  top: 68px !important;
+  height: calc(100vh - 68px) !important;
+  padding: 8px 0 !important;
+}
+
+/* Content area — no top padding; sections carry their own */
+.content { padding: 0 !important; }
+.topic-section { padding: 0 36px 40px; }
+.topic-header  { padding-top: 24px; }
+
+/* ── Topic nav items ──────────────────────────────────────── */
+.sidebar-section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted);
+  padding: 10px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.topic-nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 14px 9px 12px;
+  cursor: pointer; font-size: 13px; font-weight: 500; color: var(--ink2);
+  transition: background 0.15s, color 0.15s;
+  border-left: 3px solid transparent;
+}
+.topic-nav-item:hover { background: var(--bg-elevated); color: var(--ink); }
+.topic-nav-item.active {
+  background: var(--accent-dim); color: var(--accent);
+  border-left-color: var(--accent); font-weight: 600;
+}
+.topic-nav-emoji { font-size: 15px; flex-shrink: 0; }
+.topic-nav-name  { flex: 1; min-width: 0; }
+.topic-nav-count {
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  padding: 1px 6px; border-radius: 100px; flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.topic-nav-item.active .topic-nav-count {
+  background: rgba(61,122,79,0.18); color: var(--accent);
+  border-color: rgba(61,122,79,0.25);
+}
+.topic-nav-lock { font-size: 11px; flex-shrink: 0; opacity: 0.7; }
+
+/* ── Content toolbar (sticky below nav) ───────────────────── */
+.content-toolbar {
+  position: sticky; top: 68px; z-index: 99;
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 36px;
+  min-height: 48px;
+}
+.toolbar-topic-name {
+  font-size: 13.5px; font-weight: 700; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  flex-shrink: 1; min-width: 0;
+}
+.toolbar-q-count {
+  font-size: 12px; color: var(--muted); white-space: nowrap; flex-shrink: 0;
+}
+.toolbar-sep { width: 1px; height: 16px; background: var(--border); flex-shrink: 0; margin: 0 2px; }
+.diff-filter { display: flex; gap: 5px; margin-left: auto; flex-shrink: 0; }
+.diff-btn {
+  padding: 4px 11px; border-radius: 100px;
+  font-size: 11.5px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border-mid);
+  background: white; color: var(--muted);
+  transition: all 0.15s; font-family: inherit;
+}
+.diff-btn:hover { color: var(--ink); border-color: var(--border-mid); background: var(--bg-elevated); }
+.diff-btn.active-easy   { background: var(--green-dim); color: var(--green); border-color: rgba(61,122,79,0.4); }
+.diff-btn.active-medium { background: var(--amber-dim); color: var(--amber); border-color: rgba(196,125,46,0.4); }
+.diff-btn.active-hard   { background: var(--red-dim);   color: var(--red);   border-color: rgba(192,57,43,0.4); }
+
+/* ── Sidebar collapse ─────────────────────────────────────── */
+.main {
+  transition: grid-template-columns 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.main.sidebar-collapsed {
+  grid-template-columns: 0px 1fr !important;
+}
+.sidebar {
+  overflow: hidden;
+  transition: padding 0.25s ease, border-color 0.25s ease;
+}
+.main.sidebar-collapsed .sidebar {
+  padding: 0 !important;
+  border-right-color: transparent;
+}
+
+/* Sidebar toggle button (lives in the content toolbar) */
+.sidebar-toggle-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; flex-shrink: 0;
+  border: 1px solid var(--border); border-radius: 7px;
+  background: white; cursor: pointer;
+  color: var(--ink2); font-size: 15px; line-height: 1;
+  transition: all 0.15s; font-family: inherit;
+}
+.sidebar-toggle-btn:hover {
+  background: var(--bg-elevated);
+  color: var(--ink);
+  border-color: var(--border-mid);
+}
+
+/* ── Hamburger icon (static) ───────────────────────────────── */
+.hamburger-icon {
+  width: 18px; height: 18px; display: block; flex-shrink: 0;
+}
+
+/* ── Richer q-cards ───────────────────────────────────────── */
+.q-card {
+  transition: border-color 0.2s, box-shadow 0.25s, transform 0.15s;
+}
+.q-card:hover {
+  box-shadow: inset 3px 0 0 0 var(--border-mid), 0 4px 20px rgba(0,0,0,0.07);
+}
+.q-card.open {
+  border-color: rgba(61,122,79,0.4);
+  box-shadow: inset 3px 0 0 0 var(--accent), 0 0 0 3px #e8f2ec, 0 4px 20px rgba(0,0,0,0.06);
+}
+.q-card.open .q-card-header { background: linear-gradient(135deg, #f6fbf7 0%, #ffffff 60%); }
+
+/* Richer number badge */
+.q-number {
+  background: var(--ink) !important;
+  color: #ffffff !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  padding: 2px 7px !important;
+  border-radius: 5px !important;
+  letter-spacing: 0.3px !important;
+}
+
+/* Richer difficulty tags — dot prefix */
+.q-diff { position: relative; padding-left: 14px !important; }
+.q-diff::before {
+  content: '';
+  position: absolute; left: 5px; top: 50%; transform: translateY(-50%);
+  width: 5px; height: 5px; border-radius: 50%;
+}
+.diff-easy::before   { background: var(--green); }
+.diff-medium::before { background: var(--amber); }
+.diff-hard::before   { background: var(--red); }
+
+/* Stronger question text */
+.q-text { font-size: 15px !important; font-weight: 650; letter-spacing: -0.15px !important; }
+
+/* Richer topic badge */
+.topic-badge {
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 0 1px 4px rgba(61,122,79,0.15);
+}
+
+/* Richer sidebar active item */
+.topic-nav-item.active {
+  background: linear-gradient(90deg, #ddf0e4 0%, var(--accent-dim) 100%) !important;
+}
+.topic-nav-item { border-radius: 0 8px 8px 0; margin-right: 8px; }
+
+/* Toolbar topic name — more weight */
+.toolbar-topic-name { font-size: 14px !important; letter-spacing: -0.2px; }
+
+/* Richer answer area */
+.q-answer { background: #f8fbf9; }
+.answer-label {
+  font-size: 10px !important;
+  letter-spacing: 2.5px !important;
+  opacity: 0.8;
+}
+
+/* ── Nav top bar — thicker accent ─────────────────────────── */
+nav::before { height: 3px !important; }
+
+/* ── Responsive overrides ─────────────────────────────────── */
+@media (max-width: 900px) {
+  .main { grid-template-columns: 1fr; }
+  .topic-section { padding: 0 16px 28px; }
+  .content-toolbar { padding: 8px 16px; flex-wrap: wrap; min-height: unset; }
+  .toolbar-topic-name { font-size: 13px; }
+  .sidebar-toggle-btn { display: none; }
+}
+</style>
 </head>
 <body>
 
@@ -705,6 +910,24 @@
 
   <!-- CONTENT -->
   <div class="content">
+
+  <div class="content-toolbar" id="contentToolbar">
+    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" title="Collapse sidebar" aria-label="Toggle sidebar">
+      <svg class="hamburger-icon" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <rect class="h-line h-top" x="3" y="4.6"  width="14" height="1.8" rx="0.9"/>
+        <rect class="h-line h-mid" x="3" y="9.1"  width="14" height="1.8" rx="0.9"/>
+        <rect class="h-line h-bot" x="3" y="13.6" width="14" height="1.8" rx="0.9"/>
+      </svg>
+    </button>
+    <span class="toolbar-topic-name" id="toolbarTopicName">🤖 Android Domain</span>
+    <span class="toolbar-q-count" id="toolbarQCount">50 questions</span>
+    <div class="toolbar-sep"></div>
+    <div class="diff-filter">
+      <button class="diff-btn" data-diff="easy"   onclick="filterByDiff('easy')">Easy</button>
+      <button class="diff-btn" data-diff="medium" onclick="filterByDiff('medium')">Medium</button>
+      <button class="diff-btn" data-diff="hard"   onclick="filterByDiff('hard')">Hard</button>
+    </div>
+  </div>
 
     <!-- ANDROID DOMAIN -->
     <div class="topic-section active" id="topic-android">
@@ -30295,37 +30518,100 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
 
   let currentTopic = 'android';
 
-  function buildSidebar(topic) {
-    const sidebar = document.getElementById('sidebar');
-    const t = topics[topic];
-    sidebar.innerHTML = `
-      <div class="sidebar-section">
-        <div class="sidebar-title">${t.name}</div>
-        ${t.questions.map((q, i) => `
-          <div class="q-item" onclick="scrollToQ(${i+1})" id="sq-${i+1}">
-            <div class="q-num">Q${i+1}</div>
-            ${q}
-          </div>
-        `).join('')}
-      </div>
-    `;
+  function buildSidebar(activeTopic) {
+    var sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    var topicList = [
+      { id: 'android',      emoji: '\u{1F916}', name: 'Android',           count: 50    },
+      { id: 'kotlin',       emoji: '\u{1F7E3}', name: 'Kotlin',            count: 50    },
+      { id: 'compose',      emoji: '\u{1F3A8}', name: 'Compose',           count: 50    },
+      { id: 'coroutines',   emoji: '⚡',    name: 'Coroutines',        count: 50    },
+      { id: 'flows',        emoji: '\u{1F30A}', name: 'Kotlin Flows',      count: 75    },
+      { id: 'architecture', emoji: '\u{1F3DB}️', name: 'Architecture', count: 50   },
+      { id: 'di',           emoji: '\u{1F489}', name: 'Dep. Injection',    count: 50    },
+      { id: 'networking',   emoji: '\u{1F310}', name: 'Networking',        count: 50    },
+      { id: 'storage',      emoji: '\u{1F5C4}️', name: 'Data Storage', count: 50  },
+      { id: 'buildtools',   emoji: '\u{1F527}', name: 'Build Tools',       count: 50    },
+      { id: 'performance',  emoji: '\u{1F680}', name: 'Performance',       count: 50    },
+      { id: 'hr',           emoji: '\u{1F91D}', name: 'HR & Behavioural',  count: 25    },
+      { id: 'sysdesign',    emoji: '\u{1F3D7}️', name: 'System Design', count: '15+' },
+    ];
+    sidebar.innerHTML =
+      '<div class="sidebar-section-label">Topics</div>' +
+      topicList.map(function(t) {
+        return '<div class="topic-nav-item' + (t.id === activeTopic ? ' active' : '') + '"' +
+               ' onclick="switchTopic(\'' + t.id + '\', event)" id="tnav-' + t.id + '">' +
+               '<span class="topic-nav-emoji">' + t.emoji + '</span>' +
+               '<span class="topic-nav-name">' + t.name + '</span>' +
+
+               '<span class="tab-lock topic-nav-lock" id="lock-' + t.id + '" style="display:none">\u{1F512}</span>' +
+               '</div>';
+      }).join('');
   }
 
-  function scrollTabs(dir) {
-    const tabs = document.getElementById('tabsScroll');
-    tabs.scrollBy({ left: dir * 200, behavior: 'smooth' });
-  }
+  function scrollTabs(dir) { /* tabs removed — no-op */ }
 
   function switchTopic(topic, event) {
     currentTopic = topic;
     window.location.hash = topic;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
-    document.querySelectorAll('.topic-section').forEach(s => s.classList.remove('active'));
-    const section = document.getElementById('topic-' + topic);
+    // Update sidebar topic nav active state
+    document.querySelectorAll('.topic-nav-item').forEach(function(t) { t.classList.remove('active'); });
+    var navItem = document.getElementById('tnav-' + topic);
+    if (navItem) navItem.classList.add('active');
+    // Activate correct topic section
+    document.querySelectorAll('.topic-section').forEach(function(s) { s.classList.remove('active'); });
+    var section = document.getElementById('topic-' + topic);
     if (section) section.classList.add('active');
-    buildSidebar(topic);
-    document.querySelectorAll('.q-card').forEach(c => c.classList.remove('open'));
+    // Update content toolbar
+    if (topics[topic]) {
+      var nameEl  = document.getElementById('toolbarTopicName');
+      var countEl = document.getElementById('toolbarQCount');
+      if (nameEl)  nameEl.textContent  = topics[topic].name;
+      if (countEl) countEl.textContent = (topics[topic].questions ? topics[topic].questions.length : 0) + ' questions';
+    }
+    // Reset difficulty filter and close all cards
+    activeDiffFilter = null;
+    document.querySelectorAll('.diff-btn').forEach(function(b) {
+      b.classList.remove('active-easy', 'active-medium', 'active-hard');
+    });
+    document.querySelectorAll('.q-card').forEach(function(c) {
+      c.classList.remove('open');
+      c.style.display = '';
+    });
+  }
+
+  var activeDiffFilter = null;
+
+  function toggleSidebar() {
+    var main = document.querySelector('.main');
+    if (!main) return;
+    var collapsed = main.classList.toggle('sidebar-collapsed');
+    var btn = document.getElementById('sidebarToggleBtn');
+    if (btn) btn.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+    try { localStorage.setItem('droidly_sidebar_collapsed', collapsed ? '1' : '0'); } catch(e) {}
+  }
+
+  function filterByDiff(diff) {
+    if (activeDiffFilter === diff) {
+      activeDiffFilter = null;
+      document.querySelectorAll('.diff-btn').forEach(function(b) {
+        b.classList.remove('active-easy', 'active-medium', 'active-hard');
+      });
+    } else {
+      activeDiffFilter = diff;
+      document.querySelectorAll('.diff-btn').forEach(function(b) {
+        b.classList.remove('active-easy', 'active-medium', 'active-hard');
+      });
+      var btn = document.querySelector('.diff-btn[data-diff="' + diff + '"]');
+      if (btn) btn.classList.add('active-' + diff);
+    }
+    var section = document.getElementById('topic-' + currentTopic);
+    if (!section) return;
+    section.querySelectorAll('.q-card').forEach(function(card) {
+      if (!activeDiffFilter) { card.style.display = ''; return; }
+      var hasDiff = card.querySelector('.diff-' + activeDiffFilter);
+      card.style.display = hasDiff ? '' : 'none';
+    });
   }
 
   function toggleCard(card, event) {
@@ -30356,33 +30642,48 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
     }
   }
 
-  const validTopics = ['android', 'kotlin', 'compose', 'coroutines', 'architecture', 'di', 'networking', 'storage', 'buildtools', 'performance', 'hr', 'sysdesign'];
+  const validTopics = ['android', 'kotlin', 'compose', 'coroutines', 'flows', 'architecture', 'di', 'networking', 'storage', 'buildtools', 'performance', 'hr', 'sysdesign'];
 
   function init() {
-    const params     = new URLSearchParams(window.location.search);
-    const topicParam = params.get('topic');
-    const hash = window.location.hash.replace('#', '');
-    const initTopic  = validTopics.includes(topicParam) ? topicParam
-                     : validTopics.includes(hash) ? hash
-                     : 'android';
+    var params     = new URLSearchParams(window.location.search);
+    var topicParam = params.get('topic');
+    var hash       = window.location.hash.replace('#', '');
+    var initTopic  = validTopics.includes(topicParam) ? topicParam
+                   : validTopics.includes(hash) ? hash
+                   : 'android';
     currentTopic = initTopic;
 
-    // Activate correct tab
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    const activeTab = document.querySelector('.tab[onclick*="\'' + initTopic + '\'"]');
-    if (activeTab) activeTab.classList.add('active');
-
     // Activate correct section
-    document.querySelectorAll('.topic-section').forEach(s => s.classList.remove('active'));
-    const initSection = document.getElementById('topic-' + initTopic);
+    document.querySelectorAll('.topic-section').forEach(function(s) { s.classList.remove('active'); });
+    var initSection = document.getElementById('topic-' + initTopic);
     if (initSection) initSection.classList.add('active');
+
+    // Build topic nav sidebar (replaces old horizontal tabs)
     buildSidebar(initTopic);
 
+    // Restore sidebar collapsed state from localStorage
+    try {
+      if (localStorage.getItem('droidly_sidebar_collapsed') === '1') {
+        var mainEl = document.querySelector('.main');
+        if (mainEl) mainEl.classList.add('sidebar-collapsed');
+        var toggleBtn = document.getElementById('sidebarToggleBtn');
+        if (toggleBtn) toggleBtn.title = 'Expand sidebar';
+      }
+    } catch(e) {}
+
+    // Update toolbar text
+    if (topics[initTopic]) {
+      var nameEl  = document.getElementById('toolbarTopicName');
+      var countEl = document.getElementById('toolbarQCount');
+      if (nameEl)  nameEl.textContent  = topics[initTopic].name;
+      if (countEl) countEl.textContent = (topics[initTopic].questions ? topics[initTopic].questions.length : 0) + ' questions';
+    }
+
     // Scroll to and auto-open a specific card if hash points to one
-    const cardId = window.location.hash.replace('#', '');
+    var cardId = window.location.hash.replace('#', '');
     if (cardId && !validTopics.includes(cardId)) {
-      setTimeout(() => {
-        const card = document.getElementById(cardId);
+      setTimeout(function() {
+        var card = document.getElementById(cardId);
         if (card) {
           card.scrollIntoView({ behavior: 'smooth', block: 'center' });
           if (!card.classList.contains('open')) card.click();
@@ -30393,6 +30694,41 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else { init(); }
+</script>
+
+<script>
+/* ── Modal utilities ───────────────────────────── */
+function showPaywallModal() {
+  var modal = document.getElementById('paywall-modal');
+  if (modal) modal.classList.add('open');
+  // Hide sign-in row if user is already logged in (can check later)
+}
+function closeModal(id) {
+  var modal = document.getElementById(id);
+  if (modal) modal.classList.remove('open');
+}
+function handleBackdropClick(event, id) {
+  if (event.target === event.currentTarget) closeModal(id);
+}
+function showAuthModal() {
+  window.location.href = 'index.html?auth=signin&return=questions';
+}
+
+/* ── Sign-out ──────────────────────────────────── */
+function handleSignOut() {
+  try {
+    var SUPABASE_URL      = 'https://dquheflcmcppldrnckzf.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+    var sb2 = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    sb2.auth.signOut().then(function() {
+      localStorage.removeItem('sb-dquheflcmcppldrnckzf-auth-token');
+      window.location.reload();
+    });
+  } catch(e) {
+    localStorage.removeItem('sb-dquheflcmcppldrnckzf-auth-token');
+    window.location.reload();
+  }
+}
 </script>
 
 <!-- ══════════════════════════════════════════════
@@ -30536,9 +30872,7 @@ viewModelScope.<fn>launch</fn>(<span class="tp">Dispatchers</span>.<span class="
       });
     }
     if (PREMIUM_TOPICS.includes(currentTopic) && !isPremium) {
-      const firstTab = document.querySelector('.tab');
-      _origSwitch('android', { target: firstTab });
-      firstTab.classList.add('active');
+      _origSwitch('android', {});
     }
   }
 
