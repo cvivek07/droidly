@@ -160,12 +160,12 @@
 <body>
 
 <nav>
-  <a href="index.html" class="logo">
+  <a href="/" class="logo">
     <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
     Droidly
   </a>
   <div class="nav-right" id="navRight">
-    <a href="premium.html" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
+    <a href="/premium" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
     <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
     <div class="nav-user" id="navUserMenu" style="display:none;">
       <div class="nav-avatar" id="navAvatarInitial">?</div>
@@ -1029,7 +1029,7 @@
 
 <footer style="background:#0f172a;color:#64748b;text-align:center;padding:32px 16px;font-size:13px;margin-top:64px;">
   <p style="margin:0 0 8px;">© 2025 Droidly · Android Interview Prep</p>
-  <p style="margin:0;"><a href="index.html" style="color:#64748b;text-decoration:none;">Home</a> · <a href="privacy.html" style="color:#64748b;text-decoration:none;">Privacy</a></p>
+  <p style="margin:0;"><a href="/" style="color:#64748b;text-decoration:none;">Home</a> · <a href="/privacy" style="color:#64748b;text-decoration:none;">Privacy</a></p>
 </footer>
 
 <script>
@@ -1081,7 +1081,7 @@
     };
 
     window.openAuthModal = function () {
-      window.location.href = 'index.html?auth=signin&return=sysdesign_networkingsdk';
+      window.location.href = '/?auth=signin&return=sysdesign_networkingsdk';
     };
 
     document.getElementById('navUserMenu')?.addEventListener('click', function(e) {

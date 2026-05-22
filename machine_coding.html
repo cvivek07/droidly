@@ -249,14 +249,14 @@
 
 <!-- NAV -->
 <nav>
-  <a href="index.html" class="logo">
+  <a href="/" class="logo">
     <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
     Droidly
   </a>
   <div class="nav-right" id="navRight">
-    <a href="questions.html" style="font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:8px;transition:all 0.15s" onmouseover="this.style.color='var(--ink)';this.style.background='var(--bg2)'" onmouseout="this.style.color='var(--muted)';this.style.background='transparent'">Questions</a>
-    <a href="mock_interview.html" style="font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:8px;transition:all 0.15s" onmouseover="this.style.color='var(--ink)';this.style.background='var(--bg2)'" onmouseout="this.style.color='var(--muted)';this.style.background='transparent'">Mock Interview</a>
-    <a href="premium.html" class="nav-pill">⚡ Premium</a>
+    <a href="/questions" style="font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:8px;transition:all 0.15s" onmouseover="this.style.color='var(--ink)';this.style.background='var(--bg2)'" onmouseout="this.style.color='var(--muted)';this.style.background='transparent'">Questions</a>
+    <a href="/mock_interview" style="font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:8px;transition:all 0.15s" onmouseover="this.style.color='var(--ink)';this.style.background='var(--bg2)'" onmouseout="this.style.color='var(--muted)';this.style.background='transparent'">Mock Interview</a>
+    <a href="/premium" class="nav-pill">⚡ Premium</a>
     <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal('signin')" style="border:none;font-family:inherit;">Sign In</button>
     <div class="nav-user" id="navUserMenu" style="display:none">
       <div class="nav-avatar" id="navAvatarInitial">?</div>
@@ -264,7 +264,7 @@
       <span class="nav-caret">▾</span>
       <div class="user-dropdown">
         <div class="user-dropdown-email" id="navUserEmail"></div>
-        <a href="questions.html" class="user-dropdown-item">📚 Questions</a>
+        <a href="/questions" class="user-dropdown-item">📚 Questions</a>
         <div class="user-dropdown-item danger" onclick="signOut()">🚪 Sign Out</div>
       </div>
     </div>

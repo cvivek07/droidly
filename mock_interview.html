@@ -304,17 +304,17 @@
 
 <!-- NAV -->
 <nav>
-  <a href="index.html" class="logo">
+  <a href="/" class="logo">
     <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
     Droidly
   </a>
   <div class="nav-center">
-    <a href="questions.html" class="nav-link">Questions</a>
-    <a href="mock_interview.html" class="nav-link active">Mock Interview</a>
-    <a href="premium.html" class="nav-link">Premium</a>
+    <a href="/questions" class="nav-link">Questions</a>
+    <a href="/mock_interview" class="nav-link active">Mock Interview</a>
+    <a href="/premium" class="nav-link">Premium</a>
   </div>
   <div class="nav-right" id="navRight">
-    <a href="premium.html" class="nav-pill" style="text-decoration:none;">⚡ Get Premium</a>
+    <a href="/premium" class="nav-pill" style="text-decoration:none;">⚡ Get Premium</a>
     <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal('signin')" style="border:none;font-family:inherit;">Sign In</button>
     <div class="nav-user" id="navUserMenu" style="display:none;">
       <div class="nav-avatar" id="navAvatarInitial">?</div>
@@ -322,7 +322,7 @@
       <span class="nav-caret">▾</span>
       <div class="user-dropdown">
         <div class="user-dropdown-email" id="navUserEmail"></div>
-        <a href="questions.html" class="user-dropdown-item">📚 Questions</a>
+        <a href="/questions" class="user-dropdown-item">📚 Questions</a>
         <div class="user-dropdown-item danger" onclick="signOut()">🚪 Sign Out</div>
       </div>
     </div>
@@ -925,15 +925,15 @@
 
 <!-- FOOTER -->
 <footer>
-  <a href="index.html" class="logo" style="text-decoration:none;color:var(--ink)">
+  <a href="/" class="logo" style="text-decoration:none;color:var(--ink)">
     <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
     Droidly
   </a>
   <div class="footer-copy">© 2025 Droidly · Built for Android Developers · <a href="mailto:support@droidly.io" style="color:var(--muted);text-decoration:none">support@droidly.io</a></div>
   <div style="display:flex;gap:20px;flex-wrap:wrap">
-    <a href="privacy.html" style="font-size:13px;color:var(--muted);text-decoration:none">Privacy Policy</a>
-    <a href="terms.html" style="font-size:13px;color:var(--muted);text-decoration:none">Terms</a>
-    <a href="refund.html" style="font-size:13px;color:var(--muted);text-decoration:none">Refund Policy</a>
+    <a href="/privacy" style="font-size:13px;color:var(--muted);text-decoration:none">Privacy Policy</a>
+    <a href="/terms" style="font-size:13px;color:var(--muted);text-decoration:none">Terms</a>
+    <a href="/refund" style="font-size:13px;color:var(--muted);text-decoration:none">Refund Policy</a>
   </div>
 </footer>
 

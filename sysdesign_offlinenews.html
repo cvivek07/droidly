@@ -187,12 +187,12 @@
 <body>
 
 <nav>
-  <a href="index.html" class="logo">
+  <a href="/" class="logo">
     <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
     Droidly
   </a>
   <div class="nav-right">
-    <a href="premium.html" class="nav-cta">⚡ Get Premium</a>
+    <a href="/premium" class="nav-cta">⚡ Get Premium</a>
     <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
     <div class="nav-user" id="navUserMenu" style="display:none;">
       <div class="nav-avatar" id="navAvatarInitial">?</div>
@@ -1100,7 +1100,7 @@
       <span class="co-chip">Dailyhunt</span>
     </div>
     <div class="sidebar-divider"></div>
-    <a href="questions.html?topic=sysdesign" style="font-size:13px; color:var(--accent); text-decoration:none;">← All System Design</a>
+    <a href="/questions?topic=sysdesign" style="font-size:13px; color:var(--accent); text-decoration:none;">← All System Design</a>
   </div>
 </aside>
 
@@ -1127,7 +1127,7 @@
     document.getElementById('navUserMenu').style.display = 'none';
     document.getElementById('navSignInBtn').style.display = '';
   }
-  function openAuthModal() { window.location.href = 'index.html#auth'; }
+  function openAuthModal() { window.location.href = '/#auth'; }
   function handleSignOut() { _sb.auth.signOut(); }
   document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
     if (!e.target.classList.contains('user-dropdown-item')) this.classList.toggle('open');

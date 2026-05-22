@@ -226,12 +226,12 @@
 
 <!-- TOP NAV -->
 <nav>
-  <a href="index.html" class="logo">
+  <a href="/" class="logo">
     <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
     Droidly
   </a>
   <div class="nav-right" id="navRight">
-    <a href="premium.html" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
+    <a href="/premium" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
     <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
     <div class="nav-user" id="navUserMenu" style="display:none;">
       <div class="nav-avatar" id="navAvatarInitial">?</div>
@@ -1091,7 +1091,7 @@
       <span class="co-chip">JioCinema</span>
     </div>
     <div class="sidebar-divider"></div>
-    <a href="questions.html?topic=sysdesign" style="font-size:13px; color:var(--accent); text-decoration:none;">← All System Design</a>
+    <a href="/questions?topic=sysdesign" style="font-size:13px; color:var(--accent); text-decoration:none;">← All System Design</a>
   </div>
 </aside>
 </div>
@@ -1139,7 +1139,7 @@
   sb.auth.onAuthStateChange((_, session) => updateNav(session?.user ?? null));
 
   window.handleSignOut = async function () { await sb.auth.signOut(); updateNav(null); };
-  window.openAuthModal = function () { window.location.href = 'index.html?auth=signin'; };
+  window.openAuthModal = function () { window.location.href = '/?auth=signin'; };
 
   document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
     this.classList.toggle('open'); e.stopPropagation();

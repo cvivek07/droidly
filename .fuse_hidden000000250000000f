@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+  <meta name="theme-color" content="#3d7a4f"/>
+  <title>Machine Coding Practice — Kotlin | Droidly</title>
+  <meta name="description" content="Practice Android machine coding rounds with real Kotlin problems. LRU Cache, Rate Limiter, Event Bus, State Machine and more — with an embedded Kotlin compiler."/>
+  <link rel="canonical" href="https://droidly.io/machine_coding.html"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/kotlin-playground@1"></script>
+  
+  <!-- Google Analytics 4 — replace G-61G11MD574 with your Measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-61G11MD574');
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#fff;--bg2:#f4f6f9;--bg3:#eaecf0;--card:#fff;
+      --ink:#0f1117;--ink2:#374151;--muted:#6b7280;
+      --green:#3d7a4f;--green2:#2e6040;--green-mid:#4caf70;
+      --green-light:#e8f2ec;--green-pale:#f0f8f2;
+      --border:rgba(15,17,23,0.08);--border-green:rgba(61,122,79,0.2);
+      --shadow-sm:0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md:0 4px 16px rgba(0,0,0,0.07);
+      --shadow-lg:0 12px 40px rgba(0,0,0,0.09);
+      --easy:#16a34a;--easy-bg:#dcfce7;
+      --medium:#d97706;--medium-bg:#fef3c7;
+      --hard:#dc2626;--hard-bg:#fee2e2;
+      --nav-h:64px;
+    }
+    html{height:100%}
+    body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;height:100%;overflow:hidden}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:900;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);box-shadow:0 1px 0 var(--border)}
+    nav::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green2),var(--green-mid),var(--green));z-index:1}
+    .logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;letter-spacing:-0.5px}
+    .logo-mark img{height:28px;width:auto;display:block}
+    .nav-right{display:flex;align-items:center;gap:10px}
+    .nav-pill{font-size:12px;font-weight:600;background:var(--green-light);color:var(--green);border:1px solid var(--border-green);padding:4px 12px;border-radius:100px;text-decoration:none}
+    .btn-nav{background:var(--ink);color:#fff;padding:8px 18px;border-radius:100px;font-size:13px;font-weight:600;text-decoration:none;transition:all 0.18s;border:none;cursor:pointer;font-family:inherit}
+    .btn-nav:hover{background:var(--green)}
+    .nav-user{display:flex;align-items:center;gap:8px;position:relative;cursor:pointer}
+    .nav-avatar{width:32px;height:32px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+    .nav-user-name{font-size:13px;font-weight:600;color:var(--ink);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .nav-caret{font-size:10px;color:var(--muted)}
+    .user-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px;box-shadow:var(--shadow-lg);min-width:170px;z-index:999;opacity:0;pointer-events:none;transform:translateY(-4px);transition:all 0.18s}
+    .nav-user:hover .user-dropdown,.nav-user.open .user-dropdown{opacity:1;pointer-events:all;transform:translateY(0)}
+    .user-dropdown-email{padding:7px 10px 8px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border);margin-bottom:4px;word-break:break-all}
+    .user-dropdown-item{padding:8px 10px;border-radius:7px;font-size:13px;font-weight:500;color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.15s;text-decoration:none}
+    .user-dropdown-item:hover{background:var(--bg2)}
+    .user-dropdown-item.danger{color:#e53e3e}
+    .user-dropdown-item.danger:hover{background:#fff0f0;color:#c53030}
+
+    /* LAYOUT */
+    .mc-layout{display:flex;height:calc(100vh - var(--nav-h));margin-top:var(--nav-h)}
+
+    /* SIDEBAR */
+    .mc-sidebar{width:272px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+    .sidebar-head{padding:16px 16px 12px;border-bottom:1px solid var(--border)}
+    .sidebar-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:15px;letter-spacing:-0.3px;color:var(--ink);margin-bottom:10px}
+    .filter-row{display:flex;gap:4px;flex-wrap:wrap}
+    .filter-btn{padding:4px 10px;border-radius:100px;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;transition:all 0.15s;font-family:inherit}
+    .filter-btn:hover{border-color:var(--green);color:var(--green)}
+    .filter-btn.active{background:var(--green-light);border-color:var(--border-green);color:var(--green)}
+    .problem-list{flex:1;overflow-y:auto;padding:8px}
+    .problem-list::-webkit-scrollbar{width:4px}
+    .problem-list::-webkit-scrollbar-track{background:transparent}
+    .problem-list::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+    .prob-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:all 0.15s;border:1.5px solid transparent}
+    .prob-item:hover{background:var(--bg2)}
+    .prob-item.active{background:var(--green-pale);border-color:var(--border-green)}
+    .prob-num{font-size:11px;font-weight:700;color:var(--muted);width:20px;flex-shrink:0}
+    .prob-info{flex:1;min-width:0}
+    .prob-name{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .prob-meta{display:flex;align-items:center;gap:6px;margin-top:2px}
+    .diff-badge{font-size:10px;font-weight:700;padding:1px 7px;border-radius:100px}
+    .diff-easy{background:var(--easy-bg);color:var(--easy)}
+    .diff-medium{background:var(--medium-bg);color:var(--medium)}
+    .diff-hard{background:var(--hard-bg);color:var(--hard)}
+    .prob-time{font-size:10px;color:var(--muted)}
+    .prob-check{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px}
+    .prob-check.done{background:var(--green);border-color:var(--green);color:#fff}
+
+    /* MAIN PANEL */
+    .mc-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+    /* PROBLEM HEADER */
+    .prob-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0;background:var(--bg)}
+    .prob-header-left{flex:1;min-width:0}
+    .prob-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.4px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .prob-tags{display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap}
+    .tag-company{font-size:11px;font-weight:600;background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:2px 8px;border-radius:100px}
+    .tag-time{font-size:11px;font-weight:600;background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:2px 8px;border-radius:100px}
+    /* Timer */
+    .timer-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .timer-display{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500;color:var(--ink);min-width:58px;text-align:center}
+    .timer-display.warning{color:#d97706}
+    .timer-display.danger{color:#dc2626}
+    .timer-btn{padding:7px 14px;border-radius:100px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:all 0.18s}
+    .timer-btn.start{background:var(--green);color:#fff}
+    .timer-btn.start:hover{background:var(--green2)}
+    .timer-btn.stop{background:var(--bg2);color:var(--ink);border:1.5px solid var(--border)}
+    .timer-btn.stop:hover{border-color:#dc2626;color:#dc2626}
+
+    /* CONTENT + PLAYGROUND SPLIT */
+    .mc-body{flex:1;display:flex;flex-direction:row;overflow:hidden}
+    .content-area{flex:0 0 42%;display:flex;flex-direction:column;overflow:hidden;border-right:2px solid var(--border);min-width:280px}
+    .playground-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+    /* TABS */
+    .tabs{display:flex;border-bottom:1px solid var(--border);padding:0 20px;flex-shrink:0;background:var(--bg)}
+    .tab-btn{padding:10px 16px;font-size:13px;font-weight:600;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.18s;font-family:inherit}
+    .tab-btn:hover{color:var(--ink)}
+    .tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
+
+    /* TAB CONTENT */
+    .tab-content{display:none;flex:1;overflow-y:auto;padding:20px;font-size:14px;line-height:1.75;color:var(--ink2)}
+    .tab-content.active{display:block}
+    .tab-content::-webkit-scrollbar{width:4px}
+    .tab-content::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+    .tab-content h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;color:var(--ink);margin:16px 0 8px;letter-spacing:-0.2px}
+    .tab-content h3:first-child{margin-top:0}
+    .tab-content ul,.tab-content ol{padding-left:20px;margin:8px 0}
+    .tab-content li{margin-bottom:4px}
+    .tab-content p{margin-bottom:10px}
+    .tab-content code{background:var(--bg2);border:1px solid var(--border);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink)}
+    .req-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+    .req-box-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:8px}
+    .miss-box{background:#fff8f0;border:1px solid #fcd9a0;border-radius:10px;padding:14px 16px;margin-top:4px}
+    .miss-box-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#d97706;margin-bottom:8px}
+
+    /* HINTS */
+    .hint-item{border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden}
+    .hint-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;background:var(--bg);user-select:none}
+    .hint-header:hover{background:var(--bg2)}
+    .hint-label{font-size:13px;font-weight:600;color:var(--ink2)}
+    .hint-lock{font-size:13px}
+    .hint-body{display:none;padding:12px 14px;font-size:13px;color:var(--ink2);line-height:1.7;background:var(--green-pale);border-top:1px solid var(--border-green)}
+    .hint-item.unlocked .hint-body{display:block}
+    .hint-item.unlocked .hint-header{background:var(--green-pale)}
+    .hint-item.unlocked .hint-lock{display:none}
+    .hint-unlock-btn{font-size:11px;font-weight:700;color:var(--green);border:1px solid var(--border-green);background:var(--green-light);padding:3px 10px;border-radius:100px;cursor:pointer;font-family:inherit;transition:all 0.15s}
+    .hint-unlock-btn:hover{background:var(--green);color:#fff}
+
+    /* APPROACH */
+    .approach-locked{text-align:center;padding:28px 20px}
+    .approach-locked-icon{font-size:36px;margin-bottom:12px}
+    .approach-locked p{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.7}
+    .unlock-approach-btn{background:var(--green);color:#fff;border:none;padding:10px 24px;border-radius:100px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.18s}
+    .unlock-approach-btn:hover{background:var(--green2)}
+    .approach-content{display:none}
+    .approach-content.show{display:block}
+
+    /* PLAYGROUND */
+    .playground-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:#1e1e2e;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0}
+    .playground-label{font-size:12px;font-weight:600;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:8px}
+    .kotlin-dot{width:8px;height:8px;border-radius:50%;background:#7F52FF;flex-shrink:0}
+    .playground-actions{display:flex;align-items:center;gap:8px}
+    .reset-btn{font-size:11px;font-weight:600;color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);padding:4px 12px;border-radius:100px;cursor:pointer;font-family:inherit;transition:all 0.15s}
+    .reset-btn:hover{color:#fff;background:rgba(255,255,255,0.12)}
+    #playground-wrap{flex:1;overflow:auto;background:#1e1e2e}
+    #playground-wrap .kotlin-playground{height:100%!important}
+    /* Override Kotlin Playground styles */
+    #playground-wrap .kotlin-playground-input{background:#1e1e2e!important}
+    .CodeMirror{height:100%!important;font-family:'JetBrains Mono',monospace!important;font-size:13px!important}
+    .kotlin-playground{border:none!important;border-radius:0!important}
+
+    /* SOLVED BANNER */
+    .solved-banner{display:none;background:var(--green);color:#fff;padding:8px 20px;font-size:13px;font-weight:600;text-align:center;flex-shrink:0}
+    .solved-banner.show{display:block}
+
+    /* AUTH MODAL */
+    .auth-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.25s}
+    .auth-overlay.open{opacity:1;pointer-events:all}
+    .auth-box{background:#fff;border-radius:20px;padding:32px 28px;width:100%;max-width:400px;box-shadow:var(--shadow-lg);transform:translateY(14px) scale(0.97);transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);max-height:90vh;overflow-y:auto}
+    .auth-overlay.open .auth-box{transform:translateY(0) scale(1)}
+    .auth-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:var(--bg2);border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+    .auth-logo{display:flex;align-items:center;gap:8px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:17px;color:var(--ink);margin-bottom:20px}
+    .auth-logo-mark img{height:26px;width:auto}
+    .auth-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;gap:4px}
+    .auth-tab{flex:1;padding:8px;background:none;border:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+    .auth-tab.active{color:var(--green);border-bottom-color:var(--green)}
+    .auth-field{margin-bottom:12px}
+    .auth-label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:5px}
+    .auth-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--ink);outline:none;transition:all 0.18s}
+    .auth-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(61,122,79,0.1)}
+    .auth-input.error{border-color:#e53e3e}
+    .auth-pw-wrap{position:relative}
+    .auth-pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted)}
+    .auth-error{display:none;font-size:11px;color:#e53e3e;margin-top:4px}
+    .auth-error.show{display:block}
+    .auth-forgot{display:block;text-align:right;font-size:11px;color:var(--green);text-decoration:none;font-weight:600;margin-bottom:14px}
+    .auth-submit{width:100%;background:var(--green);color:#fff;padding:11px;border-radius:100px;font-family:inherit;font-size:14px;font-weight:700;border:none;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .auth-submit:hover{background:var(--green2)}
+    .auth-submit:disabled{opacity:0.6;cursor:not-allowed}
+    .auth-divider{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted);margin:14px 0}
+    .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+    .auth-google{width:100%;padding:10px;border:1.5px solid var(--border);border-radius:100px;background:#fff;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+    .auth-google:hover{border-color:var(--green);background:var(--green-pale)}
+    .auth-switch{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
+    .auth-switch a{color:var(--green);font-weight:600;text-decoration:none}
+    .auth-terms{font-size:11px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.5}
+    .auth-terms a{color:var(--green)}
+    .auth-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:500;z-index:99999;opacity:0;transition:all 0.3s;white-space:nowrap}
+    .auth-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .auth-toast.success{background:var(--green)}
+    .auth-toast.error-toast{background:#e53e3e}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* UI CHALLENGE MODE */
+    .diff-ui{background:#f3e8ff;color:#7c3aed}
+    .tag-ui-challenge{font-size:11px;font-weight:700;background:#f3e8ff;border:1px solid #ddd6fe;color:#7c3aed;padding:2px 8px;border-radius:100px}
+    .ui-challenge-notice{background:#2d1b69;border-bottom:1px solid rgba(124,58,237,0.3);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+    .ui-challenge-notice-text{font-size:12px;color:rgba(255,255,255,0.65);font-family:'JetBrains Mono',monospace}
+    .ui-file-tabs{display:flex;overflow-x:auto;background:#252535;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0}
+    .ui-file-tabs::-webkit-scrollbar{height:3px}.ui-file-tabs::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15)}
+    .ui-file-tab{padding:8px 16px;font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,0.4);border:none;background:none;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.15s;flex-shrink:0}
+    .ui-file-tab:hover{color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.04)}
+    .ui-file-tab.active{color:#a78bfa;border-bottom-color:#7c3aed;background:rgba(124,58,237,0.08)}
+    .ui-code-scroll{overflow-y:auto;padding:20px;background:#1e1e2e;flex:1}
+    .ui-code-scroll::-webkit-scrollbar{width:4px}.ui-code-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:2px}
+    .ui-code-scroll pre{margin:0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;color:#cdd6f4;white-space:pre}
+    .ui-copy-btn{font-size:11px;font-weight:600;color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);padding:4px 12px;border-radius:100px;cursor:pointer;font-family:inherit;transition:all 0.15s}
+    .ui-copy-btn:hover{color:#fff;background:rgba(124,58,237,0.3);border-color:#7c3aed}
+
+    /* RESPONSIVE */
+    @media(max-width:768px){
+      .mc-sidebar{display:none}
+      body{overflow:auto}
+      .mc-layout{height:auto;flex-direction:column}
+      .mc-body{height:auto;overflow:visible;flex-direction:column}
+      .content-area{flex:none;height:auto;border-right:none;border-bottom:2px solid var(--border);min-width:0}
+      .playground-area{flex:none;height:auto}
+      #playground-wrap{height:400px}
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="nav-right" id="navRight">
+    <a href="questions.html" style="font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:8px;transition:all 0.15s" onmouseover="this.style.color='var(--ink)';this.style.background='var(--bg2)'" onmouseout="this.style.color='var(--muted)';this.style.background='transparent'">Questions</a>
+    <a href="mock_interview.html" style="font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:8px;transition:all 0.15s" onmouseover="this.style.color='var(--ink)';this.style.background='var(--bg2)'" onmouseout="this.style.color='var(--muted)';this.style.background='transparent'">Mock Interview</a>
+    <a href="premium.html" class="nav-pill">⚡ Premium</a>
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal('signin')" style="border:none;font-family:inherit;">Sign In</button>
+    <div class="nav-user" id="navUserMenu" style="display:none">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <a href="questions.html" class="user-dropdown-item">📚 Questions</a>
+        <div class="user-dropdown-item danger" onclick="signOut()">🚪 Sign Out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN LAYOUT -->
+<div class="mc-layout">
+
+  <!-- SIDEBAR -->
+  <div class="mc-sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-title">Machine Coding</div>
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterProblems('all', this)">All</button>
+        <button class="filter-btn" onclick="filterProblems('Easy', this)">Easy</button>
+        <button class="filter-btn" onclick="filterProblems('Medium', this)">Medium</button>
+        <button class="filter-btn" onclick="filterProblems('Hard', this)">Hard</button>
+      </div>
+    </div>
+    <div class="problem-list" id="problemList"></div>
+  </div>
+
+  <!-- MAIN PANEL -->
+  <div class="mc-main">
+
+    <!-- PROBLEM HEADER -->
+    <div class="prob-header">
+      <div class="prob-header-left">
+        <div class="prob-title" id="probTitle">Select a problem</div>
+        <div class="prob-tags" id="probTags"></div>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-display" id="timerDisplay">--:--</div>
+        <button class="timer-btn start" id="timerBtn" onclick="toggleTimer()">▶ Start</button>
+      </div>
+    </div>
+
+    <div class="mc-body">
+      <!-- TOP: Description -->
+      <div class="content-area">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab('description', this)">Problem</button>
+          <button class="tab-btn" onclick="switchTab('hints', this)">Hints</button>
+          <button class="tab-btn" onclick="switchTab('approach', this)">Approach</button>
+        </div>
+        <div class="tab-content active" id="tab-description">
+          <p style="color:var(--muted);font-size:13px">← Select a problem from the sidebar to begin.</p>
+        </div>
+        <div class="tab-content" id="tab-hints"></div>
+        <div class="tab-content" id="tab-approach"></div>
+      </div>
+
+      <!-- BOTTOM: Kotlin Playground -->
+      <div class="playground-area">
+        <div class="playground-header">
+          <div class="playground-label">
+            <span class="kotlin-dot"></span>
+            Kotlin Compiler
+          </div>
+          <div class="playground-actions">
+            <button class="reset-btn" onclick="resetCode()">↺ Reset</button>
+          </div>
+        </div>
+        <div id="playground-wrap" style="flex:1;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:center;height:100%;background:#1e1e2e;color:rgba(255,255,255,0.3);font-size:13px;font-family:'JetBrains Mono',monospace">
+            Select a problem to load the editor
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="authOverlay" onclick="closeAuthOnBackdrop(event)">
+  <div class="auth-box">
+    <button class="auth-close" onclick="closeAuthModal()">✕</button>
+    <div class="auth-logo"><div class="auth-logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>Droidly</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabSignin" onclick="switchAuthTab('signin')">Sign In</button>
+      <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Create Account</button>
+    </div>
+    <div id="formSignin">
+      <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" type="email" id="siEmail" placeholder="you@example.com"/><div class="auth-error" id="siEmailErr">Please enter a valid email.</div></div>
+      <div class="auth-field"><label class="auth-label">Password</label><div class="auth-pw-wrap"><input class="auth-input" type="password" id="siPassword" placeholder="Your password"/><button class="auth-pw-toggle" type="button" onclick="togglePw('siPassword',this)">👁</button></div><div class="auth-error" id="siPassErr">Incorrect email or password.</div></div>
+      <a href="#" class="auth-forgot" onclick="handleForgot(event)">Forgot password?</a>
+      <button class="auth-submit" id="siBtn" onclick="handleSignIn()">Sign In →</button>
+      <div class="auth-divider">or</div>
+      <button class="auth-google" onclick="handleGoogleAuth()"><svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Continue with Google</button>
+      <div class="auth-switch">No account? <a href="#" onclick="switchAuthTab('signup');return false;">Create one free →</a></div>
+    </div>
+    <div id="formSignup" style="display:none">
+      <div class="auth-field"><label class="auth-label">Full name</label><input class="auth-input" type="text" id="suName" placeholder="Your name"/><div class="auth-error" id="suNameErr">Please enter your name.</div></div>
+      <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" type="email" id="suEmail" placeholder="you@example.com"/><div class="auth-error" id="suEmailErr">Please enter a valid email.</div><div class="auth-error" id="suEmailExistsErr">Account already exists.</div></div>
+      <div class="auth-field"><label class="auth-label">Password</label><div class="auth-pw-wrap"><input class="auth-input" type="password" id="suPassword" placeholder="Min 6 characters"/><button class="auth-pw-toggle" type="button" onclick="togglePw('suPassword',this)">👁</button></div><div class="auth-error" id="suPassErr">Min 6 characters.</div></div>
+      <button class="auth-submit" id="suBtn" onclick="handleSignUp()">Create Free Account →</button>
+      <div class="auth-divider">or</div>
+      <button class="auth-google" onclick="handleGoogleAuth()"><svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Continue with Google</button>
+      <div class="auth-terms">By signing up you agree to our <a href="#">Terms</a> &amp; <a href="#">Privacy</a>.</div>
+      <div class="auth-switch">Have an account? <a href="#" onclick="switchAuthTab('signin');return false;">Sign in →</a></div>
+    </div>
+    <div id="authVerifyState" style="display:none;text-align:center;padding:8px 0">
+      <div style="font-size:44px;margin-bottom:14px">📧</div>
+      <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px">Check your inbox!</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px" id="verifyEmailAddr"></p>
+      <button onclick="closeAuthModal()" style="width:100%;background:var(--green);color:#fff;border:none;padding:12px;border-radius:100px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer">Got it →</button>
+    </div>
+  </div>
+</div>
+<div class="auth-toast" id="authToast"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   PROBLEMS DATA
+═══════════════════════════════════════════ */
+const PROBLEMS = [
+  {
+    id: 1, title: 'LRU Cache', difficulty: 'Medium', timeMin: 45,
+    companies: ['Flipkart', 'Google', 'Amazon'],
+    description: `<h3>Problem</h3>
+<p>Design and implement a <strong>Least Recently Used (LRU) Cache</strong>. It should support <code>get</code> and <code>put</code> operations in <strong>O(1)</strong> time.</p>
+<div class="req-box"><div class="req-box-title">Functional Requirements</div>
+<ul>
+<li><code>get(key)</code> — Return the value if the key exists, otherwise return <code>-1</code>. Accessing a key marks it as recently used.</li>
+<li><code>put(key, value)</code> — Insert or update the key-value pair. If the cache is at capacity, evict the least recently used entry before inserting.</li>
+</ul></div>
+<div class="req-box"><div class="req-box-title">Non-Functional Requirements</div>
+<ul>
+<li>Both operations must run in O(1) time</li>
+<li>Capacity is fixed at construction time</li>
+</ul></div>
+<h3>Example</h3>
+<pre style="background:var(--bg2);padding:12px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;overflow-x:auto">val cache = LRUCache(2)
+cache.put(1, 1)
+cache.put(2, 2)
+cache.get(1)    // → 1  (1 is now most recent)
+cache.put(3, 3) // evicts key 2
+cache.get(2)    // → -1 (evicted)
+cache.get(3)    // → 3</pre>`,
+    hints: [
+      'What data structure gives you O(1) lookup by key?',
+      'To track recency, you need to know both the most recent and least recent entries quickly. A doubly linked list lets you remove and add nodes in O(1) — combine it with a HashMap.',
+      'Use a HashMap&lt;Int, Node&gt; where each Node is in a doubly linked list. On every get/put, move that node to the head (most recent). The tail is always the LRU candidate to evict.'
+    ],
+    approach: `<h3>Data Structure</h3>
+<p>Use a <strong>HashMap + Doubly Linked List</strong>. The map gives O(1) access to any node. The linked list maintains recency order — head is most recent, tail is least recent.</p>
+<h3>Key Operations</h3>
+<ul>
+<li><strong>get</strong>: Look up node in map → move to head → return value</li>
+<li><strong>put</strong>: If key exists, update + move to head. If new, add at head. If over capacity, remove tail node and its map entry.</li>
+</ul>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>Using <code>LinkedHashMap</code> shortcut — fine for production but expect a "implement from scratch" follow-up</li>
+<li>Forgetting to update the map when evicting the tail node</li>
+<li>Off-by-one: checking capacity <em>before</em> insertion vs <em>after</em></li>
+</ul></div>`,
+    starterCode: `class LRUCache(private val capacity: Int) {
+    // TODO: Implement LRU Cache with O(1) get and put
+    // Hint: Think HashMap + Doubly Linked List
+
+    fun get(key: Int): Int {
+        // Return value for key, or -1 if not found
+        // Accessing a key marks it as most recently used
+        return -1
+    }
+
+    fun put(key: Int, value: Int) {
+        // Insert or update key-value pair
+        // If at capacity, evict the least recently used entry first
+    }
+}
+
+fun main() {
+    val cache = LRUCache(2)
+    cache.put(1, 1)
+    cache.put(2, 2)
+    println(cache.get(1))   // Expected: 1
+    cache.put(3, 3)          // Evicts key 2
+    println(cache.get(2))   // Expected: -1 (evicted)
+    println(cache.get(3))   // Expected: 3
+    cache.put(4, 4)          // Evicts key 1
+    println(cache.get(1))   // Expected: -1 (evicted)
+    println(cache.get(3))   // Expected: 3
+    println(cache.get(4))   // Expected: 4
+}`
+  },
+  {
+    id: 2, title: 'Token Bucket Rate Limiter', difficulty: 'Medium', timeMin: 40,
+    companies: ['Razorpay', 'PhonePe', 'Swiggy'],
+    description: `<h3>Problem</h3>
+<p>Implement a <strong>Token Bucket Rate Limiter</strong> that controls how many requests each user can make per second.</p>
+<div class="req-box"><div class="req-box-title">Functional Requirements</div>
+<ul>
+<li><code>isAllowed(userId)</code> — Return <code>true</code> if the request is permitted, <code>false</code> if rate limited</li>
+<li>Each user gets their own independent bucket</li>
+<li>Bucket refills at a fixed rate over time (not just at fixed intervals)</li>
+<li>Bucket has a max capacity — tokens don't accumulate beyond it</li>
+</ul></div>
+<div class="req-box"><div class="req-box-title">Token Bucket Rules</div>
+<ul>
+<li>Each request consumes 1 token</li>
+<li>Tokens refill continuously at <code>refillRatePerSecond</code></li>
+<li>If bucket is empty → request is denied</li>
+<li>Users start with a full bucket</li>
+</ul></div>`,
+    hints: [
+      'You don\'t need an actual background thread to refill tokens. How can you calculate how many tokens should have been added since the last request, using only the current timestamp?',
+      'Store the last-access timestamp per user. On each request, compute elapsed time → multiply by refill rate → add tokens (capped at maxTokens).',
+      'Use a data class to hold each user\'s current token count and last refill timestamp. Use System.currentTimeMillis() for time tracking.'
+    ],
+    approach: `<h3>Lazy Refill Strategy</h3>
+<p>Don't use a background thread. Instead, calculate tokens lazily: on each request, check how much time has elapsed since the last request for that user, compute how many tokens should have been added, and top up the bucket.</p>
+<h3>Per-user State</h3>
+<pre style="background:var(--bg2);padding:10px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px">data class Bucket(
+  var tokens: Double,
+  var lastRefillTime: Long
+)</pre>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>Using integer tokens instead of Double — causes precision loss with fractional refill rates</li>
+<li>Not capping tokens at <code>maxTokens</code> after refill</li>
+<li>Thread safety — a real implementation needs synchronization per user bucket</li>
+</ul></div>`,
+    starterCode: `class TokenBucketRateLimiter(
+    private val maxTokens: Int,
+    private val refillRatePerSecond: Double
+) {
+    // TODO: Implement token bucket rate limiter
+    // Each userId gets its own bucket
+    // Tokens refill continuously over time (use lazy refill on each call)
+
+    fun isAllowed(userId: String): Boolean {
+        // Return true if request should be allowed, false if rate limited
+        return false
+    }
+}
+
+fun main() {
+    val limiter = TokenBucketRateLimiter(maxTokens = 3, refillRatePerSecond = 1.0)
+
+    // Burst: first 3 should pass, 4th should fail (bucket empty)
+    println(limiter.isAllowed("user1")) // Expected: true
+    println(limiter.isAllowed("user1")) // Expected: true
+    println(limiter.isAllowed("user1")) // Expected: true
+    println(limiter.isAllowed("user1")) // Expected: false
+
+    // Different user has own independent bucket
+    println(limiter.isAllowed("user2")) // Expected: true
+}`
+  },
+  {
+    id: 3, title: 'Event Bus', difficulty: 'Medium', timeMin: 35,
+    companies: ['CRED', 'Swiggy', 'Meesho'],
+    description: `<h3>Problem</h3>
+<p>Implement a <strong>publish-subscribe Event Bus</strong> that allows components to communicate without direct references to each other.</p>
+<div class="req-box"><div class="req-box-title">Functional Requirements</div>
+<ul>
+<li><code>subscribe(eventType, listener)</code> — Register a listener for an event type. Returns a unique <code>subscriptionId</code>.</li>
+<li><code>unsubscribe(subscriptionId)</code> — Remove a specific subscription</li>
+<li><code>publish(eventType, data)</code> — Notify all active listeners for that event type</li>
+<li>Multiple listeners can subscribe to the same event type</li>
+<li>Unsubscribing one listener should not affect others</li>
+</ul></div>`,
+    hints: [
+      'What data structure lets you look up all listeners for a given event type instantly?',
+      'Use a Map&lt;String, Map&lt;String, Listener&gt;&gt; — outer key is eventType, inner key is subscriptionId. This gives O(1) subscribe, unsubscribe, and publish.',
+      'For subscriptionId, use a UUID or a simple incrementing counter. Store a reverse mapping (subscriptionId → eventType) so unsubscribe doesn\'t need to scan all event types.'
+    ],
+    approach: `<h3>Data Structure</h3>
+<p>Use two maps: <code>listeners: Map&lt;EventType, Map&lt;SubId, Listener&gt;&gt;</code> and <code>subscriptionIndex: Map&lt;SubId, EventType&gt;</code>. The second map makes unsubscribe O(1) without scanning.</p>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>ConcurrentModificationException — if a listener modifies subscriptions during publish, iterate a copy</li>
+<li>Memory leaks — not cleaning up empty event type entries after all listeners unsubscribe</li>
+<li>Not handling the case where <code>unsubscribe</code> is called with an invalid ID</li>
+</ul></div>`,
+    starterCode: `class EventBus {
+    // TODO: Implement a publish-subscribe event bus
+    // subscribe returns a unique subscriptionId that can be used to unsubscribe
+
+    fun subscribe(eventType: String, listener: (Any) -> Unit): String {
+        TODO("Implement subscribe — return a unique subscriptionId")
+    }
+
+    fun unsubscribe(subscriptionId: String) {
+        TODO("Implement unsubscribe")
+    }
+
+    fun publish(eventType: String, data: Any) {
+        TODO("Implement publish — notify all active listeners")
+    }
+}
+
+fun main() {
+    val bus = EventBus()
+
+    val id1 = bus.subscribe("ORDER_PLACED") { data ->
+        println("Listener 1: Order confirmed — $data")
+    }
+    val id2 = bus.subscribe("ORDER_PLACED") { data ->
+        println("Listener 2: Sending notification — $data")
+    }
+
+    println("--- Publishing to both listeners ---")
+    bus.publish("ORDER_PLACED", "OrderId: #1234")
+
+    println("--- Unsubscribing listener 1 ---")
+    bus.unsubscribe(id1)
+    bus.publish("ORDER_PLACED", "OrderId: #1235") // Only listener 2 should fire
+
+    println("--- Publishing unknown event ---")
+    bus.publish("PAYMENT_DONE", "TxnId: #9999") // No listeners, no crash
+}`
+  },
+  {
+    id: 4, title: 'Pagination Manager', difficulty: 'Easy', timeMin: 25,
+    companies: ['Any', 'Ixigo', 'MakeMyTrip'],
+    description: `<h3>Problem</h3>
+<p>Implement a <strong>Pagination Manager</strong> that splits a dataset into pages and supports navigation.</p>
+<div class="req-box"><div class="req-box-title">Functional Requirements</div>
+<ul>
+<li><code>getPage(pageNumber)</code> — Return the correct slice of items for that page (1-indexed)</li>
+<li><code>nextPage(current)</code> — Return the next page or <code>null</code> if on last page</li>
+<li><code>previousPage(current)</code> — Return the previous page or <code>null</code> if on first page</li>
+<li>Each <code>Page</code> object carries: items, currentPage, totalPages, hasNext, hasPrevious</li>
+</ul></div>
+<h3>Example</h3>
+<pre style="background:var(--bg2);padding:12px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px">// 23 items, pageSize = 5 → 5 pages
+// Page 1: [1,2,3,4,5]
+// Page 5: [21,22,23]  ← last page may be smaller</pre>`,
+    hints: [
+      'Total pages = ceil(totalItems / pageSize). Use integer math: (totalItems + pageSize - 1) / pageSize',
+      'For page N, the start index is (N-1) * pageSize. The end index is min(startIndex + pageSize, totalItems).',
+      'Validate pageNumber bounds — throw or return an empty page for out-of-range requests.'
+    ],
+    approach: `<h3>Index Calculation</h3>
+<p>Page N (1-indexed): <code>startIndex = (pageNumber - 1) * pageSize</code>, <code>endIndex = min(startIndex + pageSize, items.size)</code>. Total pages: <code>ceil(items.size / pageSize.toFloat()).toInt()</code>.</p>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>Off-by-one on the last page when items don't divide evenly</li>
+<li>Not validating out-of-bounds page numbers</li>
+<li>Using 0-indexed pages when the spec says 1-indexed</li>
+</ul></div>`,
+    starterCode: `import kotlin.math.ceil
+
+data class Page<T>(
+    val items: List<T>,
+    val currentPage: Int,
+    val totalPages: Int,
+    val hasNext: Boolean,
+    val hasPrevious: Boolean
+)
+
+class PaginationManager<T>(
+    private val allItems: List<T>,
+    private val pageSize: Int
+) {
+    fun getPage(pageNumber: Int): Page<T> {
+        TODO("Return the correct page — validate bounds, compute slice")
+    }
+
+    fun nextPage(currentPage: Int): Page<T>? {
+        TODO("Return next page or null if already on last page")
+    }
+
+    fun previousPage(currentPage: Int): Page<T>? {
+        TODO("Return previous page or null if already on first page")
+    }
+}
+
+fun main() {
+    val items = (1..23).toList()
+    val manager = PaginationManager(items, pageSize = 5)
+
+    val page1 = manager.getPage(1)
+    println("Page 1 items: \${page1.items}")          // [1, 2, 3, 4, 5]
+    println("Total pages: \${page1.totalPages}")       // 5
+    println("Has next: \${page1.hasNext}")             // true
+    println("Has previous: \${page1.hasPrevious}")     // false
+
+    val page5 = manager.getPage(5)
+    println("Page 5 items: \${page5.items}")          // [21, 22, 23]
+    println("Has next: \${page5.hasNext}")             // false
+
+    println("Next from p1: \${manager.nextPage(1)?.currentPage}")      // 2
+    println("Prev from p1: \${manager.previousPage(1)?.currentPage}")  // null
+}`
+  },
+  {
+    id: 5, title: 'Retry with Exponential Backoff', difficulty: 'Medium', timeMin: 40,
+    companies: ['Google', 'PhonePe', 'Zepto'],
+    description: `<h3>Problem</h3>
+<p>Implement a <strong>retry mechanism with exponential backoff</strong> that wraps any suspending function and retries it automatically on failure.</p>
+<div class="req-box"><div class="req-box-title">Functional Requirements</div>
+<ul>
+<li>Retry up to <code>maxAttempts</code> times on exception</li>
+<li>Delay between retries grows exponentially: <code>initialDelay × multiplier^attempt</code></li>
+<li>Cap delay at <code>maxDelayMs</code> to avoid unbounded waits</li>
+<li>If all attempts fail, throw the last exception</li>
+<li>If an attempt succeeds, return the result immediately</li>
+</ul></div>
+<div class="req-box"><div class="req-box-title">Delay Schedule (example)</div>
+<ul>
+<li>Attempt 1 fails → wait 100ms</li>
+<li>Attempt 2 fails → wait 200ms</li>
+<li>Attempt 3 fails → wait 400ms (or maxDelay, whichever is lower)</li>
+</ul></div>`,
+    hints: [
+      'Use a loop from 1 to maxAttempts. Wrap each attempt in try-catch.',
+      'Track the current delay. After each failure (except the last), call delay(currentDelay) then multiply currentDelay by the multiplier. Use minOf(currentDelay, maxDelayMs) to cap it.',
+      'The function signature should be generic: suspend fun <T> retryWithBackoff(..., block: suspend () -> T): T. Rethrow on last attempt by checking attempt == maxAttempts.'
+    ],
+    approach: `<h3>Loop + Coroutine Delay</h3>
+<p>Loop through attempts. On success return early. On failure, if it's the last attempt rethrow. Otherwise compute delay = min(initialDelay × multiplier^(attempt-1), maxDelay), suspend with <code>delay()</code>, then continue.</p>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>Retrying on ALL exceptions — in production you'd filter: retry only on transient errors, not 4xx client errors</li>
+<li>Not using <code>minOf</code> to cap the delay</li>
+<li>Jitter — adding a small random offset to delays prevents thundering herd in distributed systems</li>
+</ul></div>`,
+    starterCode: `import kotlinx.coroutines.*
+
+suspend fun <T> retryWithBackoff(
+    maxAttempts: Int = 3,
+    initialDelayMs: Long = 100L,
+    multiplier: Double = 2.0,
+    maxDelayMs: Long = 5000L,
+    block: suspend () -> T
+): T {
+    // TODO: Retry block up to maxAttempts times with exponential backoff
+    // Delay grows: initialDelayMs, initialDelayMs*multiplier, initialDelayMs*multiplier^2...
+    // Cap delay at maxDelayMs
+    // Throw the last exception if all attempts fail
+    TODO("Implement retry logic")
+}
+
+// Simulated flaky network call
+var callCount = 0
+suspend fun fetchUserData(): String {
+    callCount++
+    println("Attempt #$callCount")
+    if (callCount < 3) {
+        delay(10) // simulate latency
+        throw Exception("Network timeout")
+    }
+    return "User { id: 42, name: 'Vivek' }"
+}
+
+fun main() = runBlocking {
+    callCount = 0
+    try {
+        val result = retryWithBackoff(
+            maxAttempts = 3,
+            initialDelayMs = 50L,
+            multiplier = 2.0
+        ) {
+            fetchUserData()
+        }
+        println("Success: $result") // Should succeed on attempt 3
+    } catch (e: Exception) {
+        println("All attempts failed: \${e.message}")
+    }
+}`
+  },
+  {
+    id: 6, title: 'Shopping Cart with Discounts', difficulty: 'Medium', timeMin: 45,
+    companies: ['Flipkart', 'Myntra', 'Meesho'],
+    description: `<h3>Problem</h3>
+<p>Design a <strong>Shopping Cart</strong> that supports multiple discount types using Kotlin's sealed classes.</p>
+<div class="req-box"><div class="req-box-title">Discount Types</div>
+<ul>
+<li><strong>PercentageOff</strong> — e.g. 20% off item price</li>
+<li><strong>FlatDiscount</strong> — e.g. ₹200 off the item</li>
+<li><strong>BuyXGetYFree</strong> — e.g. buy 2 get 1 free (pay for ceil(quantity / (buy+free) × buy) items)</li>
+</ul></div>
+<div class="req-box"><div class="req-box-title">Functional Requirements</div>
+<ul>
+<li><code>addItem(item)</code> — Add to cart or increase quantity if already present</li>
+<li><code>removeItem(productId)</code> — Remove item from cart</li>
+<li><code>calculateTotal()</code> — Return total price after all discounts</li>
+<li><code>getAppliedDiscounts()</code> — Return map of productId → discount amount saved</li>
+</ul></div>`,
+    hints: [
+      'Use a sealed class for Discount types. Each subtype carries different parameters — this is exactly what sealed classes are designed for.',
+      'In calculateTotal(), use a when expression on the Discount type for each item. For BuyXGetYFree: if you buy 3 with buy=2,free=1, you pay for 2.',
+      'For BuyXGetYFree: paidQuantity = ceil(quantity / (buyQuantity + freeQuantity).toFloat()) * buyQuantity'
+    ],
+    approach: `<h3>Sealed Class Dispatch</h3>
+<p>Use <code>when (item.discount)</code> in calculateTotal. Each branch handles its discount math. Store items in a <code>MutableMap&lt;String, CartItem&gt;</code> for O(1) add/update/remove by productId.</p>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>BuyXGetYFree calculation — most get the formula wrong for non-divisible quantities</li>
+<li>Flat discount exceeding item price — should floor at 0, not go negative</li>
+<li>Not handling duplicate addItem (should accumulate quantity, not replace)</li>
+</ul></div>`,
+    starterCode: `import kotlin.math.ceil
+import kotlin.math.max
+
+sealed class Discount {
+    data class PercentageOff(val percentage: Double) : Discount()
+    data class FlatDiscount(val amount: Double) : Discount()
+    data class BuyXGetYFree(val buyQuantity: Int, val freeQuantity: Int) : Discount()
+    object None : Discount()
+}
+
+data class CartItem(
+    val productId: String,
+    val name: String,
+    val price: Double,
+    val quantity: Int,
+    val discount: Discount = Discount.None
+)
+
+class ShoppingCart {
+    // TODO: Implement the shopping cart
+
+    fun addItem(item: CartItem) {
+        TODO("Add item or update quantity if productId already exists")
+    }
+
+    fun removeItem(productId: String) {
+        TODO("Remove item from cart")
+    }
+
+    fun calculateTotal(): Double {
+        TODO("Return total price after applying all discounts")
+    }
+
+    fun getAppliedDiscounts(): Map<String, Double> {
+        TODO("Return map of productId to discount amount saved")
+    }
+}
+
+fun main() {
+    val cart = ShoppingCart()
+    cart.addItem(CartItem("shirt", "Cotton Shirt", 1000.0, 2, Discount.PercentageOff(20.0)))
+    // Shirt: 2 × 1000 = 2000, 20% off = save 400 → pay 1600
+
+    cart.addItem(CartItem("shoes", "Running Shoes", 2000.0, 1, Discount.FlatDiscount(200.0)))
+    // Shoes: 2000 - 200 = 1800
+
+    cart.addItem(CartItem("socks", "Sports Socks", 100.0, 3, Discount.BuyXGetYFree(2, 1)))
+    // Socks: buy 2 get 1 free → pay for 2 → 200
+
+    println("Total: \${cart.calculateTotal()}")      // Expected: 3600.0
+    println("Discounts: \${cart.getAppliedDiscounts()}")
+}`
+  },
+  {
+    id: 7, title: 'In-Memory Cache with TTL', difficulty: 'Medium', timeMin: 35,
+    companies: ['CRED', 'Groww', 'Any'],
+    description: `<h3>Problem</h3>
+<p>Implement a <strong>generic in-memory cache with TTL (time-to-live)</strong> expiry for each entry.</p>
+<div class="req-box"><div class="req-box-title">Functional Requirements</div>
+<ul>
+<li><code>put(key, value, ttlMs)</code> — Store entry with an expiry time (defaults to <code>defaultTtlMs</code>)</li>
+<li><code>get(key)</code> — Return value if key exists and not expired, otherwise <code>null</code></li>
+<li><code>evictExpired()</code> — Proactively remove all expired entries</li>
+<li><code>size()</code> — Return count of non-expired entries</li>
+</ul></div>
+<div class="req-box"><div class="req-box-title">Expiry Rule</div>
+<p>An entry expires when <code>currentTime >= insertionTime + ttlMs</code>. Expired entries should not be returned by <code>get</code> even if not yet evicted.</p></div>`,
+    hints: [
+      'Store both the value and its expiry timestamp in a wrapper class.',
+      'Use a data class: CacheEntry(value: V, expiryAt: Long). Compute expiryAt = System.currentTimeMillis() + ttlMs at insertion time.',
+      'In get(), if entry exists but System.currentTimeMillis() >= entry.expiryAt, treat it as a miss (optionally remove it lazily). In size(), count only entries where expiryAt > currentTime.'
+    ],
+    approach: `<h3>Lazy Expiry + Proactive Eviction</h3>
+<p>Store <code>Map&lt;K, CacheEntry&lt;V&gt;&gt;</code> where each entry carries its absolute expiry timestamp. Lazy expiry on <code>get</code> — check and return null if expired. <code>evictExpired()</code> does a full sweep.</p>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>Thread safety — concurrent reads/writes need synchronization or ConcurrentHashMap</li>
+<li>size() returning stale count — must filter expired entries</li>
+<li>Not removing lazily-expired entries from the map (memory leak)</li>
+</ul></div>`,
+    starterCode: `class TTLCache<K, V>(private val defaultTtlMs: Long = 5000L) {
+    // TODO: Implement cache with per-entry TTL
+    // Hint: Store a wrapper with the value AND its expiry timestamp
+
+    fun put(key: K, value: V, ttlMs: Long = defaultTtlMs) {
+        TODO("Store entry with expiry = currentTime + ttlMs")
+    }
+
+    fun get(key: K): V? {
+        TODO("Return value if not expired, null otherwise")
+    }
+
+    fun evictExpired() {
+        TODO("Remove all entries where currentTime >= expiryAt")
+    }
+
+    fun size(): Int {
+        TODO("Return count of non-expired entries only")
+    }
+}
+
+fun main() {
+    val cache = TTLCache<String, String>(defaultTtlMs = 300L)
+
+    cache.put("user:1", "Vivek")
+    cache.put("user:2", "Priya", ttlMs = 50L) // Very short TTL
+
+    println(cache.get("user:1"))  // Expected: Vivek
+    println(cache.get("user:2"))  // Expected: Priya
+
+    Thread.sleep(100L)
+
+    println(cache.get("user:1"))  // Expected: Vivek (still alive)
+    println(cache.get("user:2"))  // Expected: null (expired)
+
+    println("Size (before evict): \${cache.size()}")  // Expected: 1
+    cache.evictExpired()
+    println("Size (after evict): \${cache.size()}")   // Expected: 1 (user:2 already evicted lazily)
+}`
+  },
+  {
+    id: 8, title: 'Order State Machine', difficulty: 'Medium', timeMin: 35,
+    companies: ['Zomato', 'Swiggy', 'Blinkit'],
+    description: `<h3>Problem</h3>
+<p>Implement a <strong>finite state machine</strong> for a food delivery order lifecycle using Kotlin sealed classes.</p>
+<div class="req-box"><div class="req-box-title">State Transitions</div>
+<ul>
+<li><strong>Placed</strong> → (Confirm) → <strong>Confirmed</strong></li>
+<li><strong>Confirmed</strong> → (StartPreparing) → <strong>Preparing</strong></li>
+<li><strong>Preparing</strong> → (Dispatch) → <strong>OutForDelivery</strong></li>
+<li><strong>OutForDelivery</strong> → (MarkDelivered) → <strong>Delivered</strong></li>
+<li><strong>Any state except Delivered</strong> → (Cancel) → <strong>Cancelled</strong></li>
+</ul></div>
+<div class="req-box"><div class="req-box-title">Functional Requirements</div>
+<ul>
+<li><code>transition(event)</code> — Apply event, return <code>true</code> if valid, <code>false</code> if invalid for current state</li>
+<li><code>getStatusDescription()</code> — Return a human-readable status string</li>
+<li>Invalid transitions must not change state</li>
+</ul></div>`,
+    hints: [
+      'Use sealed classes for both OrderState and OrderEvent. This gives exhaustive when expressions.',
+      'In transition(), use a when(currentState) outer block, then when(event) inner block. Any unmatched combination returns false.',
+      'The Cancel event is valid from most states — handle it in each non-terminal state\'s branch, or use an outer check before the main when block.'
+    ],
+    approach: `<h3>Sealed Class State Machine</h3>
+<p>Use nested <code>when</code> expressions. Outer: current state. Inner: incoming event. Only valid pairs update <code>currentState</code> and return true. Everything else returns false without mutating state.</p>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>Allowing Cancel from Delivered state — Delivered is terminal, nothing should transition out</li>
+<li>Not returning false for unrecognised events — a default else clause matters</li>
+<li>Missing the Cancelled → any transition (Cancelled is also terminal)</li>
+</ul></div>`,
+    starterCode: `sealed class OrderState {
+    object Placed : OrderState()
+    object Confirmed : OrderState()
+    object Preparing : OrderState()
+    object OutForDelivery : OrderState()
+    object Delivered : OrderState()
+    object Cancelled : OrderState()
+}
+
+sealed class OrderEvent {
+    object Confirm : OrderEvent()
+    object StartPreparing : OrderEvent()
+    object Dispatch : OrderEvent()
+    object MarkDelivered : OrderEvent()
+    object Cancel : OrderEvent()
+}
+
+class OrderStateMachine(initialState: OrderState = OrderState.Placed) {
+    var currentState: OrderState = initialState
+        private set
+
+    // TODO: Implement state transitions
+    // Return true if transition was valid, false if invalid for current state
+    // Invalid transitions must NOT change currentState
+    fun transition(event: OrderEvent): Boolean {
+        TODO("Implement using sealed class when expressions")
+    }
+
+    fun getStatusDescription(): String = when (currentState) {
+        is OrderState.Placed         -> "Order placed, awaiting confirmation"
+        is OrderState.Confirmed      -> "Order confirmed by restaurant"
+        is OrderState.Preparing      -> "Your food is being prepared 👨‍🍳"
+        is OrderState.OutForDelivery -> "Out for delivery 🛵"
+        is OrderState.Delivered      -> "Delivered! Enjoy your meal 🍱"
+        is OrderState.Cancelled      -> "Order cancelled"
+    }
+}
+
+fun main() {
+    val order = OrderStateMachine()
+    println(order.getStatusDescription())
+
+    println(order.transition(OrderEvent.Confirm))           // true  → Confirmed
+    println(order.transition(OrderEvent.MarkDelivered))     // false → invalid
+    println(order.transition(OrderEvent.StartPreparing))    // true  → Preparing
+    println(order.transition(OrderEvent.Dispatch))          // true  → OutForDelivery
+    println(order.transition(OrderEvent.MarkDelivered))     // true  → Delivered
+    println(order.transition(OrderEvent.Cancel))            // false → already Delivered
+
+    println(order.getStatusDescription()) // Delivered! Enjoy your meal 🍱
+}`
+  },
+  {
+    id: 9, title: 'Restaurant Bill Screen', difficulty: 'Hard', timeMin: 60,
+    companies: ['Toast'],
+    description: `<h3>Problem</h3>
+<p>Design and implement the restaurant bill screen below. Fetch bill data from a dummy API (simulated with a <strong>1.5s delay</strong>), show a loading state, then render the check. This is a real machine coding question from Toast's Android interview.</p>
+
+<div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;margin:14px 0">
+  <div style="flex-shrink:0">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:6px;text-align:center">Target Screen</div>
+    <div style="width:180px;border:2px solid #d0d0d0;border-radius:18px;overflow:hidden;background:#f5f5f5;box-shadow:0 4px 20px rgba(0,0,0,0.12)">
+      <div style="background:#e0e0e0;height:8px;display:flex;align-items:center;justify-content:center">
+        <div style="width:40px;height:4px;border-radius:2px;background:#bbb"></div>
+      </div>
+      <div style="background:#FFFFFF;padding:10px 12px;border-bottom:1px solid #eeeeee">
+        <span style="color:#404040;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif">Toast</span>
+      </div>
+      <div style="background:#fff;padding:0 12px;min-height:120px">
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f2f2f2;font-size:11px;color:#404040;font-family:'DM Sans',sans-serif"><span>Burger</span><span>$8.99</span></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f2f2f2;font-size:11px;color:#404040;font-family:'DM Sans',sans-serif"><span>Fries</span><span>$3.49</span></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f2f2f2;font-size:11px;color:#404040;font-family:'DM Sans',sans-serif"><span>Soda</span><span>$1.99</span></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:11px;color:#404040;font-family:'DM Sans',sans-serif"><span>Ice Cream</span><span>$1.99</span></div>
+      </div>
+      <div style="background:#FFFFFF;padding:10px 12px;border-top:1px solid #eeeeee">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:11px;color:#404040;font-family:'DM Sans',sans-serif"><span>Total:</span><span>$15.67</span></div>
+        <div style="display:flex;gap:6px">
+          <div style="flex:1;height:32px;background:#022CFA;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-family:'DM Sans',sans-serif">Print</div>
+          <div style="flex:1;height:32px;background:#022CFA;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-family:'DM Sans',sans-serif">Pay $15.67</div>
+        </div>
+      </div>
+      <div style="background:#e0e0e0;height:8px"></div>
+    </div>
+  </div>
+
+  <div style="flex:1;min-width:0">
+    <div class="req-box" style="margin-bottom:8px"><div class="req-box-title">Header</div>
+    <ul style="margin:0">
+      <li>Background: <code>#FFFFFF</code> · Padding: <code>12dp</code></li>
+      <li>"Toast" text — color <code>#404040</code>, size <code>16sp</code></li>
+    </ul></div>
+    <div class="req-box" style="margin-bottom:8px"><div class="req-box-title">Item List (RecyclerView)</div>
+    <ul style="margin:0">
+      <li>Each row: item name (left) + price (right)</li>
+      <li>Scrollable — list length is dynamic from API</li>
+      <li>Show <strong>loading spinner</strong> while fetching</li>
+    </ul></div>
+    <div class="req-box"><div class="req-box-title">Footer</div>
+    <ul style="margin:0">
+      <li>Background: <code>#FFFFFF</code> · Padding: <code>12dp</code></li>
+      <li>Total text — color <code>#404040</code>, size <code>16sp</code></li>
+      <li>Two buttons side by side · Height: <code>48dp</code></li>
+      <li>Margin top (from total): <code>8dp</code> · Between buttons: <code>8dp</code></li>
+      <li>Button bg: <code>#022CFA</code> · Text: <code>#FFFFFF</code>, size <code>16sp</code></li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="req-box"><div class="req-box-title">Dummy API — Mock this in your Repository</div>
+<pre style="font-family:'JetBrains Mono',monospace;font-size:11.5px;margin:0;line-height:1.7;overflow-x:auto">{
+  "items": [
+    { "name": "Burger",    "price": 8.99 },
+    { "name": "Fries",     "price": 3.49 },
+    { "name": "Soda",      "price": 1.99 },
+    { "name": "Ice Cream", "price": 1.99 }
+  ],
+  "total": 15.67
+}
+<span style="color:var(--muted)">// Simulate network latency: delay(1500) before emitting data</span></pre></div>
+
+<h3>Requirements</h3>
+<ul>
+<li>Architecture: <strong>MVVM</strong> — ViewModel + Repository + sealed UiState</li>
+<li>Use <code>StateFlow</code> in ViewModel, collect with <code>repeatOnLifecycle(STARTED)</code></li>
+<li>Use <code>StateFlow.update { }</code> — not <code>.value =</code></li>
+<li>Repository returns <code>Flow&lt;CheckData&gt;</code> with <code>delay(1500)</code></li>
+<li>Handle Loading → Success → Error states in the UI</li>
+<li>Total amount and Pay button text must come from API data — do not hardcode</li>
+</ul>`,
+    hints: [
+      'Start with data models: <code>data class CheckItem(val name: String, val price: Double)</code> and <code>CheckData(items, total)</code>. Then define a sealed <code>CheckUiState</code> with Loading, Success(data), Error(message).',
+      'Repository: <code>fun getCheck(): Flow&lt;CheckData&gt; = flow { delay(1500); emit(mockData) }</code>. ViewModel: <code>private val _state = MutableStateFlow&lt;CheckUiState&gt;(Loading)</code> — call <code>.update{}</code> never <code>.value =</code>.',
+      'In the Activity: <code>lifecycleScope.launch { repeatOnLifecycle(STARTED) { vm.state.collect { when(it) { ... } } } }</code>. On Loading → show ProgressBar, hide RecyclerView. On Success → reverse + call <code>adapter.submitList()</code> + update footer text.',
+      'Footer layout: parent <code>LinearLayout</code> with <code>weightSum="2"</code>, each button <code>layout_weight="1"</code>. Pay button text = <code>"Pay $" + String.format("%.2f", total)</code> — read from state, not hardcoded.'
+    ],
+    approach: `<h3>Architecture Flow</h3>
+<p>Repository <code>flow { delay(1500); emit(data) }</code> → ViewModel collects + maps to <code>CheckUiState</code> via <code>MutableStateFlow.update{}</code> → Activity collects with <code>repeatOnLifecycle(STARTED)</code> → UI renders per state.</p>
+<h3>Key Files</h3>
+<ul>
+<li><strong>CheckItem.kt / CheckData.kt</strong> — data models</li>
+<li><strong>CheckUiState.kt</strong> — sealed class with Loading, Success, Error</li>
+<li><strong>CheckRepository.kt</strong> — interface + impl with <code>Flow</code> + <code>delay(1500)</code></li>
+<li><strong>CheckViewModel.kt</strong> — MutableStateFlow + viewModelScope + .update{}</li>
+<li><strong>BillActivity.kt</strong> — repeatOnLifecycle + adapter + footer update</li>
+<li><strong>activity_bill.xml</strong> — header / FrameLayout(RecyclerView + ProgressBar) / footer</li>
+<li><strong>item_check_row.xml</strong> — two TextViews, horizontal LinearLayout</li>
+</ul>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>Using <code>.value =</code> instead of <code>.update { }</code> — not atomic</li>
+<li>Collecting Flow in <code>onCreate</code> scope — leaks coroutine when app is backgrounded</li>
+<li>Hardcoding <code>"Pay $15.67"</code> — interviewer WILL change the mock data to test this</li>
+<li>Not handling Error state — ProgressBar keeps spinning if the API call fails</li>
+<li>ProgressBar outside FrameLayout — it won't overlay the RecyclerView properly</li>
+</ul></div>`,
+    starterCode: `// Write your Android implementation here.
+//
+// Suggested order:
+//   1. Data models (CheckItem, CheckData)
+//   2. Sealed UiState class
+//   3. Repository (Flow + delay)
+//   4. ViewModel (StateFlow + update)
+//   5. Activity + RecyclerView adapter
+//   6. XML layouts (activity_bill.xml, item_check_row.xml)
+
+fun main() {
+    println("Open in Android Studio to run the full UI implementation.")
+}`
+  }
+];
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let currentProblemId = null;
+let timerInterval = null;
+let timerSeconds = 0;
+let timerRunning = false;
+let currentFilter = 'all';
+let playgroundInitialized = false;
+
+/* ═══════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════ */
+function renderSidebar() {
+  const list = document.getElementById('problemList');
+  const filtered = currentFilter === 'all'
+    ? PROBLEMS
+    : PROBLEMS.filter(p => p.difficulty === currentFilter);
+
+  list.innerHTML = filtered.map(p => `
+    <div class="prob-item ${p.id === currentProblemId ? 'active' : ''}" onclick="loadProblem(${p.id})" id="prob-item-${p.id}">
+      <div class="prob-num">${p.id}</div>
+      <div class="prob-info">
+        <div class="prob-name">${p.title}</div>
+        <div class="prob-meta">
+          <span class="diff-badge diff-${p.difficulty.toLowerCase()}">${p.difficulty}</span>
+          <span class="prob-time">${p.timeMin} min</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterProblems(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSidebar();
+}
+
+/* ═══════════════════════════════════════════
+   LOAD PROBLEM
+═══════════════════════════════════════════ */
+function loadProblem(id) {
+  const p = PROBLEMS.find(x => x.id === id);
+  if (!p) return;
+
+  // Reset timer if switching problems
+  if (currentProblemId !== id) {
+    stopTimer();
+    timerSeconds = p.timeMin * 60;
+    updateTimerDisplay();
+  }
+
+  currentProblemId = id;
+  renderSidebar();
+
+  // Header
+  document.getElementById('probTitle').textContent = p.title;
+  document.getElementById('probTags').innerHTML =
+    `<span class="diff-badge diff-${p.difficulty.toLowerCase()}">${p.difficulty}</span>` +
+    (p.uiChallenge ? '<span class="tag-ui-challenge">📱 UI Challenge</span>' : '') +
+    p.companies.map(c => `<span class="tag-company">${c}</span>`).join('') +
+    `<span class="tag-time">⏱ ${p.timeMin} min</span>`;
+
+  // Timer
+  timerSeconds = p.timeMin * 60;
+  updateTimerDisplay();
+
+  // Tabs — reset to Problem tab
+  switchTab('description', document.querySelector('.tab-btn'));
+
+  // Description
+  document.getElementById('tab-description').innerHTML = p.description;
+
+  // Hints
+  document.getElementById('tab-hints').innerHTML = p.hints.map((hint, i) => `
+    <div class="hint-item" id="hint-${id}-${i}">
+      <div class="hint-header" onclick="unlockHint(${id}, ${i})">
+        <span class="hint-label">💡 Hint ${i + 1}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="hint-lock">🔒</span>
+          <button class="hint-unlock-btn" onclick="event.stopPropagation();unlockHint(${id},${i})">Reveal</button>
+        </div>
+      </div>
+      <div class="hint-body">${hint}</div>
+    </div>
+  `).join('');
+
+  // Approach
+  document.getElementById('tab-approach').innerHTML = `
+    <div class="approach-locked" id="approach-locked-${id}">
+      <div class="approach-locked-icon">🔐</div>
+      <p>Work through the problem first — even a partial attempt builds the intuition that makes the approach click.</p>
+      <button class="unlock-approach-btn" onclick="unlockApproach(${id})">Show Approach</button>
+    </div>
+    <div class="approach-content" id="approach-content-${id}">${p.approach}</div>
+  `;
+
+  // Playground header + content
+  const labelEl = document.querySelector('.playground-label');
+  const resetEl = document.querySelector('.reset-btn');
+  if (p.uiChallenge) {
+    labelEl.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:#7c3aed;flex-shrink:0;display:inline-block;margin-right:8px"></span>Reference Implementation';
+    resetEl.style.display = 'none';
+    initUiChallenge(p.files);
+  } else {
+    labelEl.innerHTML = '<span class="kotlin-dot"></span>Kotlin Compiler';
+    resetEl.style.display = '';
+    initPlayground(p.starterCode);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   KOTLIN PLAYGROUND
+═══════════════════════════════════════════ */
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function initPlayground(code) {
+  const wrap = document.getElementById('playground-wrap');
+  wrap.style.flex = '1';
+  wrap.style.overflow = 'hidden';
+  wrap.innerHTML = `<div class="kotlin-playground" theme="darcula" data-target-platform="java" style="height:100%">${escHtml(code)}</div>`;
+  if (typeof KotlinPlayground !== 'undefined') {
+    KotlinPlayground('#playground-wrap .kotlin-playground', { theme: 'darcula' });
+  }
+}
+
+function resetCode() {
+  if (!currentProblemId) return;
+  const p = PROBLEMS.find(x => x.id === currentProblemId);
+  if (!p) return;
+  if (p.uiChallenge) initUiChallenge(p.files);
+  else initPlayground(p.starterCode);
+}
+
+/* ═══════════════════════════════════════════
+   UI CHALLENGE (Android Studio required)
+═══════════════════════════════════════════ */
+function initUiChallenge(files) {
+  const wrap = document.getElementById('playground-wrap');
+  wrap.style.flex = '1';
+  wrap.style.overflow = 'hidden';
+
+  const tabsHtml = files.map((f, i) =>
+    `<button class="ui-file-tab ${i === 0 ? 'active' : ''}" onclick="showUiFile(${i})">${escHtml(f.name)}</button>`
+  ).join('');
+
+  const panelsHtml = files.map((f, i) =>
+    `<div id="ui-file-${i}" class="ui-code-scroll" style="display:${i === 0 ? 'flex' : 'none'};flex-direction:column"><pre>${escHtml(f.code)}</pre></div>`
+  ).join('');
+
+  wrap.innerHTML = `
+    <div style="display:flex;flex-direction:column;height:100%;background:#1e1e2e">
+      <div class="ui-challenge-notice">
+        <span style="font-size:15px">📱</span>
+        <span class="ui-challenge-notice-text">Android Studio required · Reference implementation</span>
+        <button class="ui-copy-btn" style="margin-left:auto" onclick="copyCurrentUiFile()">Copy File</button>
+      </div>
+      <div class="ui-file-tabs" id="uiFileTabs">${tabsHtml}</div>
+      <div style="flex:1;overflow:hidden;display:flex;flex-direction:column" id="uiFilePanels">${panelsHtml}</div>
+    </div>`;
+}
+
+function showUiFile(idx) {
+  document.querySelectorAll('.ui-file-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+  document.querySelectorAll('.ui-code-scroll').forEach((p, i) => { p.style.display = i === idx ? 'flex' : 'none'; });
+}
+
+function copyCurrentUiFile() {
+  if (!currentProblemId) return;
+  const p = PROBLEMS.find(x => x.id === currentProblemId);
+  if (!p || !p.files) return;
+  const idx = Array.from(document.querySelectorAll('.ui-file-tab')).findIndex(t => t.classList.contains('active'));
+  if (idx < 0) return;
+  navigator.clipboard.writeText(p.files[idx].code).then(() => showToast('✓ Copied to clipboard', 'success'));
+}
+
+/* ═══════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════ */
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  // Find the tab button by its onclick
+  document.querySelectorAll('.tab-btn').forEach(el => {
+    if (el.getAttribute('onclick') && el.getAttribute('onclick').includes("'" + name + "'")) {
+      el.classList.add('active');
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════
+   HINTS & APPROACH
+═══════════════════════════════════════════ */
+function unlockHint(probId, hintIdx) {
+  document.getElementById(`hint-${probId}-${hintIdx}`)?.classList.add('unlocked');
+}
+
+function unlockApproach(probId) {
+  document.getElementById(`approach-locked-${probId}`).style.display = 'none';
+  document.getElementById(`approach-content-${probId}`).classList.add('show');
+}
+
+/* ═══════════════════════════════════════════
+   TIMER
+═══════════════════════════════════════════ */
+function toggleTimer() {
+  if (!currentProblemId) return;
+  timerRunning ? stopTimer() : startTimer();
+}
+
+function startTimer() {
+  if (timerRunning) return;
+  timerRunning = true;
+  document.getElementById('timerBtn').className = 'timer-btn stop';
+  document.getElementById('timerBtn').textContent = '■ Stop';
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    updateTimerDisplay();
+    if (timerSeconds <= 0) {
+      stopTimer();
+      document.getElementById('timerDisplay').textContent = '00:00';
+      showToast('⏰ Time\'s up! Check the approach tab.', '');
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  timerRunning = false;
+  clearInterval(timerInterval);
+  timerInterval = null;
+  document.getElementById('timerBtn').className = 'timer-btn start';
+  document.getElementById('timerBtn').textContent = '▶ Start';
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timerDisplay');
+  const m = Math.floor(Math.abs(timerSeconds) / 60);
+  const s = Math.abs(timerSeconds) % 60;
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const ratio = timerSeconds / (currentProblemId ? (PROBLEMS.find(p=>p.id===currentProblemId)?.timeMin||45)*60 : 1);
+  el.className = 'timer-display' + (ratio < 0.1 ? ' danger' : ratio < 0.25 ? ' warning' : '');
+}
+
+/* ═══════════════════════════════════════════
+   AUTH SYSTEM
+═══════════════════════════════════════════ */
+const SUPABASE_URL = 'https://dquheflcmcppldrnckzf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function openAuthModal(tab='signin'){switchAuthTab(tab);clearAuthErrors();document.getElementById('authOverlay').classList.add('open');document.body.style.overflow='hidden';setTimeout(()=>{document.getElementById(tab==='signin'?'siEmail':'suName')?.focus()},300)}
+function closeAuthModal(){document.getElementById('authOverlay').classList.remove('open');document.body.style.overflow=''}
+function closeAuthOnBackdrop(e){if(e.target===document.getElementById('authOverlay'))closeAuthModal()}
+function switchAuthTab(tab){const isSI=tab==='signin';document.getElementById('tabSignin').classList.toggle('active',isSI);document.getElementById('tabSignup').classList.toggle('active',!isSI);document.getElementById('formSignin').style.display=isSI?'':'none';document.getElementById('formSignup').style.display=isSI?'none':'';clearAuthErrors()}
+function showErr(id,inputId){document.getElementById(id)?.classList.add('show');if(inputId)document.getElementById(inputId)?.classList.add('error')}
+function clearAuthErrors(){['siEmailErr','siPassErr','suNameErr','suEmailErr','suEmailExistsErr','suPassErr'].forEach(id=>document.getElementById(id)?.classList.remove('show'));['siEmail','siPassword','suName','suEmail','suPassword'].forEach(id=>document.getElementById(id)?.classList.remove('error'))}
+function setLoading(id,loading,def){const b=document.getElementById(id);if(!b)return;b.disabled=loading;b.innerHTML=loading?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.7s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Wait…':def}
+function togglePw(id,btn){const i=document.getElementById(id);i.type=i.type==='text'?'password':'text';btn.textContent=i.type==='password'?'👁':'🙈'}
+async function handleSignIn(){clearAuthErrors();const email=document.getElementById('siEmail').value.trim(),pass=document.getElementById('siPassword').value;let v=true;if(!email||!email.includes('@')){showErr('siEmailErr','siEmail');v=false}if(!pass){showErr('siPassErr','siPassword');v=false}if(!v)return;setLoading('siBtn',true,'Sign In →');const{data,error}=await db.auth.signInWithPassword({email,password:pass});setLoading('siBtn',false,'Sign In →');if(error){showErr('siPassErr','siPassword');return}closeAuthModal();updateNavForUser(data.user);showToast('✓ Welcome back, '+( data.user.user_metadata?.full_name||email.split('@')[0]).split(' ')[0]+'!','success')}
+async function handleSignUp(){clearAuthErrors();const name=document.getElementById('suName').value.trim(),email=document.getElementById('suEmail').value.trim(),pass=document.getElementById('suPassword').value;let v=true;if(!name){showErr('suNameErr','suName');v=false}if(!email||!email.includes('@')){showErr('suEmailErr','suEmail');v=false}if(pass.length<6){showErr('suPassErr','suPassword');v=false}if(!v)return;setLoading('suBtn',true,'Create Account →');const{data,error}=await db.auth.signUp({email,password:pass,options:{data:{full_name:name}}});setLoading('suBtn',false,'Create Account →');if(error){if(error.message.toLowerCase().includes('already')){showErr('suEmailExistsErr','suEmail')}else{showToast(error.message,'error-toast')}return}if(data.user&&!data.session){document.getElementById('formSignup').style.display='none';const vs=document.getElementById('authVerifyState');vs.style.display='';vs.querySelector('#verifyEmailAddr').textContent='Verification sent to '+email}else if(data.session){closeAuthModal();updateNavForUser(data.user);showToast('🎉 Welcome to Droidly!','success')}}
+async function handleForgot(e){e.preventDefault();const email=document.getElementById('siEmail').value.trim();if(!email||!email.includes('@')){showErr('siEmailErr','siEmail');return}const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo:window.location.href});showToast(error?error.message:'📧 Reset link sent to '+email,error?'error-toast':'success')}
+async function handleGoogleAuth(){const{error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href.split('?')[0]}});if(error)showToast('Google sign-in failed','error-toast')}
+async function signOut(){await db.auth.signOut();updateNavForUser(null);showToast("Signed out.",'')}
+let currentUser=null;
+function updateNavForUser(user){currentUser=user;const sb=document.getElementById('navSignInBtn'),um=document.getElementById('navUserMenu');if(user){const name=user.user_metadata?.full_name||user.email.split('@')[0];sb.style.display='none';um.style.display='flex';document.getElementById('navAvatarInitial').textContent=name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();document.getElementById('navUserName').textContent=name.split(' ')[0];document.getElementById('navUserEmail').textContent=user.email}else{sb.style.display='';um.style.display='none'}}
+let toastTimer;
+function showToast(msg,type){const t=document.getElementById('authToast');t.textContent=msg;t.className='auth-toast show'+(type?' '+type:'');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),4000)}
+(async function initAuth(){db.auth.onAuthStateChange((ev,session)=>{if(ev==='SIGNED_IN'||ev==='TOKEN_REFRESHED')updateNavForUser(session.user);else if(ev==='SIGNED_OUT')updateNavForUser(null)});const{data:{session}}=await db.auth.getSession();if(session)updateNavForUser(session.user)})();
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+renderSidebar();
+// Auto-load first problem
+loadProblem(1);
+</script>
+</body>
+</html>

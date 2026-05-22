@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+  <link rel="manifest" href="/site.webmanifest"/>
+  <meta name="theme-color" content="#3d7a4f"/>
+  <title>Coroutines & Flow — Android Core Concepts | Droidly</title>
+  <meta name="description" content="Deep dive into Kotlin Coroutines, Flow, StateFlow, SharedFlow, structured concurrency, and every coroutines pattern asked in Android interviews."/>
+  <link rel="canonical" href="https://droidly.io/concept_coroutines.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:url" content="https://droidly.io/concept_coroutines.html"/>
+  <meta property="og:title" content="Kotlin Coroutines and Flow - Android Interview Guide | Droidly"/>
+  <meta property="og:description" content="Deep dive into Kotlin Coroutines, Flow, StateFlow, SharedFlow, structured concurrency, and every coroutines pattern asked in Android interviews."/>
+  <meta property="og:image" content="https://droidly.io/assets/og-image.png"/>
+  <meta property="og:site_name" content="Droidly"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Kotlin Coroutines and Flow - Android Interview Guide | Droidly"/>
+  <meta name="twitter:description" content="Deep dive into Kotlin Coroutines, Flow, StateFlow, SharedFlow, structured concurrency, and every coroutines pattern asked in Android interviews."/>
+  <meta name="twitter:image" content="https://droidly.io/assets/og-image.png"/>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Kotlin Coroutines and Flow - Android Interview Guide",
+    "description": "Deep dive into Kotlin Coroutines, Flow, StateFlow, SharedFlow, structured concurrency, and every coroutines pattern asked in Android interviews.",
+    "url": "https://droidly.io/concept_coroutines.html",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Droidly",
+      "logo": { "@type": "ImageObject", "url": "https://droidly.io/assets/logo.png" }
+    }
+  }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  
+  <!-- Google Analytics 4 — replace G-61G11MD574 with your Measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-61G11MD574');
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #ffffff; --bg-subtle: #f9fafb; --bg-green: #e8f2ec; --bg-blue: #eff6ff; --bg-amber: #fffbeb; --bg-purple: #f5f3ff;
+      --border: #e5e7eb; --border-green: #6aad82;
+      --ink: #111827; --ink2: #374151; --muted: #6b7280; --muted2: #9ca3af;
+      --accent: #3d7a4f; --accent-dark: #2e6040; --accent-light: #4caf70;
+      --blue: #2563eb; --blue-light: #dbeafe;
+      --amber: #d97706; --red: #dc2626;
+      --purple: #7c3aed; --purple-light: #ede9fe;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--ink); font-family: 'Inter', -apple-system, sans-serif; font-size: 16px; line-height: 1.8; -webkit-font-smoothing: antialiased; padding-top: 68px; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 900; height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; background: rgba(255,255,255,0.90); backdrop-filter: blur(20px) saturate(1.6); border-bottom: 1px solid var(--border); box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04); }
+    nav::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #2e6040, #4caf70, #3d7a4f); z-index: 1; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.5px; }
+    .logo-mark img { height: 32px; width: auto; display: block; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-cta { background: var(--accent); color: white; padding: 8px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; text-decoration: none; }
+    .btn-nav { font-size: 13px; font-weight: 600; color: var(--ink); background: var(--bg-subtle); border: 1px solid var(--border); padding: 6px 16px; border-radius: 100px; cursor: pointer; font-family: inherit; }
+    .nav-user { display: flex; align-items: center; gap: 8px; position: relative; cursor: pointer; }
+    .nav-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; border: 2px solid rgba(61,122,79,0.3); }
+    .nav-user-name { font-size: 14px; font-weight: 600; color: var(--ink2); }
+    .nav-caret { font-size: 10px; color: var(--muted); }
+    .user-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); min-width: 200px; overflow: hidden; z-index: 999; }
+    .nav-user.open .user-dropdown { display: block; }
+    .user-dropdown-email { padding: 12px 16px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
+    .user-dropdown-item { padding: 10px 16px; font-size: 14px; cursor: pointer; }
+    .user-dropdown-item.danger { color: var(--red); }
+
+    .page { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 260px; gap: 64px; padding: 48px 24px 100px; align-items: start; }
+    .content { min-width: 0; }
+
+    /* Article header */
+    .concept-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .eyebrow-tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--accent); background: var(--bg-green); padding: 4px 12px; border-radius: 100px; }
+    .eyebrow-sep { color: var(--muted2); }
+    .eyebrow-meta { font-size: 13px; color: var(--muted); }
+    .article-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 4vw, 42px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; color: var(--ink); margin-bottom: 20px; }
+    .article-subtitle { font-size: 18px; color: var(--muted); line-height: 1.7; margin-bottom: 32px; max-width: 640px; font-weight: 400; }
+    .article-meta-strip { display: flex; flex-wrap: wrap; gap: 20px; padding: 16px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 48px; }
+    .meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+    .meta-item strong { color: var(--ink2); }
+
+    /* Typography */
+    .content h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; color: var(--ink); margin: 56px 0 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border); scroll-margin-top: 90px; }
+    .content h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 700; color: var(--ink); margin: 36px 0 12px; scroll-margin-top: 90px; }
+    .content h4 { font-size: 15px; font-weight: 700; color: var(--ink); margin: 24px 0 8px; }
+    .content p { margin-bottom: 20px; color: var(--ink2); line-height: 1.85; font-size: 16px; }
+    .content p:last-child { margin-bottom: 0; }
+    .content strong { color: var(--ink); font-weight: 600; }
+    .content em { color: var(--ink2); }
+    .content ul, .content ol { margin: 12px 0 20px 24px; color: var(--ink2); }
+    .content li { margin-bottom: 8px; line-height: 1.75; font-size: 16px; }
+    .content a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+    .content code { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; background: #f3f4f6; color: #be185d; padding: 2px 6px; border-radius: 4px; }
+
+    /* Callout boxes */
+    .callout { border-radius: 12px; padding: 20px 24px; margin: 28px 0; }
+    .callout-analogy { background: var(--bg-amber); border-left: 4px solid #f59e0b; }
+    .callout-tip    { background: var(--bg-green); border-left: 4px solid var(--accent); }
+    .callout-warn   { background: #fff5f5; border-left: 4px solid var(--red); }
+    .callout-info   { background: var(--bg-blue); border-left: 4px solid var(--blue); }
+    .callout-purple { background: var(--bg-purple); border-left: 4px solid var(--purple); }
+    .callout-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+    .callout-analogy .callout-label { color: #92400e; }
+    .callout-tip    .callout-label { color: var(--accent-dark); }
+    .callout-warn   .callout-label { color: #991b1b; }
+    .callout-info   .callout-label { color: #1e40af; }
+    .callout-purple .callout-label { color: #5b21b6; }
+    .callout p { font-size: 15px; line-height: 1.75; margin-bottom: 8px; }
+    .callout p:last-child { margin-bottom: 0; }
+
+    /* Code blocks */
+    .code-wrap { margin: 24px 0; border-radius: 12px; overflow: hidden; border: 1px solid #2a2a3e; }
+    .code-label { background: #13131f; color: #6c7086; font-size: 11px; font-family: 'JetBrains Mono', monospace; padding: 8px 16px; border-bottom: 1px solid #2a2a3e; display: flex; justify-content: space-between; }
+    .code-block { background: #1e1e2e; color: #cdd6f4; padding: 20px; overflow-x: auto; font-size: 13.5px; line-height: 1.75; font-family: 'JetBrains Mono', monospace; white-space: pre; margin: 0; border-radius: 0; border: none; }
+    .kw { color: #cba6f7; } .fn { color: #89b4fa; } .cl { color: #f9e2af; }
+    .cm { color: #6c7086; font-style: italic; } .st { color: #a6e3a1; }
+    .nm { color: #fab387; } .an { color: #89dceb; }
+
+    /* Comparison table */
+    .comp-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+    .comp-table th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: var(--ink); color: #f9e2af; }
+    .comp-table td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--ink2); vertical-align: top; }
+    .comp-table tr:nth-child(even) td { background: var(--bg-subtle); }
+    .comp-table tr td:first-child { font-weight: 600; color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+    .check { color: #16a34a; font-weight: 700; }
+    .cross { color: var(--red); font-weight: 700; }
+
+    /* Sidebar */
+    .sidebar { position: sticky; top: 88px; }
+    .rp-label { font-size: 11px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .rp-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 24px; }
+    .rp-fill  { height: 100%; background: var(--accent); border-radius: 4px; width: 0%; transition: width 0.2s; }
+    .toc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted2); margin-bottom: 10px; }
+    .toc-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+    .toc-item a { display: block; padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 13px; color: var(--muted); border-left: 2px solid transparent; transition: all 0.15s; }
+    .toc-item a:hover { color: var(--ink); background: var(--bg-subtle); }
+    .toc-item a.active { color: var(--accent); font-weight: 600; border-left-color: var(--accent); background: var(--bg-green); }
+    .toc-item.sub a { padding-left: 20px; font-size: 12px; }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+    /* Section divider */
+    .section-rule { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+    @media (max-width: 900px) { .page { grid-template-columns: 1fr; } .sidebar { display: none; } }
+    @media (max-width: 600px) { nav { padding: 0 20px; } .page { padding: 24px 16px 60px; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="nav-right" id="navRight">
+    <a href="premium.html" class="nav-cta" id="upgrade-cta">⚡ Get Premium</a>
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <div class="user-dropdown-item danger" onclick="handleSignOut()">🚪 Sign Out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+<main class="content">
+
+  <div class="concept-eyebrow">
+    <span class="eyebrow-tag">⚙️ Core Concept</span>
+    <span class="eyebrow-sep">·</span>
+    <span class="eyebrow-meta">~30 min read</span>
+    <span class="eyebrow-sep">·</span>
+    <span class="eyebrow-meta">Intermediate → Advanced</span>
+  </div>
+  <h1 class="article-title">Coroutines &amp; Flow</h1>
+  <p class="article-subtitle">How Kotlin conquered Android concurrency — from suspending functions and structured lifecycles to cold streams, hot state, and back-pressure.</p>
+  <div class="article-meta-strip">
+    <div class="meta-item">🧵 <strong>Coroutines</strong></div>
+    <div class="meta-item">🌊 <strong>Flow / StateFlow / SharedFlow</strong></div>
+    <div class="meta-item">📬 <strong>Channel</strong></div>
+    <div class="meta-item">🏗️ <strong>Structured Concurrency</strong></div>
+  </div>
+
+  <!-- ─── 1. THE PROBLEM ─── -->
+  <h2 id="the-problem">The problem with threads</h2>
+
+  <p>Before coroutines, Android concurrency was a battlefield. You had <code>AsyncTask</code> — a class so error-prone it was deprecated in API 30 with no fanfare, just a quiet acknowledgment that it had caused enough damage. You had raw <code>Thread</code>s, which you could create freely but couldn't cancel, coordinate, or automatically clean up. You had callbacks nested inside callbacks nested inside callbacks — what the community affectionately called "callback hell." And every time you wanted to do something after a network call, you'd write code like this:</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>The old way — callback hell</span></div>
+    <div class="code-block"><span class="fn">fetchUser</span>(userId) { user ->
+    <span class="fn">fetchOrders</span>(user.id) { orders ->
+        <span class="fn">fetchProducts</span>(orders.first().id) { product ->
+            <span class="fn">updateUI</span>(user, orders, product)  <span class="cm">// 3 levels deep — and this is the happy path</span>
+        }
+    }
+}</div>
+  </div>
+
+  <p>This code is hard to read, nearly impossible to handle errors in cleanly, and leaks memory if the user navigates away before all three calls complete. The callback for <code>fetchProducts</code> holds a reference to the enclosing Activity — which might have been destroyed by the time it fires.</p>
+
+  <p>Threads themselves are expensive. Creating a thread allocates roughly 512KB–1MB of stack memory. Android devices, especially mid-range ones, can't sustain hundreds of concurrent threads. And once you create a thread, you own it — if you forget to stop it, it keeps running long after the work is done, burning CPU and battery.</p>
+
+  <p>Kotlin coroutines solve all of this. But to understand <em>how</em>, you first need to understand what a coroutine actually is.</p>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── 2. WHAT IS A COROUTINE ─── -->
+  <h2 id="what-is-a-coroutine">What is a coroutine?</h2>
+
+  <p>A coroutine is <strong>a unit of work that can be suspended and resumed without blocking a thread</strong>. When it hits a waiting operation — a network call, a disk read, a timer — it <em>suspends</em>, releases the thread it was running on, and lets that thread pick up other work. When the operation completes, the coroutine <em>resumes</em> — picking up exactly where it left off, on the same or a different thread.</p>
+
+  <p>The important distinction is between <strong>blocking</strong> and <strong>suspending</strong>. When a thread blocks, it stops doing anything — it just sits there consuming OS resources while waiting. When a coroutine suspends, the thread is freed entirely. Ten thousand coroutines can be simultaneously waiting on network responses while sharing just a handful of threads, because none of them are blocking while they wait.</p>
+
+  <p>This is what the <code>suspend</code> keyword means in Kotlin. Marking a function <code>suspend</code> tells the compiler: "this function may pause execution at some point." The compiler then transforms it into a state machine that can be paused and resumed. To the developer writing it, it reads like normal, sequential, synchronous code — because it is. There are no callbacks, no <code>.then()</code> chains, no thread management. The concurrency is handled for you.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Three async calls — reads like sequential code, blocks no thread</span></div>
+    <div class="code-block"><span class="kw">suspend fun</span> <span class="fn">loadDashboard</span>(): <span class="cl">Dashboard</span> {
+    <span class="kw">val</span> user     = <span class="fn">fetchUser</span>()      <span class="cm">// suspends — thread freed during network call</span>
+    <span class="kw">val</span> orders   = <span class="fn">fetchOrders</span>()   <span class="cm">// resumes, then suspends again</span>
+    <span class="kw">val</span> products = <span class="fn">fetchProducts</span>() <span class="cm">// resumes, then suspends again</span>
+    <span class="kw">return</span> <span class="cl">Dashboard</span>(user, orders, products)
+}
+
+<span class="cm">// Error handling works like normal code — no .catch() chaining</span>
+<span class="kw">try</span> {
+    <span class="kw">val</span> dashboard = <span class="fn">loadDashboard</span>()
+} <span class="kw">catch</span> (e: <span class="cl">IOException</span>) {
+    <span class="fn">showError</span>(e.message)
+}</div>
+  </div>
+
+  <p>Compare this to the callback version at the top. Same logic, same three calls — but here you can read it top to bottom, handle errors in one place, and return a value naturally. A <code>suspend</code> function behaves exactly like a regular function from the caller's perspective. The only difference is that it <em>can</em> pause — and when it does, it does so without wasting a thread.</p>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── INTERNALS ─── -->
+  <h2 id="internals">How coroutines work under the hood</h2>
+
+  <p>Writing <code>suspend fun</code> feels magical — the code looks synchronous but somehow doesn't block a thread. Most articles stop at the analogy. This section goes deeper: what the Kotlin compiler actually generates, what a <code>Continuation</code> is, and the exact moment a thread gets freed.</p>
+
+  <h3 id="continuation">The Continuation — the secret extra parameter</h3>
+
+  <p>Every <code>suspend</code> function you write gets <strong>silently transformed by the Kotlin compiler</strong>. The transformation is called <strong>Continuation-Passing Style (CPS)</strong>. The rule is simple: every <code>suspend fun</code> gets an extra parameter added at the end — a <code>Continuation</code>.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>What you write vs what the compiler generates</span></div>
+    <div class="code-block"><span class="cm">// What YOU write</span>
+<span class="kw">suspend fun</span> <span class="fn">fetchUser</span>(id: <span class="cl">String</span>): <span class="cl">User</span>
+
+<span class="cm">// What the COMPILER generates (simplified)</span>
+<span class="kw">fun</span> <span class="fn">fetchUser</span>(id: <span class="cl">String</span>, continuation: <span class="cl">Continuation</span>&lt;<span class="cl">User</span>&gt;): <span class="cl">Any</span></div>
+  </div>
+
+  <p>What is a <code>Continuation</code>? It's an interface with one method:</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>The Continuation interface — from kotlinx.coroutines source</span></div>
+    <div class="code-block"><span class="kw">interface</span> <span class="cl">Continuation</span>&lt;<span class="kw">in</span> T&gt; {
+    <span class="kw">val</span> context: <span class="cl">CoroutineContext</span>     <span class="cm">// which dispatcher, job, etc.</span>
+    <span class="kw">fun</span> <span class="fn">resumeWith</span>(result: <span class="cl">Result</span>&lt;T&gt;)  <span class="cm">// called when the suspended work completes</span>
+}</div>
+  </div>
+
+  <p>Think of a <code>Continuation</code> as a <strong>packaged-up "what to do next."</strong> When a coroutine suspends, it takes everything it needs to resume later — its local variables, which line to return to — and bundles it into a heap-allocated object. <strong>The call stack is replaced by a chain of Continuation objects on the heap.</strong> That's how a coroutine can be suspended without occupying a thread — there's no stack frame holding memory. The coroutine's state costs a few hundred bytes on the heap, not 512KB–2MB of thread stack.</p>
+
+  <div class="callout callout-analogy">
+    <div class="callout-label">💡 The analogy</div>
+    <p>Imagine you're reading a book and get interrupted. You don't freeze in place holding the book open. You fold a bookmark into the page, put the book on the shelf, and go do something else. When you come back, you pick up the book, open to the bookmark, and continue reading exactly where you left off.</p>
+    <p>The <code>Continuation</code> is the bookmark. "Which page" (current state label), "what I was holding" (local variables saved as fields), and "what to do when I'm done" (the caller's continuation) are all encoded in it. The thread is the reader — free to do other things while the bookmark waits on the shelf.</p>
+  </div>
+
+  <h3 id="state-machine">The state machine the compiler generates</h3>
+
+  <p>CPS alone isn't the whole story. A function with <em>multiple</em> suspension points needs to remember <em>which</em> suspension point it's at when it resumes. The compiler transforms the function body into a <strong>state machine</strong> — a <code>when</code> block with a numbered <code>label</code> that tracks progress. Each suspension point gets its own state number. Let's trace through a real example:</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Your suspend function with two suspension points</span></div>
+    <div class="code-block"><span class="kw">suspend fun</span> <span class="fn">loadDashboard</span>(): <span class="cl">Dashboard</span> {
+    <span class="kw">val</span> user   = <span class="fn">fetchUser</span>()    <span class="cm">// suspension point 1</span>
+    <span class="kw">val</span> orders = <span class="fn">fetchOrders</span>()  <span class="cm">// suspension point 2</span>
+    <span class="kw">return</span> <span class="cl">Dashboard</span>(user, orders)
+}</div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>What the compiler generates — decompiled to readable Kotlin/Java</span></div>
+    <div class="code-block"><span class="cm">// The compiler creates an anonymous class that IS the state machine</span>
+<span class="kw">class</span> <span class="cl">LoadDashboardStateMachine</span>(
+    <span class="kw">val</span> completion: <span class="cl">Continuation</span>&lt;<span class="cl">Dashboard</span>&gt;  <span class="cm">// the caller's continuation — called when we're done</span>
+) : <span class="cl">Continuation</span>&lt;<span class="cl">Any</span>&gt; {
+
+    <span class="kw">var</span> label = <span class="nm">0</span>          <span class="cm">// STATE: 0=start, 1=after fetchUser, 2=after fetchOrders</span>
+    <span class="kw">var</span> user:   <span class="cl">User</span>?   = <span class="kw">null</span>   <span class="cm">// local variables moved from stack → heap fields</span>
+    <span class="kw">var</span> orders: <span class="cl">List</span>&lt;<span class="cl">Order</span>&gt;? = <span class="kw">null</span>
+
+    <span class="kw">override val</span> context = completion.context
+
+    <span class="kw">override fun</span> <span class="fn">resumeWith</span>(result: <span class="cl">Result</span>&lt;<span class="cl">Any</span>&gt;) {
+        <span class="kw">when</span> (label) {
+
+            <span class="nm">0</span> -> {
+                <span class="cm">// ── STATE 0: First call ──────────────────────────────────────</span>
+                label = <span class="nm">1</span>                        <span class="cm">// advance state BEFORE suspending</span>
+                <span class="kw">val</span> res = <span class="fn">fetchUser</span>(<span class="kw">this</span>)        <span class="cm">// pass ourselves as the Continuation</span>
+                <span class="kw">if</span> (res == COROUTINE_SUSPENDED)  <span class="cm">// fetchUser went async</span>
+                    <span class="kw">return</span>                        <span class="cm">// ← THREAD IS FREED RIGHT HERE</span>
+                user = res <span class="kw">as</span> <span class="cl">User</span>              <span class="cm">// fetchUser returned synchronously (e.g. cache)</span>
+                <span class="cm">// fall through to label 1 logic immediately</span>
+            }
+
+            <span class="nm">1</span> -> {
+                <span class="cm">// ── STATE 1: fetchUser completed, start fetchOrders ──────────</span>
+                user = result.getOrThrow() <span class="kw">as</span> <span class="cl">User</span>  <span class="cm">// unwrap the result from the resume call</span>
+                label = <span class="nm">2</span>
+                <span class="kw">val</span> res = <span class="fn">fetchOrders</span>(<span class="kw">this</span>)
+                <span class="kw">if</span> (res == COROUTINE_SUSPENDED)
+                    <span class="kw">return</span>                        <span class="cm">// ← THREAD IS FREED AGAIN</span>
+                orders = res <span class="kw">as</span> <span class="cl">List</span>&lt;<span class="cl">Order</span>&gt;
+            }
+
+            <span class="nm">2</span> -> {
+                <span class="cm">// ── STATE 2: fetchOrders completed ───────────────────────────</span>
+                orders = result.getOrThrow() <span class="kw">as</span> <span class="cl">List</span>&lt;<span class="cl">Order</span>&gt;
+            }
+        }
+        <span class="cm">// All states done — resume the CALLER with the final result</span>
+        completion.resumeWith(<span class="cl">Result</span>.success(<span class="cl">Dashboard</span>(user!!, orders!!)))
+    }
+}</div>
+  </div>
+
+  <p>The critical lines are the two <code>if (res == COROUTINE_SUSPENDED) return</code> exits. That <code>return</code> unwinds the entire call stack — every frame between this state machine and the thread's event loop returns. The thread is now free. The state machine object, with <code>label = 1</code> and <code>user</code> still null, sits quietly on the heap consuming a few hundred bytes.</p>
+
+  <p>When <code>fetchUser</code> eventually completes on a background thread, it calls <code>this.resumeWith(Result.success(user))</code>. The Dispatcher intercepts this, wraps it in a <code>Runnable</code>, and posts it to the appropriate thread. That thread calls <code>resumeWith()</code> again — this time <code>label == 1</code>, so the state machine picks up exactly where it left off.</p>
+
+  <h3 id="suspension-mechanics">suspendCancellableCoroutine — the lowest level primitive</h3>
+
+  <p><code>suspendCancellableCoroutine</code> is the function that actually performs a suspension. Everything else — <code>delay()</code>, Room queries, Retrofit calls — ultimately calls this. It gives you the raw <code>Continuation</code> and lets you store it somewhere. When the async work completes, you call <code>resume()</code> on it.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>How delay() actually suspends — from the coroutines source</span></div>
+    <div class="code-block"><span class="kw">suspend fun</span> <span class="fn">delay</span>(timeMillis: <span class="cl">Long</span>) {
+    <span class="kw">if</span> (timeMillis <= <span class="nm">0</span>) <span class="kw">return</span>    <span class="cm">// fast path — no suspension</span>
+
+    <span class="kw">return</span> suspendCancellableCoroutine { continuation ->
+
+        <span class="cm">// Schedule a callback on the event loop AFTER timeMillis ms</span>
+        <span class="kw">val</span> handle = DefaultDelay.scheduleAfter(timeMillis) {
+            continuation.resume(<span class="cl">Unit</span>)  <span class="cm">// ← wakes the coroutine when the timer fires</span>
+        }
+
+        <span class="cm">// If the coroutine is cancelled while waiting, cancel the timer too</span>
+        continuation.invokeOnCancellation { handle.cancel() }
+
+        <span class="cm">// suspendCancellableCoroutine returns COROUTINE_SUSPENDED to its caller</span>
+        <span class="cm">// ← the thread is freed at this exact point</span>
+    }
+}</div>
+  </div>
+
+  <p>This is the pattern for every async integration. Firebase, Bluetooth, Camera, Play Services — any callback-based API can be made suspendable with this same skeleton:</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Wrapping any callback API into a suspend function</span></div>
+    <div class="code-block"><span class="cm">// Legacy callback API from a third-party SDK</span>
+<span class="kw">fun</span> <span class="fn">getLastLocation</span>(callback: (<span class="cl">Location</span>?) -> <span class="cl">Unit</span>)
+
+<span class="cm">// Wrapped as a suspend function — the full pattern</span>
+<span class="kw">suspend fun</span> <span class="cl">FusedLocationProviderClient</span>.<span class="fn">awaitLastLocation</span>(): <span class="cl">Location</span>? =
+    suspendCancellableCoroutine { continuation ->
+
+        <span class="fn">getLastLocation</span>()
+            .addOnSuccessListener { location ->
+                continuation.resume(location)                 <span class="cm">// success → resume with value</span>
+            }
+            .addOnFailureListener { exception ->
+                continuation.resumeWithException(exception)  <span class="cm">// failure → resume with exception</span>
+            }
+
+        continuation.invokeOnCancellation {
+            <span class="cm">// Called if the coroutine is cancelled while waiting for location</span>
+            <span class="cm">// Clean up here: cancel the pending task, remove listeners, etc.</span>
+        }
+    }
+
+<span class="cm">// Usage — reads exactly like synchronous code</span>
+<span class="kw">val</span> location = fusedLocationClient.awaitLastLocation()
+<span class="fn">updateMap</span>(location)</div>
+  </div>
+
+  <h3 id="dispatcher-internals">How dispatchers schedule the resumed work</h3>
+
+  <p>When <code>continuation.resume(value)</code> is called — say, by the timer thread after a <code>delay()</code> — the coroutine doesn't jump back to executing immediately. The coroutine's <code>CoroutineContext</code> contains a <code>Dispatcher</code>, and the dispatcher decides <em>when and where</em> to run the resumed work. For <code>Dispatchers.Main</code> on Android, it posts a <code>Runnable</code> to the main thread's <code>Looper</code>. For <code>Dispatchers.IO</code>, it submits the work to a shared thread pool.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>What happens step by step when a coroutine resumes</span></div>
+    <div class="code-block"><span class="cm">// Step-by-step: what happens after delay(1000) completes</span>
+
+<span class="cm">// 1. Timer thread fires after 1000ms, calls continuation.resume(Unit)</span>
+<span class="cm">// 2. The coroutine's dispatcher intercepts this call:</span>
+dispatcher.dispatch(context, Runnable {
+    continuation.resumeWith(<span class="cl">Result</span>.success(<span class="cl">Unit</span>))
+})
+
+<span class="cm">// 3. For Dispatchers.Main — posts to main thread Looper:</span>
+Handler(Looper.getMainLooper()).post(block)
+
+<span class="cm">// 4. For Dispatchers.IO — submits to thread pool:</span>
+threadPool.submit(block)
+
+<span class="cm">// 5. The target thread picks up the Runnable, executes resumeWith()</span>
+<span class="cm">// 6. The state machine advances to the next label, runs until the next suspension</span>
+<span class="cm">// 7. Either suspends again (returns COROUTINE_SUSPENDED) or finishes completely</span></div>
+  </div>
+
+  <h3 id="coroutine-cost">Why 100,000 coroutines is fine but 100,000 threads crashes everything</h3>
+
+  <p>Now the numbers make visceral sense. A suspended coroutine = one state machine object on the heap = ~200–400 bytes. A thread = 512KB–2MB of OS-allocated stack memory + kernel thread object. You can have a million suspended coroutines on a device that can sustain maybe 500 threads before the OS starts struggling.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>100,000 coroutines — runs in ~1 second, uses ~40MB heap</span></div>
+    <div class="code-block"><span class="kw">fun</span> <span class="fn">main</span>() = runBlocking {
+    <span class="kw">val</span> jobs = (<span class="nm">1</span>..<span class="nm">100_000</span>).map {
+        launch {
+            delay(<span class="nm">1000</span>)   <span class="cm">// each coroutine suspends for 1 second</span>
+                           <span class="cm">// while suspended: ~200 bytes on heap, 0 bytes of thread stack</span>
+        }
+    }
+    jobs.joinAll()
+    <span class="fn">println</span>(<span class="st">"All 100,000 coroutines completed"</span>)
+}
+<span class="cm">// Finishes in ~1 second. The 100,000 delay() calls are backed by a single</span>
+<span class="cm">// event-loop timer queue — not 100,000 threads.</span>
+
+<span class="cm">// ❌ Equivalent with threads — DO NOT RUN:</span>
+<span class="cm">// repeat(100_000) { Thread { Thread.sleep(1000) }.start() }</span>
+<span class="cm">// This would try to allocate ~50GB of thread stacks → OutOfMemoryError in seconds</span></div>
+  </div>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">✅ The mental model to keep</div>
+    <p>A running coroutine occupies a thread. A <em>suspended</em> coroutine occupies only a heap object. The Dispatcher is just a queue of "continuations waiting to run." When your IO thread pool is full, new coroutines don't create new threads — their continuations queue up and run as threads become available. This is why coroutines scale — the number of actual OS threads stays small and bounded, while the number of logical concurrent tasks can be enormous.</p>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── 3. COROUTINE BUILDERS ─── -->
+  <h2 id="builders">Starting a coroutine: the three builders</h2>
+
+  <p>You can't call a <code>suspend</code> function from regular code — you need to be inside a coroutine to call one. This is by design. Kotlin's coroutine system enforces that <em>someone</em> is responsible for the coroutine's lifecycle. That someone is always a <strong>CoroutineScope</strong>, and the bridge between regular code and the coroutine world is a <strong>coroutine builder</strong>.</p>
+
+  <h3 id="launch">launch — fire and forget</h3>
+
+  <p><code>launch</code> starts a new coroutine and returns a <code>Job</code>. You use it when you want to kick off some work and you don't need a result back. The calling code continues immediately — <code>launch</code> doesn't wait for the coroutine to finish.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>launch — for side effects</span></div>
+    <div class="code-block"><span class="kw">val</span> job = scope.launch {
+    <span class="fn">saveToDatabase</span>(user)       <span class="cm">// runs in the background</span>
+    <span class="fn">sendAnalyticsEvent</span>(<span class="st">"user_saved"</span>)
+}
+
+job.cancel()   <span class="cm">// you can cancel it any time</span>
+job.join()     <span class="cm">// or wait for it to finish</span></div>
+  </div>
+
+  <h3 id="async">async — when you need a result</h3>
+
+  <p><code>async</code> starts a coroutine and returns a <code>Deferred&lt;T&gt;</code> — think of it as a promise of a future value. You call <code>await()</code> to get the result, which suspends the calling coroutine until the result is ready. The real power of <code>async</code> is running things <em>in parallel</em>.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>async + await — parallel execution</span></div>
+    <div class="code-block"><span class="cm">// Sequential: takes userTime + ordersTime = ~600ms total</span>
+<span class="kw">val</span> user   = <span class="fn">fetchUser</span>(id)     <span class="cm">// 300ms</span>
+<span class="kw">val</span> orders = <span class="fn">fetchOrders</span>(id)   <span class="cm">// 300ms</span>
+
+<span class="cm">// Parallel with async: takes max(userTime, ordersTime) = ~300ms total</span>
+<span class="kw">val</span> userDeferred   = scope.async { <span class="fn">fetchUser</span>(id) }
+<span class="kw">val</span> ordersDeferred = scope.async { <span class="fn">fetchOrders</span>(id) }
+
+<span class="kw">val</span> user   = userDeferred.await()    <span class="cm">// suspends until ready</span>
+<span class="kw">val</span> orders = ordersDeferred.await()  <span class="cm">// likely already done by now</span></div>
+  </div>
+
+  <h3 id="runblocking">runBlocking — the testing bridge</h3>
+
+  <p><code>runBlocking</code> starts a coroutine and <em>blocks</em> the current thread until it completes. It's the escape hatch that lets regular code (like a unit test's <code>main</code> function or a test body) enter the coroutine world. In production code, you should almost never use it — if you're blocking a thread, you've defeated the purpose of coroutines.</p>
+
+  <div class="callout callout-warn">
+    <div class="callout-label">⚠️ Common mistake</div>
+    <p>Calling <code>runBlocking</code> on the main thread in production code will freeze your UI. It's for tests and main functions only. In a ViewModel or repository, always use <code>launch</code> or <code>async</code> within an appropriate scope.</p>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── 4. DISPATCHERS ─── -->
+  <h2 id="dispatchers">Dispatchers — where your coroutine runs</h2>
+
+  <p>When you launch a coroutine, you need to tell Kotlin <em>which thread or thread pool</em> it should run on. This is what <code>Dispatcher</code>s are for. Think of a Dispatcher as a job board — it decides which worker (thread) picks up a piece of work.</p>
+
+  <table class="comp-table">
+    <tr><th>Dispatcher</th><th>Thread Pool</th><th>Use For</th><th>Never Use For</th></tr>
+    <tr>
+      <td>Main</td>
+      <td>Single main thread</td>
+      <td>UI updates, ViewModel logic, anything touching Views</td>
+      <td>Network calls, disk I/O, heavy computation</td>
+    </tr>
+    <tr>
+      <td>IO</td>
+      <td>Up to 64 threads (or CPU count, whichever is higher)</td>
+      <td>Network requests, file reads/writes, Room DB queries</td>
+      <td>CPU-heavy work (use Default instead)</td>
+    </tr>
+    <tr>
+      <td>Default</td>
+      <td>CPU core count threads</td>
+      <td>JSON parsing, image decoding, list sorting, heavy computation</td>
+      <td>Blocking I/O (wastes CPU threads waiting)</td>
+    </tr>
+    <tr>
+      <td>Unconfined</td>
+      <td>Inherits from caller, then resumes wherever</td>
+      <td>Testing, very specific library use-cases</td>
+      <td>Production application code</td>
+    </tr>
+  </table>
+
+  <p>A crucial point: Room, Retrofit (with suspend functions), and Kotlin's own IO functions are <em>already cooperative</em> — they suspend the coroutine without occupying a thread. When Room executes a query, it uses <code>Dispatchers.IO</code> internally and suspends your coroutine while the disk read is in progress. You don't need to manually switch dispatchers for suspend-aware libraries.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>withContext — switching dispatchers within a coroutine</span></div>
+    <div class="code-block"><span class="cm">// Start in IO for the network call</span>
+<span class="kw">suspend fun</span> <span class="fn">loadAndParseImage</span>(url: <span class="cl">String</span>): <span class="cl">Bitmap</span> = withContext(<span class="cl">Dispatchers</span>.IO) {
+    <span class="kw">val</span> bytes = <span class="fn">downloadBytes</span>(url)      <span class="cm">// blocking download on IO thread</span>
+    withContext(<span class="cl">Dispatchers</span>.Default) {
+        <span class="cl">BitmapFactory</span>.decodeByteArray(bytes, <span class="nm">0</span>, bytes.size)  <span class="cm">// CPU-heavy decode on Default</span>
+    }
+}
+
+<span class="cm">// Back in the ViewModel — switch to Main to update UI</span>
+<span class="kw">fun</span> <span class="fn">loadImage</span>(url: <span class="cl">String</span>) = viewModelScope.launch {
+    <span class="kw">val</span> bitmap = <span class="fn">loadAndParseImage</span>(url)        <span class="cm">// off main thread</span>
+    _uiState.value = <span class="cl">UiState</span>.Loaded(bitmap)   <span class="cm">// back on Main automatically (viewModelScope)</span>
+}</div>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── 5. STRUCTURED CONCURRENCY ─── -->
+  <h2 id="structured-concurrency">Structured Concurrency — the rule that prevents leaks</h2>
+
+  <p>This is the concept that separates developers who <em>use</em> coroutines from those who <em>understand</em> them. Structured concurrency is a simple rule with profound consequences:</p>
+
+  <p style="font-size: 18px; font-weight: 600; color: var(--ink); line-height: 1.5; margin: 24px 0; padding: 20px 24px; background: var(--bg-subtle); border-radius: 10px; border-left: 4px solid var(--accent);">Every coroutine must exist within a scope. When the scope is cancelled, all coroutines within it are cancelled automatically.</p>
+
+  <div class="callout callout-analogy">
+    <div class="callout-label">💡 The analogy</div>
+    <p>Imagine a project manager who starts sub-tasks. If the project manager quits (scope is cancelled), every sub-task they started is automatically cancelled — nobody keeps working on a cancelled project. There are no orphaned tasks running in the background burning resources with no one checking on them.</p>
+    <p>Without structured concurrency, you'd have to manually track every coroutine you ever started and remember to cancel them all. You'd always forget one. That forgotten coroutine would silently leak memory — holding a reference to your Activity or Fragment long after it was destroyed.</p>
+  </div>
+
+  <h3 id="scopes">The three scopes you'll use every day</h3>
+
+  <p><strong>viewModelScope</strong> is tied to a ViewModel's lifecycle. When the ViewModel is cleared (which happens when the screen it belongs to is permanently gone), all coroutines in <code>viewModelScope</code> are automatically cancelled. This is the scope you'll use for 90% of coroutines in a well-architected app.</p>
+
+  <p><strong>lifecycleScope</strong> is tied to a Fragment or Activity's lifecycle. It's useful for UI-layer work — observing Flows, starting one-shot operations that should stop if the user navigates away. Be careful: it's also cancelled on rotation, so don't use it for work you want to survive configuration changes (use <code>viewModelScope</code> for that instead).</p>
+
+  <p><strong>applicationScope / custom CoroutineScope</strong> is for work that should outlive any single screen — uploading a photo, syncing in the background, an analytics flush. You create this manually and tie it to your <code>Application</code> class or a singleton service.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Scope lifetimes</span></div>
+    <div class="code-block"><span class="kw">class</span> <span class="cl">UserViewModel</span> : <span class="cl">ViewModel</span>() {
+    <span class="kw">fun</span> <span class="fn">saveUser</span>(user: <span class="cl">User</span>) {
+        viewModelScope.launch {          <span class="cm">// auto-cancelled when ViewModel is cleared</span>
+            repository.save(user)
+        }
+    }
+}
+
+<span class="kw">class</span> <span class="cl">UserFragment</span> : <span class="cl">Fragment</span>() {
+    <span class="kw">override fun</span> <span class="fn">onViewCreated</span>(...) {
+        lifecycleScope.launch {          <span class="cm">// auto-cancelled when Fragment view is destroyed</span>
+            viewModel.uiState.collect { render(it) }
+        }
+    }
+}
+
+<span class="kw">class</span> <span class="cl">MyApplication</span> : <span class="cl">Application</span>() {
+    <span class="kw">val</span> appScope = <span class="cl">CoroutineScope</span>(<span class="cl">SupervisorJob</span>() + <span class="cl">Dispatchers</span>.Default)
+    <span class="cm">// Lives as long as the Application process — for background work</span>
+}</div>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── 6. JOB / SUPERVISOR JOB ─── -->
+  <h2 id="job-supervisor">Job vs SupervisorJob — failure propagation</h2>
+
+  <p>Every coroutine is associated with a <code>Job</code>. Jobs form a tree — a parent job and its children. How a failure in one child affects the tree depends on whether you're using a regular <code>Job</code> or a <code>SupervisorJob</code>.</p>
+
+  <div class="callout callout-analogy">
+    <div class="callout-label">💡 The analogy</div>
+    <p>With a regular <code>Job</code>, think of a team of mountaineers roped together. If one falls, they all fall. One coroutine throws an uncaught exception → the whole scope is cancelled → all sibling coroutines are cancelled too.</p>
+    <p>With a <code>SupervisorJob</code>, each mountaineer has their own safety harness. If one falls, the others continue climbing. One coroutine fails → only that coroutine is affected → siblings keep running.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Job vs SupervisorJob failure propagation</span></div>
+    <div class="code-block"><span class="cm">// Regular Job — one failure cancels all siblings</span>
+<span class="kw">val</span> scope = <span class="cl">CoroutineScope</span>(<span class="cl">Job</span>())
+scope.launch { <span class="kw">throw</span> <span class="cl">Exception</span>(<span class="st">"I failed"</span>) }    <span class="cm">// cancels the entire scope</span>
+scope.launch { <span class="fn">doOtherWork</span>() }                  <span class="cm">// ← also cancelled! Never runs.</span>
+
+<span class="cm">// SupervisorJob — failures are isolated</span>
+<span class="kw">val</span> scope = <span class="cl">CoroutineScope</span>(<span class="cl">SupervisorJob</span>())
+scope.launch { <span class="kw">throw</span> <span class="cl">Exception</span>(<span class="st">"I failed"</span>) }    <span class="cm">// only THIS coroutine fails</span>
+scope.launch { <span class="fn">doOtherWork</span>() }                  <span class="cm">// ← still runs normally</span>
+
+<span class="cm">// viewModelScope uses SupervisorJob internally — that's why ViewModel coroutines</span>
+<span class="cm">// don't cancel each other on failure</span></div>
+  </div>
+
+  <p>This is why <code>viewModelScope</code> uses a <code>SupervisorJob</code> under the hood. If you have a ViewModel that loads a user profile and also tracks analytics, you don't want the analytics coroutine to cancel the profile-loading coroutine if it throws an exception.</p>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── 7. CANCELLATION ─── -->
+  <h2 id="cancellation">Cancellation — cooperative, not forceful</h2>
+
+  <p>Coroutine cancellation is <strong>cooperative</strong>. Cancelling a coroutine doesn't immediately stop it — it sends a signal that the coroutine should stop. The coroutine's code is responsible for checking this signal and stopping itself. This is a crucial distinction.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Cancellation only works at suspension points</span></div>
+    <div class="code-block"><span class="cm">// This coroutine CAN be cancelled — it checks at the delay() call</span>
+scope.launch {
+    repeat(<span class="nm">1000</span>) { i ->
+        delay(<span class="nm">100</span>)                    <span class="cm">// ← suspension point — cancellation checked here</span>
+        <span class="fn">println</span>(<span class="st">"Processed item $i"</span>)
+    }
+}
+
+<span class="cm">// This coroutine CANNOT be cancelled — no suspension points</span>
+scope.launch {
+    <span class="kw">for</span> (i <span class="kw">in</span> <span class="nm">0</span>..<span class="nm">1_000_000</span>) {
+        <span class="fn">heavyComputation</span>(i)         <span class="cm">// ← blocks the thread, never checks cancellation</span>
+    }
+}
+
+<span class="cm">// Fix: use isActive to periodically check</span>
+scope.launch {
+    <span class="kw">for</span> (i <span class="kw">in</span> <span class="nm">0</span>..<span class="nm">1_000_000</span>) {
+        <span class="kw">if</span> (!isActive) <span class="kw">return</span>@launch    <span class="cm">// ← cooperative check</span>
+        <span class="fn">heavyComputation</span>(i)
+    }
+}</div>
+  </div>
+
+  <p>When a coroutine is cancelled, any subsequent call to a <code>suspend</code> function will throw a <code>CancellationException</code>. This exception is special — it's silently ignored by the coroutine machinery (it's not an error, it's a controlled shutdown). If you catch <code>Exception</code> in your coroutine, make sure you don't swallow <code>CancellationException</code>:</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Don't swallow CancellationException</span></div>
+    <div class="code-block"><span class="cm">// ❌ Wrong — swallows cancellation, coroutine keeps running after cancel()</span>
+scope.launch {
+    <span class="kw">try</span> {
+        <span class="fn">doSomething</span>()
+    } <span class="kw">catch</span> (e: <span class="cl">Exception</span>) {
+        log.e(<span class="st">"Error: $e"</span>)   <span class="cm">// catches CancellationException and ignores it!</span>
+    }
+}
+
+<span class="cm">// ✅ Correct — re-throw CancellationException</span>
+scope.launch {
+    <span class="kw">try</span> {
+        <span class="fn">doSomething</span>()
+    } <span class="kw">catch</span> (e: <span class="cl">CancellationException</span>) {
+        <span class="kw">throw</span> e   <span class="cm">// always re-throw!</span>
+    } <span class="kw">catch</span> (e: <span class="cl">Exception</span>) {
+        log.e(<span class="st">"Error: $e"</span>)
+    }
+}</div>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── 8. WHAT IS FLOW ─── -->
+  <h2 id="what-is-flow">What is Flow?</h2>
+
+  <p>A <code>suspend</code> function returns one value. But what if you need multiple values over time — a stream of database updates, a sequence of network pages, live UI events? That's what <strong>Flow</strong> is for.</p>
+
+  <div class="callout callout-analogy">
+    <div class="callout-label">💡 The analogy</div>
+    <p>A regular <code>suspend</code> function is like ordering a pizza — you place the order, you wait, you get one pizza. A <code>Flow</code> is like a pizza subscription — you subscribe once, and pizzas keep arriving over time whenever they're ready.</p>
+    <p>There's a crucial detail though: a <code>Flow</code> is <strong>cold</strong> — the subscription doesn't exist until a collector asks for it. The pizzeria only starts making pizzas when someone subscribes. If nobody subscribes, no pizzas are made. This matters for understanding when your code actually runs.</p>
+  </div>
+
+  <p>Cold means the code inside a <code>flow { }</code> builder doesn't run until you call <code>collect()</code>. Every new call to <code>collect()</code> starts a fresh execution from the beginning. This is fundamentally different from the hot streams we'll see with <code>StateFlow</code> and <code>SharedFlow</code>.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Creating and collecting a Flow</span></div>
+    <div class="code-block"><span class="cm">// Define a flow — nothing runs yet</span>
+<span class="kw">fun</span> <span class="fn">tickerFlow</span>(period: <span class="cl">Duration</span>): <span class="cl">Flow</span>&lt;<span class="cl">Int</span>&gt; = flow {
+    <span class="kw">var</span> i = <span class="nm">0</span>
+    <span class="kw">while</span> (<span class="kw">true</span>) {
+        emit(i++)        <span class="cm">// emit a value downstream</span>
+        delay(period)    <span class="cm">// suspend until next tick</span>
+    }
+}
+
+<span class="cm">// Start the flow — this is when the code above actually runs</span>
+viewModelScope.launch {
+    <span class="fn">tickerFlow</span>(<span class="nm">1</span>.seconds).collect { value ->
+        <span class="fn">println</span>(<span class="st">"Tick: $value"</span>)    <span class="cm">// called once per second</span>
+    }
+}
+<span class="cm">// When the scope is cancelled, collect() cancels the flow — no leaks</span></div>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── 9. FLOW OPERATORS ─── -->
+  <h2 id="flow-operators">Flow operators — building pipelines</h2>
+
+  <p>The real power of Flow comes from its operators — functions that transform, filter, combine, and reshape streams. They're lazy: an operator doesn't process a value until a collector downstream asks for it. This creates a pipeline where data flows only when consumed.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Essential operators</span></div>
+    <div class="code-block">searchQuery
+    .debounce(<span class="nm">300</span>)              <span class="cm">// wait 300ms of silence before emitting — perfect for search</span>
+    .filter { it.length >= <span class="nm">2</span> }   <span class="cm">// ignore single-character queries</span>
+    .distinctUntilChanged()      <span class="cm">// skip if query didn't change (e.g., add+delete space)</span>
+    .flatMapLatest { query ->    <span class="cm">// cancel previous search when a new query arrives</span>
+        repository.search(query)
+    }
+    .catch { e ->               <span class="cm">// handle errors without stopping the flow</span>
+        emit(<span class="cl">SearchResult</span>.Error(e.message))
+    }
+    .collect { result ->
+        _uiState.value = result
+    }</div>
+  </div>
+
+  <p>Pay close attention to <code>flatMapLatest</code> — it's one of the most important operators for real-world use. When a new value arrives, it cancels any ongoing collection of the <em>previous</em> inner flow and starts collecting the new one. For a search box, this means: if the user types "cor", starts a search, then immediately types "coro" — the "cor" search is cancelled and "coro" takes over. You never see stale results from a superseded query.</p>
+
+  <h3 id="combine-zip">Combining multiple flows</h3>
+
+  <p><code>combine</code> and <code>zip</code> merge two flows into one, but they behave differently:</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>combine vs zip</span></div>
+    <div class="code-block"><span class="cm">// combine: emits whenever EITHER flow has a new value</span>
+<span class="cm">// Like: "give me the latest value from both, whenever either updates"</span>
+<span class="fn">combine</span>(userFlow, settingsFlow) { user, settings ->
+    <span class="cl">UiState</span>(user.name, settings.theme)
+}.collect { uiState -> render(uiState) }
+
+<span class="cm">// zip: pairs values one-to-one, waits for both</span>
+<span class="cm">// Like: "pair up the 1st from A with the 1st from B, the 2nd with 2nd, etc."</span>
+flowA.zip(flowB) { a, b -> Pair(a, b) }.collect { (a, b) -> process(a, b) }</div>
+  </div>
+
+  <p>In most UI use-cases, <code>combine</code> is what you want — you want the UI to re-render whenever <em>any</em> of its data sources update. <code>zip</code> is for one-to-one processing, like pairing events with timestamps.</p>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── 10. STATEFLOW / SHAREDFLOW ─── -->
+  <h2 id="hot-flows">StateFlow &amp; SharedFlow — hot streams</h2>
+
+  <p>Remember: regular <code>Flow</code> is cold — it only runs when collected, and each collector gets an independent stream. But for UI state, you want something different: a value that exists and updates regardless of whether anyone is currently collecting it, and that new collectors can immediately get the current value from. That's what <strong>hot streams</strong> are for.</p>
+
+  <h3 id="stateflow">StateFlow — the UI state container</h3>
+
+  <div class="callout callout-analogy">
+    <div class="callout-label">💡 The analogy</div>
+    <p>A <code>StateFlow</code> is like a scoreboard at a sports game. The score exists and updates whether anyone is looking at it or not. When you sit down and look at the scoreboard for the first time, you see the <em>current score</em> — you don't have to wait for the next goal. Everyone looking at the scoreboard always sees the same current value.</p>
+  </div>
+
+  <p><code>StateFlow</code> is the modern replacement for <code>LiveData</code>. It always has a value, collectors always get the latest value immediately on subscription, and it only emits when the value actually changes (it skips duplicate values with structural equality).</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>StateFlow in a ViewModel</span></div>
+    <div class="code-block"><span class="kw">class</span> <span class="cl">UserViewModel</span> : <span class="cl">ViewModel</span>() {
+
+    <span class="cm">// Private mutable version — only ViewModel can change it</span>
+    <span class="kw">private val</span> _uiState = <span class="cl">MutableStateFlow</span>&lt;<span class="cl">UserUiState</span>&gt;(<span class="cl">UserUiState</span>.Loading)
+
+    <span class="cm">// Public read-only version — UI observes this</span>
+    <span class="kw">val</span> uiState: <span class="cl">StateFlow</span>&lt;<span class="cl">UserUiState</span>&gt; = _uiState.asStateFlow()
+
+    <span class="kw">fun</span> <span class="fn">loadUser</span>(id: <span class="cl">String</span>) = viewModelScope.launch {
+        _uiState.value = <span class="cl">UserUiState</span>.Loading
+        <span class="kw">try</span> {
+            <span class="kw">val</span> user = repository.getUser(id)
+            _uiState.value = <span class="cl">UserUiState</span>.Success(user)
+        } <span class="kw">catch</span> (e: <span class="cl">Exception</span>) {
+            _uiState.value = <span class="cl">UserUiState</span>.Error(e.message)
+        }
+    }
+}
+
+<span class="cm">// In Fragment — collect safely with Lifecycle awareness</span>
+lifecycleScope.launch {
+    viewLifecycleOwner.repeatOnLifecycle(<span class="cl">Lifecycle</span>.State.STARTED) {
+        viewModel.uiState.collect { state -> <span class="fn">render</span>(state) }
+    }
+}</div>
+  </div>
+
+  <p>Notice <code>repeatOnLifecycle(STARTED)</code>. This is critical — it stops collecting when the app goes to the background (Fragment is stopped) and restarts when it comes back to the foreground. Without it, you'd be processing UI updates and doing unnecessary work while your app is in the background.</p>
+
+  <h3 id="sharedflow">SharedFlow — for events</h3>
+
+  <p><code>SharedFlow</code> is a more flexible hot stream. Unlike <code>StateFlow</code>, it doesn't require an initial value and can replay multiple past values to new subscribers. This makes it perfect for one-shot events: showing a snackbar, navigating to a screen, displaying a dialog.</p>
+
+  <div class="callout callout-info">
+    <div class="callout-label">ℹ️ StateFlow vs SharedFlow — quick decision rule</div>
+    <p><strong>StateFlow:</strong> use when you're modeling <em>state</em> — something that has a current value that persists over time (isLoading, user data, list contents). New subscribers should always get the current value.</p>
+    <p><strong>SharedFlow:</strong> use when you're modeling <em>events</em> — one-shot things that happen and shouldn't be replayed to late subscribers (navigation, snackbars, toasts). A "show snackbar" event collected twice would show two snackbars.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>SharedFlow for navigation events</span></div>
+    <div class="code-block"><span class="kw">class</span> <span class="cl">LoginViewModel</span> : <span class="cl">ViewModel</span>() {
+
+    <span class="kw">private val</span> _events = <span class="cl">MutableSharedFlow</span>&lt;<span class="cl">LoginEvent</span>&gt;()
+    <span class="kw">val</span> events: <span class="cl">SharedFlow</span>&lt;<span class="cl">LoginEvent</span>&gt; = _events.asSharedFlow()
+
+    <span class="kw">fun</span> <span class="fn">login</span>(email: <span class="cl">String</span>, pass: <span class="cl">String</span>) = viewModelScope.launch {
+        <span class="kw">val</span> result = authRepository.login(email, pass)
+        <span class="kw">if</span> (result.success) {
+            _events.emit(<span class="cl">LoginEvent</span>.NavigateToDashboard)   <span class="cm">// one-shot event</span>
+        } <span class="kw">else</span> {
+            _events.emit(<span class="cl">LoginEvent</span>.ShowError(result.message))
+        }
+    }
+}
+
+<span class="cm">// In Fragment</span>
+repeatOnLifecycle(<span class="cl">Lifecycle</span>.State.STARTED) {
+    viewModel.events.collect { event ->
+        <span class="kw">when</span> (event) {
+            <span class="kw">is</span> <span class="cl">LoginEvent</span>.NavigateToDashboard -> <span class="fn">navigateToDashboard</span>()
+            <span class="kw">is</span> <span class="cl">LoginEvent</span>.ShowError           -> <span class="fn">showSnackbar</span>(event.message)
+        }
+    }
+}</div>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── 11. CHANNEL ─── -->
+  <h2 id="channel">Channel — the coroutine mailbox</h2>
+
+  <p>A <code>Channel</code> is a communication primitive for sending values between coroutines. Think of it as a pipe: one coroutine sends values in one end, another coroutine receives them from the other end. Unlike <code>SharedFlow</code>, a channel item is consumed by exactly one receiver — it's not broadcast to multiple collectors.</p>
+
+  <div class="callout callout-analogy">
+    <div class="callout-label">💡 The analogy</div>
+    <p>A <code>Channel</code> is a mailbox between two people. You can drop letters in it (send), and the recipient picks them up one by one (receive). Each letter is picked up by exactly one person — it's not photocopied for everyone. And if the mailbox is full (buffer is full), the sender either waits, drops the letter, or drops the oldest letter, depending on the overflow policy.</p>
+  </div>
+
+  <p>Channels are particularly useful when you have a producer-consumer relationship: one part of your code generates work (events, tasks, data), and another part processes it. The channel buffers work between them and naturally handles back-pressure.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Channel overflow strategies</span></div>
+    <div class="code-block"><span class="cm">// SUSPEND (default): sender suspends when buffer is full</span>
+<span class="cm">// Good when you can't afford to lose any item</span>
+<span class="kw">val</span> channel = <span class="cl">Channel</span>&lt;<span class="cl">Task</span>&gt;(capacity = <span class="nm">100</span>)
+
+<span class="cm">// DROP_OLDEST: drops the oldest buffered item when full</span>
+<span class="cm">// Good for telemetry/analytics — prefer fresh data over stale</span>
+<span class="kw">val</span> channel = <span class="cl">Channel</span>&lt;<span class="cl">AnalyticsEvent</span>&gt;(
+    capacity = <span class="nm">2000</span>,
+    onBufferOverflow = <span class="cl">BufferOverflow</span>.DROP_OLDEST
+)
+
+<span class="cm">// DROP_LATEST: drops the incoming item if buffer is full</span>
+<span class="cm">// Good for UI events where you don't want to queue up too many</span>
+<span class="kw">val</span> channel = <span class="cl">Channel</span>&lt;<span class="cl">ClickEvent</span>&gt;(
+    capacity = <span class="nm">1</span>,
+    onBufferOverflow = <span class="cl">BufferOverflow</span>.DROP_LATEST
+)</div>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── 12. PRODUCTION PATTERNS ─── -->
+  <h2 id="production-patterns">Production patterns you'll use every day</h2>
+
+  <h3 id="flow-from-room">Observing Room as a Flow</h3>
+
+  <p>Room's DAO supports returning <code>Flow&lt;T&gt;</code> from queries. This creates a live query — whenever the data in the database changes, Room automatically re-runs the query and emits the new result. Combined with <code>StateFlow</code> in the ViewModel, this creates a fully reactive data pipeline with zero polling.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Room → Flow → StateFlow → UI</span></div>
+    <div class="code-block"><span class="cm">// DAO — returns Flow, not suspend fun</span>
+<span class="an">@Dao</span>
+<span class="kw">interface</span> <span class="cl">UserDao</span> {
+    <span class="an">@Query</span>(<span class="st">"SELECT * FROM users WHERE id = :id"</span>)
+    <span class="kw">fun</span> <span class="fn">observeUser</span>(id: <span class="cl">String</span>): <span class="cl">Flow</span>&lt;<span class="cl">User</span>&gt;   <span class="cm">// NOT suspend — returns a live stream</span>
+}
+
+<span class="cm">// Repository — pass the flow through unchanged</span>
+<span class="kw">fun</span> <span class="fn">userFlow</span>(id: <span class="cl">String</span>): <span class="cl">Flow</span>&lt;<span class="cl">User</span>&gt; = userDao.observeUser(id)
+
+<span class="cm">// ViewModel — convert to StateFlow for the UI</span>
+<span class="kw">val</span> user: <span class="cl">StateFlow</span>&lt;<span class="cl">User</span>?&gt; = repository
+    .userFlow(userId)
+    .stateIn(
+        scope = viewModelScope,
+        started = <span class="cl">SharingStarted</span>.WhileSubscribed(<span class="nm">5_000</span>),  <span class="cm">// keep alive 5s after last subscriber</span>
+        initialValue = <span class="kw">null</span>
+    )</div>
+  </div>
+
+  <p><code>stateIn</code> with <code>WhileSubscribed(5000)</code> is a pattern worth memorising. The 5-second timeout means: if all subscribers unsubscribe (e.g., because the user rotated the screen), keep the upstream flow alive for 5 seconds. If a new subscriber arrives within that window (the new Activity after rotation), they immediately get the last cached value without re-running the database query. This avoids the flash of an empty state on rotation.</p>
+
+  <h3 id="flow-errors">Handling errors in a Flow pipeline</h3>
+
+  <p>Errors in a <code>Flow</code> cancel the entire flow by default. The <code>catch</code> operator intercepts exceptions and lets you emit a fallback value — keeping the stream alive rather than terminating it.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Graceful error handling in flows</span></div>
+    <div class="code-block">repository.userFlow(id)
+    .map { user -> <span class="cl">UiState</span>.Success(user) }
+    .catch { e ->
+        <span class="cm">// Log the error, emit an error state — flow continues running</span>
+        analytics.logError(e)
+        emit(<span class="cl">UiState</span>.Error(e.localizedMessage))
+    }
+    .onEach { state ->
+        <span class="cm">// Runs for every emission, success or error recovery</span>
+        <span class="fn">hideLoadingIndicator</span>()
+    }
+    .collect { state -> _uiState.value = state }</div>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── 13. TESTING ─── -->
+  <h2 id="testing">Testing coroutines</h2>
+
+  <p>The biggest challenge when testing coroutines is time. Real code uses <code>delay()</code>, but in tests you don't want to wait real seconds. Kotlin provides <code>TestCoroutineDispatcher</code> (now called <code>UnconfinedTestDispatcher</code> and <code>StandardTestDispatcher</code> in the current API) and the <code>runTest</code> builder that lets you control virtual time.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Testing with runTest and virtual time</span></div>
+    <div class="code-block"><span class="an">@Test</span>
+<span class="kw">fun</span> <span class="fn">`search debounces correctly`</span>() = runTest {
+    <span class="kw">val</span> results = mutableListOf&lt;<span class="cl">String</span>&gt;()
+
+    <span class="kw">val</span> job = launch {
+        searchFlow
+            .debounce(<span class="nm">300</span>)
+            .collect { results.add(it) }
+    }
+
+    searchInput.value = <span class="st">"c"</span>
+    advanceTimeBy(<span class="nm">100</span>)        <span class="cm">// 100ms passes virtually — no actual waiting</span>
+    searchInput.value = <span class="st">"co"</span>
+    advanceTimeBy(<span class="nm">100</span>)        <span class="cm">// another 100ms</span>
+    searchInput.value = <span class="st">"cor"</span>
+    advanceTimeBy(<span class="nm">400</span>)        <span class="cm">// 400ms — debounce triggers</span>
+
+    <span class="fn">assertEquals</span>(listOf(<span class="st">"cor"</span>), results)   <span class="cm">// only the final query went through</span>
+    job.cancel()
+}</div>
+  </div>
+
+  <p>For testing Flows, the <strong>Turbine</strong> library by Cash App is the gold standard. It turns the async nature of collecting a flow into a synchronous, readable test API:</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Testing Flows with Turbine</span></div>
+    <div class="code-block"><span class="an">@Test</span>
+<span class="kw">fun</span> <span class="fn">`loading state transitions correctly`</span>() = runTest {
+    viewModel.uiState.test {
+        <span class="fn">assertEquals</span>(<span class="cl">UiState</span>.Loading, awaitItem())    <span class="cm">// first emission</span>
+        viewModel.loadUser(<span class="st">"user123"</span>)
+        <span class="fn">assertEquals</span>(<span class="cl">UiState</span>.Loading, awaitItem())    <span class="cm">// loading starts</span>
+        <span class="kw">val</span> success = awaitItem() <span class="kw">as</span> <span class="cl">UiState</span>.Success
+        <span class="fn">assertEquals</span>(<span class="st">"Alice"</span>, success.user.name)       <span class="cm">// data loads</span>
+        cancelAndIgnoreRemainingEvents()
+    }
+}</div>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── 14. SYSTEM DESIGN CONNECTION ─── -->
+  <h2 id="system-design">How this connects to system design interviews</h2>
+
+  <p>Every Android system design question you'll face at a senior level involves coroutines and Flow. Understanding them deeply lets you explain your choices with precision rather than hand-waving.</p>
+
+  <p>When designing an <strong>Analytics SDK</strong>, you explain: "The <code>track()</code> function calls <code>channel.trySend()</code> — non-blocking because the Channel is bounded with <code>DROP_OLDEST</code> overflow. A background coroutine in a <code>SupervisorJob</code>-backed scope drains the channel to Room. The scope is tied to the application lifecycle so it outlives any single Activity."</p>
+
+  <p>When designing a <strong>Payment System</strong>, you explain: "The CheckoutOrchestrator uses a <code>Mutex</code> with <code>tryLock()</code> to prevent double-submission — if the mutex is already held, the second <code>startCheckout()</code> call returns immediately. The checkout state is a <code>StateFlow&lt;CheckoutState&gt;</code> that the UI layer collects with <code>repeatOnLifecycle(STARTED)</code>."</p>
+
+  <p>The pattern is always the same: choose the right primitive (<code>Channel</code>, <code>StateFlow</code>, <code>SharedFlow</code>, <code>Mutex</code>), wire it into the right scope, and explain why each choice is correct. That's what senior-level answers look like.</p>
+
+</main>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="rp-label">Reading Progress</div>
+  <div class="rp-track"><div class="rp-fill" id="pfill"></div></div>
+
+  <div class="toc-label">In this article</div>
+  <ul class="toc-list">
+    <li class="toc-item"><a href="#the-problem" id="toc-the-problem">The Problem with Threads</a></li>
+    <li class="toc-item"><a href="#what-is-a-coroutine" id="toc-what-is-a-coroutine">What is a Coroutine?</a></li>
+    <li class="toc-item"><a href="#internals" id="toc-internals">How Coroutines Work Internally</a></li>
+    <li class="toc-item sub"><a href="#continuation" id="toc-continuation">The Continuation</a></li>
+    <li class="toc-item sub"><a href="#state-machine" id="toc-state-machine">The State Machine</a></li>
+    <li class="toc-item sub"><a href="#suspension-mechanics" id="toc-suspension-mechanics">suspendCancellableCoroutine</a></li>
+    <li class="toc-item sub"><a href="#dispatcher-internals" id="toc-dispatcher-internals">How Dispatchers Schedule</a></li>
+    <li class="toc-item sub"><a href="#coroutine-cost" id="toc-coroutine-cost">Why Coroutines Scale</a></li>
+    <li class="toc-item"><a href="#builders" id="toc-builders">Coroutine Builders</a></li>
+    <li class="toc-item sub"><a href="#launch" id="toc-launch">launch</a></li>
+    <li class="toc-item sub"><a href="#async" id="toc-async">async / await</a></li>
+    <li class="toc-item sub"><a href="#runblocking" id="toc-runblocking">runBlocking</a></li>
+    <li class="toc-item"><a href="#dispatchers" id="toc-dispatchers">Dispatchers</a></li>
+    <li class="toc-item"><a href="#structured-concurrency" id="toc-structured-concurrency">Structured Concurrency</a></li>
+    <li class="toc-item sub"><a href="#scopes" id="toc-scopes">The Three Scopes</a></li>
+    <li class="toc-item"><a href="#job-supervisor" id="toc-job-supervisor">Job vs SupervisorJob</a></li>
+    <li class="toc-item"><a href="#cancellation" id="toc-cancellation">Cancellation</a></li>
+    <li class="toc-item"><a href="#what-is-flow" id="toc-what-is-flow">What is Flow?</a></li>
+    <li class="toc-item"><a href="#flow-operators" id="toc-flow-operators">Flow Operators</a></li>
+    <li class="toc-item sub"><a href="#combine-zip" id="toc-combine-zip">combine vs zip</a></li>
+    <li class="toc-item"><a href="#hot-flows" id="toc-hot-flows">StateFlow &amp; SharedFlow</a></li>
+    <li class="toc-item sub"><a href="#stateflow" id="toc-stateflow">StateFlow</a></li>
+    <li class="toc-item sub"><a href="#sharedflow" id="toc-sharedflow">SharedFlow</a></li>
+    <li class="toc-item"><a href="#channel" id="toc-channel">Channel</a></li>
+    <li class="toc-item"><a href="#production-patterns" id="toc-production-patterns">Production Patterns</a></li>
+    <li class="toc-item sub"><a href="#flow-from-room" id="toc-flow-from-room">Room + Flow</a></li>
+    <li class="toc-item sub"><a href="#flow-errors" id="toc-flow-errors">Error Handling</a></li>
+    <li class="toc-item"><a href="#testing" id="toc-testing">Testing</a></li>
+    <li class="toc-item"><a href="#system-design" id="toc-system-design">System Design Connection</a></li>
+  </ul>
+</aside>
+
+</div><!-- /page -->
+
+<script>
+  window.addEventListener('scroll', () => {
+    const doc = document.documentElement;
+    const pct = Math.round((doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100) || 0;
+    document.getElementById('pfill').style.width = pct + '%';
+  });
+
+  const sections = ['the-problem','what-is-a-coroutine','internals','continuation','state-machine','suspension-mechanics','dispatcher-internals','coroutine-cost','builders','launch','async','runblocking','dispatchers','structured-concurrency','scopes','job-supervisor','cancellation','what-is-flow','flow-operators','combine-zip','hot-flows','stateflow','sharedflow','channel','production-patterns','flow-from-room','flow-errors','testing','system-design'];
+  const tocLinks = {};
+  sections.forEach(id => { tocLinks[id] = document.getElementById('toc-' + id); });
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        Object.values(tocLinks).forEach(l => l && l.classList.remove('active'));
+        if (tocLinks[entry.target.id]) tocLinks[entry.target.id].classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(id => { const el = document.getElementById(id); if (el) observer.observe(el); });
+
+  const navUser = document.getElementById('navUserMenu');
+  if (navUser) {
+    navUser.addEventListener('click', e => { e.stopPropagation(); navUser.classList.toggle('open'); });
+    document.addEventListener('click', () => navUser.classList.remove('open'));
+  }
+
+  const SUPABASE_URL = 'https://dquheflcmcppldrnckzf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+  const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  (function() {
+    try {
+      const raw = localStorage.getItem('sb-gvbxhkhzuaiamwwuswzq-auth-token');
+      if (!raw) return;
+      const user = JSON.parse(raw)?.user;
+      if (!user) return;
+      const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+      document.getElementById('navSignInBtn').style.display = 'none';
+      document.getElementById('upgrade-cta').style.display = 'none';
+      const menu = document.getElementById('navUserMenu');
+      menu.style.display = 'flex';
+      document.getElementById('navAvatarInitial').textContent = name[0].toUpperCase();
+      document.getElementById('navUserName').textContent = name;
+      document.getElementById('navUserEmail').textContent = user.email;
+    } catch(e) {}
+  })();
+  sbClient.auth.onAuthStateChange((event, session) => {
+    const user = session?.user;
+    if (user) {
+      const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+      document.getElementById('navSignInBtn').style.display = 'none';
+      document.getElementById('upgrade-cta').style.display = 'none';
+      document.getElementById('navUserMenu').style.display = 'flex';
+      document.getElementById('navAvatarInitial').textContent = name[0].toUpperCase();
+      document.getElementById('navUserName').textContent = name;
+      document.getElementById('navUserEmail').textContent = user.email;
+    } else {
+      document.getElementById('navSignInBtn').style.display = '';
+      document.getElementById('upgrade-cta').style.display = '';
+      document.getElementById('navUserMenu').style.display = 'none';
+    }
+  });
+  async function handleSignOut() { await sbClient.auth.signOut(); }
+  function openAuthModal() { window.location.href = 'index.html#auth'; }
+</script>
+</body>
+</html>

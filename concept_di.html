@@ -152,12 +152,12 @@
 <body>
 
 <nav>
-  <a href="index.html" class="logo">
+  <a href="/" class="logo">
     <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
     Droidly
   </a>
   <div class="nav-right" id="navRight">
-    <a href="premium.html" class="nav-cta" id="upgrade-cta">⚡ Get Premium</a>
+    <a href="/premium" class="nav-cta" id="upgrade-cta">⚡ Get Premium</a>
     <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
     <div class="nav-user" id="navUserMenu" style="display:none;">
       <div class="nav-avatar" id="navAvatarInitial">?</div>
@@ -1080,9 +1080,9 @@
   <div class="sidebar-divider"></div>
   <div style="font-size:12px; color: var(--muted); line-height: 1.8;">
     <strong style="color:var(--ink2);">Related articles</strong><br/>
-    <a href="concept_mvvm.html" style="color:var(--accent);">MVVM Architecture →</a><br/>
-    <a href="concept_compose.html" style="color:var(--accent);">Jetpack Compose →</a><br/>
-    <a href="concept_coroutines.html" style="color:var(--accent);">Coroutines &amp; Flow →</a>
+    <a href="/concept_mvvm" style="color:var(--accent);">MVVM Architecture →</a><br/>
+    <a href="/concept_compose" style="color:var(--accent);">Jetpack Compose →</a><br/>
+    <a href="/concept_coroutines" style="color:var(--accent);">Coroutines &amp; Flow →</a>
   </div>
 </aside>
 </div>
@@ -1149,7 +1149,7 @@
     }
   });
   async function handleSignOut() { await sbClient.auth.signOut(); }
-  function openAuthModal() { window.location.href = 'index.html#auth'; }
+  function openAuthModal() { window.location.href = '/#auth'; }
 </script>
 </body>
 </html>

@@ -202,12 +202,12 @@
 <body>
 
 <nav>
-  <a href="index.html" class="logo">
+  <a href="/" class="logo">
     <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
     Droidly
   </a>
   <div class="nav-right" id="navRight">
-    <a href="premium.html" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
+    <a href="/premium" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
     <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
     <div class="nav-user" id="navUserMenu" style="display:none;">
       <div class="nav-avatar" id="navAvatarInitial">?</div>
@@ -1895,7 +1895,7 @@
   sb.auth.onAuthStateChange((event, session) => updateNavForUser(session?.user ?? null));
 
   window.handleSignOut = async function () { await sb.auth.signOut(); updateNavForUser(null); };
-  window.openAuthModal = function () { window.location.href = 'index.html?auth=signin&return=sysdesign_analyticsdk'; };
+  window.openAuthModal = function () { window.location.href = '/?auth=signin&return=sysdesign_analyticsdk'; };
 
   document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
     this.classList.toggle('open'); e.stopPropagation();

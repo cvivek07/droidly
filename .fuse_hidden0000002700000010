@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+  <meta name="theme-color" content="#3d7a4f"/>
+  <title>1:1 Mock Android Interview — Droidly</title>
+  <meta name="description" content="Book a personal 1:1 mock Android interview with an experienced Android engineer. Get real feedback on Kotlin, system design, coroutines, Jetpack Compose and more."/>
+  <link rel="canonical" href="https://droidly.io/mock_interview.html"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://droidly.io/mock_interview.html"/>
+  <meta property="og:title" content="1:1 Mock Android Interview — Droidly"/>
+  <meta property="og:image" content="https://droidly.io/assets/og-image.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  
+  <!-- Google Analytics 4 — replace G-61G11MD574 with your Measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-61G11MD574');
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#fff;--bg2:#f4f6f9;--bg3:#eaecf0;--card:#fff;
+      --ink:#0f1117;--ink2:#374151;--muted:#6b7280;
+      --green:#3d7a4f;--green2:#2e6040;--green-mid:#4caf70;
+      --green-light:#e8f2ec;--green-pale:#f0f8f2;
+      --border:rgba(15,17,23,0.08);--border-green:rgba(61,122,79,0.2);
+      --shadow-sm:0 1px 3px rgba(0,0,0,0.05),0 1px 2px rgba(0,0,0,0.03);
+      --shadow-md:0 4px 16px rgba(0,0,0,0.07),0 2px 6px rgba(0,0,0,0.04);
+      --shadow-lg:0 12px 40px rgba(0,0,0,0.09),0 4px 12px rgba(0,0,0,0.05);
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.6;overflow-x:hidden;padding-top:68px}
+    body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;opacity:0.18}
+    *{position:relative;z-index:1}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;background:rgba(255,255,255,0.9);backdrop-filter:blur(20px) saturate(1.6);border-bottom:1px solid var(--border);box-shadow:0 1px 0 var(--border),0 2px 12px rgba(0,0,0,0.04)}
+    nav::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green2),var(--green-mid),var(--green));z-index:1}
+    .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px}
+    .logo-mark img{height:32px;width:auto;display:block}
+    .nav-center{display:flex;gap:4px;align-items:center}
+    .nav-link{color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;padding:7px 14px;border-radius:8px;transition:all 0.18s}
+    .nav-link:hover,.nav-link.active{color:var(--ink);background:var(--bg2)}
+    .nav-right{display:flex;align-items:center;gap:10px}
+    .nav-pill{font-size:12px;font-weight:600;background:var(--green-light);color:var(--green);border:1px solid var(--border-green);padding:5px 12px;border-radius:100px;text-decoration:none}
+    .btn-nav{background:var(--ink);color:var(--bg);padding:9px 22px;border-radius:100px;font-size:14px;font-weight:600;text-decoration:none;letter-spacing:-0.2px;transition:all 0.18s;border:none;cursor:pointer;font-family:inherit}
+    .btn-nav:hover{background:var(--green);transform:translateY(-1px)}
+    .nav-user{display:flex;align-items:center;gap:8px;position:relative;cursor:pointer}
+    .nav-avatar{width:34px;height:34px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+    .nav-user-name{font-size:14px;font-weight:600;color:var(--ink);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .nav-caret{font-size:10px;color:var(--muted)}
+    .user-dropdown{position:absolute;top:calc(100% + 10px);right:0;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:8px;box-shadow:var(--shadow-lg);min-width:180px;z-index:999;opacity:0;pointer-events:none;transform:translateY(-6px);transition:all 0.18s ease}
+    .nav-user:hover .user-dropdown,.nav-user.open .user-dropdown{opacity:1;pointer-events:all;transform:translateY(0)}
+    .user-dropdown-email{padding:8px 12px 10px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border);margin-bottom:6px;word-break:break-all}
+    .user-dropdown-item{padding:9px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.15s;text-decoration:none}
+    .user-dropdown-item:hover{background:var(--bg2);color:var(--ink)}
+    .user-dropdown-item.danger{color:#e53e3e}
+    .user-dropdown-item.danger:hover{background:#fff0f0;color:#c53030}
+
+    /* HERO */
+    .hero{padding:72px 48px 80px;max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:64px;align-items:center}
+    .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--green-light);color:var(--green);border:1px solid var(--border-green);padding:6px 14px;border-radius:100px;font-size:13px;font-weight:600;margin-bottom:22px}
+    .hero-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(0.85)}}
+    h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:48px;font-weight:800;letter-spacing:-1.5px;line-height:1.1;color:var(--ink);margin-bottom:20px}
+    h1 .accent{color:var(--green)}
+    .hero-sub{font-size:17px;color:var(--ink2);line-height:1.7;margin-bottom:32px;max-width:520px}
+    .hero-badges{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:36px}
+    .badge{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--border);border-radius:100px;padding:6px 14px;font-size:13px;font-weight:500;color:var(--ink2)}
+    .btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--green);color:#fff;padding:14px 28px;border-radius:100px;font-size:15px;font-weight:700;text-decoration:none;transition:all 0.2s;border:none;cursor:pointer;font-family:inherit}
+    .btn-primary:hover{background:var(--green2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(61,122,79,0.3)}
+    .btn-ghost{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--ink);padding:14px 28px;border-radius:100px;font-size:15px;font-weight:600;text-decoration:none;transition:all 0.2s;border:1.5px solid var(--border)}
+    .btn-ghost:hover{border-color:var(--green);color:var(--green);background:var(--green-pale)}
+    .hero-ctas{display:flex;gap:12px;flex-wrap:wrap}
+
+    /* HERO CARD */
+    .hero-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;box-shadow:var(--shadow-lg)}
+    .hc-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+    .hc-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-mid));color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;flex-shrink:0}
+    .hc-name{font-weight:700;font-size:15px;color:var(--ink)}
+    .hc-role{font-size:13px;color:var(--muted)}
+    .hc-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+    .hc-stat{background:var(--bg2);border-radius:12px;padding:14px;text-align:center}
+    .hc-stat-num{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:var(--green);letter-spacing:-0.5px}
+    .hc-stat-label{font-size:11px;color:var(--muted);font-weight:500;margin-top:2px}
+    .hc-covers{margin-bottom:18px}
+    .hc-covers-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+    .hc-tag-row{display:flex;flex-wrap:wrap;gap:6px}
+    .hc-tag{background:var(--green-light);color:var(--green);border:1px solid var(--border-green);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600}
+    .hc-price{display:flex;align-items:baseline;gap:6px;margin-bottom:16px}
+    .hc-price-num{font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-1px}
+    .hc-price-per{font-size:13px;color:var(--muted)}
+    .hc-price-note{font-size:12px;color:var(--muted);margin-bottom:16px}
+    .hc-book-btn{width:100%;background:var(--green);color:#fff;padding:13px;border-radius:100px;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:all 0.2s}
+    .hc-book-btn:hover{background:var(--green2);transform:translateY(-1px)}
+    .hc-trust{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;font-size:12px;color:var(--muted)}
+
+    /* SECTION COMMON */
+    section{padding:80px 48px;max-width:1100px;margin:0 auto}
+    .section-divider{height:1px;background:var(--border);margin:0 48px}
+    .section-eyebrow{font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+    .section-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:36px;font-weight:800;letter-spacing:-1px;color:var(--ink);margin-bottom:14px;line-height:1.15}
+    .section-sub{font-size:16px;color:var(--muted);max-width:520px;line-height:1.7}
+
+    /* HOW IT WORKS */
+    .how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:48px;border:1px solid var(--border);border-radius:20px;overflow:hidden}
+    .how-step{padding:28px 24px;border-right:1px solid var(--border)}
+    .how-step:last-child{border-right:none}
+    .how-num{width:36px;height:36px;border-radius:50%;background:var(--green-light);color:var(--green);display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;margin-bottom:16px;border:1.5px solid var(--border-green)}
+    .how-icon{font-size:24px;margin-bottom:14px}
+    .how-title{font-weight:700;font-size:15px;color:var(--ink);margin-bottom:8px}
+    .how-desc{font-size:13px;color:var(--muted);line-height:1.6}
+
+    /* SAMPLE QUESTIONS */
+    .sq-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:28px;margin-top:36px}
+    .sq-tab{padding:7px 18px;border-radius:100px;font-size:13px;font-weight:600;border:1.5px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;transition:all 0.18s}
+    .sq-tab:hover{border-color:var(--border-green);color:var(--green)}
+    .sq-tab.active{background:var(--green);color:#fff;border-color:var(--green)}
+    .sq-list{display:none;flex-direction:column;gap:10px}
+    .sq-list.active{display:flex}
+    .sq-item{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all 0.18s;user-select:none}
+    .sq-item:hover{border-color:var(--border-green);background:var(--green-pale);transform:translateX(3px)}
+    .sq-item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .sq-q{font-size:14px;font-weight:600;color:var(--ink);line-height:1.5;flex:1}
+    .sq-diff{font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px;flex-shrink:0;margin-top:2px}
+    .sq-diff.easy{background:#e8f5e9;color:#2e7d32}
+    .sq-diff.medium{background:#fff3e0;color:#e65100}
+    .sq-diff.hard{background:#fce4ec;color:#c62828}
+    .sq-answer{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--ink2);line-height:1.7}
+    .sq-item.open .sq-answer{display:block}
+    .sq-chevron{font-size:12px;color:var(--muted);transition:transform 0.2s;margin-top:4px;flex-shrink:0}
+    .sq-item.open .sq-chevron{transform:rotate(180deg)}
+    .sq-note{margin-top:24px;padding:14px 18px;background:var(--green-light);border:1px solid var(--border-green);border-radius:12px;font-size:13px;color:var(--green);font-weight:500}
+
+    /* WHAT WE COVER */
+    .cover-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:40px}
+    .cover-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;align-items:flex-start;gap:14px;transition:all 0.18s}
+    .cover-card:hover{border-color:var(--border-green);background:var(--green-pale);transform:translateY(-2px)}
+    .cover-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+    .cover-title{font-weight:700;font-size:14px;color:var(--ink);margin-bottom:4px}
+    .cover-desc{font-size:12px;color:var(--muted);line-height:1.6}
+
+    /* BOOKING FORM */
+    .form-section{background:var(--bg2);padding:80px 48px}
+    .form-wrap{max-width:800px;margin:0 auto}
+    .form-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:48px;box-shadow:var(--shadow-md)}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .form-group{display:flex;flex-direction:column;gap:6px}
+    .form-group.full{grid-column:1/-1}
+    .form-label{font-size:13px;font-weight:600;color:var(--ink2)}
+    .form-label .opt{font-weight:400;color:var(--muted);margin-left:4px}
+    .form-input,.form-select,.form-textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--ink);background:var(--bg);transition:all 0.18s;outline:none}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(61,122,79,0.12)}
+    .form-input::placeholder,.form-textarea::placeholder{color:var(--muted)}
+    .form-textarea{resize:vertical;min-height:100px;line-height:1.6}
+    .form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
+
+    /* File upload */
+    .file-upload-wrap{position:relative}
+    .file-upload-label{display:flex;align-items:center;gap:12px;padding:14px 18px;border:1.5px dashed var(--border);border-radius:10px;cursor:pointer;transition:all 0.18s;background:var(--bg)}
+    .file-upload-label:hover{border-color:var(--green);background:var(--green-pale)}
+    .file-upload-label.has-file{border-color:var(--green);background:var(--green-pale);border-style:solid}
+    .file-upload-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .file-icon{font-size:20px;flex-shrink:0}
+    .file-text{font-size:13px;color:var(--muted);line-height:1.4}
+    .file-text strong{color:var(--ink);font-weight:600;display:block}
+    .file-name{font-size:13px;color:var(--green);font-weight:600}
+
+    /* Checkboxes */
+    .check-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}
+    .check-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s;background:var(--bg)}
+    .check-item:hover{border-color:var(--border-green);background:var(--green-pale)}
+    .check-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
+    .check-item input[type=checkbox]:checked+span{color:var(--green);font-weight:600}
+    .check-item span{font-size:13px;color:var(--ink2);line-height:1.3}
+    .check-item:has(input:checked){border-color:var(--green);background:var(--green-pale)}
+
+    /* Radio pills */
+    .radio-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+    .radio-pill{display:flex;align-items:center;gap:7px;padding:8px 16px;border:1.5px solid var(--border);border-radius:100px;cursor:pointer;transition:all 0.15s;background:var(--bg);font-size:13px;font-weight:500;color:var(--ink2)}
+    .radio-pill:hover{border-color:var(--border-green);color:var(--green)}
+    .radio-pill input{display:none}
+    .radio-pill:has(input:checked){border-color:var(--green);background:var(--green-light);color:var(--green);font-weight:700}
+
+    /* Submit */
+    .form-submit-btn{width:100%;background:var(--green);color:#fff;padding:15px;border-radius:100px;font-size:16px;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:all 0.2s;margin-top:8px}
+    .form-submit-btn:hover{background:var(--green2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(61,122,79,0.3)}
+    .form-submit-btn:disabled{opacity:0.6;transform:none;cursor:not-allowed}
+    .form-note{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.6}
+    .form-divider{height:1px;background:var(--border);margin:28px 0}
+    .form-section-title{font-weight:700;font-size:16px;color:var(--ink);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+    .form-section-title .num{width:24px;height:24px;border-radius:50%;background:var(--green-light);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+
+    /* SUCCESS STATE */
+    .success-state{display:none;text-align:center;padding:20px 0 8px}
+    .success-state.show{display:block}
+    .form-card.submitted .form-content{display:none}
+    .success-icon{font-size:56px;margin-bottom:18px}
+    .success-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.5px;color:var(--ink);margin-bottom:10px}
+    .success-sub{font-size:15px;color:var(--muted);line-height:1.7;max-width:420px;margin:0 auto 28px}
+    .calendly-wrap{border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:4px}
+    .calendly-placeholder{background:var(--bg2);padding:40px;text-align:center;border-radius:16px}
+    .calendly-placeholder p{font-size:14px;color:var(--muted);margin-bottom:12px}
+    .calendly-placeholder a{color:var(--green);font-weight:600;text-decoration:none}
+
+    /* FAQ */
+    .faq-list{margin-top:40px;display:flex;flex-direction:column;gap:0;border:1px solid var(--border);border-radius:16px;overflow:hidden}
+    .faq-item{border-bottom:1px solid var(--border)}
+    .faq-item:last-child{border-bottom:none}
+    .faq-q{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);transition:background 0.15s;user-select:none;gap:16px}
+    .faq-q:hover{background:var(--bg2)}
+    .faq-q .faq-arrow{font-size:18px;color:var(--muted);transition:transform 0.2s;flex-shrink:0}
+    .faq-item.open .faq-q .faq-arrow{transform:rotate(45deg)}
+    .faq-a{display:none;padding:0 24px 20px;font-size:14px;color:var(--muted);line-height:1.75}
+    .faq-item.open .faq-a{display:block}
+
+    /* FOOTER */
+    footer{display:flex;align-items:center;justify-content:space-between;padding:28px 48px;border-top:1px solid var(--border);flex-wrap:wrap;gap:16px}
+    .footer-copy{font-size:13px;color:var(--muted)}
+
+    /* AUTH MODAL */
+    .auth-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.25s ease}
+    .auth-overlay.open{opacity:1;pointer-events:all}
+    .auth-box{background:#fff;border-radius:22px;padding:36px 32px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,0.18);transform:translateY(16px) scale(0.97);transition:transform 0.28s cubic-bezier(0.34,1.56,0.64,1);max-height:90vh;overflow-y:auto}
+    .auth-overlay.open .auth-box{transform:translateY(0) scale(1)}
+    .auth-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:var(--bg2);border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all 0.15s}
+    .auth-close:hover{background:var(--bg3);color:var(--ink)}
+    .auth-logo{display:flex;align-items:center;gap:8px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;color:var(--ink);margin-bottom:22px;letter-spacing:-0.3px}
+    .auth-logo-mark img{height:28px;width:auto;display:block}
+    .auth-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:24px;gap:4px}
+    .auth-tab{flex:1;padding:9px;background:none;border:none;font-family:inherit;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.18s}
+    .auth-tab.active{color:var(--green);border-bottom-color:var(--green)}
+    .auth-field{margin-bottom:14px}
+    .auth-label{display:block;font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:6px}
+    .auth-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--ink);outline:none;transition:all 0.18s}
+    .auth-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(61,122,79,0.12)}
+    .auth-input.error{border-color:#e53e3e}
+    .auth-input::placeholder{color:var(--muted)}
+    .auth-pw-wrap{position:relative}
+    .auth-pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);padding:2px}
+    .auth-pw-toggle:hover{color:var(--ink)}
+    .auth-error{display:none;font-size:12px;color:#e53e3e;margin-top:5px}
+    .auth-error.show{display:block}
+    .auth-forgot{display:block;text-align:right;font-size:12px;color:var(--green);text-decoration:none;font-weight:600;margin-bottom:16px}
+    .auth-forgot:hover{color:var(--green2)}
+    .auth-submit{width:100%;background:var(--green);color:#fff;padding:13px;border-radius:100px;font-family:inherit;font-size:15px;font-weight:700;border:none;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .auth-submit:hover{background:var(--green2);transform:translateY(-1px)}
+    .auth-submit:disabled{opacity:0.6;transform:none;cursor:not-allowed}
+    .auth-divider{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted);margin:18px 0;text-align:center}
+    .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+    .auth-google{width:100%;padding:11px;border:1.5px solid var(--border);border-radius:100px;background:#fff;font-family:inherit;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.18s}
+    .auth-google:hover{border-color:var(--green);background:var(--green-pale)}
+    .auth-switch{text-align:center;font-size:13px;color:var(--muted);margin-top:18px}
+    .auth-switch a{color:var(--green);font-weight:600;text-decoration:none}
+    .auth-terms{font-size:12px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.6}
+    .auth-terms a{color:var(--green)}
+    .auth-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:100px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;z-index:99999;opacity:0;transition:all 0.3s ease;box-shadow:var(--shadow-lg);white-space:nowrap}
+    .auth-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .auth-toast.success{background:var(--green)}
+    .auth-toast.error-toast{background:#e53e3e}
+
+    /* ANIMATIONS */
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .fade-1{animation:fadeUp 0.6s 0.05s ease both}
+    .fade-2{animation:fadeUp 0.6s 0.15s ease both}
+    .fade-3{animation:fadeUp 0.6s 0.25s ease both}
+    .fade-4{animation:fadeUp 0.6s 0.35s ease both}
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+
+    /* RESPONSIVE */
+    @media(max-width:900px){
+      nav{padding:0 20px}
+      .nav-center{display:none}
+      .hero{grid-template-columns:1fr;padding:40px 20px 56px;gap:40px}
+      h1{font-size:34px}
+      .how-grid{grid-template-columns:1fr 1fr}
+      .how-step{border-right:none;border-bottom:1px solid var(--border)}
+      .how-step:nth-child(odd){border-right:1px solid var(--border)}
+      .how-step:nth-last-child(-n+2){border-bottom:none}
+      .cover-grid{grid-template-columns:1fr 1fr}
+      .form-section{padding:60px 20px}
+      .form-card{padding:28px 20px}
+      .form-grid{grid-template-columns:1fr}
+      .form-group.full{grid-column:1}
+      .check-grid{grid-template-columns:1fr 1fr}
+      section{padding:60px 20px}
+      footer{padding:24px 20px;flex-direction:column;align-items:flex-start;gap:12px}
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="nav-center">
+    <a href="questions.html" class="nav-link">Questions</a>
+    <a href="mock_interview.html" class="nav-link active">Mock Interview</a>
+    <a href="premium.html" class="nav-link">Premium</a>
+  </div>
+  <div class="nav-right" id="navRight">
+    <a href="premium.html" class="nav-pill" style="text-decoration:none;">⚡ Get Premium</a>
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal('signin')" style="border:none;font-family:inherit;">Sign In</button>
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <a href="questions.html" class="user-dropdown-item">📚 Questions</a>
+        <div class="user-dropdown-item danger" onclick="signOut()">🚪 Sign Out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div style="max-width:1200px;margin:0 auto;padding:72px 48px 80px" class="fade-1">
+  <div style="display:grid;grid-template-columns:1fr 420px;gap:64px;align-items:center">
+    <div>
+      <div class="hero-eyebrow">
+        <span class="dot"></span>
+        Expert-led · 1:1 · 60 minutes
+      </div>
+      <h1>A mock interview that <span class="accent">actually prepares you.</span></h1>
+      <p class="hero-sub">Get a real interview experience with a working Android engineer. Detailed feedback on your Kotlin, architecture, and system design answers — not generic tips.</p>
+      <div class="hero-badges">
+        <span class="badge">🎯 Personalized questions</span>
+        <span class="badge">📄 Resume-based prep</span>
+        <span class="badge">📝 Written feedback report</span>
+        <span class="badge">🔁 30-day follow-up Q&A</span>
+      </div>
+      <div class="hero-ctas">
+        <a href="#book" class="btn-primary" onclick="document.getElementById('book').scrollIntoView({behavior:'smooth'});return false;">Book Your Session →</a>
+        <a href="#how" class="btn-ghost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'});return false;">How it works</a>
+      </div>
+    </div>
+    <div class="hero-card fade-2">
+      <div class="hc-header">
+        <div class="hc-avatar">V</div>
+        <div>
+          <div class="hc-name">Vivek Choudhary</div>
+          <div class="hc-role">Android Engineer · Founder, Droidly</div>
+        </div>
+      </div>
+      <div class="hc-stat-row">
+        <div class="hc-stat">
+          <div class="hc-stat-num">60</div>
+          <div class="hc-stat-label">Minutes / session</div>
+        </div>
+        <div class="hc-stat">
+          <div class="hc-stat-num">48h</div>
+          <div class="hc-stat-label">Feedback turnaround</div>
+        </div>
+      </div>
+      <div class="hc-covers">
+        <div class="hc-covers-title">Topics covered</div>
+        <div class="hc-tag-row">
+          <span class="hc-tag">Kotlin</span>
+          <span class="hc-tag">Coroutines</span>
+          <span class="hc-tag">Compose</span>
+          <span class="hc-tag">MVVM</span>
+          <span class="hc-tag">Room</span>
+          <span class="hc-tag">System Design</span>
+        </div>
+      </div>
+      <div class="hc-price">
+        <span class="hc-price-num">₹1,499</span>
+        <span class="hc-price-per">/ session</span>
+      </div>
+      <p class="hc-price-note">One 60-minute live session + written feedback report</p>
+      <button class="hc-book-btn" onclick="document.getElementById('book').scrollIntoView({behavior:'smooth'})">Book Your Session →</button>
+      <div class="hc-trust">🔒 Secure · No auto-renewal · Cancel anytime</div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="reveal">
+  <div class="section-eyebrow">Process</div>
+  <div class="section-title">How it works</div>
+  <div class="section-sub">Four simple steps from application to offer-ready confidence.</div>
+  <div class="how-grid">
+    <div class="how-step">
+      <div class="how-num">1</div>
+      <div class="how-icon">📋</div>
+      <div class="how-title">Fill the form</div>
+      <div class="how-desc">Share your experience level, target companies, resume, and what topics you want to focus on. The more detail, the better your session.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">2</div>
+      <div class="how-icon">📅</div>
+      <div class="how-title">Pick a time</div>
+      <div class="how-desc">After submitting, a secure Razorpay payment window opens. Pay ₹1,499 via UPI, card, or net banking — takes under 30 seconds.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">3</div>
+      <div class="how-icon">🎙️</div>
+      <div class="how-title">Live interview</div>
+      <div class="how-desc">A real-format interview on Google Meet — behavioural, Kotlin deep-dives, system design, or a mix. Treated exactly like the real thing.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">4</div>
+      <div class="how-icon">📝</div>
+      <div class="how-title">Detailed feedback</div>
+      <div class="how-desc">You receive a written feedback report within 48 hours covering strengths, gaps, and a prioritised study plan. Plus 30-day Q&A access.</div>
+    </div>
+  </div>
+</section>
+
+<section class="reveal" style="display:none">
+  <div class="section-eyebrow">Sample Questions</div>
+  <div class="section-title">The kind of questions you'll face</div>
+  <div class="section-sub">These are real questions asked in Android interviews at top product companies. Click any to see the kind of depth expected.</div>
+
+  <div class="sq-tabs">
+    <button class="sq-tab active" onclick="switchSqTab('kotlin',this)">Kotlin</button>
+    <button class="sq-tab" onclick="switchSqTab('coroutines',this)">Coroutines & Flow</button>
+    <button class="sq-tab" onclick="switchSqTab('compose',this)">Jetpack Compose</button>
+    <button class="sq-tab" onclick="switchSqTab('arch',this)">Architecture</button>
+    <button class="sq-tab" onclick="switchSqTab('sysdesign',this)">System Design</button>
+  </div>
+
+  <!-- KOTLIN -->
+  <div class="sq-list active" id="sq-kotlin">
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What is the difference between <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">inline</code> and <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">noinline</code> in Kotlin? When would you use each?</div>
+        <span class="sq-diff medium">Medium</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Inline functions copy their body to call sites, eliminating lambda object allocation. <code>noinline</code> opts a specific lambda parameter out of inlining — needed when you want to store the lambda, pass it elsewhere, or return it. Good candidates use <code>reified</code> in the same breath, since reified type parameters only work in inline functions.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">Explain Kotlin delegation — <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">by</code> keyword, <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">lazy</code>, <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">observable</code>. What problem does each solve?</div>
+        <span class="sq-diff medium">Medium</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Class delegation via <code>by</code> forwards interface calls to a wrapped instance without inheritance. Property delegation separates "how a value is stored/computed" from the property itself. <code>lazy</code> defers init to first access (thread-safe by default). <code>observable</code> fires a callback on every write. Strong candidates mention <code>ReadWriteProperty</code> and how to write custom delegates — useful for Shared Preferences or Room-backed properties.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What is the difference between <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">object</code>, <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">companion object</code>, and a top-level function in Kotlin?</div>
+        <span class="sq-diff easy">Easy</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer"><code>object</code> is a singleton — one instance, lazily initialised. <code>companion object</code> is tied to a class and its members are accessed via the class name (like Java static). Top-level functions have no enclosing class at all. The Java interop implications matter here: companion members need <code>@JvmStatic</code> to look like statics from Java; top-level functions compile to a class named after the file.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">How does Kotlin's type system prevent null pointer exceptions? What are the edge cases where you can still get an NPE?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">The compiler tracks nullability at the type level and disallows unsafe dereferencing. Edge cases: Java interop (platform types have no nullability info), <code>lateinit var</code> accessed before initialisation, not-null assertion <code>!!</code>, and generics with nullable upper bounds. Strong candidates mention <code>requireNotNull</code> vs <code>checkNotNull</code> and how to use sealed types instead of nulls for domain modelling.</div>
+    </div>
+  </div>
+
+  <!-- COROUTINES -->
+  <div class="sq-list" id="sq-coroutines">
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What is structured concurrency? How does <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">coroutineScope</code> differ from <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">supervisorScope</code>?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Structured concurrency means a parent scope outlives all its children, and cancellation propagates both up and down. <code>coroutineScope</code> cancels all children if any one fails. <code>supervisorScope</code> isolates failures — one child failing doesn't cancel its siblings. You'd use <code>supervisorScope</code> when children are independent (e.g. loading multiple feed sections in parallel where one failing shouldn't kill the others).</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What is the difference between <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">StateFlow</code>, <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">SharedFlow</code>, and <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">Channel</code>? When would you choose each?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer"><code>StateFlow</code> holds a single value, always has a current state, and replays it to new collectors — great for UI state. <code>SharedFlow</code> is a hot stream with configurable replay and buffer — good for one-shot events. <code>Channel</code> is a rendezvous point — designed for producer/consumer with backpressure. Common mistake: using <code>SharedFlow</code> for navigation events without handling configuration changes properly.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">How do you handle exceptions in coroutines? What happens if you throw inside <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">launch</code> vs <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">async</code>?</div>
+        <span class="sq-diff medium">Medium</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">In <code>launch</code>, uncaught exceptions propagate to the parent immediately and crash the scope unless a <code>CoroutineExceptionHandler</code> is installed. In <code>async</code>, the exception is held until <code>.await()</code> is called — so you must wrap <code>await()</code> in try/catch or the exception is swallowed. Strong answers mention that <code>CoroutineExceptionHandler</code> doesn't help in <code>supervisorScope</code> children by default.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">Your ViewModel launches a coroutine that makes a network call. The user rotates the screen. What happens and what should you do?</div>
+        <span class="sq-diff easy">Easy</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">The ViewModel survives rotation, so <code>viewModelScope</code> coroutines continue running — the network call is not restarted. The new Activity/Fragment resubscribes to the StateFlow/LiveData and gets the current state. The job is only cancelled when <code>onCleared()</code> fires (user navigates away). This is one of the core reasons ViewModels exist.</div>
+    </div>
+  </div>
+
+  <!-- COMPOSE -->
+  <div class="sq-list" id="sq-compose">
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What triggers recomposition and how do you prevent unnecessary recompositions?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Recomposition is triggered when a State object read during composition changes. Compose skips recomposing a composable if all its inputs are equal (stability). To prevent unnecessary recompositions: mark data classes <code>@Stable</code> or <code>@Immutable</code> when safe, hoist state correctly, use <code>remember</code> to cache derived values, avoid reading unstable types inside composables, and use <code>derivedStateOf</code> when a computation depends on multiple states.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">Explain the three phases of Compose rendering: composition, layout, drawing. Why does this matter for performance?</div>
+        <span class="sq-diff medium">Medium</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Composition: builds the UI tree and observes state. Layout: measures and places nodes. Drawing: renders to canvas. Phases are incremental — Compose can skip earlier phases if only later ones are affected. For example, an animation that only changes a translation can skip composition and layout entirely (using <code>Modifier.graphicsLayer</code>) and run only the draw phase, keeping it on the render thread at 60fps.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What is the difference between <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">LaunchedEffect</code>, <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">SideEffect</code>, and <code style="background:var(--bg3);padding:1px 5px;border-radius:4px">DisposableEffect</code>?</div>
+        <span class="sq-diff medium">Medium</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer"><code>LaunchedEffect</code> runs a suspend block tied to a key — relaunches when the key changes, cancels when leaving composition. <code>SideEffect</code> runs after every successful recomposition — used to sync Compose state to non-Compose code (analytics, etc). <code>DisposableEffect</code> is for non-coroutine side effects that need cleanup (listeners, observers) — its <code>onDispose</code> runs when the composable leaves composition.</div>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <div class="sq-list" id="sq-arch">
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">How does Clean Architecture apply to Android? Where exactly do you draw the boundaries?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Three concentric layers: Data (repositories, data sources, DTOs), Domain (use cases, entities, repository interfaces), Presentation (ViewModel, UI state, composables). The dependency rule: inner layers never reference outer ones. Domain has zero Android imports. Use cases are plain Kotlin classes the ViewModel calls. Data layer implements domain interfaces. Common mistake: putting business logic in the ViewModel or referencing Android SDK classes in domain.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">How do you handle one-shot UI events (navigation, snackbars) in MVVM without leaking them on rotation?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">The classic problem: <code>StateFlow</code> replays its last value, so a "navigate to Detail" event re-fires on rotation. Options: <code>SharedFlow</code> with <code>replay=0</code> (events lost if no collector), <code>Channel</code> (buffered, consumed once), or the "consumed event wrapper" pattern (<code>Event&lt;T&gt;</code>). Google's current recommendation is <code>SharedFlow</code> combined with collecting only when the UI is in STARTED state using <code>repeatOnLifecycle</code>.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">What is the Repository pattern? Why is it important even when you only have one data source?</div>
+        <span class="sq-diff easy">Easy</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Repository abstracts data access behind a single interface, letting the ViewModel remain agnostic about whether data comes from network, cache, or DB. Even with one source today, the pattern pays off immediately in testing — you can inject a fake repository without touching Room or Retrofit. It also makes adding a cache layer trivial later: the ViewModel never changes, only the repository implementation does.</div>
+    </div>
+  </div>
+
+  <!-- SYSTEM DESIGN -->
+  <div class="sq-list" id="sq-sysdesign">
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">Design an image loading library for Android from scratch. What are the core components?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Key components: Request queue (manages concurrent loads), Memory cache (LRU, bitmap pool to avoid GC pressure), Disk cache (bounded, LRU eviction), Decoder pipeline (BitmapFactory with inSampleSize for downsampling, hardware bitmaps for Compose), Network fetcher (OkHttp, HTTP cache headers), Lifecycle-aware request cancellation (cancels on Fragment/View detach), Placeholder/error state management. Strong answers address bitmap size estimation and why you must downsample before decoding.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">Design a real-time chat feature for an Android app. How do you handle message ordering and offline delivery?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Transport layer: WebSocket for real-time (long-lived), with SSE or HTTP polling as fallback. Local DB: Room stores all messages with a <code>status</code> column (sending / sent / delivered / read). Offline: write to Room first, enqueue with WorkManager (guaranteed delivery). Message ordering: server-assigned monotonic sequence ID, client uses local timestamp only for optimistic display. Conflicts resolved by server sequence on sync. Strong answers cover idempotency keys to prevent duplicate sends.</div>
+    </div>
+    <div class="sq-item" onclick="toggleSqItem(this)">
+      <div class="sq-item-top">
+        <div class="sq-q">How would you build a robust Payment SDK as an internal platform service for an Android super-app?</div>
+        <span class="sq-diff hard">Hard</span>
+        <span class="sq-chevron">▼</span>
+      </div>
+      <div class="sq-answer">Core design: gateway-agnostic API contract (your SDK exposes <code>PaymentProvider</code> interface), pluggable adapters per gateway (Razorpay, Stripe, UPI), and a state machine for payment lifecycle (IDLE → INITIATING → PENDING → SUCCESS/FAILED/CANCELLED). Retry logic with idempotency keys so a network failure doesn't double-charge. Expose a result as a sealed class. Surface a <code>PaymentResult</code> callback and a webhook reconciliation path. Strong answers mention 3DS redirect handling and deep-link return flow.</div>
+    </div>
+  </div>
+
+  <div class="sq-note">💡 In your session, questions will be tailored to your resume and target companies — these are just a flavour of the depth expected.</div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- WHAT WE COVER -->
+<section class="reveal">
+  <div class="section-eyebrow">Coverage</div>
+  <div class="section-title">What we'll cover</div>
+  <div class="section-sub">Questions are tailored to your experience and resume — no two sessions are identical.</div>
+  <div class="cover-grid">
+    <div class="cover-card">
+      <div class="cover-icon">🔷</div>
+      <div>
+        <div class="cover-title">Kotlin & Language</div>
+        <div class="cover-desc">Extension functions, generics, sealed classes, delegates, inline functions, null safety patterns.</div>
+      </div>
+    </div>
+    <div class="cover-card">
+      <div class="cover-icon">⚡</div>
+      <div>
+        <div class="cover-title">Coroutines & Flow</div>
+        <div class="cover-desc">Structured concurrency, scope cancellation, exception handling, StateFlow vs SharedFlow, cold vs hot.</div>
+      </div>
+    </div>
+    <div class="cover-card">
+      <div class="cover-icon">🎨</div>
+      <div>
+        <div class="cover-title">Jetpack Compose</div>
+        <div class="cover-desc">Recomposition, state hoisting, side effects, custom layouts, performance optimisation.</div>
+      </div>
+    </div>
+    <div class="cover-card">
+      <div class="cover-icon">🏛️</div>
+      <div>
+        <div class="cover-title">Architecture & MVVM</div>
+        <div class="cover-desc">Clean architecture layers, ViewModel lifecycle, Repository pattern, use-case driven design.</div>
+      </div>
+    </div>
+    <div class="cover-card">
+      <div class="cover-icon">💾</div>
+      <div>
+        <div class="cover-title">Room & Local Storage</div>
+        <div class="cover-desc">DAOs, migrations, transactions, Flows from Room, encryption, conflict strategies.</div>
+      </div>
+    </div>
+    <div class="cover-card">
+      <div class="cover-icon">🌐</div>
+      <div>
+        <div class="cover-title">Networking</div>
+        <div class="cover-desc">Retrofit internals, OkHttp interceptors, caching, auth token refresh, offline-first patterns.</div>
+      </div>
+    </div>
+    <div class="cover-card">
+      <div class="cover-icon">🔧</div>
+      <div>
+        <div class="cover-title">Dependency Injection</div>
+        <div class="cover-desc">Hilt scopes, component hierarchy, multi-binding, testing with Hilt, manual DI tradeoffs.</div>
+      </div>
+    </div>
+    <div class="cover-card">
+      <div class="cover-icon">⚙️</div>
+      <div>
+        <div class="cover-title">WorkManager</div>
+        <div class="cover-desc">Chaining, constraints, expedited work, periodic tasks, observing progress, testing strategies.</div>
+      </div>
+    </div>
+    <div class="cover-card">
+      <div class="cover-icon">🗺️</div>
+      <div>
+        <div class="cover-title">System Design</div>
+        <div class="cover-desc">Design a feed, chat app, image loader, payment SDK, or offline-first news app — full walkthrough.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- BOOKING FORM -->
+<div class="form-section" id="book">
+  <div class="form-wrap">
+    <div style="text-align:center;margin-bottom:40px" class="reveal">
+      <div class="section-eyebrow" style="display:inline-block">Book Your Session</div>
+      <div class="section-title">Apply for your mock interview</div>
+      <p class="section-sub" style="margin:0 auto">The more you share, the more your session will feel like a real interview at your target company.</p>
+    </div>
+
+    <div class="form-card reveal" id="formCard">
+
+      <!-- SUCCESS STATE -->
+      <div class="success-state" id="successState">
+        <div class="success-icon">🎉</div>
+        <div class="success-title">Application received!</div>
+        <p class="success-sub">Payment confirmed ✓ — now pick a time slot that works for you. You'll receive a confirmation email with the Google Meet link.</p>
+        <div class="calendly-wrap">
+          <!-- ──────────────────────────────────────────────────────────────
+               CAL.COM EMBED (free, no subscription needed)
+               Setup: https://cal.com → Sign up → Create event "Mock Android Interview" (60 min)
+               Then replace YOUR_USERNAME below with your Cal.com username.
+               To collect payment: connect Stripe in Cal.com → App Store → Stripe.
+               ────────────────────────────────────────────────────────────── -->
+          <!--<div class="calendly-placeholder" id="calPlaceholder">
+            <p style="font-size:20px;margin-bottom:8px">📅</p>
+            <p><strong style="color:var(&#45;&#45;ink)">Cal.com scheduling widget will appear here.</strong></p>
+            <p>Sign up free at <a href="https://cal.com" target="_blank">cal.com</a>, create a 60-min event,<br/>
+            then replace <code style="background:var(&#45;&#45;bg3);padding:2px 6px;border-radius:4px;font-size:12px">vivek-choudhary-gnre2m</code> in the HTML with your Cal.com username.</p>
+          </div>-->
+          <!-- Uncomment once you have your Cal.com username:-->
+          <iframe src="https://cal.com/vivek-choudhary-gnre2m/mock-android-interview?embed=true" width="100%" height="700" frameborder="0" style="border:none"></iframe>
+        </div>
+      </div>
+
+      <!-- FORM CONTENT -->
+      <div class="form-content" id="formContent">
+
+        <!-- SECTION 1: PERSONAL INFO -->
+        <div class="form-section-title">
+          <span class="num">1</span> About you
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="f-name">Full name</label>
+            <input class="form-input" type="text" id="f-name" placeholder="Priya Sharma" autocomplete="name" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-email">Email address</label>
+            <input class="form-input" type="email" id="f-email" placeholder="priya@example.com" autocomplete="email" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-phone">Phone number <span class="opt">(optional)</span></label>
+            <input class="form-input" type="tel" id="f-phone" placeholder="+91 98765 43210" autocomplete="tel"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-exp">Years of Android experience</label>
+            <select class="form-select" id="f-exp" required>
+              <option value="" disabled selected>Select your experience level</option>
+              <option value="0-1">0–1 year (Fresher / Intern)</option>
+              <option value="1-2">1–2 years (Junior)</option>
+              <option value="2-4">2–4 years (Mid-level)</option>
+              <option value="4-6">4–6 years (Senior)</option>
+              <option value="6+">6+ years (Staff / Lead)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-role">Current role <span class="opt">(optional)</span></label>
+            <input class="form-input" type="text" id="f-role" placeholder="e.g. Android Developer at Swiggy"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-target">Target companies / dream role</label>
+            <input class="form-input" type="text" id="f-target" placeholder="e.g. Google, Flipkart, any top product startup" required/>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- SECTION 2: INTERVIEW PREFERENCES -->
+        <div class="form-section-title">
+          <span class="num">2</span> Interview preferences
+        </div>
+
+        <div class="form-group full" style="margin-bottom:18px">
+          <label class="form-label">Interview type</label>
+          <div class="radio-row">
+            <label class="radio-pill"><input type="radio" name="int-type" value="concept" checked/> 🔷 Concept deep-dive</label>
+            <label class="radio-pill"><input type="radio" name="int-type" value="sysdesign"/> 🗺️ System design</label>
+            <label class="radio-pill"><input type="radio" name="int-type" value="mix"/> 🎯 Mixed (recommended)</label>
+            <label class="radio-pill"><input type="radio" name="int-type" value="behavioral"/> 🧠 Behavioural + technical</label>
+          </div>
+        </div>
+
+        <div class="form-group full" style="margin-bottom:18px">
+          <label class="form-label">Topics you want to focus on <span class="opt">(select all that apply)</span></label>
+          <div class="check-grid">
+            <label class="check-item"><input type="checkbox" name="topics" value="kotlin"/> <span>Kotlin</span></label>
+            <label class="check-item"><input type="checkbox" name="topics" value="coroutines"/> <span>Coroutines & Flow</span></label>
+            <label class="check-item"><input type="checkbox" name="topics" value="compose"/> <span>Jetpack Compose</span></label>
+            <label class="check-item"><input type="checkbox" name="topics" value="mvvm"/> <span>MVVM & Architecture</span></label>
+            <label class="check-item"><input type="checkbox" name="topics" value="room"/> <span>Room & Storage</span></label>
+            <label class="check-item"><input type="checkbox" name="topics" value="networking"/> <span>Networking</span></label>
+            <label class="check-item"><input type="checkbox" name="topics" value="di"/> <span>Dependency Injection</span></label>
+            <label class="check-item"><input type="checkbox" name="topics" value="workmanager"/> <span>WorkManager</span></label>
+            <label class="check-item"><input type="checkbox" name="topics" value="sysdesign"/> <span>System Design</span></label>
+          </div>
+        </div>
+
+        <div class="form-group full" style="margin-bottom:0">
+          <label class="form-label">Preferred language</label>
+          <div class="radio-row">
+            <label class="radio-pill"><input type="radio" name="lang" value="kotlin" checked/> Kotlin</label>
+            <label class="radio-pill"><input type="radio" name="lang" value="java"/> Java</label>
+            <label class="radio-pill"><input type="radio" name="lang" value="both"/> Both</label>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- SECTION 3: PROFILE & RESUME -->
+        <div class="form-section-title">
+          <span class="num">3</span> Your profile
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="f-linkedin">LinkedIn profile <span class="opt">(optional)</span></label>
+            <input class="form-input" type="url" id="f-linkedin" placeholder="https://linkedin.com/in/yourname"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-github">GitHub / portfolio <span class="opt">(optional)</span></label>
+            <input class="form-input" type="url" id="f-github" placeholder="https://github.com/yourusername"/>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Resume <span class="opt">(PDF or DOCX, max 5 MB)</span></label>
+            <div class="file-upload-wrap">
+              <label class="file-upload-label" id="fileLabel" for="f-resume">
+                <div class="file-icon">📎</div>
+                <div class="file-text">
+                  <strong id="fileTextMain">Click to upload your resume</strong>
+                  <span id="fileTextSub">Helps tailor the interview to your background and projects</span>
+                </div>
+              </label>
+              <input class="file-upload-input" type="file" id="f-resume" name="resume" accept=".pdf,.doc,.docx" onchange="handleFileSelect(this)"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- SECTION 4: GOALS -->
+        <div class="form-section-title">
+          <span class="num">4</span> Goals & context
+        </div>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label" for="f-goals">What do you want to get out of this session?</label>
+            <textarea class="form-textarea" id="f-goals" placeholder="e.g. I have a Google interview in 3 weeks and want to practice system design. I'm confident with Kotlin basics but struggle to explain coroutine internals clearly." rows="4" required></textarea>
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="f-weak">Areas you feel least confident about <span class="opt">(optional)</span></label>
+            <textarea class="form-textarea" id="f-weak" placeholder="e.g. I tend to freeze on system design open-enders, and I haven't used WorkManager much in production." rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-hear">How did you hear about Droidly?</label>
+            <select class="form-select" id="f-hear">
+              <option value="" disabled selected>Select one</option>
+              <option value="google">Google search</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="twitter">Twitter / X</option>
+              <option value="friend">Friend / colleague</option>
+              <option value="reddit">Reddit</option>
+              <option value="youtube">YouTube</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- SUBMIT -->
+        <div style="margin-top:28px">
+          <button class="form-submit-btn" id="submitBtn" onclick="handleFormSubmit()">
+            Pay ₹1,499 &amp; Book Your Slot →
+          </button>
+          <p class="form-note">
+            🔒 Secure payment via Razorpay · UPI, cards &amp; net banking accepted<br/>
+            After payment, you'll pick your interview slot from the calendar.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- FAQ -->
+<section class="reveal">
+  <div class="section-eyebrow">FAQ</div>
+  <div class="section-title">Common questions</div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        What platform will the interview be on?
+        <span class="faq-arrow">+</span>
+      </div>
+      <div class="faq-a">All sessions are conducted via Google Meet. You'll receive a Meet link in your calendar invite after booking. No software installation needed — just a browser.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        How will you use my resume?
+        <span class="faq-arrow">+</span>
+      </div>
+      <div class="faq-a">Your resume helps tailor questions to your actual experience. For example, if you've built a payment integration, expect questions around that. It's not evaluated — it's a prep tool.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        What's in the written feedback report?
+        <span class="faq-arrow">+</span>
+      </div>
+      <div class="faq-a">The report covers: (1) answer quality per question, (2) communication clarity, (3) specific gaps identified, (4) a prioritised list of topics to study before your real interview. It's sent within 48 hours via email.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Can I reschedule?
+        <span class="faq-arrow">+</span>
+      </div>
+      <div class="faq-a">Yes. You can reschedule up to 24 hours before the session directly through Calendly at no extra charge. Cancellations within 24 hours are non-refundable.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        I'm a fresher — is this session suitable for me?
+        <span class="faq-arrow">+</span>
+      </div>
+      <div class="faq-a">Absolutely. Just select "0–1 year" in the experience field and mention your target companies. The questions will be calibrated to your level — think fundamentals, data structures, basic Android concepts, and entry-level system design.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        What is the 30-day follow-up Q&A?
+        <span class="faq-arrow">+</span>
+      </div>
+      <div class="faq-a">After your session, you can email any follow-up questions about topics covered and get a response within 48 hours. This is included at no extra cost for 30 days post-session.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        How is payment handled?
+        <span class="faq-arrow">+</span>
+      </div>
+      <div class="faq-a">Payment is collected securely on this page via Razorpay before you pick your slot. We accept UPI (GPay, PhonePe, Paytm), debit/credit cards, and net banking. You receive a receipt from Razorpay immediately after payment.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="index.html" class="logo" style="text-decoration:none;color:var(--ink)">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="footer-copy">© 2025 Droidly · Built for Android Developers · <a href="mailto:support@droidly.io" style="color:var(--muted);text-decoration:none">support@droidly.io</a></div>
+  <div style="display:flex;gap:20px;flex-wrap:wrap">
+    <a href="privacy.html" style="font-size:13px;color:var(--muted);text-decoration:none">Privacy Policy</a>
+    <a href="terms.html" style="font-size:13px;color:var(--muted);text-decoration:none">Terms</a>
+    <a href="refund.html" style="font-size:13px;color:var(--muted);text-decoration:none">Refund Policy</a>
+  </div>
+</footer>
+
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="authOverlay" onclick="closeAuthOnBackdrop(event)">
+  <div class="auth-box" id="authBox">
+    <button class="auth-close" onclick="closeAuthModal()">✕</button>
+    <div class="auth-logo">
+      <div class="auth-logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+      Droidly
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabSignin" onclick="switchTab('signin')">Sign In</button>
+      <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Create Account</button>
+    </div>
+    <div id="formSignin">
+      <div class="auth-field">
+        <label class="auth-label" for="siEmail">Email address</label>
+        <input class="auth-input" type="email" id="siEmail" placeholder="you@example.com" autocomplete="email"/>
+        <div class="auth-error" id="siEmailErr">Please enter a valid email.</div>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="siPassword">Password</label>
+        <div class="auth-pw-wrap">
+          <input class="auth-input" type="password" id="siPassword" placeholder="Your password" autocomplete="current-password"/>
+          <button class="auth-pw-toggle" type="button" onclick="togglePw('siPassword', this)">👁</button>
+        </div>
+        <div class="auth-error" id="siPassErr">Incorrect email or password.</div>
+      </div>
+      <a href="#" class="auth-forgot" onclick="handleForgot(event)">Forgot password?</a>
+      <button class="auth-submit" id="siBtn" onclick="handleSignIn()">Sign In →</button>
+      <div class="auth-divider">or continue with</div>
+      <button class="auth-google" onclick="handleGoogleAuth()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Continue with Google
+      </button>
+      <div class="auth-switch">Don't have an account? <a href="#" onclick="switchTab('signup');return false;">Create one free →</a></div>
+    </div>
+    <div id="formSignup" style="display:none">
+      <div class="auth-field">
+        <label class="auth-label" for="suName">Full name</label>
+        <input class="auth-input" type="text" id="suName" placeholder="Priya Sharma" autocomplete="name"/>
+        <div class="auth-error" id="suNameErr">Please enter your name.</div>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="suEmail">Email address</label>
+        <input class="auth-input" type="email" id="suEmail" placeholder="you@example.com" autocomplete="email"/>
+        <div class="auth-error" id="suEmailErr">Please enter a valid email.</div>
+        <div class="auth-error" id="suEmailExistsErr">An account with this email already exists.</div>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="suPassword">Password <span style="color:var(--muted);font-weight:400">(min 6 chars)</span></label>
+        <div class="auth-pw-wrap">
+          <input class="auth-input" type="password" id="suPassword" placeholder="Choose a strong password" autocomplete="new-password"/>
+          <button class="auth-pw-toggle" type="button" onclick="togglePw('suPassword', this)">👁</button>
+        </div>
+        <div class="auth-error" id="suPassErr">Password must be at least 6 characters.</div>
+      </div>
+      <button class="auth-submit" id="suBtn" onclick="handleSignUp()">Create Free Account →</button>
+      <div class="auth-divider">or continue with</div>
+      <button class="auth-google" onclick="handleGoogleAuth()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Continue with Google
+      </button>
+      <div class="auth-terms">By signing up you agree to our <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a>.</div>
+      <div class="auth-switch">Already have an account? <a href="#" onclick="switchTab('signin');return false;">Sign in →</a></div>
+    </div>
+    <div id="authVerifyState" style="display:none;text-align:center;padding:8px 0">
+      <div style="font-size:52px;margin-bottom:18px">📧</div>
+      <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px">Check your inbox!</h3>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:6px">We sent a verification link to</p>
+      <p style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:24px" id="verifyEmailAddr"></p>
+      <button onclick="closeAuthModal()" style="width:100%;background:var(--green);color:white;border:none;padding:14px;border-radius:100px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:14px">Got it →</button>
+      <p style="font-size:13px;color:var(--muted)">Didn't receive it? <a href="#" id="resendEmail" onclick="resendVerification();return false;" style="color:var(--green);font-weight:600;text-decoration:none">Resend email</a></p>
+    </div>
+  </div>
+</div>
+<div class="auth-toast" id="authToast"></div>
+
+<script>
+/* ══════════════════════════════════════════════
+   AUTH SYSTEM
+══════════════════════════════════════════════ */
+const SUPABASE_URL  = 'https://dquheflcmcppldrnckzf.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function openAuthModal(tab='signin'){switchTab(tab);clearAuthErrors();hideVerifyState();document.getElementById('authOverlay').classList.add('open');document.body.style.overflow='hidden';setTimeout(()=>{document.getElementById(tab==='signin'?'siEmail':'suName')?.focus()},300)}
+function closeAuthModal(){document.getElementById('authOverlay').classList.remove('open');document.body.style.overflow='';hideVerifyState()}
+function closeAuthOnBackdrop(e){if(e.target===document.getElementById('authOverlay'))closeAuthModal()}
+function switchTab(tab){const isSI=tab==='signin';document.getElementById('tabSignin').classList.toggle('active',isSI);document.getElementById('tabSignup').classList.toggle('active',!isSI);document.getElementById('formSignin').style.display=isSI?'':'none';document.getElementById('formSignup').style.display=isSI?'none':'';clearAuthErrors()}
+function showErr(id,inputId){document.getElementById(id)?.classList.add('show');if(inputId)document.getElementById(inputId)?.classList.add('error')}
+function clearAuthErrors(){['siEmailErr','siPassErr','suNameErr','suEmailErr','suEmailExistsErr','suPassErr'].forEach(id=>document.getElementById(id)?.classList.remove('show'));['siEmail','siPassword','suName','suEmail','suPassword'].forEach(id=>document.getElementById(id)?.classList.remove('error'))}
+function setLoading(btnId,loading,def){const btn=document.getElementById(btnId);if(!btn)return;btn.disabled=loading;btn.innerHTML=loading?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.7s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Please wait…':def}
+function togglePw(inputId,btn){const inp=document.getElementById(inputId);inp.type=inp.type==='text'?'password':'text';btn.textContent=inp.type==='password'?'👁':'🙈'}
+function showVerifyState(email){document.getElementById('formSignup').style.display='none';document.getElementById('authVerifyState').style.display='';document.getElementById('verifyEmailAddr').textContent=email;document.getElementById('resendEmail').dataset.email=email}
+function hideVerifyState(){const vs=document.getElementById('authVerifyState');if(vs)vs.style.display='none'}
+
+async function handleSignIn(){
+  clearAuthErrors();
+  const email=document.getElementById('siEmail').value.trim();
+  const pass=document.getElementById('siPassword').value;
+  let valid=true;
+  if(!email||!email.includes('@')){showErr('siEmailErr','siEmail');valid=false}
+  if(!pass){showErr('siPassErr','siPassword');valid=false}
+  if(!valid)return;
+  setLoading('siBtn',true,'Sign In →');
+  const{data,error}=await db.auth.signInWithPassword({email,password:pass});
+  setLoading('siBtn',false,'Sign In →');
+  if(error){showErr('siPassErr','siPassword');return}
+  const name=data.user.user_metadata?.full_name||email.split('@')[0];
+  closeAuthModal();updateNavForUser(data.user);
+  showToast('✓ Welcome back, '+name.split(' ')[0]+'!','success');
+}
+
+async function handleSignUp(){
+  clearAuthErrors();
+  const name=document.getElementById('suName').value.trim();
+  const email=document.getElementById('suEmail').value.trim();
+  const pass=document.getElementById('suPassword').value;
+  let valid=true;
+  if(!name){showErr('suNameErr','suName');valid=false}
+  if(!email||!email.includes('@')){showErr('suEmailErr','suEmail');valid=false}
+  if(pass.length<6){showErr('suPassErr','suPassword');valid=false}
+  if(!valid)return;
+  setLoading('suBtn',true,'Create Free Account →');
+  const{data,error}=await db.auth.signUp({email,password:pass,options:{data:{full_name:name}}});
+  setLoading('suBtn',false,'Create Free Account →');
+  if(error){if(error.message.toLowerCase().includes('already')){showErr('suEmailExistsErr','suEmail')}else{showToast(error.message,'error-toast')}return}
+  if(data.user&&!data.session){showVerifyState(email)}
+  else if(data.session){closeAuthModal();updateNavForUser(data.user);showToast('🎉 Welcome to Droidly, '+name.split(' ')[0]+'!','success')}
+}
+
+async function resendVerification(){
+  const email=document.getElementById('resendEmail')?.dataset.email;
+  if(!email)return;
+  const{error}=await db.auth.resend({type:'signup',email});
+  showToast(error?error.message:'📧 Verification email resent!',error?'error-toast':'success');
+}
+
+async function handleForgot(e){
+  e.preventDefault();
+  const email=document.getElementById('siEmail').value.trim();
+  if(!email||!email.includes('@')){showErr('siEmailErr','siEmail');return}
+  const redirectTo=window.location.href.split('?')[0];
+  const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo});
+  showToast(error?error.message:'📧 Password reset link sent to '+email,error?'error-toast':'success');
+}
+
+async function handleGoogleAuth(){
+  const{error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href.split('?')[0].split('#')[0]}});
+  if(error)showToast('Google sign-in failed: '+error.message,'error-toast');
+}
+
+async function signOut(){await db.auth.signOut();updateNavForUser(null);showToast("You've been signed out.",'')}
+
+let currentUser=null;
+function updateNavForUser(user){
+  currentUser=user;
+  const signInBtn=document.getElementById('navSignInBtn');
+  const userMenu=document.getElementById('navUserMenu');
+  const avatarEl=document.getElementById('navAvatarInitial');
+  const userNameEl=document.getElementById('navUserName');
+  const userEmailEl=document.getElementById('navUserEmail');
+  if(user){
+    const name=user.user_metadata?.full_name||user.email.split('@')[0];
+    signInBtn.style.display='none';userMenu.style.display='flex';
+    avatarEl.textContent=name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    userNameEl.textContent=name.split(' ')[0];
+    userEmailEl.textContent=user.email;
+  }else{signInBtn.style.display='';userMenu.style.display='none'}
+}
+
+let toastTimer;
+function showToast(msg,type){
+  const t=document.getElementById('authToast');
+  t.textContent=msg;t.className='auth-toast show'+(type?' '+type:'');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),4000);
+}
+
+(async function initAuth(){
+  db.auth.onAuthStateChange((event,session)=>{
+    if(event==='SIGNED_IN'||event==='TOKEN_REFRESHED'){updateNavForUser(session.user)}
+    else if(event==='SIGNED_OUT'){updateNavForUser(null)}
+  });
+  const{data:{session}}=await db.auth.getSession();
+  if(session)updateNavForUser(session.user);
+})();
+
+/* ══════════════════════════════════════════════
+   FILE UPLOAD
+══════════════════════════════════════════════ */
+function handleFileSelect(input){
+  const file=input.files[0];
+  const label=document.getElementById('fileLabel');
+  const mainText=document.getElementById('fileTextMain');
+  const subText=document.getElementById('fileTextSub');
+  if(file){
+    label.classList.add('has-file');
+    mainText.textContent=file.name;
+    const size=(file.size/1024/1024).toFixed(2);
+    subText.textContent=size+' MB · Click to change';
+  }else{
+    label.classList.remove('has-file');
+    mainText.textContent='Click to upload your resume';
+    subText.textContent='Helps tailor the interview to your background and projects';
+  }
+}
+
+/* ══════════════════════════════════════════════
+   PAYMENT + FORM SUBMISSION
+   ──────────────────────────────────────────────
+   Flow: validate form → Razorpay payment modal →
+         on success → upload resume to Supabase Storage →
+         insert row to Supabase DB → show Cal.com scheduler
+
+   ONE-TIME SETUP:
+
+   A) Razorpay (razorpay.com):
+      Sign up → Settings → API Keys → Generate Test Key
+      Replace RAZORPAY_KEY_ID below with your live key when ready.
+      Test key prefix: rzp_test_...
+      Live key prefix: rzp_live_...
+
+   B) Supabase SQL Editor — run once:
+
+      create table mock_interview_applications (
+        id               uuid default gen_random_uuid() primary key,
+        created_at       timestamptz default now(),
+        name             text not null,
+        email            text not null,
+        phone            text,
+        experience       text not null,
+        current_role     text,
+        target_companies text not null,
+        interview_type   text not null,
+        topics           text,
+        preferred_language text,
+        linkedin_url     text,
+        github_url       text,
+        resume_url       text,
+        goals            text not null,
+        weak_areas       text,
+        heard_from       text,
+        payment_id       text,
+        payment_status   text default 'paid',
+        status           text default 'pending'
+      );
+
+      alter table mock_interview_applications enable row level security;
+      create policy "Public insert" on mock_interview_applications
+        for insert to anon with check (true);
+
+   C) Supabase Storage:
+      Storage → New bucket → Name: resumes → Public: ON
+      Storage → resumes → Policies → New policy → INSERT for anon
+══════════════════════════════════════════════ */
+
+const RAZORPAY_KEY_ID   = 'rzp_test_Siu6XT1KQfV87D'; // ← replace with rzp_live_...
+const SESSION_AMOUNT_RS = 1499;                    // ← change price here if needed
+
+// Collect and validate form, then open Razorpay
+async function handleFormSubmit() {
+  const name   = document.getElementById('f-name').value.trim();
+  const email  = document.getElementById('f-email').value.trim();
+  const exp    = document.getElementById('f-exp').value;
+  const target = document.getElementById('f-target').value.trim();
+  const goals  = document.getElementById('f-goals').value.trim();
+
+  if(!name || !email || !exp || !target || !goals) {
+    showToast('Please fill in all required fields.', 'error-toast');
+    // Highlight missing fields
+    if(!name)   document.getElementById('f-name').style.borderColor='#e53e3e';
+    if(!email)  document.getElementById('f-email').style.borderColor='#e53e3e';
+    if(!exp)    document.getElementById('f-exp').style.borderColor='#e53e3e';
+    if(!target) document.getElementById('f-target').style.borderColor='#e53e3e';
+    if(!goals)  document.getElementById('f-goals').style.borderColor='#e53e3e';
+    return;
+  }
+  if(!email.includes('@')) {
+    showToast('Please enter a valid email address.', 'error-toast');
+    document.getElementById('f-email').style.borderColor='#e53e3e';
+    return;
+  }
+
+  // Clear any red borders
+  ['f-name','f-email','f-exp','f-target','f-goals'].forEach(id=>{
+    document.getElementById(id).style.borderColor='';
+  });
+
+  const btn = document.getElementById('submitBtn');
+
+  // Snapshot form data before Razorpay opens (user can't edit mid-payment)
+  const formData = {
+    name,
+    email,
+    phone:              document.getElementById('f-phone').value.trim() || null,
+    experience:         exp,
+    currentrole:        document.getElementById('f-role').value.trim() || null,
+    target_companies:   target,
+    interview_type:     document.querySelector('input[name="int-type"]:checked')?.value || 'mix',
+    topics:             [...document.querySelectorAll('input[name="topics"]:checked')].map(c=>c.value).join(', ') || null,
+    preferred_language: document.querySelector('input[name="lang"]:checked')?.value || 'kotlin',
+    linkedin_url:       document.getElementById('f-linkedin').value.trim() || null,
+    github_url:         document.getElementById('f-github').value.trim() || null,
+    goals,
+    weak_areas:         document.getElementById('f-weak').value.trim() || null,
+    heard_from:         document.getElementById('f-hear').value || null,
+  };
+  const resumeFile = document.getElementById('f-resume').files[0];
+
+  // Open Razorpay
+  const rzpOptions = {
+    key:         RAZORPAY_KEY_ID,
+    amount:      SESSION_AMOUNT_RS * 100, // paise
+    currency:    'INR',
+    name:        'Droidly',
+    description: '1:1 Mock Android Interview — 60 min session',
+    image:       'https://droidly.io/assets/logo.png',
+    prefill:     { name, email, contact: formData.phone || '' },
+    theme:       { color: '#3d7a4f' },
+    modal: {
+      ondismiss: () => {
+        btn.disabled = false;
+        btn.textContent = 'Pay ₹1,499 & Book Your Slot →';
+      }
+    },
+    handler: async function(response) {
+      // Payment succeeded — save everything to Supabase
+      btn.disabled = true;
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.7s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Saving your application…';
+      try {
+        await saveApplication(formData, resumeFile, response.razorpay_payment_id);
+        showSuccess();
+      } catch(err) {
+        console.error('Save error after payment:', err);
+        showToast('⚠️ Save failed: ' + err.message, 'error-toast');
+        btn.disabled = false;
+        btn.textContent = 'Pay ₹1,499 & Book Your Slot →';
+      }
+    }
+  };
+
+  btn.disabled = true;
+  btn.textContent = 'Opening payment…';
+
+  try {
+    const rzp = new Razorpay(rzpOptions);
+    rzp.on('payment.failed', function(resp) {
+      showToast('Payment failed: ' + (resp.error?.description || 'Please try again.'), 'error-toast');
+      btn.disabled = false;
+      btn.textContent = 'Pay ₹1,499 & Book Your Slot →';
+    });
+    rzp.open();
+  } catch(e) {
+    showToast('Could not open payment. Please try again.', 'error-toast');
+    btn.disabled = false;
+    btn.textContent = 'Pay ₹1,499 & Book Your Slot →';
+  }
+}
+
+// Upload resume + insert DB row
+async function saveApplication(formData, resumeFile, paymentId) {
+  // 1. Upload resume (if provided)
+  let resumeUrl = null;
+  if(resumeFile) {
+    const safeName = resumeFile.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    const path = `${crypto.randomUUID()}-${safeName}`;
+    const { error: uploadErr } = await db.storage
+      .from('resumes')
+      .upload(path, resumeFile, { cacheControl: '3600', upsert: false });
+    if(uploadErr) throw new Error('Resume upload failed: ' + uploadErr.message);
+    const { data: urlData } = db.storage.from('resumes').getPublicUrl(path);
+    resumeUrl = urlData.publicUrl;
+  }
+
+  // 2. Insert application row
+  const { error: insertErr } = await db
+    .from('mock_interview_applications')
+    .insert({ ...formData, resume_url: resumeUrl, payment_id: paymentId, payment_status: 'paid' });
+  if(insertErr) throw new Error(insertErr.message);
+}
+
+function showSuccess(){
+  document.getElementById('formContent').style.display='none';
+  document.getElementById('successState').classList.add('show');
+  document.getElementById('formCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ══════════════════════════════════════════════
+   FAQ ACCORDION
+══════════════════════════════════════════════ */
+function toggleFaq(qEl){
+  const item=qEl.parentElement;
+  const wasOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
+  if(!wasOpen)item.classList.add('open');
+}
+
+/* ══════════════════════════════════════════════
+   SAMPLE QUESTIONS
+══════════════════════════════════════════════ */
+function switchSqTab(key, btn) {
+  document.querySelectorAll('.sq-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sq-list').forEach(l => l.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sq-' + key).classList.add('active');
+}
+
+function toggleSqItem(item) {
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.sq-item.open').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+/* ══════════════════════════════════════════════
+   SCROLL REVEAL
+══════════════════════════════════════════════ */
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}});
+},{threshold:0.08});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+</script>
+</body>
+</html>

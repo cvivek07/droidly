@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+  <title>WorkManager, JobScheduler &amp; AlarmManager — Android Core Concepts | Droidly</title>
+  <meta name="description" content="WorkManager constraints, chaining, expedited work, Hilt injection, testing, JobScheduler triggers, AlarmManager, and Doze mode survival."/>
+  <link rel="canonical" href="https://droidly.io/concept_workmanager.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:url" content="https://droidly.io/concept_workmanager.html"/>
+  <meta property="og:title" content="WorkManager, JobScheduler and AlarmManager - Android Interview Guide | Droidly"/>
+  <meta property="og:description" content="WorkManager constraints, chaining, expedited work, Hilt injection, testing, JobScheduler triggers, AlarmManager, and Doze mode survival."/>
+  <meta property="og:image" content="https://droidly.io/assets/og-image.png"/>
+  <meta property="og:site_name" content="Droidly"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="WorkManager, JobScheduler and AlarmManager - Android Interview Guide | Droidly"/>
+  <meta name="twitter:description" content="WorkManager constraints, chaining, expedited work, Hilt injection, testing, JobScheduler triggers, AlarmManager, and Doze mode survival."/>
+  <meta name="twitter:image" content="https://droidly.io/assets/og-image.png"/>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "WorkManager, JobScheduler and AlarmManager - Android Interview Guide",
+    "description": "WorkManager constraints, chaining, expedited work, Hilt injection, testing, JobScheduler triggers, AlarmManager, and Doze mode survival.",
+    "url": "https://droidly.io/concept_workmanager.html",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Droidly",
+      "logo": { "@type": "ImageObject", "url": "https://droidly.io/assets/logo.png" }
+    }
+  }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  
+  <!-- Google Analytics 4 — replace G-61G11MD574 with your Measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-61G11MD574');
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #ffffff; --bg-subtle: #f9fafb; --bg-green: #e8f2ec; --bg-blue: #eff6ff; --bg-amber: #fffbeb; --bg-purple: #f5f3ff;
+      --border: #e5e7eb; --ink: #111827; --ink2: #374151; --muted: #6b7280; --muted2: #9ca3af;
+      --accent: #3d7a4f; --accent-dark: #2e6040; --blue: #2563eb; --red: #dc2626; --purple: #7c3aed; --amber: #d97706;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--ink); font-family: 'Inter', -apple-system, sans-serif; font-size: 16px; line-height: 1.8; -webkit-font-smoothing: antialiased; padding-top: 68px; }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 900; height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; background: rgba(255,255,255,0.90); backdrop-filter: blur(20px) saturate(1.6); border-bottom: 1px solid var(--border); box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04); }
+    nav::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #2e6040, #4caf70, #3d7a4f); z-index: 1; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.5px; }
+    .logo-mark img { height: 32px; width: auto; display: block; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-cta { background: var(--accent); color: white; padding: 8px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; text-decoration: none; }
+    .btn-nav { font-size: 13px; font-weight: 600; color: var(--ink); background: var(--bg-subtle); border: 1px solid var(--border); padding: 6px 16px; border-radius: 100px; cursor: pointer; font-family: inherit; }
+    .nav-user { display: flex; align-items: center; gap: 8px; position: relative; cursor: pointer; }
+    .nav-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; border: 2px solid rgba(61,122,79,0.3); }
+    .nav-user-name { font-size: 14px; font-weight: 600; color: var(--ink2); }
+    .nav-caret { font-size: 10px; color: var(--muted); }
+    .user-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); min-width: 200px; overflow: hidden; z-index: 999; }
+    .nav-user.open .user-dropdown { display: block; }
+    .user-dropdown-email { padding: 12px 16px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
+    .user-dropdown-item { padding: 10px 16px; font-size: 14px; cursor: pointer; }
+    .user-dropdown-item.danger { color: var(--red); }
+    .page { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 260px; gap: 64px; padding: 48px 24px 100px; align-items: start; }
+    .content { min-width: 0; }
+    .concept-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .eyebrow-tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--accent); background: var(--bg-green); padding: 4px 12px; border-radius: 100px; }
+    .eyebrow-sep { color: var(--muted2); }
+    .eyebrow-meta { font-size: 13px; color: var(--muted); }
+    .article-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 4vw, 42px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; color: var(--ink); margin-bottom: 20px; }
+    .article-subtitle { font-size: 18px; color: var(--muted); line-height: 1.7; margin-bottom: 32px; max-width: 640px; font-weight: 400; }
+    .article-meta-strip { display: flex; flex-wrap: wrap; gap: 20px; padding: 16px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 48px; }
+    .meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+    .meta-item strong { color: var(--ink2); }
+    .content h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; color: var(--ink); margin: 56px 0 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border); scroll-margin-top: 90px; }
+    .content h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 700; color: var(--ink); margin: 36px 0 12px; scroll-margin-top: 90px; }
+    .content p { margin-bottom: 20px; color: var(--ink2); line-height: 1.85; font-size: 16px; }
+    .content strong { color: var(--ink); font-weight: 600; }
+    .content ul, .content ol { margin: 12px 0 20px 24px; color: var(--ink2); }
+    .content li { margin-bottom: 8px; line-height: 1.75; font-size: 16px; }
+    .content a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+    .content code { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; background: #f3f4f6; color: #be185d; padding: 2px 6px; border-radius: 4px; }
+    .callout { border-radius: 12px; padding: 20px 24px; margin: 28px 0; }
+    .callout-analogy { background: var(--bg-amber); border-left: 4px solid #f59e0b; }
+    .callout-tip { background: var(--bg-green); border-left: 4px solid var(--accent); }
+    .callout-warn { background: #fff5f5; border-left: 4px solid var(--red); }
+    .callout-info { background: var(--bg-blue); border-left: 4px solid var(--blue); }
+    .callout-purple { background: var(--bg-purple); border-left: 4px solid var(--purple); }
+    .callout-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+    .callout-analogy .callout-label { color: #92400e; }
+    .callout-tip .callout-label { color: var(--accent-dark); }
+    .callout-warn .callout-label { color: #991b1b; }
+    .callout-info .callout-label { color: #1e40af; }
+    .callout-purple .callout-label { color: #5b21b6; }
+    .callout p { font-size: 15px; line-height: 1.75; margin-bottom: 8px; }
+    .callout p:last-child { margin-bottom: 0; }
+    .code-wrap { margin: 24px 0; border-radius: 12px; overflow: hidden; border: 1px solid #2a2a3e; }
+    .code-label { background: #13131f; color: #6c7086; font-size: 11px; font-family: 'JetBrains Mono', monospace; padding: 8px 16px; border-bottom: 1px solid #2a2a3e; display: flex; justify-content: space-between; }
+    .code-block { background: #1e1e2e; color: #cdd6f4; padding: 20px; overflow-x: auto; font-size: 13.5px; line-height: 1.75; font-family: 'JetBrains Mono', monospace; white-space: pre; margin: 0; }
+    .kw { color: #cba6f7; } .fn { color: #89b4fa; } .cl { color: #f9e2af; }
+    .cm { color: #6c7086; font-style: italic; } .st { color: #a6e3a1; }
+    .nm { color: #fab387; } .an { color: #89dceb; }
+    .comp-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+    .comp-table th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: var(--ink); color: #f9e2af; }
+    .comp-table td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--ink2); vertical-align: top; }
+    .comp-table tr:nth-child(even) td { background: var(--bg-subtle); }
+    .comp-table tr td:first-child { font-weight: 600; color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+    .wb-wrap { margin: 36px 0; background: #f7f6f1; border-radius: 16px; border: 1px solid #e0ddd5; box-shadow: 0 4px 24px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.8); overflow: hidden; }
+    .wb-title { font-family: 'Caveat', cursive; font-size: 15px; color: #666; padding: 10px 20px 0; font-weight: 600; }
+    .wb-wrap svg { display: block; width: 100%; height: auto; }
+    .sidebar { position: sticky; top: 88px; }
+    .rp-label { font-size: 11px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .rp-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 24px; }
+    .rp-fill { height: 100%; background: var(--accent); border-radius: 4px; width: 0%; transition: width 0.2s; }
+    .toc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted2); margin-bottom: 10px; }
+    .toc-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+    .toc-item a { display: block; padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 13px; color: var(--muted); border-left: 2px solid transparent; transition: all 0.15s; }
+    .toc-item a:hover { color: var(--ink); background: var(--bg-subtle); }
+    .toc-item a.active { color: var(--accent); font-weight: 600; border-left-color: var(--accent); background: var(--bg-green); }
+    .toc-item.sub a { padding-left: 20px; font-size: 12px; }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .section-rule { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+    @media (max-width: 900px) { .page { grid-template-columns: 1fr; } .sidebar { display: none; } }
+    @media (max-width: 600px) { nav { padding: 0 20px; } .page { padding: 24px 16px 60px; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
+    Droidly
+  </a>
+  <div class="nav-right" id="navRight">
+    <a href="premium.html" class="nav-cta" id="upgrade-cta">&#x26A1; Get Premium</a>
+    <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
+    <div class="nav-user" id="navUserMenu" style="display:none;">
+      <div class="nav-avatar" id="navAvatarInitial">?</div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <span class="nav-caret">&#x25BE;</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navUserEmail"></div>
+        <div class="user-dropdown-item danger" onclick="handleSignOut()">&#x1F6AA; Sign Out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+<main class="content">
+  <div class="concept-eyebrow">
+    <span class="eyebrow-tag">&#x2699;&#xFE0F; Core Concept</span>
+    <span class="eyebrow-sep">&middot;</span>
+    <span class="eyebrow-meta">~55 min read</span>
+    <span class="eyebrow-sep">&middot;</span>
+    <span class="eyebrow-meta">Intermediate &rarr; Advanced</span>
+  </div>
+  <h1 class="article-title">WorkManager, JobScheduler &amp; AlarmManager</h1>
+  <p class="article-subtitle">How Android schedules work that must survive process death &mdash; WorkManager&rsquo;s full lifecycle, constraints, chaining, expedited work, Hilt injection, testing, JobScheduler&rsquo;s trigger model, AlarmManager&rsquo;s exact timing, Doze mode survival, App Standby Buckets, and the decision tree for picking the right tool every time.</p>
+  <div class="article-meta-strip">
+    <div class="meta-item">&#x2699;&#xFE0F; <strong>WorkManager</strong></div>
+    <div class="meta-item">&#x1F4CB; <strong>JobScheduler</strong></div>
+    <div class="meta-item">&#x23F0; <strong>AlarmManager</strong></div>
+    <div class="meta-item">&#x1F4A4; <strong>Doze Mode</strong></div>
+    <div class="meta-item">&#x1F517; <strong>Chaining</strong></div>
+  </div>
+
+  <!-- ─── THE BIG PICTURE ─── -->
+  <h2 id="big-picture">The big picture</h2>
+
+  <p>Android is aggressively hostile to background work. Since Android 6.0 (Doze), 8.0 (Background Execution Limits), and 12.0 (exact alarm restrictions), the OS has progressively throttled, deferred, and outright killed background processes to protect battery life. If you want work to run outside your app&rsquo;s foreground lifetime, you need to cooperate with the OS scheduler &mdash; not fight it.</p>
+
+  <p>Three APIs sit at different levels of this problem. They are not interchangeable. Each one solves a fundamentally different scheduling problem:</p>
+
+  <div class="wb-wrap">
+    <div class="wb-title">&#x1F4CB; Background scheduling APIs &mdash; pick by problem, not by familiarity</div>
+    <svg viewBox="0 0 820 320" xmlns="http://www.w3.org/2000/svg" font-family="Caveat, cursive">
+      <rect width="820" height="320" fill="#f7f6f1" rx="12"/>
+      <rect x="30" y="36" width="234" height="258" rx="12" fill="#e8f2ec" stroke="#3d7a4f" stroke-width="2"/>
+      <text x="147" y="66" text-anchor="middle" font-size="16" font-weight="700" fill="#2e6040" font-family="Plus Jakarta Sans, sans-serif">WorkManager</text>
+      <text x="147" y="88" text-anchor="middle" font-size="12" fill="#3d7a4f">Deferrable + Guaranteed</text>
+      <line x1="56" y1="100" x2="238" y2="100" stroke="#3d7a4f" stroke-width="0.5" opacity="0.4"/>
+      <text x="147" y="118" text-anchor="middle" font-size="11" fill="#374151">&#x2705; Survives process death</text>
+      <text x="147" y="136" text-anchor="middle" font-size="11" fill="#374151">&#x2705; Survives device reboot</text>
+      <text x="147" y="154" text-anchor="middle" font-size="11" fill="#374151">&#x2705; Network / charging constraints</text>
+      <text x="147" y="172" text-anchor="middle" font-size="11" fill="#374151">&#x2705; Chainable work graphs</text>
+      <text x="147" y="190" text-anchor="middle" font-size="11" fill="#374151">&#x2705; Observable WorkInfo state</text>
+      <text x="147" y="208" text-anchor="middle" font-size="11" fill="#374151">&#x2705; Expedited &amp; foreground workers</text>
+      <text x="147" y="226" text-anchor="middle" font-size="11" fill="#374151">&#x274C; Exact timing</text>
+      <rect x="56" y="242" width="178" height="28" rx="6" fill="#3d7a4f"/>
+      <text x="145" y="260" text-anchor="middle" font-size="11" fill="white" font-weight="600">Upload, sync, compress, report</text>
+      <text x="147" y="284" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">Uses JobScheduler internally (API 23+)</text>
+
+      <rect x="293" y="36" width="234" height="258" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+      <text x="410" y="66" text-anchor="middle" font-size="16" font-weight="700" fill="#1e40af" font-family="Plus Jakarta Sans, sans-serif">JobScheduler</text>
+      <text x="410" y="88" text-anchor="middle" font-size="12" fill="#2563eb">System-managed, no guarantee</text>
+      <line x1="319" y1="100" x2="501" y2="100" stroke="#2563eb" stroke-width="0.5" opacity="0.4"/>
+      <text x="410" y="118" text-anchor="middle" font-size="11" fill="#374151">&#x2705; Battery &amp; network aware</text>
+      <text x="410" y="136" text-anchor="middle" font-size="11" fill="#374151">&#x2705; Survives reboot (setPersisted)</text>
+      <text x="410" y="154" text-anchor="middle" font-size="11" fill="#374151">&#x2705; Content URI trigger</text>
+      <text x="410" y="172" text-anchor="middle" font-size="11" fill="#374151">&#x2705; Override deadline</text>
+      <text x="410" y="190" text-anchor="middle" font-size="11" fill="#374151">&#x274C; No chaining</text>
+      <text x="410" y="208" text-anchor="middle" font-size="11" fill="#374151">&#x274C; No guaranteed execution</text>
+      <text x="410" y="226" text-anchor="middle" font-size="11" fill="#374151">&#x274C; Exact timing</text>
+      <rect x="319" y="242" width="178" height="28" rx="6" fill="#2563eb"/>
+      <text x="408" y="260" text-anchor="middle" font-size="11" fill="white" font-weight="600">Custom low-level job services</text>
+      <text x="410" y="284" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">Direct OS scheduling API (API 21+)</text>
+
+      <rect x="556" y="36" width="234" height="258" rx="12" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+      <text x="673" y="66" text-anchor="middle" font-size="16" font-weight="700" fill="#92400e" font-family="Plus Jakarta Sans, sans-serif">AlarmManager</text>
+      <text x="673" y="88" text-anchor="middle" font-size="12" fill="#d97706">Time-based, exact timing</text>
+      <line x1="582" y1="100" x2="764" y2="100" stroke="#d97706" stroke-width="0.5" opacity="0.4"/>
+      <text x="673" y="118" text-anchor="middle" font-size="11" fill="#374151">&#x2705; Fires at exact wall-clock time</text>
+      <text x="673" y="136" text-anchor="middle" font-size="11" fill="#374151">&#x2705; Can wake device from sleep</text>
+      <text x="673" y="154" text-anchor="middle" font-size="11" fill="#374151">&#x2705; Fires during Doze (exact)</text>
+      <text x="673" y="172" text-anchor="middle" font-size="11" fill="#374151">&#x274C; No constraints</text>
+      <text x="673" y="190" text-anchor="middle" font-size="11" fill="#374151">&#x274C; No chaining</text>
+      <text x="673" y="208" text-anchor="middle" font-size="11" fill="#374151">&#x274C; Must reschedule after reboot</text>
+      <text x="673" y="226" text-anchor="middle" font-size="11" fill="#374151">&#x274C; Needs permission (API 31+)</text>
+      <rect x="582" y="242" width="178" height="28" rx="6" fill="#d97706"/>
+      <text x="671" y="260" text-anchor="middle" font-size="11" fill="white" font-weight="600">Reminders, alarms, calendar</text>
+      <text x="673" y="284" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">Backed by hardware RTC chip</text>
+    </svg>
+  </div>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">&#x2705; Default choice</div>
+    <p><strong>When in doubt, use WorkManager.</strong> It handles backward compatibility, picks the best underlying scheduler for the API level, persists work across process death and reboots, and gives you constraints, chaining, and observable state for free. Only reach for JobScheduler or AlarmManager directly when you have a specific need WorkManager cannot serve.</p>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── WORKMANAGER ARCHITECTURE ─── -->
+  <h2 id="workmanager">WorkManager architecture</h2>
+
+  <p>WorkManager is built on a simple insight: the OS will kill your process, but it won&rsquo;t wipe your disk. WorkManager stores every pending work request in a <strong>Room database</strong> on disk before any scheduling happens. On device reboot, a <code>BOOT_COMPLETED</code> receiver wakes WorkManager, which reads the database and re-schedules everything that hasn&rsquo;t finished. Your app doesn&rsquo;t need to handle reboots at all &mdash; it&rsquo;s built into the library.</p>
+
+  <p>Under the hood, WorkManager delegates to the best available executor for the current API level. On API 23+ that&rsquo;s JobScheduler. On API 14&ndash;22 it falls back to a combination of AlarmManager and BroadcastReceivers. You never write version checks for this &mdash; WorkManager&rsquo;s <code>WorkManagerScheduler</code> does it transparently.</p>
+
+  <div class="wb-wrap">
+    <div class="wb-title">&#x1F4CB; WorkManager internal architecture &mdash; from enqueue to execution</div>
+    <svg viewBox="0 0 820 260" xmlns="http://www.w3.org/2000/svg" font-family="Caveat, cursive">
+      <rect width="820" height="260" fill="#f7f6f1" rx="12"/>
+      <!-- Your code -->
+      <rect x="20" y="80" width="130" height="44" rx="8" fill="#e8f2ec" stroke="#3d7a4f" stroke-width="1.5"/>
+      <text x="85" y="99" text-anchor="middle" font-size="12" fill="#2e6040" font-weight="600">Your App</text>
+      <text x="85" y="115" text-anchor="middle" font-size="11" fill="#6b7280">enqueue(request)</text>
+      <!-- Arrow -->
+      <line x1="152" y1="102" x2="182" y2="102" stroke="#6b7280" stroke-width="1.5"/>
+      <polygon points="182,102 175,98 175,106" fill="#6b7280"/>
+      <!-- WorkManager -->
+      <rect x="184" y="66" width="150" height="72" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="259" y="90" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="600">WorkManager</text>
+      <text x="259" y="107" text-anchor="middle" font-size="11" fill="#7c3aed">validates constraints</text>
+      <text x="259" y="123" text-anchor="middle" font-size="11" fill="#7c3aed">persists to Room DB</text>
+      <!-- Arrow down to Room -->
+      <line x1="259" y1="140" x2="259" y2="165" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <polygon points="259,165 255,158 263,158" fill="#9ca3af"/>
+      <rect x="184" y="167" width="150" height="34" rx="6" fill="#374151" stroke="#111827"/>
+      <text x="259" y="188" text-anchor="middle" font-size="11" fill="#f9e2af">Room DB (work_spec)</text>
+      <!-- Arrow right from WM -->
+      <line x1="336" y1="102" x2="366" y2="102" stroke="#6b7280" stroke-width="1.5"/>
+      <polygon points="366,102 359,98 359,106" fill="#6b7280"/>
+      <!-- Scheduler selector -->
+      <rect x="368" y="66" width="150" height="72" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+      <text x="443" y="90" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="600">Scheduler</text>
+      <text x="443" y="107" text-anchor="middle" font-size="11" fill="#2563eb">API 23+ → JobScheduler</text>
+      <text x="443" y="123" text-anchor="middle" font-size="11" fill="#2563eb">API 14-22 → AlarmMgr</text>
+      <!-- Arrow -->
+      <line x1="520" y1="102" x2="550" y2="102" stroke="#6b7280" stroke-width="1.5"/>
+      <polygon points="550,102 543,98 543,106" fill="#6b7280"/>
+      <!-- WorkerFactory -->
+      <rect x="552" y="66" width="150" height="72" rx="8" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
+      <text x="627" y="90" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">WorkerFactory</text>
+      <text x="627" y="107" text-anchor="middle" font-size="11" fill="#d97706">instantiates Worker</text>
+      <text x="627" y="123" text-anchor="middle" font-size="11" fill="#d97706">injects dependencies</text>
+      <!-- Arrow -->
+      <line x1="704" y1="102" x2="734" y2="102" stroke="#6b7280" stroke-width="1.5"/>
+      <polygon points="734,102 727,98 727,106" fill="#6b7280"/>
+      <!-- Worker -->
+      <rect x="736" y="80" width="64" height="44" rx="8" fill="#e8f2ec" stroke="#3d7a4f" stroke-width="1.5"/>
+      <text x="768" y="99" text-anchor="middle" font-size="12" fill="#2e6040" font-weight="600">Worker</text>
+      <text x="768" y="115" text-anchor="middle" font-size="11" fill="#6b7280">doWork()</text>
+      <!-- BOOT label -->
+      <text x="259" y="225" text-anchor="middle" font-size="11" fill="#7c3aed">On reboot: Room DB re-read → reschedule all pending work automatically</text>
+    </svg>
+  </div>
+
+  <h3 id="worker-types">Worker types</h3>
+
+  <p>WorkManager offers three base classes. Pick the right one before writing a single line of work logic &mdash; changing it later means restructuring threading.</p>
+
+  <table class="comp-table">
+    <thead><tr><th>Class</th><th>Threading model</th><th>Use when</th></tr></thead>
+    <tbody>
+      <tr><td>CoroutineWorker</td><td>Runs on <code>Dispatchers.Default</code> by default; fully suspend-compatible</td><td>You use coroutines — the standard choice for new code</td></tr>
+      <tr><td>Worker</td><td>Runs on WorkManager&rsquo;s background thread pool (blocking)</td><td>Purely synchronous work, or wrapping a blocking Java library</td></tr>
+      <tr><td>ListenableWorker</td><td>Callback-based (returns <code>ListenableFuture</code>); no threading provided</td><td>Interop with Guava/RxJava, or when you need full threading control</td></tr>
+    </tbody>
+  </table>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>UploadWorker.kt — CoroutineWorker with input data, retry, and output</span></div>
+    <div class="code-block"><span class="kw">class</span> <span class="cl">UploadWorker</span>(
+    context: <span class="cl">Context</span>,
+    params: <span class="cl">WorkerParameters</span>
+) : <span class="cl">CoroutineWorker</span>(context, params) {
+
+    <span class="kw">override suspend fun</span> <span class="fn">doWork</span>(): <span class="cl">Result</span> {
+        <span class="cm">// inputData is a Data object — key/value store with 10KB limit</span>
+        <span class="kw">val</span> fileUri = inputData.<span class="fn">getString</span>(<span class="st">"FILE_URI"</span>)
+            ?: <span class="kw">return</span> <span class="cl">Result</span>.<span class="fn">failure</span>(
+                <span class="fn">workDataOf</span>(<span class="st">"ERROR"</span> to <span class="st">"Missing file URI"</span>)
+            )
+
+        <span class="kw">return try</span> {
+            <span class="cm">// setProgress lets the UI observe intermediate state</span>
+            <span class="fn">setProgress</span>(<span class="fn">workDataOf</span>(<span class="st">"PROGRESS"</span> to <span class="nm">0</span>))
+
+            <span class="kw">val</span> uploadedUrl = uploadFile(fileUri) { progress ->
+                <span class="cm">// called from within uploadFile as bytes are sent</span>
+                runBlocking { <span class="fn">setProgress</span>(<span class="fn">workDataOf</span>(<span class="st">"PROGRESS"</span> to progress)) }
+            }
+
+            <span class="cm">// Output data flows to the next worker in a chain</span>
+            <span class="cl">Result</span>.<span class="fn">success</span>(<span class="fn">workDataOf</span>(<span class="st">"UPLOADED_URL"</span> to uploadedUrl))
+
+        } <span class="kw">catch</span> (e: <span class="cl">IOException</span>) {
+            <span class="cm">// runAttemptCount starts at 0; WorkManager increments before each retry</span>
+            <span class="kw">if</span> (runAttemptCount < <span class="nm">3</span>) {
+                <span class="cl">Result</span>.<span class="fn">retry</span>()   <span class="cm">// WorkManager re-queues with backoff delay</span>
+            } <span class="kw">else</span> {
+                <span class="cl">Result</span>.<span class="fn">failure</span>(<span class="fn">workDataOf</span>(<span class="st">"ERROR"</span> to e.message))
+            }
+        }
+    }
+}
+
+<span class="cm">// ── WorkInfo.State lifecycle ──────────────────────────────────────────</span>
+<span class="cm">// ENQUEUED  → waiting for constraints to be met</span>
+<span class="cm">// RUNNING   → doWork() is executing right now</span>
+<span class="cm">// SUCCEEDED → Result.success() returned; terminal</span>
+<span class="cm">// FAILED    → Result.failure() returned or max retries hit; terminal</span>
+<span class="cm">// CANCELLED → cancelWorkById/Tag called; terminal</span>
+<span class="cm">// BLOCKED   → waiting for predecessor in a chain to finish</span></div>
+  </div>
+
+  <h3 id="constraints">Constraints</h3>
+
+  <p>Constraints let WorkManager defer execution until the device is in a state where the work can succeed efficiently. WorkManager monitors constraint satisfaction via system broadcast receivers &mdash; when all constraints are met simultaneously, the work is dispatched. If a constraint is violated <em>mid-execution</em> (the network drops while an upload is in progress), the worker is stopped and rescheduled.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Constraints — all options with context</span></div>
+    <div class="code-block"><span class="kw">val</span> constraints = <span class="cl">Constraints.Builder</span>()
+
+    <span class="cm">// Network type — the most commonly used constraint</span>
+    .<span class="fn">setRequiredNetworkType</span>(<span class="cl">NetworkType</span>.UNMETERED)
+    <span class="cm">// NetworkType.CONNECTED      — any active network (Wi-Fi or data)</span>
+    <span class="cm">// NetworkType.UNMETERED      — Wi-Fi / Ethernet only; avoids user's data plan</span>
+    <span class="cm">// NetworkType.NOT_ROAMING    — connected but not on a roaming SIM</span>
+    <span class="cm">// NetworkType.METERED        — cellular only (rare; avoids Wi-Fi)</span>
+    <span class="cm">// NetworkType.NOT_REQUIRED   — default; run regardless of connectivity</span>
+
+    .<span class="fn">setRequiresBatteryNotLow</span>(<span class="kw">true</span>)    <span class="cm">// defers when battery drops below ~15%</span>
+    .<span class="fn">setRequiresCharging</span>(<span class="kw">true</span>)         <span class="cm">// only runs while plugged in</span>
+    .<span class="fn">setRequiresStorageNotLow</span>(<span class="kw">true</span>)    <span class="cm">// defers when internal storage critically low</span>
+    .<span class="fn">setRequiresDeviceIdle</span>(<span class="kw">true</span>)       <span class="cm">// API 23+ — device not actively used by user</span>
+    .<span class="fn">build</span>()
+
+<span class="cm">// Typical profile for a media upload job:</span>
+<span class="kw">val</span> uploadConstraints = <span class="cl">Constraints.Builder</span>()
+    .<span class="fn">setRequiredNetworkType</span>(<span class="cl">NetworkType</span>.UNMETERED)
+    .<span class="fn">setRequiresBatteryNotLow</span>(<span class="kw">true</span>)
+    .<span class="fn">build</span>()
+
+<span class="cm">// Typical profile for a nightly cleanup / analytics flush:</span>
+<span class="kw">val</span> nightlyConstraints = <span class="cl">Constraints.Builder</span>()
+    .<span class="fn">setRequiredNetworkType</span>(<span class="cl">NetworkType</span>.CONNECTED)
+    .<span class="fn">setRequiresBatteryNotLow</span>(<span class="kw">true</span>)
+    .<span class="fn">setRequiresCharging</span>(<span class="kw">true</span>)        <span class="cm">// most users charge overnight</span>
+    .<span class="fn">build</span>()</div>
+  </div>
+
+  <h3 id="enqueue">Building and enqueueing requests</h3>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>OneTimeWorkRequest, PeriodicWorkRequest, and unique work</span></div>
+    <div class="code-block"><span class="cm">// ── One-time request with all options ────────────────────────────────</span>
+<span class="kw">val</span> uploadRequest = <span class="cl">OneTimeWorkRequestBuilder</span>&lt;<span class="cl">UploadWorker</span>&gt;()
+    .<span class="fn">setConstraints</span>(uploadConstraints)
+    .<span class="fn">setInputData</span>(<span class="fn">workDataOf</span>(<span class="st">"FILE_URI"</span> to uri.toString()))
+    .<span class="fn">setInitialDelay</span>(<span class="nm">10</span>, <span class="cl">TimeUnit</span>.MINUTES)     <span class="cm">// don't start for at least 10 min</span>
+    .<span class="fn">setBackoffCriteria</span>(
+        <span class="cl">BackoffPolicy</span>.EXPONENTIAL,               <span class="cm">// LINEAR also available</span>
+        <span class="nm">30</span>, <span class="cl">TimeUnit</span>.SECONDS                      <span class="cm">// initial backoff; doubles each retry</span>
+    )
+    .<span class="fn">addTag</span>(<span class="st">"upload"</span>)                           <span class="cm">// for bulk cancel/observe by tag</span>
+    .<span class="fn">build</span>()
+
+<span class="cm">// ── Unique work — at most one instance with a given name ─────────────</span>
+<span class="cl">WorkManager</span>.<span class="fn">getInstance</span>(context).<span class="fn">enqueueUniqueWork</span>(
+    <span class="st">"photo_upload"</span>,
+    <span class="cl">ExistingWorkPolicy</span>.KEEP,   <span class="cm">// KEEP / REPLACE / APPEND / APPEND_OR_REPLACE</span>
+    uploadRequest
+)
+<span class="cm">// KEEP          — ignore new request if one is already pending/running</span>
+<span class="cm">// REPLACE       — cancel existing, enqueue new (resets the work)</span>
+<span class="cm">// APPEND        — run new after existing finishes (chain extension)</span>
+<span class="cm">// APPEND_OR_REPLACE — like APPEND, but replaces if existing is FAILED/CANCELLED</span>
+
+<span class="cm">// ── Periodic work — minimum interval is 15 minutes (OS enforced) ─────</span>
+<span class="kw">val</span> syncRequest = <span class="cl">PeriodicWorkRequestBuilder</span>&lt;<span class="cl">SyncWorker</span>&gt;(
+    repeatInterval = <span class="nm">1</span>, repeatIntervalTimeUnit = <span class="cl">TimeUnit</span>.HOURS
+)
+    .<span class="fn">setConstraints</span>(nightlyConstraints)
+    .<span class="fn">setInitialDelay</span>(<span class="nm">1</span>, <span class="cl">TimeUnit</span>.HOURS)
+    .<span class="fn">build</span>()
+
+<span class="cl">WorkManager</span>.<span class="fn">getInstance</span>(context).<span class="fn">enqueueUniquePeriodicWork</span>(
+    <span class="st">"hourly_sync"</span>,
+    <span class="cl">ExistingPeriodicWorkPolicy</span>.UPDATE,  <span class="cm">// UPDATE: keep existing run count, update params</span>
+    syncRequest
+)
+
+<span class="cm">// ── Observing state and progress ──────────────────────────────────────</span>
+<span class="cl">WorkManager</span>.<span class="fn">getInstance</span>(context)
+    .<span class="fn">getWorkInfoByIdLiveData</span>(uploadRequest.id)
+    .<span class="fn">observe</span>(lifecycleOwner) { info ->
+        <span class="kw">when</span> (info?.state) {
+            <span class="cl">WorkInfo.State</span>.RUNNING   -> {
+                <span class="kw">val</span> progress = info.progress.<span class="fn">getInt</span>(<span class="st">"PROGRESS"</span>, <span class="nm">0</span>)
+                progressBar.progress = progress
+            }
+            <span class="cl">WorkInfo.State</span>.SUCCEEDED -> {
+                <span class="kw">val</span> url = info.outputData.<span class="fn">getString</span>(<span class="st">"UPLOADED_URL"</span>)
+                <span class="fn">showSuccess</span>(url)
+            }
+            <span class="cl">WorkInfo.State</span>.FAILED -> {
+                <span class="kw">val</span> err = info.outputData.<span class="fn">getString</span>(<span class="st">"ERROR"</span>)
+                <span class="fn">showError</span>(err)
+            }
+            <span class="kw">else</span> -> {}
+        }
+    }</div>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── CHAINING ─── -->
+  <h2 id="chaining">Chaining work</h2>
+
+  <p>Work chains define a dependency graph: each step only runs after its predecessor succeeds. The output <code>Data</code> of one worker is merged and passed as input to the next. Chains support both sequential steps and parallel fan-out/fan-in patterns. If any worker returns <code>Result.failure()</code>, all downstream work is cancelled automatically (unless you override this with <code>setInputMerger</code> or structure the chain differently).</p>
+
+  <div class="wb-wrap">
+    <div class="wb-title">&#x1F517; Work chain &mdash; sequential steps, parallel fan-out, and merged fan-in</div>
+    <svg viewBox="0 0 820 240" xmlns="http://www.w3.org/2000/svg" font-family="Caveat, cursive">
+      <rect width="820" height="240" fill="#f7f6f1" rx="12"/>
+      <rect x="20" y="98" width="120" height="44" rx="8" fill="#e8f2ec" stroke="#3d7a4f" stroke-width="1.5"/>
+      <text x="80" y="117" text-anchor="middle" font-size="12" fill="#2e6040" font-weight="600">FilterWorker</text>
+      <text x="80" y="133" text-anchor="middle" font-size="11" fill="#6b7280">select images</text>
+      <line x1="142" y1="120" x2="178" y2="98" stroke="#9ca3af" stroke-width="1.5"/>
+      <line x1="142" y1="120" x2="178" y2="142" stroke="#9ca3af" stroke-width="1.5"/>
+      <rect x="180" y="58" width="130" height="40" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+      <text x="245" y="75" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">CompressWorker</text>
+      <text x="245" y="89" text-anchor="middle" font-size="10" fill="#6b7280">parallel</text>
+      <rect x="180" y="122" width="130" height="40" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+      <text x="245" y="139" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">WatermarkWorker</text>
+      <text x="245" y="153" text-anchor="middle" font-size="10" fill="#6b7280">parallel</text>
+      <line x1="312" y1="78" x2="348" y2="120" stroke="#9ca3af" stroke-width="1.5"/>
+      <line x1="312" y1="142" x2="348" y2="120" stroke="#9ca3af" stroke-width="1.5"/>
+      <polygon points="348,120 339,115 339,125" fill="#9ca3af"/>
+      <rect x="350" y="98" width="120" height="44" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="410" y="117" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="600">UploadWorker</text>
+      <text x="410" y="133" text-anchor="middle" font-size="10" fill="#7c3aed">waits for both</text>
+      <line x1="472" y1="120" x2="502" y2="120" stroke="#9ca3af" stroke-width="1.5"/>
+      <polygon points="502,120 495,116 495,124" fill="#9ca3af"/>
+      <rect x="504" y="98" width="120" height="44" rx="8" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
+      <text x="564" y="117" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">NotifyWorker</text>
+      <text x="564" y="133" text-anchor="middle" font-size="10" fill="#d97706">push notification</text>
+      <text x="80" y="175" text-anchor="middle" font-size="10" fill="#3d7a4f">beginWith(filter)</text>
+      <text x="245" y="38" text-anchor="middle" font-size="10" fill="#2563eb">beginWith([compress, watermark])</text>
+      <text x="410" y="175" text-anchor="middle" font-size="10" fill="#7c3aed">combine() → .then(upload)</text>
+      <text x="564" y="175" text-anchor="middle" font-size="10" fill="#d97706">.then(notify).enqueue()</text>
+    </svg>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Work chains — sequential, parallel, input mergers</span></div>
+    <div class="code-block"><span class="kw">val</span> wm = <span class="cl">WorkManager</span>.<span class="fn">getInstance</span>(context)
+
+<span class="cm">// ── Simple sequential chain ───────────────────────────────────────────</span>
+wm.<span class="fn">beginWith</span>(filterRequest)
+  .<span class="fn">then</span>(compressRequest)
+  .<span class="fn">then</span>(uploadRequest)
+  .<span class="fn">then</span>(notifyRequest)
+  .<span class="fn">enqueue</span>()
+
+<span class="cm">// ── Parallel fan-out merged into single next step ─────────────────────</span>
+<span class="kw">val</span> parallelChain = wm.<span class="fn">beginWith</span>(<span class="fn">listOf</span>(compressRequest, watermarkRequest))
+
+<span class="cl">WorkContinuation</span>
+    .<span class="fn">combine</span>(<span class="fn">listOf</span>(parallelChain))
+    .<span class="fn">then</span>(uploadRequest)
+    .<span class="fn">enqueue</span>()
+
+<span class="cm">// ── Input mergers — how parallel outputs combine for the next worker ──</span>
+<span class="cm">// OverwritingInputMerger (default): later workers' output overwrites earlier</span>
+<span class="cm">// ArrayCreatingInputMerger: same key → values collected into an array</span>
+<span class="kw">val</span> uploadWithMerger = <span class="cl">OneTimeWorkRequestBuilder</span>&lt;<span class="cl">UploadWorker</span>&gt;()
+    .<span class="fn">setInputMerger</span>(<span class="cl">ArrayCreatingInputMerger</span>::<span class="kw">class</span>)
+    <span class="cm">// CompressWorker outputs "FILE_PATH" → "/a.jpg"</span>
+    <span class="cm">// WatermarkWorker outputs "FILE_PATH" → "/b.jpg"</span>
+    <span class="cm">// UploadWorker.inputData.getStringArray("FILE_PATH") → ["/a.jpg", "/b.jpg"]</span>
+    .<span class="fn">build</span>()
+
+<span class="cm">// ── Continue on failure — run cleanup even if upload fails ────────────</span>
+wm.<span class="fn">beginUniqueWork</span>(<span class="st">"upload_chain"</span>, <span class="cl">ExistingWorkPolicy</span>.REPLACE, uploadRequest)
+    .<span class="fn">then</span>(cleanupRequest)   <span class="cm">// runs even if uploadRequest FAILED</span>
+    .<span class="fn">enqueue</span>()
+<span class="cm">// Note: CleanupWorker.inputData will have a "STOP_REASON" key you can inspect</span></div>
+  </div>
+
+  <h3 id="idempotency">Idempotency</h3>
+
+  <p>WorkManager may run a worker more than once. A retry after a transient failure is expected, but there are subtler cases: a REPLACE policy that re-enqueues while the original is mid-flight, a race between two processes on a multi-process app, or rare WorkManager edge cases during DB migration. Every worker must be written so that running it twice produces the same result as running it once.</p>
+
+  <ul>
+    <li>Use <code>enqueueUniqueWork</code> with <code>KEEP</code> so you never double-queue the same logical job.</li>
+    <li>Pass idempotency keys to server endpoints so duplicate uploads are silently ignored.</li>
+    <li>Use <code>INSERT OR REPLACE</code> / <code>OnConflictStrategy.REPLACE</code> for DB writes so re-syncing doesn&rsquo;t create duplicate rows.</li>
+    <li>Check a &ldquo;done&rdquo; flag in Room or SharedPrefs at the start of <code>doWork()</code> and return <code>Result.success()</code> early if the work was already completed.</li>
+    <li>For file operations, write to a temp path and rename atomically &mdash; a partially written file from a killed worker won&rsquo;t corrupt the destination.</li>
+  </ul>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── EXPEDITED AND FOREGROUND WORKERS ─── -->
+  <h2 id="expedited">Expedited work &amp; long-running workers</h2>
+
+  <p>Standard WorkManager work is deferrable. But sometimes work needs to start quickly and run to completion without the system killing it mid-way. WorkManager has two mechanisms for this depending on expected duration.</p>
+
+  <h3 id="expedited-work">setExpedited() &mdash; fast-start short tasks</h3>
+
+  <p>Expedited work (introduced in WorkManager 2.7 / API 31) tells the OS this job is important and should start as soon as possible, with higher priority than standard work. On API 31+ it maps to <code>JobScheduler.setExpedited()</code>. On older APIs WorkManager runs a short foreground service automatically to give the work a higher process priority.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Expedited work request</span></div>
+    <div class="code-block"><span class="kw">val</span> expeditedRequest = <span class="cl">OneTimeWorkRequestBuilder</span>&lt;<span class="cl">SendMessageWorker</span>&gt;()
+    .<span class="fn">setExpedited</span>(<span class="cl">OutOfQuotaPolicy</span>.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+    <span class="cm">// OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST</span>
+    <span class="cm">//   → fall back to regular work if expedited quota is exhausted</span>
+    <span class="cm">// OutOfQuotaPolicy.DROP_WORK_REQUEST</span>
+    <span class="cm">//   → cancel the work entirely if quota is exhausted</span>
+    .<span class="fn">setInputData</span>(<span class="fn">workDataOf</span>(<span class="st">"MESSAGE_ID"</span> to messageId))
+    .<span class="fn">build</span>()
+
+<span class="cm">// Expedited workers must override getForegroundInfo() for API < 31</span>
+<span class="cm">// WorkManager calls it to create the foreground service notification</span>
+<span class="kw">class</span> <span class="cl">SendMessageWorker</span>(ctx: <span class="cl">Context</span>, params: <span class="cl">WorkerParameters</span>) : <span class="cl">CoroutineWorker</span>(ctx, params) {
+
+    <span class="kw">override suspend fun</span> <span class="fn">getForegroundInfo</span>(): <span class="cl">ForegroundInfo</span> {
+        <span class="kw">val</span> notification = <span class="fn">buildNotification</span>(<span class="st">"Sending message..."</span>)
+        <span class="kw">return</span> <span class="cl">ForegroundInfo</span>(<span class="nm">NOTIFICATION_ID</span>, notification)
+    }
+
+    <span class="kw">override suspend fun</span> <span class="fn">doWork</span>(): <span class="cl">Result</span> {
+        <span class="cm">// fast, high-priority work</span>
+        <span class="kw">return</span> <span class="cl">Result</span>.<span class="fn">success</span>()
+    }
+}</div>
+  </div>
+
+  <h3 id="foreground-worker">Long-running workers with setForeground()</h3>
+
+  <p>For work that takes minutes rather than seconds &mdash; transcoding a video, downloading a large file, bulk processing &mdash; standard WorkManager gives the OS permission to kill the worker when memory pressure rises. The solution is to promote the worker to a foreground service mid-execution using <code>setForeground()</code>, which shows a persistent notification and keeps the process alive.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>Long-running CoroutineWorker with setForeground and progress</span></div>
+    <div class="code-block"><span class="kw">class</span> <span class="cl">TranscodeWorker</span>(ctx: <span class="cl">Context</span>, params: <span class="cl">WorkerParameters</span>) : <span class="cl">CoroutineWorker</span>(ctx, params) {
+
+    <span class="kw">override suspend fun</span> <span class="fn">doWork</span>(): <span class="cl">Result</span> {
+        <span class="kw">val</span> videoUri = inputData.<span class="fn">getString</span>(<span class="st">"VIDEO_URI"</span>) ?: <span class="kw">return</span> <span class="cl">Result</span>.<span class="fn">failure</span>()
+
+        <span class="cm">// Promote to foreground service — keeps process alive, shows notification</span>
+        <span class="fn">setForeground</span>(<span class="fn">createForegroundInfo</span>(<span class="nm">0</span>))
+
+        <span class="kw">return try</span> {
+            <span class="fn">transcodeVideo</span>(videoUri) { progress ->
+                <span class="cm">// Update both the notification and the observable progress</span>
+                runBlocking {
+                    <span class="fn">setForeground</span>(<span class="fn">createForegroundInfo</span>(progress))
+                    <span class="fn">setProgress</span>(<span class="fn">workDataOf</span>(<span class="st">"PROGRESS"</span> to progress))
+                }
+            }
+            <span class="cl">Result</span>.<span class="fn">success</span>()
+        } <span class="kw">catch</span> (e: <span class="cl">Exception</span>) {
+            <span class="cl">Result</span>.<span class="fn">failure</span>()
+        }
+    }
+
+    <span class="kw">private fun</span> <span class="fn">createForegroundInfo</span>(progress: <span class="cl">Int</span>): <span class="cl">ForegroundInfo</span> {
+        <span class="kw">val</span> notification = <span class="cl">NotificationCompat.Builder</span>(applicationContext, <span class="st">"TRANSCODE_CHANNEL"</span>)
+            .<span class="fn">setContentTitle</span>(<span class="st">"Transcoding video"</span>)
+            .<span class="fn">setContentText</span>(<span class="st">"$progress% complete"</span>)
+            .<span class="fn">setProgress</span>(<span class="nm">100</span>, progress, <span class="kw">false</span>)
+            .<span class="fn">setSmallIcon</span>(<span class="cl">R</span>.drawable.ic_transcode)
+            .<span class="fn">setOngoing</span>(<span class="kw">true</span>)
+            .<span class="fn">build</span>()
+        <span class="kw">return</span> <span class="cl">ForegroundInfo</span>(
+            <span class="nm">NOTIFICATION_ID</span>,
+            notification,
+            <span class="cl">ServiceInfo</span>.FOREGROUND_SERVICE_TYPE_DATA_SYNC   <span class="cm">// API 29+</span>
+        )
+    }
+}</div>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-label">&#x2139;&#xFE0F; Foreground Worker vs Foreground Service</div>
+    <p>A <strong>foreground worker</strong> is the right choice when the work has a clear completion condition and you want WorkManager&rsquo;s retrying, constraints, and observability. A raw <strong>foreground service</strong> is better when work is open-ended with no fixed end (a music player, a location tracker, an ongoing call). If you find yourself wondering &ldquo;should I use a foreground service or a WorkManager foreground worker?&rdquo; &mdash; the answer is: does the work have a definite end? Yes &rarr; WorkManager. No &rarr; foreground service.</p>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── HILT INJECTION ─── -->
+  <h2 id="hilt-injection">Hilt injection into Workers</h2>
+
+  <p>By default, WorkManager instantiates workers using reflection with no constructor arguments beyond <code>Context</code> and <code>WorkerParameters</code>. To inject repositories, DAOs, or any other dependency, you need to replace WorkManager&rsquo;s <code>WorkerFactory</code> with Hilt&rsquo;s <code>HiltWorkerFactory</code>.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>@HiltWorker — full setup</span></div>
+    <div class="code-block"><span class="cm">// 1. Annotate the Worker with @HiltWorker and @AssistedInject ─────────</span>
+<span class="an">@HiltWorker</span>
+<span class="kw">class</span> <span class="cl">SyncWorker</span> <span class="an">@AssistedInject</span> <span class="kw">constructor</span>(
+    <span class="an">@Assisted</span> context: <span class="cl">Context</span>,
+    <span class="an">@Assisted</span> params: <span class="cl">WorkerParameters</span>,
+    <span class="kw">private val</span> userRepo: <span class="cl">UserRepository</span>,       <span class="cm">// injected by Hilt</span>
+    <span class="kw">private val</span> analyticsRepo: <span class="cl">AnalyticsRepository</span>
+) : <span class="cl">CoroutineWorker</span>(context, params) {
+
+    <span class="kw">override suspend fun</span> <span class="fn">doWork</span>(): <span class="cl">Result</span> {
+        <span class="kw">return try</span> {
+            userRepo.<span class="fn">syncFromServer</span>()
+            analyticsRepo.<span class="fn">flush</span>()
+            <span class="cl">Result</span>.<span class="fn">success</span>()
+        } <span class="kw">catch</span> (e: <span class="cl">Exception</span>) {
+            <span class="cl">Result</span>.<span class="fn">retry</span>()
+        }
+    }
+}
+
+<span class="cm">// 2. Initialize WorkManager with HiltWorkerFactory in Application ──────</span>
+<span class="an">@HiltAndroidApp</span>
+<span class="kw">class</span> <span class="cl">MyApp</span> : <span class="cl">Application</span>(), <span class="cl">Configuration.Provider</span> {
+
+    <span class="an">@Inject</span> <span class="kw">lateinit var</span> workerFactory: <span class="cl">HiltWorkerFactory</span>
+
+    <span class="kw">override fun</span> <span class="fn">getWorkManagerConfiguration</span>() =
+        <span class="cl">Configuration.Builder</span>()
+            .<span class="fn">setWorkerFactory</span>(workerFactory)
+            .<span class="fn">setMinimumLoggingLevel</span>(<span class="cl">Log</span>.DEBUG)   <span class="cm">// verbose logs during dev</span>
+            .<span class="fn">build</span>()
+}
+
+<span class="cm">// 3. Disable WorkManager's default initializer in AndroidManifest.xml ─</span>
+<span class="cm">//  &lt;provider</span>
+<span class="cm">//    android:name="androidx.startup.InitializationProvider"</span>
+<span class="cm">//    android:authorities="${applicationId}.androidx-startup"</span>
+<span class="cm">//    tools:node="merge"&gt;</span>
+<span class="cm">//    &lt;meta-data android:name="androidx.work.WorkManagerInitializer"</span>
+<span class="cm">//               tools:node="remove" /&gt;</span>
+<span class="cm">//  &lt;/provider&gt;</span></div>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── TESTING ─── -->
+  <h2 id="testing">Testing Workers</h2>
+
+  <p>WorkManager ships a dedicated test library (<code>work-testing</code>) that lets you run workers synchronously in unit tests without a real Android device or emulator. No background threads, no timing dependencies &mdash; workers run inline and return their <code>Result</code> immediately.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>WorkManager testing — TestWorkerBuilder and WorkManagerTestInitHelper</span></div>
+    <div class="code-block"><span class="cm">// build.gradle</span>
+<span class="cm">// androidTestImplementation "androidx.work:work-testing:2.x.x"</span>
+
+<span class="cm">// ── Unit test with TestWorkerBuilder ─────────────────────────────────</span>
+<span class="an">@RunWith</span>(<span class="cl">AndroidJUnit4</span>::<span class="kw">class</span>)
+<span class="kw">class</span> <span class="cl">UploadWorkerTest</span> {
+
+    <span class="kw">private lateinit var</span> context: <span class="cl">Context</span>
+
+    <span class="an">@Before</span>
+    <span class="kw">fun</span> <span class="fn">setUp</span>() { context = <span class="cl">ApplicationProvider</span>.<span class="fn">getApplicationContext</span>() }
+
+    <span class="an">@Test</span>
+    <span class="kw">fun</span> <span class="fn">testUploadSuccess</span>() {
+        <span class="kw">val</span> worker = <span class="cl">TestWorkerBuilder</span>&lt;<span class="cl">UploadWorker</span>&gt;(
+            context = context,
+            executor = <span class="cl">Executors</span>.<span class="fn">newSingleThreadExecutor</span>(),
+            inputData = <span class="fn">workDataOf</span>(<span class="st">"FILE_URI"</span> to <span class="st">"file://test.jpg"</span>)
+        ).<span class="fn">build</span>()
+
+        <span class="kw">val</span> result = worker.<span class="fn">doWork</span>()   <span class="cm">// runs synchronously</span>
+
+        <span class="fn">assertThat</span>(result).isInstanceOf(<span class="cl">Result.Success</span>::<span class="kw">class</span>.java)
+        <span class="fn">assertThat</span>(
+            (result <span class="kw">as</span> <span class="cl">Result.Success</span>).outputData.<span class="fn">getString</span>(<span class="st">"UPLOADED_URL"</span>)
+        ).isNotNull()
+    }
+
+    <span class="an">@Test</span>
+    <span class="kw">fun</span> <span class="fn">testUploadRetryOnNetworkError</span>() {
+        <span class="cm">// inject a fake repo that throws IOException on first call</span>
+        <span class="kw">val</span> worker = <span class="cl">TestWorkerBuilder</span>&lt;<span class="cl">UploadWorker</span>&gt;(context, executor, inputData)
+            .<span class="fn">setRunAttemptCount</span>(<span class="nm">0</span>)
+            .<span class="fn">build</span>()
+        <span class="fn">assertThat</span>(worker.<span class="fn">doWork</span>()).isInstanceOf(<span class="cl">Result.Retry</span>::<span class="kw">class</span>.java)
+    }
+}
+
+<span class="cm">// ── Integration test with WorkManagerTestInitHelper ──────────────────</span>
+<span class="cm">// Drives constraint satisfaction and time manually — no real scheduling</span>
+<span class="an">@Test</span>
+<span class="kw">fun</span> <span class="fn">testConstraintDrivenWork</span>() {
+    <span class="kw">val</span> config = <span class="cl">Configuration.Builder</span>()
+        .<span class="fn">setMinimumLoggingLevel</span>(<span class="cl">Log</span>.DEBUG)
+        .<span class="fn">setExecutor</span>(<span class="cl">SynchronousExecutor</span>())
+        .<span class="fn">build</span>()
+
+    <span class="cl">WorkManagerTestInitHelper</span>.<span class="fn">initializeTestWorkManager</span>(context, config)
+    <span class="kw">val</span> wm = <span class="cl">WorkManager</span>.<span class="fn">getInstance</span>(context)
+    <span class="kw">val</span> testDriver = <span class="cl">WorkManagerTestInitHelper</span>.<span class="fn">getTestDriver</span>(context)!!
+
+    <span class="kw">val</span> request = <span class="cl">OneTimeWorkRequestBuilder</span>&lt;<span class="cl">SyncWorker</span>&gt;()
+        .<span class="fn">setConstraints</span>(<span class="cl">Constraints.Builder</span>().<span class="fn">setRequiredNetworkType</span>(<span class="cl">NetworkType</span>.CONNECTED).<span class="fn">build</span>())
+        .<span class="fn">build</span>()
+    wm.<span class="fn">enqueue</span>(request)
+
+    <span class="cm">// Work is ENQUEUED but NOT running yet — network constraint not met</span>
+    <span class="fn">assertThat</span>(wm.<span class="fn">getWorkInfoById</span>(request.id).<span class="fn">get</span>()!!.state)
+        .isEqualTo(<span class="cl">WorkInfo.State</span>.ENQUEUED)
+
+    <span class="cm">// Satisfy the constraint programmatically</span>
+    testDriver.<span class="fn">setAllConstraintsMet</span>(request.id)
+
+    <span class="cm">// Now work should be SUCCEEDED</span>
+    <span class="fn">assertThat</span>(wm.<span class="fn">getWorkInfoById</span>(request.id).<span class="fn">get</span>()!!.state)
+        .isEqualTo(<span class="cl">WorkInfo.State</span>.SUCCEEDED)
+}</div>
+  </div>
+
+  <hr class="section-rule"/>
+  <!-- ─── JOBSCHEDULER ─── -->
+  <h2 id="jobscheduler">JobScheduler</h2>
+
+  <p>JobScheduler is the low-level system API that WorkManager delegates to on API 23+. It&rsquo;s worth understanding deeply for two reasons: it explains WorkManager&rsquo;s scheduling behaviour, and there are cases where you genuinely want to reach for it directly &mdash; when you&rsquo;re building a system-level service, a library that can&rsquo;t take a WorkManager dependency, or when you need trigger types WorkManager doesn&rsquo;t expose (like <code>setTriggerContentUri</code>).</p>
+
+  <p>The core model: you define a <code>JobInfo</code> describing what to run and under what conditions, and hand it to <code>JobScheduler.schedule()</code>. The OS batches jobs across all apps to minimise wake-ups, then calls your <code>JobService.onStartJob()</code> when conditions are met. Critically, JobScheduler makes <strong>no guarantee that a job will ever run</strong> &mdash; if the device stays in Doze or the user restricts background activity, a job may never fire. WorkManager adds its own persistence layer on top to compensate.</p>
+
+  <h3 id="jobservice">JobService</h3>
+
+  <p>A <code>JobService</code> is a <code>Service</code> subclass that the OS binds to when it wants your job to run. Both <code>onStartJob</code> and <code>onStopJob</code> are called on the <strong>main thread</strong> &mdash; you must dispatch work to a background thread immediately. Return <code>true</code> from <code>onStartJob</code> to signal that work is ongoing asynchronously; call <code>jobFinished()</code> when done.</p>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>SyncJobService.kt — with coroutine scope and proper lifecycle</span></div>
+    <div class="code-block"><span class="kw">class</span> <span class="cl">SyncJobService</span> : <span class="cl">JobService</span>() {
+
+    <span class="cm">// SupervisorJob so one failed child doesn't cancel other children</span>
+    <span class="kw">private val</span> scope = <span class="cl">CoroutineScope</span>(<span class="cl">SupervisorJob</span>() + <span class="cl">Dispatchers</span>.IO)
+
+    <span class="cm">// Called on main thread — return true if work is async</span>
+    <span class="kw">override fun</span> <span class="fn">onStartJob</span>(params: <span class="cl">JobParameters</span>): <span class="cl">Boolean</span> {
+        scope.<span class="fn">launch</span> {
+            <span class="kw">try</span> {
+                <span class="fn">performSync</span>(params.<span class="fn">extras</span>)          <span class="cm">// PersistableBundle from JobInfo</span>
+                <span class="fn">jobFinished</span>(params, <span class="kw">false</span>)          <span class="cm">// false = don't reschedule</span>
+            } <span class="kw">catch</span> (e: <span class="cl">IOException</span>) {
+                <span class="fn">jobFinished</span>(params, <span class="kw">true</span>)           <span class="cm">// true = reschedule with backoff</span>
+            }
+        }
+        <span class="kw">return true</span>   <span class="cm">// async work in progress</span>
+    }
+
+    <span class="cm">// Called when OS needs the job to stop (constraint violated, timeout hit)</span>
+    <span class="kw">override fun</span> <span class="fn">onStopJob</span>(params: <span class="cl">JobParameters</span>): <span class="cl">Boolean</span> {
+        scope.<span class="fn">coroutineContext</span>.<span class="fn">cancelChildren</span>()
+        <span class="kw">return true</span>   <span class="cm">// true = reschedule; false = drop the job</span>
+    }
+
+    <span class="kw">override fun</span> <span class="fn">onDestroy</span>() { scope.<span class="fn">cancel</span>(); <span class="kw">super</span>.<span class="fn">onDestroy</span>() }
+}
+
+<span class="cm">// AndroidManifest.xml — permission is mandatory</span>
+<span class="cm">// &lt;service android:name=".SyncJobService"</span>
+<span class="cm">//          android:permission="android.permission.BIND_JOB_SERVICE"</span>
+<span class="cm">//          android:exported="true" /&gt;</span></div>
+  </div>
+
+  <h3 id="jobinfo">JobInfo — all trigger types</h3>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>JobInfo.Builder — constraints, timing, content triggers</span></div>
+    <div class="code-block"><span class="kw">val</span> scheduler = getSystemService(<span class="cl">Context</span>.JOB_SCHEDULER_SERVICE) <span class="kw">as</span> <span class="cl">JobScheduler</span>
+<span class="kw">val</span> component = <span class="cl">ComponentName</span>(<span class="kw">this</span>, <span class="cl">SyncJobService</span>::<span class="kw">class</span>.java)
+
+<span class="cm">// ── Periodic job with constraints ─────────────────────────────────────</span>
+<span class="kw">val</span> periodicJob = <span class="cl">JobInfo.Builder</span>(<span class="nm">JOB_ID_SYNC</span>, component)
+    .<span class="fn">setRequiredNetworkType</span>(<span class="cl">JobInfo</span>.NETWORK_TYPE_UNMETERED)
+    .<span class="fn">setRequiresCharging</span>(<span class="kw">true</span>)
+    .<span class="fn">setRequiresBatteryNotLow</span>(<span class="kw">true</span>)                   <span class="cm">// API 26+</span>
+    .<span class="fn">setRequiresDeviceIdle</span>(<span class="kw">false</span>)
+    .<span class="fn">setPeriodic</span>(<span class="cl">AlarmManager</span>.INTERVAL_HOUR, <span class="nm">15</span> * <span class="nm">60</span> * <span class="nm">1000L</span>)  <span class="cm">// period + flex window</span>
+    .<span class="fn">setPersisted</span>(<span class="kw">true</span>)                               <span class="cm">// survives reboot (needs RECEIVE_BOOT_COMPLETED)</span>
+    .<span class="fn">setBackoffCriteria</span>(<span class="nm">30_000L</span>, <span class="cl">JobInfo</span>.BACKOFF_POLICY_EXPONENTIAL)
+    .<span class="fn">build</span>()
+scheduler.<span class="fn">schedule</span>(periodicJob)
+
+<span class="cm">// ── One-time job with latency window — run between 1 and 5 minutes ──</span>
+<span class="kw">val</span> delayedJob = <span class="cl">JobInfo.Builder</span>(<span class="nm">JOB_ID_DELAYED</span>, component)
+    .<span class="fn">setMinimumLatency</span>(<span class="nm">60_000L</span>)           <span class="cm">// don't start before 1 min</span>
+    .<span class="fn">setOverrideDeadline</span>(<span class="nm">300_000L</span>)         <span class="cm">// must start by 5 min even if constraints unmet</span>
+    .<span class="fn">setRequiredNetworkType</span>(<span class="cl">JobInfo</span>.NETWORK_TYPE_CONNECTED)
+    .<span class="fn">build</span>()
+<span class="cm">// params.isOverrideDeadlineExpired in onStartJob() tells you if deadline forced it</span>
+
+<span class="cm">// ── Content URI trigger — fire when MediaStore data changes ──────────</span>
+<span class="cm">// Perfect for: reacting to new photos, document changes, media scans</span>
+<span class="kw">val</span> mediaJob = <span class="cl">JobInfo.Builder</span>(<span class="nm">JOB_ID_MEDIA</span>, component)
+    .<span class="fn">addTriggerContentUri</span>(
+        <span class="cl">JobInfo.TriggerContentUri</span>(
+            <span class="cl">MediaStore.Images.Media.EXTERNAL_CONTENT_URI</span>,
+            <span class="cl">JobInfo.TriggerContentUri</span>.FLAG_NOTIFY_FOR_DESCENDANTS
+        )
+    )
+    .<span class="fn">setTriggerContentMaxDelay</span>(<span class="nm">2_000L</span>)  <span class="cm">// batch changes for 2s before firing</span>
+    .<span class="fn">setTriggerContentUpdateDelay</span>(<span class="nm">500L</span>) <span class="cm">// wait 500ms after last change before dispatching</span>
+    .<span class="fn">build</span>()
+<span class="cm">// In onStartJob(): params.triggeredContentAuthorities and triggeredContentUris</span>
+<span class="cm">// tell you exactly what changed</span>
+
+<span class="cm">// ── Cancel jobs ───────────────────────────────────────────────────────</span>
+scheduler.<span class="fn">cancel</span>(<span class="nm">JOB_ID_SYNC</span>)
+scheduler.<span class="fn">cancelAll</span>()</div>
+  </div>
+
+  <table class="comp-table">
+    <thead><tr><th>JobInfo trigger type</th><th>How it fires</th><th>Use for</th></tr></thead>
+    <tbody>
+      <tr><td>setPeriodic(interval)</td><td>Repeats on interval; OS may batch within flex window</td><td>Regular background syncs</td></tr>
+      <tr><td>setMinimumLatency + setOverrideDeadline</td><td>Fires between the two bounds; deadline forces execution even if constraints unmet</td><td>Time-windowed one-shot jobs</td></tr>
+      <tr><td>setTriggerContentUri</td><td>Fires when a content provider URI subtree changes</td><td>Reacting to MediaStore, Contacts, or custom provider changes</td></tr>
+      <tr><td>No timing set</td><td>Fires as soon as all constraints are met</td><td>Constraint-gated one-shot work</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-warn">
+    <div class="callout-label">&#x26A0;&#xFE0F; JobScheduler job timeout</div>
+    <p>The OS imposes a hard timeout on JobService execution. On API 26+ you get ~10 minutes before the system calls <code>onStopJob()</code>. On Android 14 (API 34)+, user-initiated jobs get up to 1 hour with <code>setUserInitiated(true)</code>. For work that genuinely takes longer, use a WorkManager foreground worker or a bound foreground service — don&rsquo;t fight the timeout.</p>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── ALARMMANAGER ─── -->
+  <h2 id="alarmmanager">AlarmManager</h2>
+
+  <p>AlarmManager is the oldest background scheduling API and the only one backed by hardware. The device&rsquo;s Real-Time Clock chip fires a signal to the kernel at the specified time regardless of whether the CPU is asleep, which is why AlarmManager can wake a sleeping device in a way that WorkManager and JobScheduler cannot.</p>
+
+  <p>But this power comes with responsibility. Exact alarms that wake the CPU are expensive — they prevent the processor from staying in low-power sleep states. Android has progressively restricted them: Doze mode in API 23 deferred most alarms, API 31 added the <code>SCHEDULE_EXACT_ALARM</code> permission, and API 33 added <code>USE_EXACT_ALARM</code> for a narrow set of use cases. The message from Google is clear: use exact alarms only for <strong>user-visible, time-specific events</strong> &mdash; not for background sync.</p>
+
+  <h3 id="alarm-clock-types">Clock types: RTC vs ELAPSED_REALTIME</h3>
+
+  <p>Before picking a method, you need to choose the right clock. This affects what &ldquo;when&rdquo; means:</p>
+
+  <table class="comp-table">
+    <thead><tr><th>Clock type</th><th>Reference point</th><th>Affected by timezone change?</th><th>Use for</th></tr></thead>
+    <tbody>
+      <tr><td>RTC</td><td>Wall-clock time (Unix epoch ms). <code>System.currentTimeMillis()</code></td><td>Yes — changes if user changes timezone</td><td>User-visible alarms at a specific time of day: "remind me at 9am"</td></tr>
+      <tr><td>RTC_WAKEUP</td><td>Same as RTC, but wakes device if asleep</td><td>Yes</td><td>Same as RTC but must fire even if screen is off</td></tr>
+      <tr><td>ELAPSED_REALTIME</td><td>Time since last boot. <code>SystemClock.elapsedRealtime()</code></td><td>No</td><td>Relative delays: "fire 30 minutes from now"</td></tr>
+      <tr><td>ELAPSED_REALTIME_WAKEUP</td><td>Same as ELAPSED_REALTIME, but wakes device</td><td>No</td><td>Precise countdown timers that must fire even if screen off</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="alarm-methods">Alarm methods: exact vs inexact</h3>
+
+  <table class="comp-table">
+    <thead><tr><th>Method</th><th>Exactness</th><th>Fires in Doze?</th><th>API</th><th>Use for</th></tr></thead>
+    <tbody>
+      <tr><td>set()</td><td>Inexact — OS batches with other alarms</td><td>No</td><td>1+</td><td>Non-critical deferred triggers</td></tr>
+      <tr><td>setWindow()</td><td>Semi-exact — fires within a time window you specify</td><td>No</td><td>19+</td><td>Flexible reminders ("within the next 15 minutes")</td></tr>
+      <tr><td>setExact()</td><td>Exact — fires at the specified time</td><td>No — deferred during Doze</td><td>19+</td><td>Precise reminders outside Doze windows</td></tr>
+      <tr><td>setExactAndAllowWhileIdle()</td><td>Exact — fires even in Doze</td><td>Yes ✓</td><td>23+</td><td>Calendar events, alarms that must fire during Doze</td></tr>
+      <tr><td>setAlarmClock()</td><td>Exact — fires even in Doze; shows clock icon in status bar</td><td>Yes ✓</td><td>21+</td><td>User-visible wake-up alarms</td></tr>
+    </tbody>
+  </table>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>AlarmManager — full implementation with API 31+ permission, reboot survival</span></div>
+    <div class="code-block"><span class="kw">class</span> <span class="cl">ReminderScheduler</span>(
+    <span class="kw">private val</span> context: <span class="cl">Context</span>,
+    <span class="kw">private val</span> alarmManager: <span class="cl">AlarmManager</span> = context.<span class="fn">getSystemService</span>(<span class="cl">Context</span>.ALARM_SERVICE) <span class="kw">as</span> <span class="cl">AlarmManager</span>
+) {
+    <span class="kw">fun</span> <span class="fn">scheduleReminder</span>(reminderId: <span class="cl">Int</span>, triggerAtMillis: <span class="cl">Long</span>, label: <span class="cl">String</span>) {
+        <span class="kw">val</span> pendingIntent = <span class="fn">buildPendingIntent</span>(reminderId, label)
+
+        <span class="kw">when</span> {
+            <span class="cm">// API 31+: must check permission before scheduling exact alarms</span>
+            <span class="cl">Build.VERSION</span>.SDK_INT >= <span class="cl">Build.VERSION_CODES</span>.S -> {
+                <span class="kw">if</span> (alarmManager.<span class="fn">canScheduleExactAlarms</span>()) {
+                    alarmManager.<span class="fn">setExactAndAllowWhileIdle</span>(
+                        <span class="cl">AlarmManager</span>.RTC_WAKEUP, triggerAtMillis, pendingIntent
+                    )
+                } <span class="kw">else</span> {
+                    <span class="cm">// Guide user to Settings → Apps → Special App Access → Alarms & Reminders</span>
+                    <span class="kw">val</span> intent = <span class="cl">Intent</span>(<span class="cl">Settings</span>.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                        .<span class="fn">apply</span> { data = <span class="fn">Uri.parse</span>(<span class="st">"package:${context.packageName}"</span>) }
+                    context.<span class="fn">startActivity</span>(intent)
+                }
+            }
+            <span class="cl">Build.VERSION</span>.SDK_INT >= <span class="cl">Build.VERSION_CODES</span>.M ->
+                alarmManager.<span class="fn">setExactAndAllowWhileIdle</span>(
+                    <span class="cl">AlarmManager</span>.RTC_WAKEUP, triggerAtMillis, pendingIntent
+                )
+            <span class="kw">else</span> ->
+                alarmManager.<span class="fn">setExact</span>(<span class="cl">AlarmManager</span>.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+        }
+    }
+
+    <span class="kw">fun</span> <span class="fn">cancelReminder</span>(reminderId: <span class="cl">Int</span>) {
+        alarmManager.<span class="fn">cancel</span>(<span class="fn">buildPendingIntent</span>(reminderId, <span class="st">""</span>))
+    }
+
+    <span class="kw">private fun</span> <span class="fn">buildPendingIntent</span>(reminderId: <span class="cl">Int</span>, label: <span class="cl">String</span>): <span class="cl">PendingIntent</span> {
+        <span class="kw">val</span> intent = <span class="cl">Intent</span>(context, <span class="cl">AlarmReceiver</span>::<span class="kw">class</span>.java).<span class="fn">apply</span> {
+            action = <span class="st">"com.example.ACTION_REMINDER"</span>
+            <span class="fn">putExtra</span>(<span class="st">"REMINDER_ID"</span>, reminderId)
+            <span class="fn">putExtra</span>(<span class="st">"LABEL"</span>, label)
+        }
+        <span class="cm">// FLAG_IMMUTABLE: required for API 31+ for security</span>
+        <span class="cm">// FLAG_UPDATE_CURRENT: update extras if this intent already exists</span>
+        <span class="kw">return</span> <span class="cl">PendingIntent</span>.<span class="fn">getBroadcast</span>(
+            context, reminderId, intent,
+            <span class="cl">PendingIntent</span>.FLAG_UPDATE_CURRENT <span class="kw">or</span> <span class="cl">PendingIntent</span>.FLAG_IMMUTABLE
+        )
+    }
+}
+
+<span class="cm">// ── AlarmReceiver ─────────────────────────────────────────────────────</span>
+<span class="kw">class</span> <span class="cl">AlarmReceiver</span> : <span class="cl">BroadcastReceiver</span>() {
+    <span class="kw">override fun</span> <span class="fn">onReceive</span>(context: <span class="cl">Context</span>, intent: <span class="cl">Intent</span>) {
+        <span class="kw">val</span> reminderId = intent.<span class="fn">getIntExtra</span>(<span class="st">"REMINDER_ID"</span>, -<span class="nm">1</span>)
+        <span class="kw">val</span> label = intent.<span class="fn">getStringExtra</span>(<span class="st">"LABEL"</span>) ?: <span class="kw">return</span>
+        <span class="cm">// BroadcastReceiver has ~10 seconds of main-thread execution.</span>
+        <span class="cm">// For quick work (fire a notification): do it here directly.</span>
+        <span class="cm">// For longer work: enqueue a WorkManager OneTimeWorkRequest.</span>
+        <span class="fn">showReminderNotification</span>(context, reminderId, label)
+    }
+}
+
+<span class="cm">// ── BootReceiver — re-schedule alarms after reboot ───────────────────</span>
+<span class="cm">// Alarms don't survive reboots. This re-registers them from your database.</span>
+<span class="kw">class</span> <span class="cl">BootReceiver</span> : <span class="cl">BroadcastReceiver</span>() {
+    <span class="kw">override fun</span> <span class="fn">onReceive</span>(context: <span class="cl">Context</span>, intent: <span class="cl">Intent</span>) {
+        <span class="kw">if</span> (intent.action != <span class="cl">Intent</span>.ACTION_BOOT_COMPLETED) <span class="kw">return</span>
+        <span class="cm">// Load pending reminders from Room, re-schedule each one</span>
+        <span class="cl">CoroutineScope</span>(<span class="cl">Dispatchers</span>.IO).<span class="fn">launch</span> {
+            <span class="kw">val</span> reminders = <span class="cl">ReminderRepository</span>(context).<span class="fn">getAllPending</span>()
+            <span class="kw">val</span> scheduler = <span class="cl">ReminderScheduler</span>(context)
+            reminders.<span class="fn">forEach</span> { r -> scheduler.<span class="fn">scheduleReminder</span>(r.id, r.triggerAt, r.label) }
+        }
+    }
+}
+<span class="cm">// AndroidManifest: &lt;uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/&gt;</span>
+<span class="cm">// &lt;uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/&gt; (API 31+)</span></div>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-label">&#x26A0;&#xFE0F; Never use setRepeating() for background sync</div>
+    <p><code>setRepeating()</code> and <code>setInexactRepeating()</code> wake the CPU on every cycle. For anything resembling periodic background sync &mdash; data fetch, analytics flush, cache cleanup &mdash; use <code>PeriodicWorkRequest</code> in WorkManager instead. The OS can batch WorkManager&rsquo;s jobs across apps; a repeating alarm fires regardless of system state.</p>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── DOZE MODE ─── -->
+  <h2 id="doze-mode">Doze mode &amp; App Standby</h2>
+
+  <p>Doze mode is Android&rsquo;s most impactful battery optimisation. Understanding it precisely tells you why certain work runs late or not at all in production, and which APIs actually pierce through it.</p>
+
+  <h3 id="doze-deep">Full Doze vs Light Doze</h3>
+
+  <p>Android distinguishes two levels. <strong>Full Doze</strong> activates when the device is stationary, unplugged, and the screen has been off for an extended period. <strong>Light Doze</strong> (Android 7.0+) activates when the screen is off and the device is unplugged <em>but moving</em> &mdash; like when it&rsquo;s in your pocket. Light Doze applies most of the same restrictions but opens maintenance windows more frequently.</p>
+
+  <div class="wb-wrap">
+    <div class="wb-title">&#x1F4A4; Full Doze timeline &mdash; restrictions and maintenance windows</div>
+    <svg viewBox="0 0 820 220" xmlns="http://www.w3.org/2000/svg" font-family="Caveat, cursive">
+      <rect width="820" height="220" fill="#f7f6f1" rx="12"/>
+      <!-- Timeline bar -->
+      <rect x="30" y="80" width="760" height="14" rx="7" fill="#e5e7eb"/>
+      <rect x="30" y="80" width="100" height="14" rx="7" fill="#3d7a4f"/>
+      <rect x="130" y="80" width="80" height="14" fill="#d97706"/>
+      <rect x="210" y="80" width="100" height="14" fill="#f97316"/>
+      <rect x="310" y="80" width="480" height="14" rx="0" fill="#dc2626"/>
+      <!-- Maintenance windows -->
+      <rect x="390" y="73" width="18" height="28" rx="3" fill="#22c55e" opacity="0.9"/>
+      <rect x="520" y="73" width="18" height="28" rx="3" fill="#22c55e" opacity="0.9"/>
+      <rect x="680" y="73" width="18" height="28" rx="3" fill="#22c55e" opacity="0.9"/>
+      <!-- Phase labels -->
+      <text x="80" y="66" text-anchor="middle" font-size="12" fill="#2e6040" font-weight="600">Active</text>
+      <text x="170" y="66" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">Screen off</text>
+      <text x="260" y="66" text-anchor="middle" font-size="12" fill="#c2410c" font-weight="600">Pending</text>
+      <text x="500" y="66" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">Doze active</text>
+      <!-- Restrictions label -->
+      <text x="500" y="112" text-anchor="middle" font-size="11" fill="#991b1b">Network blocked · Wakelocks ignored · JobScheduler deferred · set() / setExact() alarms deferred</text>
+      <!-- Maintenance windows label -->
+      <text x="530" y="148" text-anchor="middle" font-size="11" fill="#16a34a">&#x25B2; Maintenance windows (periodic, ~every few hours)</text>
+      <text x="530" y="163" text-anchor="middle" font-size="11" fill="#16a34a">WorkManager deferred jobs, alarms set via set()/setExact() fire here</text>
+      <!-- What fires during Doze label -->
+      <text x="410" y="195" text-anchor="middle" font-size="11" fill="#374151">Always fires in Doze: setExactAndAllowWhileIdle() · setAlarmClock() · High-priority FCM push</text>
+    </svg>
+  </div>
+
+  <p>In full Doze the following are blocked or deferred until a maintenance window: all network access, CPU wakelocks, JobScheduler jobs, <code>SyncAdapter</code> syncs, and <code>AlarmManager.set()</code>/<code>setExact()</code> alarms. The only alarms that fire through Doze are <code>setExactAndAllowWhileIdle()</code> and <code>setAlarmClock()</code>. High-priority FCM messages also break through.</p>
+
+  <h3 id="app-standby">App Standby Buckets</h3>
+
+  <p>Orthogonal to Doze, Android 9 (API 28) introduced App Standby Buckets. The OS classifies every app into one of five buckets based on how recently and frequently the user engaged with it. Apps in lower buckets get fewer job executions and alarm opportunities per day. WorkManager is aware of these buckets and adjusts its scheduling accordingly &mdash; but you can&rsquo;t control which bucket you&rsquo;re in. The only lever is getting the user to interact with your app more frequently.</p>
+
+  <table class="comp-table">
+    <thead><tr><th>Bucket</th><th>Condition</th><th>Job runs per day</th><th>Alarm quota</th></tr></thead>
+    <tbody>
+      <tr><td>ACTIVE</td><td>App is currently in foreground or was used in the last few minutes</td><td>Unlimited</td><td>Unlimited</td></tr>
+      <tr><td>WORKING_SET</td><td>Used regularly — in the last few hours</td><td>~10 / day (generous)</td><td>10 / day</td></tr>
+      <tr><td>FREQUENT</td><td>Used at least every few days</td><td>~5 / day</td><td>5 / day</td></tr>
+      <tr><td>RARE</td><td>Used less than once a week</td><td>~1 / day</td><td>1 / day</td></tr>
+      <tr><td>RESTRICTED</td><td>Rarely used or flagged by system heuristics (API 30+)</td><td>~1 / day, further gated</td><td>1 / day, further delayed</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-info">
+    <div class="callout-label">&#x1F527; Testing Doze and App Standby with adb</div>
+    <p>You don&rsquo;t need to wait for a real device to go idle. Force Doze and bucket changes from a terminal:</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>adb commands — force Doze mode and App Standby bucket for testing</span></div>
+    <div class="code-block"><span class="cm"># ── Doze mode ─────────────────────────────────────────────────────────</span>
+<span class="cm"># Enable Doze (device must be unplugged in emulator or physical device)</span>
+adb shell dumpsys battery unplug
+adb shell dumpsys deviceidle enable
+adb shell dumpsys deviceidle force-idle     <span class="cm"># skip the waiting phases</span>
+
+<span class="cm"># Check current Doze state</span>
+adb shell dumpsys deviceidle
+
+<span class="cm"># Step through Doze phases one at a time</span>
+adb shell dumpsys deviceidle step
+
+<span class="cm"># Exit Doze (re-plug)</span>
+adb shell dumpsys battery reset
+
+<span class="cm"># ── App Standby Buckets ───────────────────────────────────────────────</span>
+<span class="cm"># Force your app into a specific bucket</span>
+adb shell am set-standby-bucket com.your.package active
+adb shell am set-standby-bucket com.your.package working_set
+adb shell am set-standby-bucket com.your.package frequent
+adb shell am set-standby-bucket com.your.package rare
+adb shell am set-standby-bucket com.your.package restricted
+
+<span class="cm"># Check which bucket your app is currently in</span>
+adb shell am get-standby-bucket com.your.package
+
+<span class="cm"># ── WorkManager debugging ─────────────────────────────────────────────</span>
+<span class="cm"># Dump all pending WorkManager jobs and their states</span>
+adb shell dumpsys jobscheduler | grep -A5 com.your.package
+
+<span class="cm"># Trigger WorkManager's diagnostic dump</span>
+adb shell am broadcast -a androidx.work.diagnostics.REQUEST_DIAGNOSTICS \
+  -p com.your.package</div>
+  </div>
+
+  <hr class="section-rule"/>
+
+  <!-- ─── COMPARISON ─── -->
+  <h2 id="comparison">Decision tree &amp; comparison</h2>
+
+  <p>The right mental model for picking between these three APIs is a decision tree, not a comparison table. Ask three questions in order:</p>
+
+  <ol>
+    <li><strong>Does the work need to fire at a specific wall-clock time?</strong> If yes &rarr; AlarmManager. If no &rarr; continue.</li>
+    <li><strong>Does the work need to survive process death, device reboot, and be guaranteed to eventually run?</strong> If yes &rarr; WorkManager. If no &rarr; continue.</li>
+    <li><strong>Do you need OS-level scheduling (no WorkManager dependency, content URI triggers, or extreme control over job priority)?</strong> If yes &rarr; JobScheduler. If no &rarr; WorkManager is still fine.</li>
+  </ol>
+
+  <table class="comp-table">
+    <thead>
+      <tr><th>Capability</th><th>WorkManager</th><th>JobScheduler</th><th>AlarmManager</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Guaranteed execution</td><td>✅ Yes — retries + persists in Room DB</td><td>❌ No</td><td>✅ Exact alarms yes; inexact — deferred</td></tr>
+      <tr><td>Survives process death</td><td>✅ Yes</td><td>✅ Yes (setPersisted)</td><td>❌ Must reschedule in BootReceiver</td></tr>
+      <tr><td>Survives device reboot</td><td>✅ Automatic</td><td>✅ setPersisted = true</td><td>❌ Must reschedule in BootReceiver</td></tr>
+      <tr><td>Network / charging constraints</td><td>✅ Yes</td><td>✅ Yes</td><td>❌ No</td></tr>
+      <tr><td>Chaining / work graphs</td><td>✅ Yes</td><td>❌ No</td><td>❌ No</td></tr>
+      <tr><td>Observable state (Flow/LiveData)</td><td>✅ WorkInfo + Flow</td><td>❌ No</td><td>❌ No</td></tr>
+      <tr><td>Expedited / high priority</td><td>✅ setExpedited()</td><td>✅ setExpedited() API 31+</td><td>✅ setAlarmClock()</td></tr>
+      <tr><td>Fires at exact wall-clock time</td><td>❌ Deferrable only</td><td>❌ Deferrable only</td><td>✅ setExact*()</td></tr>
+      <tr><td>Fires during Doze</td><td>❌ Deferred to maintenance window</td><td>❌ Deferred to maintenance window</td><td>✅ setExactAndAllowWhileIdle() only</td></tr>
+      <tr><td>Content URI trigger</td><td>❌ No</td><td>✅ setTriggerContentUri()</td><td>❌ No</td></tr>
+      <tr><td>Min periodic interval</td><td>15 minutes</td><td>15 minutes</td><td>No minimum</td></tr>
+      <tr><td>Needs special permission (modern API)</td><td>❌ None</td><td>❌ None</td><td>✅ SCHEDULE_EXACT_ALARM (API 31+)</td></tr>
+      <tr><td>Best for</td><td>Uploads, sync, compression, analytics</td><td>Content observers, custom system jobs</td><td>Alarms, calendar reminders, countdowns</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-purple">
+    <div class="callout-label">&#x1F9E0; The interview answer</div>
+    <p>When asked &ldquo;how do you schedule background work in Android?&rdquo; &mdash; lead with the problem, not the API. <strong>WorkManager</strong> is the default for anything deferrable: it persists work in a Room DB, delegates to JobScheduler on API 23+, survives reboots automatically, supports constraints and chaining, and exposes observable <code>WorkInfo</code> state. Use <code>setExpedited()</code> for fast-start work and <code>setForeground()</code> for long-running work. Use <strong>AlarmManager.setExactAndAllowWhileIdle()</strong> when you specifically need to fire at a wall-clock time even during Doze &mdash; user alarms, calendar events. Use <strong>JobScheduler</strong> directly only when you need <code>setTriggerContentUri</code> or are building a library without a WorkManager dependency. Never use repeating alarms for periodic sync &mdash; <code>PeriodicWorkRequest</code> is the right tool there. And if the device is in App Standby RARE or RESTRICTED bucket, even WorkManager will have limited execution opportunities per day &mdash; the best defence is giving users reasons to open the app.</p>
+  </div>
+
+</main>
+
+<aside class="sidebar">
+  <div class="rp-label">Reading Progress</div>
+  <div class="rp-track"><div class="rp-fill" id="rpFill"></div></div>
+  <div class="toc-label">On this page</div>
+  <ul class="toc-list">
+    <li class="toc-item"><a href="#big-picture">The big picture</a></li>
+    <li class="toc-item"><a href="#workmanager">WorkManager architecture</a></li>
+    <li class="toc-item sub"><a href="#worker-types">Worker types</a></li>
+    <li class="toc-item sub"><a href="#constraints">Constraints</a></li>
+    <li class="toc-item sub"><a href="#enqueue">Enqueueing requests</a></li>
+    <li class="toc-item"><a href="#chaining">Chaining work</a></li>
+    <li class="toc-item sub"><a href="#idempotency">Idempotency</a></li>
+    <li class="toc-item"><a href="#expedited">Expedited &amp; foreground</a></li>
+    <li class="toc-item sub"><a href="#expedited-work">setExpedited()</a></li>
+    <li class="toc-item sub"><a href="#foreground-worker">setForeground()</a></li>
+    <li class="toc-item"><a href="#hilt-injection">Hilt injection</a></li>
+    <li class="toc-item"><a href="#testing">Testing Workers</a></li>
+    <li class="toc-item"><a href="#jobscheduler">JobScheduler</a></li>
+    <li class="toc-item sub"><a href="#jobservice">JobService</a></li>
+    <li class="toc-item sub"><a href="#jobinfo">JobInfo triggers</a></li>
+    <li class="toc-item"><a href="#alarmmanager">AlarmManager</a></li>
+    <li class="toc-item sub"><a href="#alarm-clock-types">RTC vs ELAPSED_REALTIME</a></li>
+    <li class="toc-item sub"><a href="#alarm-methods">Exact vs inexact</a></li>
+    <li class="toc-item"><a href="#doze-mode">Doze &amp; App Standby</a></li>
+    <li class="toc-item sub"><a href="#app-standby">Standby Buckets</a></li>
+    <li class="toc-item"><a href="#comparison">Decision tree</a></li>
+  </ul>
+  <div class="sidebar-divider"></div>
+  <div style="font-size:12px; color: var(--muted); line-height: 1.8;">
+    <strong style="color:var(--ink2);">Related articles</strong><br/>
+    <a href="concept_coroutines.html" style="color:var(--accent);">Coroutines &amp; Flow &rarr;</a><br/>
+    <a href="concept_room.html" style="color:var(--accent);">Room &amp; SQLite &rarr;</a><br/>
+    <a href="concept_networking.html" style="color:var(--accent);">OkHttp &amp; Networking &rarr;</a>
+  </div>
+</aside>
+</div>
+
+<script>
+  window.addEventListener('scroll', () => {
+    const total = document.documentElement.scrollHeight - window.innerHeight;
+    document.getElementById('rpFill').style.width = (window.scrollY / total * 100) + '%';
+  });
+  const sections = [
+    'big-picture','workmanager','worker-types','constraints','enqueue',
+    'chaining','idempotency','expedited','expedited-work','foreground-worker',
+    'hilt-injection','testing','jobscheduler','jobservice','jobinfo',
+    'alarmmanager','alarm-clock-types','alarm-methods',
+    'doze-mode','app-standby','comparison'
+  ];
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        document.querySelectorAll('.toc-item a').forEach(a => a.classList.remove('active'));
+        const m = document.querySelector(`.toc-item a[href="#${e.target.id}"]`);
+        if (m) m.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
+
+  const navUser = document.getElementById('navUserMenu');
+  if (navUser) {
+    navUser.addEventListener('click', e => { e.stopPropagation(); navUser.classList.toggle('open'); });
+    document.addEventListener('click', () => navUser.classList.remove('open'));
+  }
+  const SUPABASE_URL = 'https://dquheflcmcppldrnckzf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+  const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  (function() {
+    try {
+      const raw = localStorage.getItem('sb-gvbxhkhzuaiamwwuswzq-auth-token');
+      if (!raw) return;
+      const user = JSON.parse(raw)?.user;
+      if (!user) return;
+      const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+      document.getElementById('navSignInBtn').style.display = 'none';
+      document.getElementById('upgrade-cta').style.display = 'none';
+      const menu = document.getElementById('navUserMenu');
+      menu.style.display = 'flex';
+      document.getElementById('navAvatarInitial').textContent = name[0].toUpperCase();
+      document.getElementById('navUserName').textContent = name;
+      document.getElementById('navUserEmail').textContent = user.email;
+    } catch(e) {}
+  })();
+  sbClient.auth.onAuthStateChange((event, session) => {
+    const user = session?.user;
+    if (user) {
+      const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+      document.getElementById('navSignInBtn').style.display = 'none';
+      document.getElementById('upgrade-cta').style.display = 'none';
+      document.getElementById('navUserMenu').style.display = 'flex';
+      document.getElementById('navAvatarInitial').textContent = name[0].toUpperCase();
+      document.getElementById('navUserName').textContent = name;
+      document.getElementById('navUserEmail').textContent = user.email;
+    } else {
+      document.getElementById('navSignInBtn').style.display = '';
+      document.getElementById('upgrade-cta').style.display = '';
+      document.getElementById('navUserMenu').style.display = 'none';
+    }
+  });
+  async function handleSignOut() { await sbClient.auth.signOut(); }
+  function openAuthModal() { window.location.href = 'index.html#auth'; }
+</script>
+</body>
+</html>

@@ -547,14 +547,14 @@
 
 <!-- ─── NAV ─────────────────────────────────────────────── -->
 <nav>
-  <a href="index.html" class="logo">
+  <a href="/" class="logo">
     <div class="logo-mark"><img src="assets/logo.png" alt="Droidly" onerror="this.style.display='none'"/></div>
     Droidly
   </a>
   <div class="nav-center">
-    <a href="index.html#topics"   class="nav-link">Topics</a>
-    <a href="index.html#reviews"  class="nav-link">Reviews</a>
-    <a href="premium.html"        class="nav-link active">Premium</a>
+    <a href="/#topics"   class="nav-link">Topics</a>
+    <a href="/#reviews"  class="nav-link">Reviews</a>
+    <a href="/premium"        class="nav-link active">Premium</a>
   </div>
   <div class="nav-right">
     <span id="navUserName" style="display:none; font-size:14px; font-weight:500; color:var(--ink2);"></span>
@@ -705,9 +705,9 @@
   <span class="footer-brand">Droidly</span>
   <span class="footer-copy">© 2025 Droidly. All rights reserved.</span>
   <div style="display:flex; gap:20px; flex-wrap:wrap;">
-    <a href="privacy.html" style="font-size:13px; color:var(--muted); text-decoration:none;">Privacy Policy</a>
-    <a href="terms.html" style="font-size:13px; color:var(--muted); text-decoration:none;">Terms & Conditions</a>
-    <a href="refund.html" style="font-size:13px; color:var(--muted); text-decoration:none;">Refund Policy</a>
+    <a href="/privacy" style="font-size:13px; color:var(--muted); text-decoration:none;">Privacy Policy</a>
+    <a href="/terms" style="font-size:13px; color:var(--muted); text-decoration:none;">Terms & Conditions</a>
+    <a href="/refund" style="font-size:13px; color:var(--muted); text-decoration:none;">Refund Policy</a>
   </div>
 </footer>
 
@@ -770,7 +770,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             You're already on Premium
           </div>
-          <p>Enjoy unlimited access. <a href="index.html">Go back to learning →</a></p>
+          <p>Enjoy unlimited access. <a href="/">Go back to learning →</a></p>
         </div>`;
     } else {
       // Signed in, not premium
@@ -813,7 +813,7 @@
 
   function redirectToSignIn() {
     gtag('event', 'sign_in_prompted', { source: 'premium_page' });
-    window.location.href = 'index.html?return=premium';
+    window.location.href = '/?return=premium';
   }
 
   // ── Check if user has premium ────────────────────────────
@@ -979,7 +979,7 @@
   function closeCelebration() {
     const overlay = document.getElementById('celebrationOverlay');
     overlay.classList.remove('show');
-    window.location.href = 'index.html';
+    window.location.href = '/';
   }
 
   // ── Boot ─────────────────────────────────────────────────

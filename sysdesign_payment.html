@@ -190,12 +190,12 @@
 <body>
 
 <nav>
-  <a href="index.html" class="logo">
+  <a href="/" class="logo">
     <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
     Droidly
   </a>
   <div class="nav-right" id="navRight">
-    <a href="premium.html" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
+    <a href="/premium" class="nav-cta" id="upgrade-cta" style="text-decoration:none;">⚡ Get Premium</a>
     <button class="btn-nav" id="navSignInBtn" onclick="openAuthModal()">Sign In</button>
     <div class="nav-user" id="navUserMenu" style="display:none;">
       <div class="nav-avatar" id="navAvatarInitial">?</div>
@@ -1708,7 +1708,7 @@
   }
 
   function openAuthModal() {
-    window.location.href = 'index.html#auth';
+    window.location.href = '/#auth';
   }
 </script>
 </body>
