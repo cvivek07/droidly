@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+<meta name="theme-color" content="#3d7a4f"/>
+<title>Your Android Interview Roadmap — Droidly</title>
+<meta name="description" content="Tell Droidly your experience, target company and interview date. Get a personalised day-by-day Android interview plan built from 600+ questions, with progress tracking and spaced revision."/>
+<link rel="canonical" href="https://droidly.io/roadmap.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://droidly.io/roadmap.html"/>
+<meta property="og:title" content="Your Android Interview Roadmap — Droidly"/>
+<meta property="og:image" content="https://droidly.io/assets/og-image.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-61G11MD574');
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fff;--bg2:#f4f6f9;--bg3:#eaecf0;--card:#fff;
+  --ink:#0f1117;--ink2:#374151;--muted:#6b7280;
+  --green:#3d7a4f;--green2:#2e6040;--green-mid:#4caf70;--green-light:#e8f2ec;--green-pale:#f0f8f2;
+  --amber:#b45309;--amber-bg:#fef3c7;--red:#b91c1c;--red-bg:#fee2e2;
+  --border:rgba(15,17,23,0.08);--border-green:rgba(61,122,79,0.2);
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.05),0 1px 2px rgba(0,0,0,0.03);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.07),0 2px 6px rgba(0,0,0,0.04);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg2);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.55;padding-top:68px;min-height:100vh}
+a{color:inherit}
+button{font-family:inherit}
+/* NAV (matches other pages) */
+nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+nav::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green2),var(--green-mid),var(--green))}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.5px}
+.logo img{height:32px;width:auto;display:block}
+.nav-center{display:flex;gap:4px}
+.nav-link{color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;padding:7px 14px;border-radius:8px}
+.nav-link:hover,.nav-link.active{color:var(--ink);background:var(--bg2)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.btn-nav{background:var(--ink);color:#fff;padding:9px 22px;border-radius:100px;font-size:14px;font-weight:600;border:none;cursor:pointer}
+.btn-nav:hover{background:var(--green)}
+.nav-user{display:none;align-items:center;gap:8px;position:relative;cursor:pointer}
+.nav-avatar{width:34px;height:34px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.nav-user-name{font-size:14px;font-weight:600}
+.user-dropdown{display:none;position:absolute;right:0;top:44px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-md);min-width:200px;padding:6px}
+.nav-user:hover .user-dropdown,.nav-user:focus-within .user-dropdown{display:block}
+.user-dropdown-email{font-size:12px;color:var(--muted);padding:8px 12px}
+.user-dropdown-item{display:block;padding:9px 12px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;color:var(--ink2)}
+.user-dropdown-item:hover{background:var(--bg2)}
+.user-dropdown-item.danger{color:var(--red)}
+/* LAYOUT */
+.wrap{max-width:1080px;margin:0 auto;padding:36px 24px 80px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-sm);padding:26px}
+h1{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;letter-spacing:-.8px;font-size:34px;line-height:1.15}
+h2{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;letter-spacing:-.4px;font-size:20px}
+.sub{color:var(--muted);margin-top:8px}
+.eyebrow{display:inline-block;font-size:12px;font-weight:700;color:var(--green);background:var(--green-light);border:1px solid var(--border-green);border-radius:100px;padding:4px 12px;margin-bottom:14px}
+/* FORM */
+.q-group{margin-top:24px}
+.q-label{font-weight:700;font-size:15px;margin-bottom:10px}
+.q-label small{font-weight:500;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--bg3);background:#fff;border-radius:100px;padding:9px 18px;font-size:14px;font-weight:600;color:var(--ink2);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--green)}
+.chip[aria-pressed=true]{background:var(--green);border-color:var(--green);color:#fff}
+input[type=date],input[type=email],input[type=password]{font:inherit;padding:10px 14px;border:1.5px solid var(--bg3);border-radius:10px;background:#fff;color:var(--ink);width:100%}
+input[type=date]{width:auto}
+input:focus{outline:none;border-color:var(--green)}
+.actions{display:flex;align-items:center;gap:16px;margin-top:30px;flex-wrap:wrap}
+.btn{background:var(--green);color:#fff;border:none;border-radius:100px;padding:13px 26px;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn:hover{background:var(--green2);transform:translateY(-1px)}
+.btn.ghost{background:#fff;color:var(--ink2);border:1.5px solid var(--bg3)}
+.btn.ghost:hover{border-color:var(--green);color:var(--green2)}
+.btn.small{padding:8px 16px;font-size:13px}
+.link-btn{background:none;border:none;color:var(--muted);font-size:14px;text-decoration:underline;cursor:pointer}
+/* SELF CHECK */
+.rate-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border);flex-wrap:wrap}
+.rate-row:first-of-type{border-top:none}
+.rate-name{font-weight:600}
+.seg{display:inline-flex;border:1.5px solid var(--bg3);border-radius:100px;overflow:hidden}
+.seg button{border:none;background:#fff;padding:7px 14px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer}
+.seg button+button{border-left:1.5px solid var(--bg3)}
+.seg button[aria-pressed=true].s-strong{background:var(--green);color:#fff}
+.seg button[aria-pressed=true].s-shaky{background:#f59e0b;color:#fff}
+.seg button[aria-pressed=true].s-new{background:#ef4444;color:#fff}
+/* DASHBOARD */
+.grid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;margin-top:20px;align-items:start}
+.grid>div{min-width:0}
+.score-card{display:flex;flex-direction:column;align-items:center;text-align:center}
+.ring{position:relative;width:150px;height:150px;margin:6px 0 10px}
+.ring svg{transform:rotate(-90deg)}
+.ring-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-num b{font-family:'Plus Jakarta Sans',sans-serif;font-size:40px;line-height:1}
+.ring-num span{font-size:12px;color:var(--muted)}
+.meta-line{font-size:14px;color:var(--ink2);margin-top:6px}
+.pill{display:inline-block;font-size:11px;font-weight:700;border-radius:100px;padding:3px 10px;white-space:nowrap}
+.pill.strong{background:var(--green-light);color:var(--green2)}
+.pill.needs{background:var(--amber-bg);color:var(--amber)}
+.pill.weak{background:var(--red-bg);color:var(--red)}
+.pill.none{background:var(--bg3);color:var(--muted)}
+.pill.easy{background:var(--green-light);color:var(--green2)}.pill.medium{background:var(--amber-bg);color:var(--amber)}.pill.hard{background:var(--red-bg);color:var(--red)}
+.pill.lock{background:#eef2ff;color:#3730a3}
+.disclaimer{font-size:12px;color:var(--muted);margin-top:12px}
+.topic{padding:11px 0;border-top:1px solid var(--border)}
+.topic:first-child{border-top:none}
+.topic-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.topic-name{font-weight:600;font-size:14px}
+.bar{height:7px;border-radius:99px;background:var(--bg3);overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:99px;background:var(--green)}
+.bar>i.needs{background:#f59e0b}.bar>i.weak{background:#ef4444}.bar>i.none{background:#cbd5e1}
+.topic-foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:12px;color:var(--muted);gap:8px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:16px 0 6px;padding-bottom:4px}
+.tab{border:1.5px solid var(--bg3);background:#fff;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap}
+.tab[aria-selected=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.sec-title{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 0 6px}
+.task{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--border)}
+.task:first-of-type{border-top:none}
+.check{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--bg3);margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff}
+.task.done .check{background:var(--green);border-color:var(--green)}
+.task.done .t-title{text-decoration:line-through;color:var(--muted)}
+.t-title{font-weight:600;text-decoration:none;display:block}
+.t-title:hover{color:var(--green2)}
+.t-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px;font-size:12px;color:var(--muted)}
+.t-act{display:flex;gap:6px;margin-top:8px}
+.mini{border:1px solid var(--bg3);background:#fff;border-radius:100px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer}
+.mini:hover{border-color:var(--green);color:var(--green2)}
+.mini[aria-pressed=true]{background:var(--green-light);border-color:var(--green);color:var(--green2)}
+.progress-line{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;color:var(--ink2);margin-top:4px;flex-wrap:wrap}
+.banner{background:var(--green-pale);border:1px solid var(--border-green);border-radius:14px;padding:12px 16px;font-size:14px;color:var(--ink2);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px}
+.note{background:var(--amber-bg);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--amber);margin-top:12px}
+.empty{color:var(--muted);font-size:14px;padding:10px 0}
+.saved a{display:block;padding:8px 0;border-top:1px solid var(--border);font-size:14px;text-decoration:none}
+.saved a:first-child{border-top:none}
+.saved a:hover{color:var(--green2)}
+.saved small{color:var(--muted)}
+/* MODAL + TOAST */
+.modal-bg{position:fixed;inset:0;background:rgba(15,17,23,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:20px;padding:28px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h2{margin-bottom:4px}
+.modal .f{margin-top:12px}
+.modal label{font-size:13px;font-weight:600;display:block;margin-bottom:5px}
+.divider{text-align:center;color:var(--muted);font-size:12px;margin:14px 0}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:all .25s;z-index:1100;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.hidden{display:none!important}
+@media(max-width:860px){
+  nav{padding:0 16px}.nav-center{display:none}
+  .grid{grid-template-columns:minmax(0,1fr)}
+  h1{font-size:28px}
+  .wrap{padding:24px 16px 60px}
+}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><img src="assets/logo.png" alt="Droidly"/>Droidly</a>
+  <div class="nav-center">
+    <a href="/questions" class="nav-link">Questions</a>
+    <a href="/roadmap" class="nav-link active">Roadmap</a>
+    <a href="/mock_interview" class="nav-link">Mock Interview</a>
+    <a href="/premium" class="nav-link">Premium</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn-nav" id="navSignIn" type="button">Sign In</button>
+    <div class="nav-user" id="navUser" tabindex="0">
+      <div class="nav-avatar" id="navAvatar">?</div>
+      <span class="nav-user-name" id="navName"></span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navEmail"></div>
+        <a href="/questions" class="user-dropdown-item">📚 Questions</a>
+        <div class="user-dropdown-item danger" id="navSignOut">🚪 Sign Out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="wrap" id="app" aria-live="polite"><noscript>This page needs JavaScript.</noscript></main>
+
+<div class="modal-bg" id="authBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <h2 id="authTitle">Sign in</h2>
+    <p class="sub" style="margin-top:2px;font-size:14px">Sync your roadmap across devices. Your progress so far comes with you.</p>
+    <button class="btn ghost" style="width:100%;margin-top:16px" id="googleBtn" type="button">Continue with Google</button>
+    <div class="divider">or with email</div>
+    <div class="f"><label for="authEmail">Email</label><input type="email" id="authEmail" autocomplete="email"/></div>
+    <div class="f"><label for="authPass">Password <small style="font-weight:400;color:var(--muted)">(min 6 characters)</small></label><input type="password" id="authPass" autocomplete="current-password"/></div>
+    <button class="btn" style="width:100%;margin-top:16px" id="authSubmit" type="button">Sign in</button>
+    <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:13px">
+      <button class="link-btn" id="authToggle" type="button">Create a free account</button>
+      <button class="link-btn" id="authClose" type="button">Not now</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="assets/readiness.js"></script>
+<script>
+(function () {
+  'use strict';
+  var R = window.Readiness;
+  var SUPABASE_URL = 'https://dquheflcmcppldrnckzf.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+  var db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  var app = document.getElementById('app');
+  var index = null;
+  var view = null;            // 'onboard' | 'rate' | 'dash'
+  var editing = false;        // true when editing existing goals
+  var draft = {};
+  var selectedDay = 0;
+  var user = null, isPremium = false, lockedTopics = {};
+  var authMode = 'signin';
+
+  var LEVELS = [['0-2', '0–2 years'], ['2-5', '2–5 years'], ['5+', '5+ years']];
+  var COMPANIES = [['product', 'Product company'], ['startup', 'Startup'], ['service', 'Service company']];
+  var MINUTES = [[30, '30 min'], [60, '1 hour'], [120, '2 hours']];
+  var LEVEL_NAME = { '0-2': '0–2 yrs', '2-5': '2–5 yrs', '5+': '5+ yrs' };
+  var COMPANY_NAME = { product: 'Product company', startup: 'Startup', service: 'Service company' };
+
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function track(name, params) { try { window.gtag && gtag('event', name, params || {}); } catch (e) { /* analytics must never break the page */ } }
+  function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove('show'); }, 3500); }
+
+  /* ---------- auth ---------- */
+  R.configure({
+    getSession: function () {
+      return db.auth.getSession().then(function (r) {
+        var s = r.data && r.data.session; return s ? { token: s.access_token, uid: s.user.id } : null;
+      }).catch(function () { return null; });
+    }
+  });
+  function setUser(u) {
+    user = u;
+    document.getElementById('navSignIn').style.display = u ? 'none' : '';
+    document.getElementById('navUser').style.display = u ? 'flex' : 'none';
+    if (u) {
+      var name = (u.user_metadata && u.user_metadata.full_name) || u.email.split('@')[0];
+      document.getElementById('navAvatar').textContent = name.split(' ').map(function (n) { return n[0]; }).join('').slice(0, 2).toUpperCase();
+      document.getElementById('navName').textContent = name.split(' ')[0];
+      document.getElementById('navEmail').textContent = u.email;
+    }
+  }
+  function openAuth(mode) {
+    authMode = mode || 'signin';
+    document.getElementById('authTitle').textContent = authMode === 'signin' ? 'Sign in' : 'Create your free account';
+    document.getElementById('authSubmit').textContent = authMode === 'signin' ? 'Sign in' : 'Create account';
+    document.getElementById('authToggle').textContent = authMode === 'signin' ? 'Create a free account' : 'I already have an account';
+    document.getElementById('authBg').classList.add('show');
+    document.getElementById('authEmail').focus();
+  }
+  function closeAuth() { document.getElementById('authBg').classList.remove('show'); }
+  document.getElementById('navSignIn').onclick = function () { openAuth('signin'); };
+  document.getElementById('authClose').onclick = closeAuth;
+  document.getElementById('authBg').addEventListener('click', function (e) { if (e.target.id === 'authBg') closeAuth(); });
+  document.getElementById('authToggle').onclick = function () { openAuth(authMode === 'signin' ? 'signup' : 'signin'); };
+  document.getElementById('googleBtn').onclick = function () {
+    db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.href.split('?')[0].split('#')[0] } })
+      .then(function (r) { if (r.error) toast('Google sign-in failed: ' + r.error.message); });
+  };
+  document.getElementById('authSubmit').onclick = function () {
+    var email = document.getElementById('authEmail').value.trim(), pass = document.getElementById('authPass').value;
+    if (!email || pass.length < 6) { toast('Enter your email and a password of at least 6 characters.'); return; }
+    var p = authMode === 'signin'
+      ? db.auth.signInWithPassword({ email: email, password: pass })
+      : db.auth.signUp({ email: email, password: pass, options: { emailRedirectTo: location.href.split('?')[0].split('#')[0] } });
+    p.then(function (r) {
+      if (r.error) { toast(r.error.message); return; }
+      if (authMode === 'signup' && !(r.data && r.data.session)) { toast('Check your email to verify your account, then sign in.'); closeAuth(); return; }
+      closeAuth();
+    });
+  };
+  document.getElementById('navSignOut').onclick = function () {
+    db.auth.signOut().then(function () { R.clearLocal(); isPremium = false; setUser(null); view = null; route(); toast('Signed out.'); });
+  };
+
+  function loadEntitlements() {
+    var anonH = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY };
+    var jobs = [fetch(SUPABASE_URL + '/rest/v1/premium_topics?select=topic_id&is_locked=eq.true', { headers: anonH }).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; })];
+    if (user) {
+      jobs.push(db.auth.getSession().then(function (r) {
+        var tok = r.data.session && r.data.session.access_token; if (!tok) return [];
+        return fetch(SUPABASE_URL + '/rest/v1/profiles?select=is_premium&id=eq.' + user.id, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok } })
+          .then(function (x) { return x.ok ? x.json() : []; });
+      }).catch(function () { return []; }));
+    }
+    return Promise.all(jobs).then(function (res) {
+      lockedTopics = {}; (res[0] || []).forEach(function (r) { lockedTopics[r.topic_id] = 1; });
+      isPremium = !!(res[1] && res[1][0] && res[1][0].is_premium);
+    });
+  }
+
+  /* ---------- routing / render ---------- */
+  function route() {
+    var s = R.get();
+    if (!view) view = s.goals ? 'dash' : 'onboard';
+    render();
+  }
+  function render() {
+    if (!index) return;
+    if (view === 'onboard') return renderOnboard();
+    if (view === 'rate') return renderRate();
+    renderDash();
+  }
+
+  function chipGroup(key, options, current) {
+    return '<div class="chips" role="group">' + options.map(function (o) {
+      return '<button type="button" class="chip" data-key="' + key + '" data-val="' + o[0] + '" aria-pressed="' + (String(current) === String(o[0])) + '">' + o[1] + '</button>';
+    }).join('') + '</div>';
+  }
+
+  function renderOnboard() {
+    var g = Object.assign({}, R.DEFAULT_GOALS, R.get().goals || {}, draft);
+    draft = { level: g.level, company: g.company, minutes: g.minutes, date: g.date };
+    app.innerHTML =
+      '<div class="card" style="max-width:720px;margin:0 auto">' +
+      '<span class="eyebrow">' + (editing ? 'Edit your goal' : 'Free · about 30 seconds') + '</span>' +
+      '<h1>' + (editing ? 'Update your goal' : 'Build your Android interview roadmap') + '</h1>' +
+      '<p class="sub">Tell us where you\'re headed. We\'ll turn 600+ questions into a day-by-day plan that focuses on what matters for your level and company type.</p>' +
+      '<div class="q-group"><div class="q-label">Your Android experience</div>' + chipGroup('level', LEVELS, g.level) + '</div>' +
+      '<div class="q-group"><div class="q-label">Where are you interviewing?</div>' + chipGroup('company', COMPANIES, g.company) + '</div>' +
+      '<div class="q-group"><div class="q-label">Time you can study per day</div>' + chipGroup('minutes', MINUTES, g.minutes) + '</div>' +
+      '<div class="q-group"><div class="q-label">Interview date <small>(optional)</small></div><input type="date" id="dateInput" min="' + R.ymd(new Date()) + '" value="' + (g.date || '') + '"/></div>' +
+      '<div class="actions"><button class="btn" id="goalNext" type="button">' + (editing ? 'Save and rebuild plan →' : 'Next: quick self-check →') + '</button>' +
+      (editing ? '<button class="link-btn" id="goalCancel" type="button">Cancel</button>' : '<button class="link-btn" id="goalSkip" type="button">Skip, use defaults</button>') + '</div>' +
+      '</div>';
+    app.querySelectorAll('.chip').forEach(function (b) {
+      b.onclick = function () {
+        var k = b.dataset.key; draft[k] = k === 'minutes' ? +b.dataset.val : b.dataset.val;
+        app.querySelectorAll('.chip[data-key="' + k + '"]').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+      };
+    });
+    document.getElementById('goalNext').onclick = function () {
+      draft.date = document.getElementById('dateInput').value || null;
+      R.setGoals(draft); R.ensurePlan(index, true); track('roadmap_goal_saved', { level: draft.level, company: draft.company, minutes: draft.minutes, has_date: !!draft.date });
+      var rated = Object.keys(R.get().ratings).length;
+      view = (editing || rated) ? 'dash' : 'rate'; editing = false; draft = {}; render(); window.scrollTo(0, 0);
+    };
+    var skip = document.getElementById('goalSkip');
+    if (skip) skip.onclick = function () { R.setGoals(R.DEFAULT_GOALS); R.ensurePlan(index, true); track('roadmap_skipped_onboarding'); view = 'dash'; draft = {}; render(); };
+    var cancel = document.getElementById('goalCancel');
+    if (cancel) cancel.onclick = function () { editing = false; draft = {}; view = 'dash'; render(); };
+  }
+
+  function raterHtml(tid, current) {
+    return '<div class="seg" role="group" aria-label="Rate yourself">' + [['strong', 'Strong'], ['shaky', 'Shaky'], ['new', 'New to me']].map(function (o) {
+      return '<button type="button" class="s-' + o[0] + '" data-topic="' + tid + '" data-r="' + o[0] + '" aria-pressed="' + (current === o[0]) + '">' + o[1] + '</button>';
+    }).join('') + '</div>';
+  }
+  function bindRaters(root) {
+    root.querySelectorAll('[data-r]').forEach(function (b) {
+      b.onclick = function () { R.setRating(b.dataset.topic, b.dataset.r); };
+    });
+  }
+
+  function renderRate() {
+    var s = R.get(), n = Object.keys(s.ratings).length;
+    app.innerHTML =
+      '<div class="card" style="max-width:720px;margin:0 auto">' +
+      '<span class="eyebrow">Step 2 of 2</span><h1>How confident are you, honestly?</h1>' +
+      '<p class="sub">Rate each topic. This is your starting point; it gets sharper as you mark questions "Got it" or "Revisit". Skip any you can\'t judge yet.</p>' +
+      '<div style="margin-top:14px">' + R.TOPIC_ORDER.map(function (tid) {
+        var t = index.topics[tid]; var cur = s.ratings[tid] && s.ratings[tid].v;
+        return '<div class="rate-row"><span class="rate-name">' + esc(t.name) + '</span>' + raterHtml(tid, cur) + '</div>';
+      }).join('') + '</div>' +
+      '<div class="actions"><button class="btn" id="rateDone" type="button">Build my plan →</button><span class="sub" style="margin:0;font-size:14px">' + n + ' of ' + R.TOPIC_ORDER.length + ' rated</span></div></div>';
+    bindRaters(app);
+    document.getElementById('rateDone').onclick = function () {
+      R.ensurePlan(index, true); track('roadmap_plan_built', { rated_topics: Object.keys(R.get().ratings).length });
+      view = 'dash'; render(); window.scrollTo(0, 0);
+    };
+  }
+
+  function pillClass(label) { return label === 'Strong' ? 'strong' : label === 'Needs practice' ? 'needs' : label === 'Weak area' ? 'weak' : 'none'; }
+
+  function taskHtml(t, state, plan, interactive) {
+    var done = R.isDone(t, state, plan.at), m = state.marks[t.id] || {};
+    var locked = lockedTopics[t.topic] && !isPremium;
+    return '<div class="task' + (done ? ' done' : '') + '" data-id="' + esc(t.id) + '">' +
+      '<div class="check" aria-hidden="true">' + (done ? '✓' : '') + '</div><div style="flex:1;min-width:0">' +
+      '<a class="t-title" href="' + esc(t.href) + '" target="_self">' + esc(t.title) + '</a>' +
+      '<div class="t-meta"><span class="pill ' + esc(t.diff) + '">' + esc(t.diff) + '</span><span>' + t.min + ' min</span><span>· ' + esc(index.topics[t.topic].name) + '</span>' +
+      (locked ? '<span class="pill lock">🔒 Premium</span>' : '') + '</div>' +
+      (interactive ? '<div class="t-act"><button class="mini" type="button" data-mark="got_it" aria-pressed="' + (m.s === 'got_it') + '">✓ Got it</button>' +
+        '<button class="mini" type="button" data-mark="revisit" aria-pressed="' + (m.s === 'revisit') + '">↻ Revisit</button></div>' : '') +
+      '</div></div>';
+  }
+
+  function tasksBlock(day, state, plan, interactive) {
+    if (!day.tasks.length) return '<p class="empty">Nothing left to schedule. You\'ve covered every available question. Nice.</p>';
+    var groups = [['revision', 'Revision'], ['sysdesign', 'System design'], ['study', 'Study']];
+    return groups.map(function (g) {
+      var list = day.tasks.filter(function (t) { return t.type === g[0]; });
+      if (!list.length) return '';
+      var mins = list.reduce(function (a, t) { return a + t.min; }, 0);
+      return '<div class="sec-title">' + g[1] + ' · ' + mins + ' min</div>' + list.map(function (t) { return taskHtml(t, state, plan, interactive); }).join('');
+    }).join('');
+  }
+
+  function renderDash() {
+    var s = R.get();
+    var plan = R.ensurePlan(index, false);
+    var r = R.readiness(index, s);
+    var g = Object.assign({}, R.DEFAULT_GOALS, s.goals);
+    if (selectedDay >= plan.days.length) selectedDay = 0;
+    var left = g.date ? R.daysBetween(new Date(), R.parseYmd(g.date)) : null;
+    var today = plan.days[0] || { tasks: [], minutes: 0 };
+    var doneToday = today.tasks.filter(function (t) { return R.isDone(t, s, plan.at); });
+    var doneMin = doneToday.reduce(function (a, t) { return a + t.min; }, 0);
+    var circ = 2 * Math.PI * 62, dash = circ * r.score / 100;
+    var color = r.score >= 75 ? '#3d7a4f' : r.score >= 50 ? '#f59e0b' : '#ef4444';
+    var revisitCount = Object.keys(s.marks).filter(function (k) { return s.marks[k].s === 'revisit'; }).length;
+    var saved = Object.keys(s.marks).filter(function (k) { return s.marks[k].b; });
+    var lookup = {}; R.TOPIC_ORDER.forEach(function (tid) { index.topics[tid].items.forEach(function (it) { lookup[it.id] = { it: it, topic: tid }; }); });
+
+    var sorted = R.TOPIC_ORDER.slice().sort(function (a, b) { return (r.weights[b] * (100 - r.stats[b].mastery)) - (r.weights[a] * (100 - r.stats[a].mastery)); });
+
+    app.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">' +
+      '<div><span class="eyebrow">Your roadmap</span><h1>' + (left != null && left > 0 ? left + ' day' + (left > 1 ? 's' : '') + ' to your interview' : left === 0 ? 'Interview day. You\'ve got this.' : 'Keep your prep on track') + '</h1>' +
+      '<p class="sub">' + esc(COMPANY_NAME[g.company]) + ' · ' + esc(LEVEL_NAME[g.level]) + ' · ' + g.minutes + ' min/day</p></div>' +
+      '<div style="display:flex;gap:8px"><button class="btn ghost small" id="editGoals" type="button">Edit goal</button><button class="btn ghost small" id="rebuild" type="button">Rebuild plan</button></div></div>' +
+      (user ? '' : '<div class="banner"><span>💾 Progress is saved on this device. <b>Sign in</b> to keep it across devices.</span><button class="btn small" id="bannerSignIn" type="button">Sign in / Sign up</button></div>') +
+      (plan.note ? '<div class="note">' + esc(plan.note) + '</div>' : '') +
+      '<div class="grid"><div>' +
+        '<div class="card score-card"><div class="q-label" style="margin:0">Readiness estimate</div>' +
+        '<div class="ring"><svg width="150" height="150" viewBox="0 0 150 150"><circle cx="75" cy="75" r="62" fill="none" stroke="#eaecf0" stroke-width="12"/>' +
+        '<circle cx="75" cy="75" r="62" fill="none" stroke="' + color + '" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + dash.toFixed(1) + ' ' + circ.toFixed(1) + '"/></svg>' +
+        '<div class="ring-num"><b>' + r.score + '</b><span>out of 100</span></div></div>' +
+        '<div class="meta-line">Confidence: <b>' + r.confidence + '</b> · ' + r.ratedTopics + '/' + R.TOPIC_ORDER.length + ' topics rated · ' + r.attempted + ' questions marked</div>' +
+        '<p class="disclaimer">Self-assessed estimate based on your ratings and marks. It becomes more reliable as you mark more questions. It is not a test score.</p></div>' +
+        '<div class="card" style="margin-top:20px"><h2>Topics</h2><p class="sub" style="font-size:13px;margin-top:2px">Weakest and most important first. Tap to re-rate.</p><div style="margin-top:8px">' +
+        sorted.map(function (tid) {
+          var st = r.stats[tid], cls = pillClass(st.label);
+          return '<div class="topic"><div class="topic-head"><span class="topic-name">' + esc(st.name) + '</span><span class="pill ' + cls + '">' + st.label + '</span></div>' +
+            '<div class="bar"><i class="' + (cls === 'strong' ? '' : cls) + '" style="width:' + (st.rated || st.attempted ? st.mastery : 0) + '%"></i></div>' +
+            '<div class="topic-foot"><span>' + st.got + '/' + st.total + ' done' + (st.revisit ? ' · ' + st.revisit + ' to revisit' : '') + '</span>' + raterHtml(tid, s.ratings[tid] && s.ratings[tid].v) + '</div></div>';
+        }).join('') + '</div></div></div>' +
+      '<div><div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>Your plan</h2>' +
+        '<div class="progress-line"><span><b>' + doneToday.length + '/' + today.tasks.length + '</b> tasks done today · ' + doneMin + '/' + today.minutes + ' min</span></div></div>' +
+        '<div class="tabs" role="tablist">' + plan.days.map(function (d, i) {
+          var lab = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : new Date(R.parseYmd(d.date)).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+          return '<button class="tab" role="tab" data-day="' + i + '" aria-selected="' + (i === selectedDay) + '">' + lab + '</button>';
+        }).join('') + '</div>' +
+        '<div id="dayBody">' + tasksBlock(plan.days[selectedDay], s, plan, selectedDay === 0) + '</div>' +
+        (revisitCount ? '<p class="disclaimer">↻ ' + revisitCount + ' question' + (revisitCount > 1 ? 's' : '') + ' marked "Revisit". They return in your plan a day after you marked them.</p>' : '') +
+      '</div>' +
+      '<div class="card saved" style="margin-top:20px"><h2>Saved questions</h2><div style="margin-top:6px">' +
+        (saved.length ? saved.slice(0, 12).map(function (id) {
+          var x = lookup[id]; if (!x) return ''; return '<a href="' + esc(x.it.href || ('/questions.html?topic=' + x.topic + '&q=' + x.it.n + '#' + x.topic)) + '">' + esc(x.it.q) + ' <small>· ' + esc(index.topics[x.topic].name) + '</small></a>';
+        }).join('') : '<p class="empty">Tap ☆ Save on any question to keep it here.</p>') + '</div></div>' +
+      '</div></div>';
+
+    bindRaters(app);
+    app.querySelectorAll('.tab').forEach(function (b) { b.onclick = function () { selectedDay = +b.dataset.day; render(); }; });
+    app.querySelectorAll('[data-mark]').forEach(function (b) {
+      b.onclick = function () {
+        var id = b.closest('.task').dataset.id; R.setMark(id, { s: b.dataset.mark });
+        track('roadmap_task_marked', { status: b.dataset.mark, topic: id.split(':')[0] });
+      };
+    });
+    document.getElementById('editGoals').onclick = function () { editing = true; view = 'onboard'; render(); window.scrollTo(0, 0); };
+    document.getElementById('rebuild').onclick = function () { R.ensurePlan(index, true); track('roadmap_plan_rebuilt'); render(); toast('Plan rebuilt from your latest progress.'); };
+    var bs = document.getElementById('bannerSignIn'); if (bs) bs.onclick = function () { openAuth('signup'); };
+  }
+
+  /* ---------- boot ---------- */
+  R.load();
+  R.onChange(function () { if (index && view) render(); });
+  fetch('assets/roadmap-index.json').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (j) {
+    index = j; route();
+    track('roadmap_viewed', { has_goals: !!R.get().goals });
+  }).catch(function (e) {
+    app.innerHTML = '<div class="card"><h2>Couldn\'t load the roadmap</h2><p class="sub">Please refresh. If it keeps happening, email support@droidly.io. (' + esc(e.message) + ')</p></div>';
+  });
+
+  db.auth.onAuthStateChange(function (event, session) {
+    setUser(session ? session.user : null);
+    if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+      R.sync().then(function (res) {
+        loadEntitlements().then(function () {
+          var s = R.get();
+          if (s.goals && view === 'onboard' && !editing) view = 'dash';
+          if (index) { view = view || (s.goals ? 'dash' : 'onboard'); render(); }
+          if (res && res.ok && event === 'SIGNED_IN') toast('Signed in. Progress synced.');
+        });
+      });
+    } else if (event === 'INITIAL_SESSION') {
+      loadEntitlements().then(function () { if (index) render(); });
+    }
+  });
+})();
+</script>
+</body>
+</html>
