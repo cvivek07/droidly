@@ -11,7 +11,7 @@
   <link rel="manifest" href="/site.webmanifest"/>
   <meta name="theme-color" content="#3d7a4f"/>
   <title>Droidly — Android Interview Prep | Crack Android Developer Interviews</title>
-  <meta name="description" content="Droidly is the best Android interview prep platform. Deep-dive concept guides on Kotlin, Coroutines, Jetpack Compose, MVVM, Room, WorkManager, Hilt, RecyclerView and more. Used by engineers at Google, Flipkart, Swiggy and top startups."/>
+  <meta name="description" content="Droidly is the best Android interview prep platform. Deep-dive concept guides on Kotlin, Coroutines, Jetpack Compose, MVVM, Room, WorkManager, Hilt, RecyclerView and more."/>
   <meta name="keywords" content="Android interview prep, Android developer interview, Kotlin interview questions, Jetpack Compose, MVVM Android, Coroutines Flow, Room database, WorkManager, Hilt dependency injection, RecyclerView, Android system design"/>
   <link rel="canonical" href="https://droidly.io/"/>
 
@@ -1915,7 +1915,51 @@
       .wn-header { flex-direction: column; }
       .topics-header { flex-direction: column; align-items: flex-start; gap: 16px; }
     }
-  </style>
+  
+/* --- audit fixes: resume strip, hero micro-copy, answer reveal, roadmap preview, mobile nav --- */
+.resume-strip{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px;padding:12px 16px;border-radius:14px;background:var(--green-light,#e8f2ec);border:1px solid rgba(61,122,79,.25);color:var(--ink,#0f1117);text-decoration:none;font-size:14px;font-weight:600}
+.resume-strip[hidden]{display:none}
+.resume-strip span:last-child{color:var(--green,#3d7a4f);white-space:nowrap}
+.hero-micro{margin-top:12px;font-size:13px;color:var(--muted,#6b7280)}
+.hcard-answer{font-size:13px;line-height:1.55;background:#f0f8f2;border:1px solid rgba(61,122,79,.2);border-radius:10px;padding:12px 14px;margin-bottom:10px;color:#1f2937}
+.hcard-answer code{font-size:12px}
+.hcard-save{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(15,17,23,.15);display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-weight:600}
+.hcard-save a{color:var(--green,#3d7a4f);text-decoration:none}
+.hcard-save button{border:1px solid rgba(61,122,79,.4);background:#fff;color:var(--green,#3d7a4f);border-radius:100px;padding:6px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.rp-section{padding:72px 48px}
+.rp-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+.rp-points{margin:16px 0 22px 18px;color:var(--ink2,#374151);line-height:1.8}
+.rp-card{background:#fff;border:1px solid rgba(15,17,23,.08);border-radius:20px;box-shadow:0 12px 40px rgba(0,0,0,.08);padding:22px}
+.rp-tag{font-size:11px;font-weight:700;color:var(--muted,#6b7280);margin-bottom:14px}
+.rp-top{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.rp-ring{width:68px;height:68px;border-radius:50%;border:7px solid #f59e0b;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.rp-ring b{font-size:22px}.rp-ring span{font-size:10px;color:#6b7280}
+.rp-h{font-weight:700}.rp-s{font-size:12px;color:#6b7280}
+.rp-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid rgba(15,17,23,.06);font-size:14px}
+.rp-p{font-style:normal;font-size:11px;font-weight:700;border-radius:100px;padding:3px 10px}
+.rp-p.strong{background:#e8f2ec;color:#2e6040}.rp-p.needs{background:#fef3c7;color:#b45309}.rp-p.weak{background:#fee2e2;color:#b91c1c}
+.rp-today{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6b7280;margin:14px 0 4px}
+.rp-task{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:14px}
+.rp-task i{width:16px;height:16px;border:2px solid #d1d5db;border-radius:5px;flex:none}
+.rp-task small{margin-left:auto;color:#6b7280;font-size:12px;white-space:nowrap}
+@media (max-width:860px){.rp-section{padding:48px 20px}.rp-inner{grid-template-columns:1fr;gap:28px}}
+@media (max-width:640px){nav .nav-pill{display:none}.btn-nav{padding:8px 16px;white-space:nowrap;font-size:13px}.logo{font-size:18px;white-space:nowrap}}
+
+/* mobile: shorter page (audit #5) */
+.concepts-more{display:none}
+@media (max-width:640px){
+  .topics-grid{grid-template-columns:1fr 1fr !important;gap:10px !important}
+  .topics-grid .tc-desc{display:none}
+  .how-example{display:none}
+  .concepts-grid:not(.is-open) .concept-card:nth-child(n+5){display:none}
+  .concepts-more{display:block;margin:16px auto 0;padding:11px 22px;border-radius:100px;border:1.5px solid rgba(61,122,79,.4);background:#fff;color:#3d7a4f;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+  .cl-item:nth-child(n+3){display:none}
+}
+
+/* hero polish: decorative pills never intercept clicks; keep eyebrow/strip clear of the fixed nav on small screens */
+.hero-float{pointer-events:none}
+@media (max-width:860px){.hero-left{padding-top:96px !important}}
+</style>
 </head>
 <body>
 
@@ -1957,46 +2001,34 @@
 
   <!-- Left -->
   <div class="hero-left">
-    <div class="eyebrow fade-1" style="margin-top: 0;">Android Interview Prep · 2025–26</div>
+    <a id="resumeStrip" class="resume-strip" href="/roadmap" hidden></a>
+    <div class="eyebrow fade-1" style="margin-top: 0;">Android interview prep · free to start</div>
 
     <h1 class="fade-3">
-      Everything you need to crack your next <span class="accent">Android interview.</span>
+      Know exactly what to study before your <span class="accent">Android interview.</span>
     </h1>
 
     <p class="hero-sub fade-4">
-      375 questions, real Kotlin code in every answer, and 15+ system design deep-dives — structured by topic, difficulty, and company. Everything in one place.
+      Tell us your experience, target company type and interview date. Get a day-by-day plan built from 600 Android questions, with Kotlin code in every answer.
     </p>
 
     <div class="hero-proof fade-5">
-      <div class="hero-proof-item">
-        <span class="hero-proof-num">375+</span>
-        <span class="hero-proof-label">Questions</span>
-      </div>
+      <div class="hero-proof-item"><span class="hero-proof-num">600</span><span class="hero-proof-label">Questions</span></div>
       <div class="hero-proof-div"></div>
-      <div class="hero-proof-item">
-        <span class="hero-proof-num">20+</span>
-        <span class="hero-proof-label">Topics</span>
-      </div>
+      <div class="hero-proof-item"><span class="hero-proof-num">13</span><span class="hero-proof-label">Topics</span></div>
       <div class="hero-proof-div"></div>
-      <div class="hero-proof-item">
-        <span class="hero-proof-num">15+</span>
-        <span class="hero-proof-label">System Designs</span>
-      </div>
-      <div class="hero-proof-div"></div>
-      <div class="hero-proof-item">
-        <span class="hero-proof-num">20<em style="color:var(--green);font-style:normal;">+</em></span>
-        <span class="hero-proof-label">Companies — Google,<br>Flipkart, Swiggy & more</span>
-      </div>
+      <div class="hero-proof-item"><span class="hero-proof-num">13</span><span class="hero-proof-label">System Designs</span></div>
     </div>
 
     <div class="hero-ctas fade-5" style="animation-delay:0.4s">
-      <a href="/roadmap" onclick="gtag('event','hero_cta_roadmap')" class="btn-primary">
+      <a href="/roadmap" id="heroPrimaryCta" onclick="gtag('event','hero_cta_roadmap')" class="btn-primary">
         Build my free plan →
       </a>
-      <a href="#" onclick="goToQuestions(''); return false;" class="btn-ghost">
-        Browse questions
+      <a href="#" onclick="gtag('event','hero_cta_sample'); showHeroAnswer(true); return false;" class="btn-ghost">
+        Try a sample question
       </a>
     </div>
+    <p class="hero-micro fade-5">Free. No account needed to start. Sign in later to keep your progress.</p>
 
   </div>
 
@@ -2019,9 +2051,9 @@
       </div>
       <div class="hcard-code">
         <span class="ln"><span class="c-cm">// ❌ Sequential — slow, no cancellation</span></span>
-        <span class="ln"><span class="c-kw">val </span>user    = fetchUser()<span class="c-br">()</span></span>
-        <span class="ln"><span class="c-kw">val </span>cart    = fetchCart()<span class="c-br">()</span></span>
-        <span class="ln"><span class="c-kw">val </span>address = fetchAddress()<span class="c-br">()</span></span>
+        <span class="ln"><span class="c-kw">val </span>user    = fetchUser()</span>
+        <span class="ln"><span class="c-kw">val </span>cart    = fetchCart()</span>
+        <span class="ln"><span class="c-kw">val </span>address = fetchAddress()</span>
         <span class="ln">&nbsp;</span>
         <span class="ln"><span class="c-cm">// ✅ Parallel + fails fast on any error</span></span>
         <span class="ln"><span class="c-kw">val </span><span class="c-br">(</span>user<span class="c-br">,</span> cart<span class="c-br">,</span> address<span class="c-br">)</span> = coroutineScope <span class="c-br">{</span></span>
@@ -2034,9 +2066,16 @@
       <div id="hcard-hint" style="display:none; background:var(--amber-light); border:1px solid rgba(196,125,46,0.2); border-radius:10px; padding:10px 14px; font-size:13px; color:var(--amber); line-height:1.5; margin-bottom:10px;">
         💡 Think about which calls are <strong>independent</strong> vs <strong>dependent</strong>. Independent calls can run with <code>async { }</code> inside a <code>coroutineScope { }</code> — if any one throws, the scope cancels the rest automatically.
       </div>
+      <div id="hcard-answer" class="hcard-answer" style="display:none">
+        <strong>Answer.</strong> Wrap the calls in <code>coroutineScope { }</code> and start each with <code>async { }</code>. They run in parallel, and if any one throws, the scope cancels its siblings and rethrows to the caller (structured concurrency gives you fail-fast for free). Call <code>await()</code> on each result and catch the exception around the whole scope to show your error state. Use <code>supervisorScope</code> only if you want one failure <em>not</em> to cancel the others.
+        <div class="hcard-save">Want the full set, plus a plan for your interview date?
+          <a href="/roadmap" onclick="gtag('event','hero_answer_plan_click')">Build my plan →</a>
+          <button type="button" onclick="gtag('event','hero_answer_signup_click'); openAuthModal('signup')">Create free account</button>
+        </div>
+      </div>
       <div class="hcard-btns">
         <button class="hcard-btn" onclick="toggleHint()">💡 Hint</button>
-        <button class="hcard-btn fill" onclick="handleViewAnswer()">View Answer</button>
+        <button class="hcard-btn fill" id="hcardAnswerBtn" onclick="handleViewAnswer()">Show the answer</button>
       </div>
     </div>
 
@@ -2057,7 +2096,6 @@
     <div class="marquee-item"><div class="marquee-dot"></div>System Design</div>
     <div class="marquee-item"><div class="marquee-dot"></div>Hilt & Dagger</div>
     <div class="marquee-item"><div class="marquee-dot"></div>Android Performance</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Google · Flipkart · Swiggy</div>
     <!-- duplicate for seamless loop -->
     <div class="marquee-item"><div class="marquee-dot"></div>Kotlin Language</div>
     <div class="marquee-item"><div class="marquee-dot"></div>Jetpack Compose</div>
@@ -2070,104 +2108,77 @@
     <div class="marquee-item"><div class="marquee-dot"></div>System Design</div>
     <div class="marquee-item"><div class="marquee-dot"></div>Hilt & Dagger</div>
     <div class="marquee-item"><div class="marquee-dot"></div>Android Performance</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Google · Flipkart · Swiggy</div>
   </div>
 </div>
 
-<!-- MANIFESTO BAND -->
-<div class="manifesto-band reveal">
-  <div class="manifesto-inner">
-    <div class="manifesto-eyebrow">Why Droidly exists</div>
-    <blockquote class="manifesto-quote">
-      Android interviews in 2026 are deceptively hard. A topic that looks simple on the surface hides layers of nuance underneath — and with AI raising the bar for every candidate, expectations have never been higher. Most platforms treat Android as an afterthought. Generic DSA grind won't get you through a Coroutines deep-dive or an Android system design round. <strong>We built Droidly because Android developers deserve a platform built specifically for them</strong> — structured, in-depth, and focused on exactly what interviewers actually ask.
-    </blockquote>
-    <div class="manifesto-sig">— The Droidly Team</div>
+<!-- ROADMAP PREVIEW -->
+<section id="roadmap-preview" class="rp-section">
+  <div class="rp-inner">
+    <div class="rp-copy">
+      <div class="section-label">Your personal roadmap</div>
+      <h2>Stop guessing what to<br><span style="color:var(--green)">study next.</span></h2>
+      <p class="section-sub-sm">Droidly turns 600 questions into a short daily plan that fits your level, your target company type and your interview date. It updates as you mark what you know.</p>
+      <ul class="rp-points">
+        <li>A readiness estimate that gets more reliable as you practise</li>
+        <li>Today's tasks sized to the time you have</li>
+        <li>Missed or shaky questions come back for revision</li>
+      </ul>
+      <a href="/roadmap" onclick="gtag('event','preview_cta_roadmap')" class="btn-primary">Build my free plan →</a>
+      <p class="hero-micro">Free. No account needed to start.</p>
+    </div>
+    <div class="rp-card" aria-label="Example roadmap (illustrative)">
+      <div class="rp-tag">Example only · not a real user's score</div>
+      <div class="rp-top">
+        <div class="rp-ring"><b>68</b><span>/100</span></div>
+        <div><div class="rp-h">Your readiness estimate</div><div class="rp-s">Product company · 2–5 yrs · 4 weeks to go</div></div>
+      </div>
+      <div class="rp-row"><span>Kotlin</span><em class="rp-p strong">Strong</em></div>
+      <div class="rp-row"><span>Coroutines &amp; Flow</span><em class="rp-p needs">Needs practice</em></div>
+      <div class="rp-row"><span>System design</span><em class="rp-p weak">Weak area</em></div>
+      <div class="rp-today">Today</div>
+      <div class="rp-task"><i></i>10 Coroutines &amp; Flow questions<small>~45 min</small></div>
+      <div class="rp-task"><i></i>Offline-first app design<small>25 min</small></div>
+      <div class="rp-task"><i></i>Revise 3 questions you marked "Revisit"<small>10 min</small></div>
+    </div>
   </div>
-</div>
+</section>
 
-<!-- WHAT'S NEW -->
-<section id="whats-new" class="whats-new-section reveal">
-  <div class="wn-header">
-    <div>
-      <div class="section-label">Changelog</div>
-      <h2>What's <span style="color:var(--green)">new</span></h2>
-      <p class="section-sub-sm">We ship updates regularly. Here's what's been added recently.</p>
-    </div>
-    <a href="#" onclick="goToQuestions(''); return false;" class="btn-ghost" style="white-space:nowrap; align-self:flex-start; margin-top:8px;">Explore All Content →</a>
+<!-- HOW IT WORKS -->
+<section id="how-it-works" class="how-section">
+  <div class="section-label">The Process</div>
+  <div class="how-header">
+    <h2>From scattered prep<br>to <span style="color:var(--green)">interview-ready</span></h2>
+    <p class="section-sub-sm">Most Android devs prepare with YouTube tabs, random blogs, and hope. Droidly gives you a structured path in one place.</p>
   </div>
-  <div class="cl-list">
-
-    <div class="cl-item">
-      <div class="cl-left">
-        <div class="cl-date">Apr 2026</div>
-        <div class="cl-line"></div>
-      </div>
-      <div class="cl-right">
-        <div class="cl-badge new">New</div>
-        <div class="cl-title">Micro Explainers — 30-second animated concepts</div>
-        <div class="cl-desc">Watch Android concepts come alive: code types in, threads animate, cancellation flows. First up: Coroutines Lifecycle. Recomposition and Flow vs LiveData coming next.</div>
-        <div class="cl-tags">
-          <span class="cl-tag">Coroutines</span>
-          <span class="cl-tag">Recomposition</span>
-          <span class="cl-tag">Flow</span>
-        </div>
-      </div>
+  <div class="how-grid reveal-stagger">
+    <div class="how-card reveal">
+      <div class="how-num">01</div>
+      <div class="how-icon-wrap"><span class="how-icon">🎯</span></div>
+      <div class="how-title">Set your goal</div>
+      <p class="how-desc">Tell us your experience, whether you're aiming at a product company, startup or service company, how long you can study each day, and your interview date.</p>
+      <div class="how-example"><span class="he-label">Takes</span><span class="he-chip">About 30 seconds</span><span class="he-chip">No account needed</span></div>
     </div>
-
-    <div class="cl-item">
-      <div class="cl-left">
-        <div class="cl-date">Mar 2026</div>
-        <div class="cl-line"></div>
-      </div>
-      <div class="cl-right">
-        <div class="cl-badge updated">Updated</div>
-        <div class="cl-title">System Design — 15+ Android deep-dives</div>
-        <div class="cl-desc">Full breakdowns with architecture decisions, data flow diagrams, Kotlin code snippets, and 20 Q&As each. Covers Chat App, Image Loader, Ride Sharing, File Downloads, Push Notifications, and more.</div>
-        <div class="cl-tags">
-          <span class="cl-tag">Chat App</span>
-          <span class="cl-tag">Image Loader</span>
-          <span class="cl-tag">Ride Sharing</span>
-          <span class="cl-tag">+ 7 more</span>
-        </div>
-      </div>
+    <div class="how-card reveal">
+      <div class="how-num">02</div>
+      <div class="how-icon-wrap"><span class="how-icon">🗺️</span></div>
+      <div class="how-title">Rate your topics, honestly</div>
+      <p class="how-desc">Mark each of 13 topics Strong, Shaky or New to me. Your readiness estimate starts from this and sharpens as you mark questions.</p>
+      <div class="how-example"><span class="he-label">Topics include</span><span class="he-chip">Kotlin</span><span class="he-chip">Compose</span><span class="he-chip">Coroutines</span><span class="he-chip">+10 more</span></div>
     </div>
-
-    <div class="cl-item">
-      <div class="cl-left">
-        <div class="cl-date">Jan 2026</div>
-        <div class="cl-line"></div>
-      </div>
-      <div class="cl-right">
-        <div class="cl-badge added">Added</div>
-        <div class="cl-title">Company-specific question tagging</div>
-        <div class="cl-desc">Questions now tagged by company. Know exactly what Google, Flipkart, Swiggy, PhonePe, CRED, and Zepto ask in their Android interviews — and focus there.</div>
-        <div class="cl-tags">
-          <span class="cl-tag">Google</span>
-          <span class="cl-tag">Flipkart</span>
-          <span class="cl-tag">Swiggy</span>
-          <span class="cl-tag">PhonePe</span>
-        </div>
-      </div>
+    <div class="how-card reveal">
+      <div class="how-num">03</div>
+      <div class="how-icon-wrap"><span class="how-icon">💻</span></div>
+      <div class="how-title">Follow your daily plan</div>
+      <p class="how-desc">Each day gives you a few questions that fit your time. Every answer has working Kotlin code, edge cases and an interview tip. Mark each one "Got it" or "Revisit".</p>
+      <div class="how-example"><span class="he-label">Every answer has</span><span class="he-chip">Code snippet</span><span class="he-chip">Edge cases</span><span class="he-chip">Interview tip</span></div>
     </div>
-
-    <div class="cl-item">
-      <div class="cl-left">
-        <div class="cl-date">Nov 2025</div>
-        <div class="cl-line last"></div>
-      </div>
-      <div class="cl-right">
-        <div class="cl-badge added">Added</div>
-        <div class="cl-title">375+ questions — Kotlin 2.0, Android 15, Compose</div>
-        <div class="cl-desc">Expanded question bank covering Kotlin 2.0 features, Compose stability contracts, Hilt with KSP, Android 15 APIs, and updated Coroutines patterns. Every answer has a code example.</div>
-        <div class="cl-tags">
-          <span class="cl-tag">Kotlin 2.0</span>
-          <span class="cl-tag">Android 15</span>
-          <span class="cl-tag">Compose</span>
-          <span class="cl-tag">Hilt KSP</span>
-        </div>
-      </div>
+    <div class="how-card reveal">
+      <div class="how-num">04</div>
+      <div class="how-icon-wrap"><span class="how-icon">🏗️</span></div>
+      <div class="how-title">Revise, then go deep</div>
+      <p class="how-desc">Questions you marked "Revisit" come back a day later. For senior roles, your plan adds 13 Android system design breakdowns, the round most developers under-prepare for.</p>
+      <div class="how-example"><span class="he-label">Designs include</span><span class="he-chip">Chat App</span><span class="he-chip">Image Loader</span><span class="he-chip">Ride Sharing</span></div>
     </div>
-
   </div>
 </section>
 
@@ -2176,8 +2187,8 @@
   <div class="topics-header">
     <div>
       <div class="section-label">Question Bank</div>
-      <h2>375 questions across<br><span style="color:var(--green)">20+ topics.</span></h2>
-      <p class="section-sub-sm" style="margin-top:10px; max-width:480px;">From Kotlin fundamentals to Android 15 APIs, Jetpack Compose, and architecture — all 375+ Q&amp;A questions are free, forever. Upgrade only if you want System Design deep dives or Mock Interviews.</p>
+      <h2>600 questions across<br><span style="color:var(--green)">13 topics.</span></h2>
+      <p class="section-sub-sm" style="margin-top:10px; max-width:480px;">From Kotlin fundamentals to Android 15 APIs, Jetpack Compose, and architecture — all 600 Q&amp;A questions are free, forever. Upgrade only if you want System Design deep dives or Mock Interviews.</p>
     </div>
     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
       <a href="#" onclick="goToQuestions(''); return false;" class="btn-primary" style="padding:11px 24px; font-size:14px; border-radius:100px; box-shadow:none; margin:0;">Open Question Bank →</a>
@@ -2233,7 +2244,7 @@
       <div class="tc-title">Coroutines & Flow</div>
       <p class="tc-desc">Suspend functions, dispatchers, StateFlow, SharedFlow, channels, and structured concurrency.</p>
       <div class="tc-footer">
-        <span class="tc-count">50 questions</span>
+        <span class="tc-count">125 questions</span>
         <div class="tc-arrow">→</div>
       </div>
     </a>
@@ -2259,7 +2270,7 @@
       <div class="tc-title">Dependency Injection</div>
       <p class="tc-desc">Hilt, Dagger 2, component scopes, multibindings, testing with DI, and KSP migration.</p>
       <div class="tc-footer">
-        <span class="tc-count">75 questions</span>
+        <span class="tc-count">50 questions</span>
         <div class="tc-arrow">→</div>
       </div>
     </a>
@@ -2285,7 +2296,7 @@
       <div class="tc-title">Data Storage</div>
       <p class="tc-desc">Room, DataStore, SharedPreferences, migrations, encrypted storage, and offline strategies.</p>
       <div class="tc-footer">
-        <span class="tc-count">40+ questions</span>
+        <span class="tc-count">50 questions</span>
         <div class="tc-arrow">→</div>
       </div>
     </a>
@@ -2298,7 +2309,7 @@
       <div class="tc-title">Build Tools</div>
       <p class="tc-desc">Gradle, R8, ProGuard, APK vs AAB, build variants, flavors, and APK size reduction.</p>
       <div class="tc-footer">
-        <span class="tc-count">40+ questions</span>
+        <span class="tc-count">50 questions</span>
         <div class="tc-arrow">→</div>
       </div>
     </a>
@@ -2311,7 +2322,7 @@
       <div class="tc-title">Performance</div>
       <p class="tc-desc">Memory leaks, overdraw, ANR, startup time, and profiling with Android Studio tools.</p>
       <div class="tc-footer">
-        <span class="tc-count">40+ questions</span>
+        <span class="tc-count">50 questions</span>
         <div class="tc-arrow">→</div>
       </div>
     </a>
@@ -2324,7 +2335,7 @@
       <div class="tc-title">System Design</div>
       <p class="tc-desc">Design WhatsApp, Instagram, Uber for Android. Offline sync, scalability, architecture decisions.</p>
       <div class="tc-footer">
-        <span class="tc-count">40+ questions</span>
+        <span class="tc-count">13 case studies</span>
         <div class="tc-arrow">→</div>
       </div>
     </a>
@@ -2337,24 +2348,23 @@
       <div class="tc-title">HR &amp; Behavioural</div>
       <p class="tc-desc">STAR method answers, conflict resolution, and leadership stories for Android developer roles.</p>
       <div class="tc-footer">
-        <span class="tc-count">40+ questions</span>
+        <span class="tc-count">25 questions</span>
         <div class="tc-arrow">→</div>
       </div>
     </a>
 
-    <div class="topic-card reveal" style="cursor:default; opacity:0.7; pointer-events:none;">
+    <a href="/mock_interview" class="topic-card reveal">
       <div class="tc-top">
         <div class="tc-icon">🎯</div>
-        <span class="tc-badge" style="background:#e9ecef;color:#6c757d;border-color:#ced4da;">Coming Soon</span>
+        <span class="tc-badge" style="background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">1:1 · Live</span>
       </div>
       <div class="tc-title">Mock Interview</div>
-      <p class="tc-desc">Personal 1:1 session with an Android engineer. Resume-based questions, real feedback, and a written report.</p>
+      <p class="tc-desc">Personal 1:1 session with an Android engineer. Resume-based questions, real feedback, and a written report. Booked separately, not part of Premium.</p>
       <div class="tc-footer">
-        <span class="tc-count">Coming soon</span>
+        <span class="tc-count">₹1,499 / session</span>
         <div class="tc-arrow">→</div>
       </div>
-    </div>
-
+    </a>
     <a href="/machine_coding" class="topic-card reveal">
       <div class="tc-top">
         <div class="tc-icon">⌨️</div>
@@ -2574,6 +2584,7 @@
 
 
   </div>
+  <button type="button" class="concepts-more" onclick="this.previousElementSibling.classList.add('is-open'); this.remove(); gtag('event','concepts_show_all');">Show all 10 guides</button>
 </section>
 
 <!-- EXPLAINER SECTION -->
@@ -2603,132 +2614,17 @@
 </section>
 
 
-<!-- HOW IT WORKS -->
-<section id="how-it-works" class="how-section">
-  <div class="section-label">The Process</div>
-  <div class="how-header">
-    <h2>From scattered prep<br>to <span style="color:var(--green)">interview-ready</span></h2>
-    <p class="section-sub-sm">Most Android devs prepare with YouTube tabs, random blogs, and hope. Droidly gives you a structured path in one place.</p>
-  </div>
-  <div class="how-grid reveal-stagger">
-
-    <div class="how-card reveal">
-      <div class="how-num">01</div>
-      <div class="how-icon-wrap"><span class="how-icon">🗺️</span></div>
-      <div class="how-title">Pick your weak spots</div>
-      <p class="how-desc">14 topics organised by difficulty. Start with Easy, work up to Hard. Every question is tagged by topic, level, and company — so you study what actually matters for your next interview.</p>
-      <div class="how-example">
-        <span class="he-label">Topics include</span>
-        <span class="he-chip">Kotlin</span>
-        <span class="he-chip">Compose</span>
-        <span class="he-chip">Coroutines</span>
-        <span class="he-chip">+11 more</span>
-      </div>
-    </div>
-
-    <div class="how-card reveal">
-      <div class="how-num">02</div>
-      <div class="how-icon-wrap"><span class="how-icon">💻</span></div>
-      <div class="how-title">Study with real Kotlin code</div>
-      <p class="how-desc">Every single answer comes with working Kotlin code, edge cases to watch out for, and a practical interview tip. Not theory. Not pseudocode. The actual pattern your interviewer expects.</p>
-      <div class="how-example">
-        <span class="he-label">Every answer has</span>
-        <span class="he-chip">Code snippet</span>
-        <span class="he-chip">Edge cases</span>
-        <span class="he-chip">Interview tip</span>
-      </div>
-    </div>
-
-    <div class="how-card reveal">
-      <div class="how-num">03</div>
-      <div class="how-icon-wrap"><span class="how-icon">🏗️</span></div>
-      <div class="how-title">Ace system design rounds</div>
-      <p class="how-desc">15+ Android system design breakdowns — the round most devs fail because no one prepares for it. Design a chat app, image loader, or ride-sharing system at the senior engineer level.</p>
-      <div class="how-example">
-        <span class="he-label">Designs include</span>
-        <span class="he-chip">Chat App</span>
-        <span class="he-chip">Image Loader</span>
-        <span class="he-chip">Uber Clone</span>
-      </div>
-    </div>
-
-    <div class="how-card reveal">
-      <div class="how-num">04</div>
-      <div class="how-icon-wrap"><span class="how-icon">🎯</span></div>
-      <div class="how-title">Know your target company</div>
-      <p class="how-desc">Questions tagged by company. Google loves Kotlin internals and Compose. Swiggy digs into performance and offline sync. Flipkart focuses on architecture. You'll know exactly what to focus on.</p>
-      <div class="how-example">
-        <span class="he-label">Companies covered</span>
-        <span class="he-chip">Google</span>
-        <span class="he-chip">Flipkart</span>
-        <span class="he-chip">Swiggy</span>
-        <span class="he-chip">PhonePe</span>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<!-- COMPANIES -->
-<section class="companies-section">
-  <div class="section-label">Real Questions</div>
-  <h2>Asked at India's Top<br>Tech Companies</h2>
-
-  <div class="companies-grid reveal-stagger">
-    <div class="co-card reveal">
-      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=google.com&sz=128" alt="Google" onerror="this.outerHTML='<span class=\'co-fallback\'>G</span>'"/></div>
-      <div class="co-name">Google</div>
-      <div class="co-count">42 questions</div>
-    </div>
-    <div class="co-card reveal">
-      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=flipkart.com&sz=128" alt="Flipkart" onerror="this.outerHTML='<span class=\'co-fallback\'>F</span>'"/></div>
-      <div class="co-name">Flipkart</div>
-      <div class="co-count">38 questions</div>
-    </div>
-    <div class="co-card reveal">
-      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=swiggy.com&sz=128" alt="Swiggy" onerror="this.outerHTML='<span class=\'co-fallback\'>S</span>'"/></div>
-      <div class="co-name">Swiggy</div>
-      <div class="co-count">31 questions</div>
-    </div>
-    <div class="co-card reveal">
-      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=zomato.com&sz=128" alt="Zomato" onerror="this.outerHTML='<span class=\'co-fallback\'>Z</span>'"/></div>
-      <div class="co-name">Zomato</div>
-      <div class="co-count">28 questions</div>
-    </div>
-    <div class="co-card reveal">
-      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=phonepe.com&sz=128" alt="PhonePe" onerror="this.outerHTML='<span class=\'co-fallback\'>Pe</span>'"/></div>
-      <div class="co-name">PhonePe</div>
-      <div class="co-count">22 questions</div>
-    </div>
-    <div class="co-card reveal">
-      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=cred.club&sz=128" alt="CRED" onerror="this.outerHTML='<span class=\'co-fallback\'>C</span>'"/></div>
-      <div class="co-name">CRED</div>
-      <div class="co-count">19 questions</div>
-    </div>
-    <div class="co-card reveal">
-      <div class="co-logo"><img src="https://www.google.com/s2/favicons?domain=meesho.com&sz=128" alt="Meesho" onerror="this.outerHTML='<span class=\'co-fallback\'>M</span>'"/></div>
-      <div class="co-name">Meesho</div>
-      <div class="co-count">18 questions</div>
-    </div>
-    <div class="co-card reveal locked">
-      <div class="co-logo"><span class="co-fallback">🔒</span></div>
-      <div class="co-name">+12 more</div>
-      <div class="co-count">Premium only</div>
-    </div>
-  </div>
-</section>
-
 <!-- PREMIUM PREVIEW -->
 <section class="preview-section">
   <div class="section-label">Premium Preview</div>
-  <h2>See What You're<br>Missing Out On</h2>
+  <h2>A look inside<br>Premium</h2>
 
   <div class="preview-card reveal">
     <div class="preview-top">
       <div class="preview-meta">
         <span class="p-tag topic">🏗️ System Design</span>
         <span class="p-tag hard">Hard</span>
-        <span class="p-tag co">Asked at Google</span>
+        <span class="p-tag co">Senior-level</span>
       </div>
     </div>
     <div class="preview-q">How would you design the WhatsApp messaging architecture for Android — including offline support, message delivery receipts, and media handling?</div>
@@ -2786,7 +2682,7 @@
       <div class="why-icon-wrap">🏗️</div>
       <div class="why-body">
         <div class="why-title">Android System Design — rare</div>
-        <p class="why-desc">Most platforms skip system design for Android. We have 15+ full breakdowns: Image Loader, Chat App, Offline News, Ride Sharing — each with architecture decisions, trade-offs, and 20 Q&As.</p>
+        <p class="why-desc">Most platforms skip system design for Android. We have 13 full breakdowns: Image Loader, Chat App, Offline News, Ride Sharing — each with architecture decisions, trade-offs, and 20 Q&As.</p>
         <div class="why-vs">
           <div class="why-vs-item bad">❌ LeetCode: backend system design only</div>
           <div class="why-vs-item good">✅ Droidly: mobile-first system design</div>
@@ -2826,14 +2722,13 @@
         <div class="cprice">₹299<span>/mo</span></div>
       </div>
     </div>
-    <div class="compare-row"><div class="crow-feat">All 375+ interview Q&amp;As</div><div class="crow-val yes">✅</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-row"><div class="crow-feat">All 600 interview Q&amp;As</div><div class="crow-val yes">✅</div><div class="crow-val yes">✅</div></div>
     <div class="compare-row alt"><div class="crow-feat">Code answers for every question</div><div class="crow-val yes">✅</div><div class="crow-val yes">✅</div></div>
     <div class="compare-row"><div class="crow-feat">HR &amp; Behavioural section</div><div class="crow-val yes">✅</div><div class="crow-val yes">✅</div></div>
-    <div class="compare-row alt"><div class="crow-feat">System Design cases (15+)</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
-    <div class="compare-row"><div class="crow-feat">Mock interview sessions</div><div class="crow-val">❌</div><div class="crow-val yes">✅ Unlimited</div></div>
-    <div class="compare-row alt"><div class="crow-feat">Model answers &amp; eval criteria</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
-    <div class="compare-row"><div class="crow-feat">Company-wise question sets</div><div class="crow-val">❌</div><div class="crow-val yes">✅ 20 companies</div></div>
-    <div class="compare-row alt"><div class="crow-feat">Completion certificate</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-row alt"><div class="crow-feat">System Design case studies (13)</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-row"><div class="crow-feat">Personalised 7-day roadmap</div><div class="crow-val yes">✅</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-row alt"><div class="crow-feat">New content every week</div><div class="crow-val">❌</div><div class="crow-val yes">✅</div></div>
+    <div class="compare-row"><div class="crow-feat">1:1 mock interview (booked separately, ₹1,499/session)</div><div class="crow-val">Add-on</div><div class="crow-val">Add-on</div></div>
     <div class="compare-foot">
       <div></div>
       <div><a href="#" onclick="goToQuestions(''); return false;" class="cfoot-btn cfoot-free">Start Free</a></div>
@@ -2854,12 +2749,12 @@
       <div class="price-amount">₹0<span>/month</span></div>
       <p class="price-desc">Everything you need to prepare — no credit card required</p>
       <ul class="price-feats">
-        <li><span class="chk">✓</span> 375+ interview questions, fully unlocked</li>
+        <li><span class="chk">✓</span> 600 interview questions, fully unlocked</li>
         <li><span class="chk">✓</span> Code answers for every question</li>
-        <li><span class="chk">✓</span> All 20+ Q&amp;A topic categories</li>
+        <li><span class="chk">✓</span> 13 topic categories</li>
         <li><span class="chk">✓</span> HR &amp; Behavioural section</li>
-        <li class="off"><span>✗</span> System Design cases</li>
-        <li class="off"><span>✗</span> Mock interview sessions</li>
+        <li><span class="chk">✓</span> Personalised 7-day roadmap</li>
+        <li class="off"><span>✗</span> System Design case studies</li>
       </ul>
       <a href="#" onclick="goToQuestions(''); return false;" class="price-btn">Start Preparing Free</a>
     </div>
@@ -2870,11 +2765,9 @@
       <p class="price-desc">For the rounds that actually separate good candidates from great ones</p>
       <ul class="price-feats">
         <li><span class="chk">✓</span> Everything in Free</li>
-        <li><span class="chk">✓</span> 15+ System Design case studies</li>
-        <li><span class="chk">✓</span> Unlimited mock interview sessions</li>
-        <li><span class="chk">✓</span> Model answers with evaluation criteria</li>
-        <li><span class="chk">✓</span> Company-wise question sets (20 cos)</li>
-        <li><span class="chk">✓</span> Completion certificate</li>
+        <li><span class="chk">✓</span> 13 System Design case studies</li>
+        <li><span class="chk">✓</span> New content every week</li>
+        <li><span class="chk">✓</span> Cancel anytime</li>
       </ul>
       <a href="/premium" class="price-btn">Get Premium — ₹299/mo</a>
     </div>
@@ -2882,6 +2775,17 @@
 
 </section>
 
+
+<!-- MANIFESTO BAND -->
+<div class="manifesto-band reveal">
+  <div class="manifesto-inner">
+    <div class="manifesto-eyebrow">Why I built Droidly</div>
+    <blockquote class="manifesto-quote">
+      Android interviews in 2026 are deceptively hard. A topic that looks simple on the surface hides layers of nuance underneath — and with AI raising the bar for every candidate, expectations have never been higher. Most platforms treat Android as an afterthought. Generic DSA grind won't get you through a Coroutines deep-dive or an Android system design round. <strong>I built Droidly because Android developers deserve a platform built specifically for them</strong> — structured, in-depth, and focused on exactly what interviewers actually ask.
+    </blockquote>
+    <div class="manifesto-sig">— Vivek Choudhary, Android engineer · Founder, Droidly</div>
+  </div>
+</div>
 
 <!-- CTA BAND -->
 <div class="cta-band">
@@ -2897,13 +2801,93 @@
   <div class="cta-trust">Free account · No credit card needed · Upgrade anytime</div>
 </div>
 
+<!-- WHAT'S NEW -->
+<section id="whats-new" class="whats-new-section reveal">
+  <div class="wn-header">
+    <div>
+      <div class="section-label">Changelog</div>
+      <h2>What's <span style="color:var(--green)">new</span></h2>
+      <p class="section-sub-sm">We ship updates regularly. Here's what's been added recently.</p>
+    </div>
+    <a href="#" onclick="goToQuestions(''); return false;" class="btn-ghost" style="white-space:nowrap; align-self:flex-start; margin-top:8px;">Explore All Content →</a>
+  </div>
+  <div class="cl-list">
+    <div class="cl-item">
+      <div class="cl-left">
+        <div class="cl-date">Oct 2026</div>
+        <div class="cl-line"></div>
+      </div>
+      <div class="cl-right">
+        <div class="cl-badge new">New</div>
+        <div class="cl-title">Personalised interview roadmap</div>
+        <div class="cl-desc">Set your goal, rate your topics and get a day-by-day plan with progress tracking and spaced revision. Mark any question "Got it", "Revisit" or "Save".</div>
+        <div class="cl-tags"><span class="cl-tag">Roadmap</span><span class="cl-tag">Progress</span><span class="cl-tag">Revision</span></div>
+      </div>
+    </div>
+
+    <div class="cl-item">
+      <div class="cl-left">
+        <div class="cl-date">Apr 2026</div>
+        <div class="cl-line"></div>
+      </div>
+      <div class="cl-right">
+        <div class="cl-badge new">New</div>
+        <div class="cl-title">Micro Explainers — 30-second animated concepts</div>
+        <div class="cl-desc">Watch Android concepts come alive: code types in, threads animate, cancellation flows. First up: Coroutines Lifecycle. Recomposition and Flow vs LiveData are now live too.</div>
+        <div class="cl-tags">
+          <span class="cl-tag">Coroutines</span>
+          <span class="cl-tag">Recomposition</span>
+          <span class="cl-tag">Flow</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cl-item">
+      <div class="cl-left">
+        <div class="cl-date">Mar 2026</div>
+        <div class="cl-line"></div>
+      </div>
+      <div class="cl-right">
+        <div class="cl-badge updated">Updated</div>
+        <div class="cl-title">System Design — 13 Android deep-dives</div>
+        <div class="cl-desc">Full breakdowns with architecture decisions, data flow diagrams, Kotlin code snippets, and 20 Q&As each. Covers Chat App, Image Loader, Ride Sharing, File Downloads, Push Notifications, and more.</div>
+        <div class="cl-tags">
+          <span class="cl-tag">Chat App</span>
+          <span class="cl-tag">Image Loader</span>
+          <span class="cl-tag">Ride Sharing</span>
+          <span class="cl-tag">+ 10 more</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cl-item">
+      <div class="cl-left">
+        <div class="cl-date">Nov 2025</div>
+        <div class="cl-line last"></div>
+      </div>
+      <div class="cl-right">
+        <div class="cl-badge added">Added</div>
+        <div class="cl-title">600 questions — Kotlin 2.0, Android 15, Compose</div>
+        <div class="cl-desc">Expanded question bank covering Kotlin 2.0 features, Compose stability contracts, Hilt with KSP, Android 15 APIs, and updated Coroutines patterns. Every answer has a code example.</div>
+        <div class="cl-tags">
+          <span class="cl-tag">Kotlin 2.0</span>
+          <span class="cl-tag">Android 15</span>
+          <span class="cl-tag">Compose</span>
+          <span class="cl-tag">Hilt KSP</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer>
   <a href="/" class="logo">
     <div class="logo-mark"><img src="assets/logo.png" alt="Droidly"/></div>
     Droidly
   </a>
-  <div class="footer-copy">© 2025 Droidly · Built for Android Developers · <a href="mailto:support@droidly.io" style="color:var(--muted); text-decoration:none;">support@droidly.io</a></div>
+  <div class="footer-copy">© 2025–26 Droidly · Built for Android Developers · <a href="mailto:support@droidly.io" style="color:var(--muted); text-decoration:none;">support@droidly.io</a></div>
   <div style="display:flex; gap:20px; flex-wrap:wrap;">
     <a href="/privacy" style="font-size:13px; color:var(--muted); text-decoration:none;">Privacy Policy</a>
     <a href="/terms" style="font-size:13px; color:var(--muted); text-decoration:none;">Terms & Conditions</a>
@@ -3007,18 +2991,6 @@
 
 <!-- Toast -->
 <div class="auth-toast" id="authToast"></div>
-
-<div class="modal-overlay" id="premiumModal" onclick="closePremiumModal(event)">
-  <div class="modal">
-    <button class="modal-x" onclick="document.getElementById('premiumModal').classList.remove('open'); document.body.style.overflow='';">✕</button>
-    <div class="modal-icon">🚀</div>
-    <h3>Premium is Coming Soon!</h3>
-    <p>We're putting the finishing touches on Premium. Drop your email and we'll notify you the moment it launches — with an <strong>early bird 50% discount</strong>.</p>
-    <input class="modal-input" type="email" id="premiumEmail" placeholder="your@email.com"/>
-    <button class="modal-btn" onclick="handlePremiumSignup()">Notify Me &amp; Get 50% Off →</button>
-    <div class="modal-note">🔒 No spam. Unsubscribe anytime.</div>
-  </div>
-</div>
 
 <script>
   /* ═══════════════════════════════════════════════════
@@ -3219,14 +3191,20 @@
   }
 
   // ── View Answer (hero card) ─────────────────────────
+  function showHeroAnswer(scroll) {
+    var a = document.getElementById('hcard-answer'); if (!a) return;
+    a.style.display = 'block';
+    var h = document.getElementById('hcard-hint'); if (h) h.style.display = 'none';
+    var b = document.getElementById('hcardAnswerBtn'); if (b) b.textContent = 'Answer shown';
+    gtag('event', 'hero_answer_revealed');
+    if (scroll) { var c = document.querySelector('.hero-card'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  }
   function handleViewAnswer() {
     db.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        // Logged in — go directly to the parallel API calls question, open it
         window.location.href = '/questions?topic=coroutines#q-coroutines-parallel';
       } else {
-        // Not logged in — open sign in modal
-        openAuthModal('signin');
+        showHeroAnswer(false);
       }
     });
   }
@@ -3309,11 +3287,7 @@
   let currentUser = null;
   function goToQuestions(hash) {
     gtag('event', 'topic_card_click', { topic: hash ? hash.replace('#', '') : 'all' });
-    if (currentUser) {
-      window.location.href = '/questions' + (hash || '');
-    } else {
-      openAuthModal('signin');
-    }
+    window.location.href = '/questions' + (hash || '');
   }
 
   // ── Update nav UI ───────────────────────────────────
@@ -3423,40 +3397,8 @@
   }
 
   function showPremiumModal() {
-    document.getElementById('premiumModal').classList.add('open');
-    document.body.style.overflow = 'hidden';
+    window.location.href = '/premium';
   }
-  function closePremiumModal(e) {
-    if (e.target === document.getElementById('premiumModal')) {
-      document.getElementById('premiumModal').classList.remove('open');
-      document.body.style.overflow = '';
-    }
-  }
-  function handlePremiumSignup() {
-    const email = document.getElementById('premiumEmail').value;
-    const btn = document.querySelector('.modal-btn');
-    if (!email || !email.includes('@')) {
-      document.getElementById('premiumEmail').style.borderColor = '#c0392b';
-      return;
-    }
-    btn.textContent = "✓ You're on the list!";
-    btn.style.background = '#2d6a3f';
-    document.getElementById('premiumEmail').disabled = true;
-    setTimeout(() => {
-      document.getElementById('premiumModal').classList.remove('open');
-      document.body.style.overflow = '';
-      btn.textContent = 'Notify Me & Get 50% Off →';
-      btn.style.background = '';
-      document.getElementById('premiumEmail').disabled = false;
-      document.getElementById('premiumEmail').value = '';
-    }, 2500);
-  }
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      document.getElementById('premiumModal').classList.remove('open');
-      document.body.style.overflow = '';
-    }
-  });
 
   // Animated counters
   const counterObs = new IntersectionObserver(entries => {
@@ -3514,6 +3456,33 @@
       });
     }, { passive: true });
   })();
+</script>
+<script src="/assets/readiness.js" defer></script>
+<script>
+(function () {
+  // Returning users: show where they left off. No question index needed; uses the saved plan only.
+  function paint() {
+    try {
+      var R = window.Readiness; if (!R) return;
+      var s = R.load(), el = document.getElementById('resumeStrip'), cta = document.getElementById('heroPrimaryCta');
+      if (!el || !s.goals) return;
+      var today = R.ymd(new Date()), text = 'Welcome back. Your plan is ready for today';
+      if (s.plan && s.plan.on === today && s.plan.days && s.plan.days[0]) {
+        var tasks = s.plan.days[0].tasks, done = tasks.filter(function (t) { return R.isDone(t, s, s.plan.at); }).length;
+        text = 'Today: ' + done + ' of ' + tasks.length + ' tasks done';
+      }
+      var guest = !s.owner;
+      el.innerHTML = '<span>' + text + (guest ? ' <small style="font-weight:500;color:#6b7280">· Sign in to keep your progress</small>' : '') + '</span><span>Continue →</span>';
+      el.hidden = false;
+      el.onclick = function () { try { gtag('event', 'resume_strip_click'); } catch (e) {} };
+      if (cta) { cta.textContent = 'Continue my plan →'; }
+    } catch (e) { /* never break the homepage */ }
+  }
+  window.addEventListener('load', function () {
+    paint();
+    if (window.Readiness) window.Readiness.sync().then(paint);   // signed-in user on a new device: pull their goal
+  });
+})();
 </script>
 </body>
 </html>
