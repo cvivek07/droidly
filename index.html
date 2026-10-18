@@ -1959,6 +1959,40 @@
 /* hero polish: decorative pills never intercept clicks; keep eyebrow/strip clear of the fixed nav on small screens */
 .hero-float{pointer-events:none}
 
+/* roadmap preview animation (no-JS and reduced-motion users see the final plan) */
+.rp-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.rp-head .rp-tag{margin:0}
+.rp-pause{border:1px solid rgba(15,17,23,.15);background:#fff;color:#374151;border-radius:100px;padding:4px 12px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.rp-steps{display:none;gap:6px;margin-bottom:14px}
+.rp-card.rp-anim .rp-steps{display:flex}
+.rp-steps span{flex:1;font-size:11px;font-weight:700;color:#9ca3af;border-top:3px solid #e5e7eb;padding-top:6px;transition:all .3s}
+.rp-steps span.on{color:#2e6040;border-color:#3d7a4f}
+.rp-stage{display:grid}
+.rp-scene{grid-area:1/1;transition:opacity .35s,transform .35s}
+.rp-card.rp-anim .rp-scene{opacity:0;transform:translateY(8px);pointer-events:none}
+.rp-card.rp-anim .rp-scene.is-on{opacity:1;transform:none}
+.rp-q{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6b7280;margin:12px 0 6px}
+.rp-scene[data-s="1"] .rp-q{margin-top:0}
+.rp-chips{display:flex;flex-wrap:wrap;gap:8px}
+.rp-chip{font-size:13px;font-weight:600;padding:7px 14px;border-radius:100px;border:1.5px solid rgba(15,17,23,.12);color:#374151;transition:all .25s}
+.rp-chip.sel{background:#3d7a4f;border-color:#3d7a4f;color:#fff;transform:scale(1.04)}
+.rp-opts{display:inline-flex;gap:4px}
+.rp-opts b{font-size:11px;font-weight:700;padding:4px 9px;border-radius:100px;border:1px solid rgba(15,17,23,.12);color:#6b7280;transition:all .25s;white-space:nowrap}
+.rp-opts b.sel{color:#fff;border-color:transparent}
+.rp-opts[data-c="strong"] b.sel{background:#3d7a4f}.rp-opts[data-c="needs"] b.sel{background:#b45309}.rp-opts[data-c="weak"] b.sel{background:#b91c1c}
+.rp-more{color:#9ca3af;font-size:13px}
+.rp-card.rp-anim .rp-ring{border-color:#e5e7eb;transition:border-color .6s}
+.rp-card.rp-anim .rp-ring.lit{border-color:#f59e0b}
+.rp-card.rp-anim .rp-scene[data-s="2"] .rp-row,.rp-card.rp-anim .rp-scene[data-s="2"] .rp-task,.rp-card.rp-anim .rp-scene[data-s="2"] .rp-today{opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s}
+.rp-card.rp-anim .rp-scene[data-s="2"] .show{opacity:1;transform:none}
+.rp-task i{transition:all .25s;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-style:normal;line-height:1}
+.rp-task.done i{background:#3d7a4f;border-color:#3d7a4f}
+.rp-task.done i::after{content:"✓"}
+.rp-task.done{color:#6b7280}
+@media (max-width:420px){.rp-opts b{padding:3px 6px;font-size:10px}.rp-card{padding:18px}}
+@media (prefers-reduced-motion:reduce){.rp-scene,.rp-chip,.rp-opts b{transition:none}}
+
+
 /* hero v2: one primary CTA, CTA above stats, clearer type scale */
 .hero-left h1{font-size:clamp(38px,4.3vw,64px);line-height:1.04;letter-spacing:-2.2px;max-width:11.5em}
 .hero-left .hero-sub{font-size:18px;max-width:500px;margin-top:22px}
@@ -1988,6 +2022,311 @@
 }
 
 @media (max-width:860px){.hero-left{padding-top:96px !important}}
+
+/* ===== hero v3: framed gradient canvas, floating nav, product collage ===== */
+:root{--frame-pad:clamp(10px,2vw,30px)}
+.frame{padding:var(--frame-pad);background:linear-gradient(125deg,#1f5a3b 0%,#2f8a5f 36%,#86bd8e 64%,#e2a850 100%)}
+.frame-card{border-radius:clamp(24px,3vw,40px);overflow:hidden;background:radial-gradient(55% 45% at 94% 86%,rgba(226,168,80,.17),transparent 70%),radial-gradient(50% 45% at 4% 0%,rgba(76,175,112,.17),transparent 70%),#f6faf5}
+
+nav{top:calc(var(--frame-pad) + 14px);left:50%;right:auto;transform:translateX(-50%);width:min(1360px,calc(100% - 2*var(--frame-pad) - 28px));height:64px;padding:0 12px 0 20px;border-radius:20px;border:1px solid rgba(15,17,23,.06);background:rgba(255,255,255,.88);box-shadow:0 10px 30px rgba(20,50,35,.10)}
+nav::before{display:none}
+nav .nav-link{color:#14171f;font-weight:600;font-size:14.5px}
+nav .nav-link:hover{color:#2e6040;background:rgba(61,122,79,.08)}
+
+.hero3{min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;padding:0 !important}
+.hero3 .hero-left{padding:182px 24px 48px clamp(28px,4.6vw,76px);border:0;background:none}
+.hero3 .hero-left::before{display:none}
+.hero3 .hero-right{background:none;display:block;min-height:0;overflow:visible;padding:116px clamp(16px,3vw,48px) 40px 0}
+.hero3 .hero-right::before,.hero3 .hero-right::after{display:none}
+.hero3 h1{font-size:clamp(40px,4.7vw,70px);line-height:1.02;letter-spacing:-.045em;max-width:11.2em}
+.grad{background:linear-gradient(100deg,#2e6040 0%,#3f9a6c 48%,#d08a2e 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.hero3 .hero-sub{max-width:520px}
+.hero3 .hero-ctas{margin-top:34px}
+.btn-grad{display:inline-flex;align-items:center;gap:14px;padding:9px 30px 9px 9px;border-radius:20px;font-weight:700;font-size:18px;letter-spacing:-.01em;color:#fff;text-decoration:none;background:linear-gradient(100deg,#2e6040 0%,#3f9a6c 62%,#cf8a30 100%);box-shadow:0 0 0 4px rgba(61,122,79,.14),0 16px 36px rgba(46,96,64,.30);transition:transform .2s,box-shadow .2s}
+.btn-grad:hover{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(61,122,79,.18),0 20px 42px rgba(46,96,64,.36)}
+.btn-grad .ico{width:42px;height:42px;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);display:grid;place-items:center;font-size:18px;transition:transform .2s}
+.btn-grad:hover .ico{transform:translateX(3px)}
+.hero3 .hero-proof{border-color:rgba(15,17,23,.07)}
+
+/* collage */
+.collage{position:relative;width:620px;min-height:700px;padding-top:232px;max-width:100%;margin:0 auto}
+.collage .co-line{position:absolute;left:0;top:0;width:620px;height:700px;z-index:1;pointer-events:none;overflow:visible}
+.collage .co-node{position:absolute;left:100px;top:300px;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#3d7a4f,#d08a2e);color:#fff;font-size:12px;display:grid;place-items:center;z-index:3;box-shadow:0 0 0 5px rgba(255,255,255,.85)}
+.co-tile{position:absolute;width:128px;height:128px;border-radius:22px;padding:12px;display:flex;flex-direction:column;justify-content:flex-end;color:#fff;box-shadow:0 14px 30px rgba(20,50,35,.18);overflow:hidden;z-index:2;animation:coFloat 6s ease-in-out infinite}
+.co-tile b{font-size:13px;line-height:1.2;font-weight:700}
+.co-tile small{font-size:11px;opacity:.85;margin-top:2px}
+.co-mono{position:absolute;top:8px;left:12px;font:800 44px/1 'Plus Jakarta Sans',sans-serif;opacity:.3;letter-spacing:-.05em}
+.co-tile.t-a{left:0;top:62px;background:linear-gradient(150deg,#3d7a4f,#2e6040)}
+.co-tile.t-c{right:0;top:96px;background:linear-gradient(150deg,#d9983a,#b4691a);animation-delay:-2s}
+.co-tile.t-b{left:6px;top:500px;background:linear-gradient(150deg,#3a8f8a,#25675f);animation-delay:-4s}
+.co-tile.t-d{right:0;top:536px;background:linear-gradient(150deg,#2e3a52,#1a2233);animation-delay:-1s}
+@keyframes coFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.co-badge{position:absolute;left:372px;top:-16px;z-index:5;display:inline-flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:9px 14px;font-size:12px;font-weight:700;color:#14171f;box-shadow:0 10px 26px rgba(20,50,35,.14);white-space:nowrap}
+.co-tick{width:18px;height:18px;border-radius:50%;background:#3d7a4f;color:#fff;font-size:11px;display:grid;place-items:center}
+.plan-card{position:absolute;left:150px;top:0;width:320px;height:232px;border-radius:26px;background:#0c0f14;color:#fff;padding:18px 20px 0;z-index:2;box-shadow:0 24px 50px rgba(10,20,15,.24);overflow:hidden}
+.pc-top{display:flex;justify-content:space-between;align-items:flex-start}
+.pc-title{font:700 20px/1.2 'Plus Jakarta Sans',sans-serif}
+.pc-sub{font-size:12px;color:rgba(255,255,255,.62);margin-top:4px}
+.pc-dots{color:rgba(255,255,255,.6);letter-spacing:2px}
+.pc-bars{display:flex;align-items:flex-end;gap:8px;height:64px;margin-top:14px}
+.pc-bars i{flex:1;height:var(--h);border-radius:5px;background:rgba(255,255,255,.26);transform-origin:bottom;animation:pcGrow .9s cubic-bezier(.2,.8,.2,1) both}
+.pc-bars i:nth-child(2){animation-delay:.06s}.pc-bars i:nth-child(3){animation-delay:.12s}.pc-bars i:nth-child(4){animation-delay:.18s}.pc-bars i:nth-child(5){animation-delay:.24s}.pc-bars i:nth-child(6){animation-delay:.3s}.pc-bars i:nth-child(7){animation-delay:.36s}
+.pc-bars i.cur{background:linear-gradient(180deg,#e2a850,#3f9a6c)}
+@keyframes pcGrow{from{transform:scaleY(.08);opacity:0}to{transform:none;opacity:1}}
+.pc-days{display:flex;gap:8px;font-size:10px;color:rgba(255,255,255,.45);margin-top:6px}
+.pc-days span{flex:1;text-align:center}
+.pc-foot{position:absolute;left:0;right:0;bottom:0;height:50px;background:#fff;color:#14171f;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-size:13px;font-weight:600;border-radius:0 0 26px 26px}
+.pc-spark{font-size:12px;font-weight:700;background:linear-gradient(90deg,#3d7a4f,#d08a2e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.collage .hcard-code{font-size:12px}
+.collage .hero-card{position:relative;left:auto;top:auto;margin:-14px 0 0 140px;width:340px;max-width:none;z-index:4;box-shadow:0 26px 60px rgba(20,50,35,.18),0 0 0 1px rgba(15,17,23,.05)}
+.collage .hero-card:hover{box-shadow:0 30px 70px rgba(20,50,35,.22),0 0 0 1px rgba(15,17,23,.06)}
+
+/* strip + topic row */
+.frame-strip{display:flex;justify-content:center;align-items:center;gap:8px 20px;flex-wrap:wrap;background:#fff;padding:24px 20px;font-size:16px;color:#14171f;text-align:center}
+.frame-strip a{display:inline-flex;align-items:center;gap:10px;color:#2e6040;font-weight:700;text-decoration:none}
+.frame-strip .ico{width:26px;height:26px;border:1.5px solid currentColor;border-radius:50%;display:grid;place-items:center;font-size:13px}
+.frame-topics{list-style:none;margin:0;background:#fff;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px 28px;padding:14px clamp(20px,5vw,76px) 44px}
+.frame-topics li{font:800 clamp(16px,1.7vw,24px)/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.03em;color:#171a21;white-space:nowrap}
+
+@media (max-width:1100px){
+  .hero3{grid-template-columns:1fr}
+  .hero3 .hero-left{padding:124px 24px 8px}
+  .hero3 h1{max-width:none}
+  .hero3 .hero-right{padding:24px 20px 40px}
+  .collage{width:100%;min-height:0;padding-top:0;display:flex;flex-direction:column;align-items:center}
+  .collage .co-line,.collage .co-node,.co-tile,.co-badge{display:none}
+  .collage .plan-card,.collage .hero-card{position:relative;left:auto;top:auto;width:100%;max-width:420px}
+  .collage .plan-card{height:232px}
+  .collage .hero-card{margin:-14px 0 0}
+  .frame-topics{justify-content:center}
+}
+@media (max-width:560px){
+  .hero3 .hero-left{padding:104px 20px 4px}
+  .hero3 h1{font-size:36px;letter-spacing:-.04em}
+  .btn-grad{width:100%;font-size:17px}
+  .hero3 .hero-right{padding:20px 14px 32px}
+  nav{width:calc(100% - 2*var(--frame-pad) - 16px);height:58px;top:calc(var(--frame-pad) + 8px);padding:0 8px 0 14px}
+  .frame-topics{gap:12px 20px}
+}
+@media (prefers-reduced-motion:reduce){.co-tile{animation:none}.pc-bars i{animation:none}}
+
+/* ===== full-page pass: one CTA, rounded colourful panels, colourful cards ===== */
+:root{
+  --a1:#3d7a4f;--b1:#5cc07f; --a2:#1f8a99;--b2:#4cc4d3; --a3:#d9902f;--b3:#f3c45f;
+  --a4:#e0583f;--b4:#f59372; --a5:#5566d9;--b5:#8f98f4; --a6:#9150d8;--b6:#c58ff2;
+  --ink-deep:#0c0f14;
+}
+body{background:#fff}
+
+/* single CTA */
+.btn-grad{display:inline-flex;align-items:center;gap:14px;padding:9px 30px 9px 9px;border-radius:20px;font-weight:700;font-size:18px;letter-spacing:-.01em;color:#fff !important;text-decoration:none;background:linear-gradient(100deg,#2e6040 0%,#3f9a6c 62%,#cf8a30 100%);box-shadow:0 0 0 4px rgba(61,122,79,.14),0 16px 36px rgba(46,96,64,.30);transition:transform .2s,box-shadow .2s;cursor:pointer;border:0;font-family:inherit}
+.btn-grad.block{display:flex;width:100%;justify-content:center;padding-right:24px}
+.btn-line{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 28px;border-radius:20px;font-weight:700;font-size:16px;color:#14171f;text-decoration:none;background:#fff;border:1.5px solid rgba(15,17,23,.16);transition:all .2s;font-family:inherit}
+.btn-line.block{display:flex;width:100%}
+.btn-line:hover{border-color:#3d7a4f;color:#2e6040;transform:translateY(-2px)}
+.btn-nav{background:linear-gradient(100deg,#2e6040,#3f9a6c 65%,#cf8a30) !important;color:#fff !important;box-shadow:0 8px 20px rgba(46,96,64,.25)}
+.hcard-btn.fill{background:linear-gradient(100deg,#2e6040,#3f9a6c 70%,#cf8a30) !important;border-color:transparent !important}
+.auth-submit{background:linear-gradient(100deg,#2e6040,#3f9a6c 65%,#cf8a30) !important;border-color:transparent !important}
+
+/* panels */
+section.rp-section,section.how-section,section.showcase-section,section.topics-section,section.concepts-section,section.explainer-section,section.preview-section,section.why-section,section.compare-section,section.pricing-section,section.whats-new-section{
+  margin:var(--frame-pad);border:0 !important;border-radius:clamp(24px,3vw,40px);padding:clamp(56px,7vw,96px) clamp(18px,4.5vw,72px);overflow:hidden}
+section.rp-section{background:linear-gradient(135deg,#e4f6ec 0%,#e1f0f9 100%)}
+section.how-section{background:linear-gradient(135deg,#fff5e2 0%,#ffe8e1 100%)}
+section.showcase-section{background:linear-gradient(135deg,#2a2a78 0%,#1e6d8c 55%,#2c8a5e 100%);color:#fff}
+section.topics-section{background:linear-gradient(180deg,#f2faf5 0%,#ffffff 60%);box-shadow:inset 0 0 0 1px rgba(15,17,23,.06)}
+section.concepts-section{background:linear-gradient(135deg,#ecebff 0%,#e3f0ff 100%)}
+section.explainer-section{background:linear-gradient(135deg,#e8f8ef 0%,#e3f5f6 100%)}
+section.preview-section{background:linear-gradient(135deg,#fff0d2 0%,#ffe1da 100%)}
+section.why-section{background:linear-gradient(135deg,#e2f3f6 0%,#ebe6ff 100%)}
+section.compare-section{background:#fff;box-shadow:inset 0 0 0 1px rgba(15,17,23,.06)}
+section.pricing-section{background:linear-gradient(135deg,#e3f5e9 0%,#fff0d1 100%)}
+section.whats-new-section{background:#fff;box-shadow:inset 0 0 0 1px rgba(15,17,23,.06)}
+.section-label{color:#2e6040;font-size:11px}
+.section-label::after{background:linear-gradient(90deg,#3d7a4f,transparent);max-width:56px}
+h2{font-size:clamp(30px,3.9vw,54px);letter-spacing:-.04em;line-height:1.04}
+h2 span[style*="--green"]{background:linear-gradient(100deg,#2e6040 0%,#3f9a6c 50%,#d08a2e 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent !important}
+.section-sub-sm{color:#4b5563}
+
+/* how it works cards */
+.how-card{border:0;border-radius:24px;padding:28px 24px 26px;position:relative;overflow:hidden;background:#fff;box-shadow:0 10px 30px rgba(30,40,60,.08)}
+.how-card::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,var(--a),var(--b))}
+.how-grid>.how-card:nth-child(1){--a:var(--a1);--b:var(--b1)}.how-grid>.how-card:nth-child(2){--a:var(--a5);--b:var(--b5)}.how-grid>.how-card:nth-child(3){--a:var(--a3);--b:var(--b3)}.how-grid>.how-card:nth-child(4){--a:var(--a4);--b:var(--b4)}
+.how-card:hover{border-color:transparent;box-shadow:0 18px 44px color-mix(in srgb,var(--a) 26%,transparent)}
+.how-num{font-size:40px;font-weight:800;letter-spacing:-.04em;opacity:1;background:linear-gradient(135deg,var(--a),var(--b));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1;margin-bottom:14px}
+.how-icon-wrap{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:28px;background:color-mix(in srgb,var(--a) 13%,#fff);margin-bottom:16px}
+.he-chip{background:color-mix(in srgb,var(--a) 12%,#fff) !important;color:color-mix(in srgb,var(--a) 82%,#000) !important;border:0 !important}
+
+/* showcase */
+.showcase-section .section-label,.showcase-section .section-label::after{color:#bfe9d0}
+.showcase-section h2{color:#fff}
+.showcase-section h2 span{background:linear-gradient(100deg,#f3c45f,#8ee0b0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.showcase-section .section-sub-sm{color:rgba(255,255,255,.78);max-width:560px;margin-top:12px}
+.sc-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:26px;margin-top:40px;align-items:start}
+.sc-fig{margin:0;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:22px;padding:12px;backdrop-filter:blur(6px)}
+.sc-browser{display:flex;align-items:center;gap:6px;padding:4px 8px 10px;font-size:12px;color:rgba(255,255,255,.7)}
+.sc-browser i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.35)}
+.sc-browser span{margin-left:10px;background:rgba(255,255,255,.14);border-radius:100px;padding:3px 14px}
+.sc-fig img{display:block;width:100%;height:auto;border-radius:14px;background:#fff}
+.sc-crop{position:relative;border-radius:14px;overflow:hidden;max-height:420px}
+.sc-crop::after{content:"";position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(transparent,rgba(255,255,255,.95))}
+.sc-crop img{border-radius:0}
+.sc-fig figcaption{padding:14px 8px 6px;font-size:14px;color:rgba(255,255,255,.8);line-height:1.5}
+.sc-fig figcaption b{display:block;color:#fff;font-size:16px;margin-bottom:2px}
+.sc-note{margin-top:18px;font-size:12px;color:rgba(255,255,255,.6)}
+
+/* topic cards */
+.topics-grid>.topic-card{--a:var(--a1);--b:var(--b1)}
+.topics-grid>.topic-card:nth-child(6n+2){--a:var(--a5);--b:var(--b5)}.topics-grid>.topic-card:nth-child(6n+3){--a:var(--a3);--b:var(--b3)}.topics-grid>.topic-card:nth-child(6n+4){--a:var(--a2);--b:var(--b2)}.topics-grid>.topic-card:nth-child(6n+5){--a:var(--a4);--b:var(--b4)}.topics-grid>.topic-card:nth-child(6n+6){--a:var(--a6);--b:var(--b6)}
+.topic-card{border:0 !important;border-radius:24px;padding:26px 24px;background:#fff;box-shadow:0 8px 26px rgba(30,40,60,.08);overflow:hidden}
+.topic-card::before{content:"";position:absolute;left:0;top:0;right:0;height:5px !important;opacity:1 !important;background:linear-gradient(90deg,var(--a),var(--b)) !important}
+.tc-icon{border:0 !important}
+.topic-card::after{content:"";position:absolute;right:-40px;top:-40px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--b) 28%,transparent),transparent 70%);pointer-events:none}
+.topic-card:hover{background:#fff !important;box-shadow:0 20px 46px color-mix(in srgb,var(--a) 28%,transparent);transform:translateY(-4px)}
+.tc-icon{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;font-size:28px;background:linear-gradient(135deg,color-mix(in srgb,var(--a) 14%,#fff),color-mix(in srgb,var(--b) 22%,#fff))}
+.tc-count{color:color-mix(in srgb,var(--a) 85%,#000);background:color-mix(in srgb,var(--a) 11%,#fff);padding:4px 10px;border-radius:100px}
+.tc-arrow{border-radius:50%;background:color-mix(in srgb,var(--a) 12%,#fff);color:var(--a)}
+.topic-card:hover .tc-arrow{background:linear-gradient(135deg,var(--a),var(--b)) !important;color:#fff}
+
+/* concept cards */
+.concepts-grid>.concept-card{--a:var(--a5);--b:var(--b5)}
+.concepts-grid>.concept-card:nth-child(5n+2){--a:var(--a1);--b:var(--b1)}.concepts-grid>.concept-card:nth-child(5n+3){--a:var(--a3);--b:var(--b3)}.concepts-grid>.concept-card:nth-child(5n+4){--a:var(--a2);--b:var(--b2)}.concepts-grid>.concept-card:nth-child(5n+5){--a:var(--a4);--b:var(--b4)}
+.concept-card{border:0 !important;border-radius:24px;background:#fff;box-shadow:0 8px 26px rgba(40,40,100,.09);overflow:hidden}
+.concept-card::before{opacity:1 !important;height:6px !important;background:linear-gradient(90deg,var(--a),var(--b)) !important}
+.concept-card:hover{box-shadow:0 20px 46px color-mix(in srgb,var(--a) 28%,transparent);border-color:transparent}
+.cc-icon{width:50px;height:50px;border-radius:15px;display:grid;place-items:center;font-size:26px !important;background:linear-gradient(135deg,color-mix(in srgb,var(--a) 14%,#fff),color-mix(in srgb,var(--b) 24%,#fff))}
+.cc-tag{background:color-mix(in srgb,var(--a) 11%,#fff) !important;color:color-mix(in srgb,var(--a) 85%,#000) !important;border-radius:100px !important;padding:3px 10px !important}
+.cc-arrow{color:var(--a) !important}
+
+/* why cards */
+.why-grid>.why-card{--a:var(--a2);--b:var(--b2)}
+.why-grid>.why-card:nth-child(2){--a:var(--a6);--b:var(--b6)}.why-grid>.why-card:nth-child(3){--a:var(--a3);--b:var(--b3)}.why-grid>.why-card:nth-child(4){--a:var(--a1);--b:var(--b1)}
+.why-card{border:0 !important;border-radius:24px;background:#fff;box-shadow:0 8px 26px rgba(40,40,100,.08);position:relative;overflow:hidden}
+.why-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:linear-gradient(180deg,var(--a),var(--b))}
+.why-card:hover{box-shadow:0 20px 46px color-mix(in srgb,var(--a) 26%,transparent);border-color:transparent}
+.why-icon-wrap{background:linear-gradient(135deg,color-mix(in srgb,var(--a) 15%,#fff),color-mix(in srgb,var(--b) 26%,#fff)) !important;border:0 !important;border-radius:16px !important}
+.why-vs-item{border-radius:10px !important;padding:7px 12px !important}
+
+/* premium preview */
+.preview-card{border:0 !important;border-radius:26px;box-shadow:0 24px 60px rgba(150,70,40,.18);max-width:820px}
+.p-tag.topic{background:#fff0d6 !important;color:#a8600f !important}
+.p-tag.co{background:#e8e8ff !important;color:#4350b8 !important}
+.lock-title{background:linear-gradient(100deg,#2e6040,#d08a2e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+/* explainer */
+.explainer-frame-wrap{border-radius:26px !important;box-shadow:0 22px 56px rgba(30,100,90,.18)}
+.expl-nav-btn.active{background:linear-gradient(100deg,#2e6040,#3f9a6c) !important;border-color:transparent !important;color:#fff !important}
+
+/* compare + pricing */
+.compare-wrap{border:0 !important;border-radius:26px;box-shadow:0 18px 50px rgba(30,40,60,.12);overflow:hidden}
+.chead-cell.premium-col{background:linear-gradient(135deg,#2e6040,#3f9a6c 60%,#cf8a30) !important}
+.chead-cell.free-col{background:#f0f8f3}
+.crow-val.yes{background:rgba(61,122,79,.07) !important}
+.compare-foot{background:#faf9f5;gap:14px;padding:18px 16px;align-items:center}
+.price-card{border:0 !important;border-radius:28px !important;box-shadow:0 14px 44px rgba(30,40,60,.10);background:#fff}
+.price-card.featured{background:linear-gradient(150deg,#12301f 0%,#0c0f14 58%,#2a1d46 100%) !important;box-shadow:0 26px 70px rgba(20,40,70,.35)}
+.price-card.featured::before{height:5px !important;background:linear-gradient(90deg,#3f9a6c,#f3c45f,#c58ff2) !important}
+.price-plan{color:#2e6040}
+.price-card.featured .price-plan{color:#f3c45f !important}
+.price-feats li .chk{color:#3d7a4f}
+
+/* manifesto, CTA band, footer */
+.manifesto-band{margin:var(--frame-pad);border:0;border-radius:clamp(24px,3vw,40px);background:linear-gradient(135deg,#f1ecff 0%,#e5f3ff 55%,#e3f6ea 100%);padding:clamp(44px,6vw,80px) clamp(18px,4.5vw,72px)}
+.manifesto-quote{border-left:0;padding-left:0;font-size:clamp(17px,1.9vw,22px)}
+.manifesto-sig{padding-left:0;display:flex;align-items:center;gap:14px;font-size:14px;color:#4b5563;line-height:1.35}
+.manifesto-sig b{color:#14171f;font-size:16px}
+.ms-av{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font:800 17px 'Plus Jakarta Sans',sans-serif;color:#fff;background:linear-gradient(135deg,#3d7a4f,#cf8a30);flex:none}
+.cta-band{margin:var(--frame-pad);border-radius:clamp(24px,3vw,40px);background:radial-gradient(60% 80% at 15% 110%,rgba(61,122,79,.55),transparent 65%),radial-gradient(50% 70% at 90% -10%,rgba(145,80,216,.45),transparent 60%),radial-gradient(40% 60% at 85% 100%,rgba(217,144,47,.4),transparent 60%),#0c0f14;padding:clamp(60px,8vw,110px) 24px}
+.cta-band .btn-grad{box-shadow:0 0 0 4px rgba(255,255,255,.16),0 18px 44px rgba(0,0,0,.4)}
+footer{margin:0 var(--frame-pad) var(--frame-pad);border-top:0;border-radius:28px;background:#f4f7f4;padding:28px clamp(18px,4vw,48px)}
+
+/* changelog accents */
+.cl-badge.new{background:linear-gradient(100deg,#3d7a4f,#cf8a30)}
+
+@media (max-width:900px){
+  .sc-grid{grid-template-columns:1fr}
+  .sc-crop{max-height:340px}
+}
+@media (max-width:560px){
+  .btn-grad,.btn-line{font-size:16px}
+  .btn-grad{width:100%}
+  .btn-grad:not(.block){padding-right:20px}
+  .btn-line{width:100%}
+  .compare-foot{grid-template-columns:1fr}
+}
+
+/* premium preview layout */
+section.preview-section{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);column-gap:clamp(28px,4vw,64px);align-items:start;align-content:center}
+section.preview-section>.section-label,section.preview-section>h2,section.preview-section>.pv-sub{grid-column:1}
+section.preview-section>.pv-sub{margin-top:14px;max-width:420px}
+section.preview-section>.preview-card{grid-column:2;grid-row:1 / span 4;margin-top:0;max-width:none}
+.preview-answer{min-height:290px}
+@media (max-width:900px){section.preview-section{display:block}section.preview-section>.preview-card{margin-top:32px}}
+
+/* compare + pricing layout */
+section.compare-section{display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr);column-gap:clamp(28px,4vw,64px);align-items:start;align-content:center}
+section.compare-section>.section-label,section.compare-section>h2,section.compare-section>.pv-sub{grid-column:1}
+section.compare-section>.pv-sub{margin-top:14px;max-width:380px}
+section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-top:0;max-width:none;width:100%}
+.compare-head,.compare-row,.compare-foot{grid-template-columns:minmax(0,1fr) 120px 220px !important}
+.compare-foot .btn-grad,.compare-foot .btn-line{white-space:nowrap;padding-left:8px;font-size:15px}
+.compare-foot .btn-grad .ico{width:34px;height:34px}
+.compare-foot .btn-line{padding:12px 16px}
+.pricing-grid{max-width:none !important}
+@media (max-width:900px){
+  section.compare-section{display:block}
+  section.compare-section>.compare-wrap{margin-top:32px}
+  .compare-head,.compare-row,.compare-foot{grid-template-columns:minmax(0,1fr) 80px 120px !important}
+  .compare-foot .btn-grad{padding-right:12px;font-size:14px;gap:8px}
+  .compare-foot .btn-grad .ico{display:none}
+}
+
+.cta-orb{display:none !important}
+.manifesto-inner{background:none !important}
+
+.rp-inner{max-width:none !important}
+
+/* question-bank cards with background images */
+.topics-grid>.topic-card{min-height:300px;color:#fff;isolation:isolate;background:#16202a !important;box-shadow:0 12px 32px rgba(20,30,50,.18)}
+.topics-grid>.topic-card::before{content:"";position:absolute;inset:0;height:auto !important;opacity:1 !important;background:var(--img) center/cover no-repeat !important;transform:scale(1.001);transition:transform .8s cubic-bezier(.2,.7,.2,1);z-index:0}
+.topics-grid>.topic-card::after{content:"";position:absolute;inset:0;left:0;top:0;right:0;width:auto;height:auto;border-radius:0;background:linear-gradient(180deg,rgba(6,10,18,.02) 0%,rgba(6,10,18,.14) 26%,rgba(6,10,18,.74) 52%,rgba(6,10,18,.92) 100%);z-index:1;pointer-events:none;transition:opacity .3s}
+.topics-grid>.topic-card:hover{background:#16202a !important;box-shadow:0 24px 54px rgba(20,30,50,.30);transform:translateY(-5px)}
+.topics-grid>.topic-card:hover::before{transform:scale(1.08)}
+.topics-grid>.topic-card>*{position:relative;z-index:2}
+.topics-grid .tc-top{margin-bottom:auto;padding-bottom:56px}
+.topics-grid .tc-icon{background:rgba(255,255,255,.2) !important;border:1px solid rgba(255,255,255,.38) !important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.topics-grid .tc-title{color:#fff;font-size:20px;letter-spacing:-.02em;text-shadow:0 1px 12px rgba(0,0,0,.25)}
+.topics-grid .tc-desc{color:rgba(255,255,255,.88);flex:none;margin-bottom:16px}
+.topics-grid .tc-count{background:rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.topics-grid .tc-arrow{background:rgba(255,255,255,.22);color:#fff}
+.topics-grid>.topic-card:hover .tc-arrow{background:#fff !important;color:#14171f}
+.topics-grid .tc-badge{background:rgba(255,255,255,.92) !important;color:#14171f !important;border:0 !important;font-weight:800}
+@media (max-width:640px){
+  .topics-grid>.topic-card{min-height:200px;padding:18px 16px}
+  .topics-grid .tc-top{padding-bottom:28px}
+  .topics-grid .tc-title{font-size:16px}
+  .topics-grid .tc-count{white-space:nowrap;font-size:11px;padding:4px 9px}
+}
+
+/* question bank cards: no corner icon */
+.topics-grid .tc-icon{display:none !important}
+.topics-grid .tc-top{justify-content:flex-end;padding-bottom:0}
+.topics-grid>.topic-card{min-height:270px}
+@media (max-width:640px){.topics-grid>.topic-card{min-height:190px}}
+/* Question bank cards — Option B: cover image on top, white body, no icon */
+.topics-grid>.topic-card{min-height:0;padding:164px 20px 20px;color:#14171f;background:#fff !important;box-shadow:0 10px 30px rgba(30,40,60,.10);isolation:isolate}
+.topics-grid>.topic-card::before{content:"";position:absolute;left:0;right:0;top:0;bottom:auto;inset:0 0 auto 0;height:140px !important;opacity:1 !important;background:var(--img) center/cover no-repeat !important;transform:none;z-index:0;transition:filter .3s}
+.topics-grid>.topic-card::after{display:none !important}
+.topics-grid>.topic-card:hover{background:#fff !important;box-shadow:0 22px 48px color-mix(in srgb,var(--a) 26%,transparent);transform:translateY(-4px)}
+.topics-grid>.topic-card:hover::before{transform:none;filter:saturate(1.15) brightness(1.04)}
+.topics-grid .tc-top{position:absolute;right:14px;top:14px;margin:0;padding:0;z-index:3}
+.topics-grid .tc-title{color:#14171f;text-shadow:none;font-size:19px}
+.topics-grid .tc-desc{color:var(--muted);flex:1;margin:6px 0 16px}
+.topics-grid .tc-footer{margin-top:auto}
+.topics-grid .tc-count{background:color-mix(in srgb,var(--a) 11%,#fff);color:color-mix(in srgb,var(--a) 85%,#000);backdrop-filter:none;-webkit-backdrop-filter:none}
+.topics-grid .tc-arrow{background:color-mix(in srgb,var(--a) 12%,#fff);color:var(--a)}
+.topics-grid>.topic-card:hover .tc-arrow{background:linear-gradient(135deg,var(--a),var(--b)) !important;color:#fff}
+@media (max-width:640px){.topics-grid>.topic-card{min-height:0;padding:112px 14px 14px}.topics-grid>.topic-card::before{height:96px !important}.topics-grid .tc-title{font-size:15px}.topics-grid .tc-top{right:8px;top:8px}}
 </style>
 </head>
 <body>
@@ -2025,16 +2364,17 @@
   </div>
 </nav>
 
-<!-- HERO -->
-<section class="hero" style="padding: 0;">
+<!-- HERO (framed) -->
+<div class="frame">
+<div class="frame-card">
+<section class="hero hero3" style="padding:0;">
 
-  <!-- Left -->
   <div class="hero-left">
     <a id="resumeStrip" class="resume-strip" href="/roadmap" hidden></a>
-    <div class="eyebrow fade-1" style="margin-top: 0;">Android interview prep · free to start</div>
+    <div class="eyebrow fade-1" style="margin-top:0;">Android interview prep · free to start</div>
 
     <h1 class="fade-3">
-      Know exactly what to study before your <span class="accent">Android interview.</span>
+      <span class="grad">Know exactly what to study</span> before your Android interview.
     </h1>
 
     <p class="hero-sub fade-4">
@@ -2042,8 +2382,8 @@
     </p>
 
     <div class="hero-ctas fade-5">
-      <a href="/roadmap" id="heroPrimaryCta" onclick="gtag('event','hero_cta_roadmap')" class="btn-primary btn-hero">
-        Build my free plan <span aria-hidden="true">→</span>
+      <a href="/roadmap" id="heroPrimaryCta" onclick="gtag('event','hero_cta_roadmap')" class="btn-grad">
+        <span class="ico" aria-hidden="true">→</span><span class="lbl">Build my free plan</span>
       </a>
     </div>
     <ul class="hero-ticks fade-5" aria-label="What to expect">
@@ -2059,20 +2399,36 @@
       <div class="hero-proof-div"></div>
       <div class="hero-proof-item"><span class="hero-proof-num">13</span><span class="hero-proof-label">System Designs</span></div>
     </div>
-
   </div>
 
-  <!-- Right (green panel) -->
   <div class="hero-right">
-    <div class="hero-right-grid"></div>
+    <div class="collage">
+      <svg class="co-line" viewBox="0 0 620 700" aria-hidden="true">
+        <defs><linearGradient id="coG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d08a2e"/><stop offset="1" stop-color="#3d7a4f"/></linearGradient></defs>
+        <path d="M64 190 C 60 262 98 280 112 312" fill="none" stroke="url(#coG)" stroke-width="1.5"/>
+        <path d="M120 322 C 128 334 134 340 140 346" fill="none" stroke="#3d7a4f" stroke-width="1.5" stroke-dasharray="3 4" opacity=".6"/>
+      </svg>
+      <div class="co-node" aria-hidden="true">✦</div>
 
-    <!-- Floating topic pills -->
-    <div class="hero-float hf-1"><div class="hero-float-dot"></div>Coroutines &amp; Flow</div>
-    <div class="hero-float hf-2"><div class="hero-float-dot"></div>Jetpack Compose</div>
-    <div class="hero-float hf-3"><div class="hero-float-dot"></div>System Design</div>
+      <div class="co-tile t-a"><span class="co-mono">Kt</span><b>Kotlin</b><small>50 questions</small></div>
+      <div class="co-tile t-c"><span class="co-mono">Fl</span><b>Coroutines &amp; Flow</b><small>125 questions</small></div>
+      <div class="co-tile t-b"><span class="co-mono">Jc</span><b>Jetpack Compose</b><small>50 questions</small></div>
+      <div class="co-tile t-d"><span class="co-mono">Sd</span><b>System Design</b><small>13 case studies</small></div>
+      <div class="co-badge"><span class="co-tick">✓</span>Made by an Android engineer</div>
 
-    <div class="hero-cap fade-3">A sample of what's inside</div>
-    <div class="hero-card fade-3">
+      <div class="plan-card">
+        <div class="pc-top">
+          <div><div class="pc-title">Your 7-day plan</div><div class="pc-sub">Sample · Day 3 · Coroutines &amp; Flow</div></div>
+          <span class="pc-dots" aria-hidden="true">···</span>
+        </div>
+        <div class="pc-bars" aria-hidden="true">
+          <i style="--h:46%"></i><i style="--h:62%"></i><i class="cur" style="--h:88%"></i><i style="--h:54%"></i><i style="--h:70%"></i><i style="--h:40%"></i><i style="--h:58%"></i>
+        </div>
+        <div class="pc-days" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span></div>
+        <div class="pc-foot"><span class="pc-time">About 1 hr today</span><span class="pc-spark">✦ Updates as you practise</span></div>
+      </div>
+
+      <div class="hero-card fade-3">
       <div class="hcard-top">
         <span class="hcard-badge">Coroutines & Flow</span>
         <span class="hcard-diff">Hard</span>
@@ -2081,17 +2437,12 @@
         Your checkout screen calls 3 APIs in parallel. If any one fails, cancel the rest and show an error. How do you implement this?
       </div>
       <div class="hcard-code">
-        <span class="ln"><span class="c-cm">// ❌ Sequential — slow, no cancellation</span></span>
-        <span class="ln"><span class="c-kw">val </span>user    = fetchUser()</span>
-        <span class="ln"><span class="c-kw">val </span>cart    = fetchCart()</span>
-        <span class="ln"><span class="c-kw">val </span>address = fetchAddress()</span>
-        <span class="ln">&nbsp;</span>
-        <span class="ln"><span class="c-cm">// ✅ Parallel + fails fast on any error</span></span>
-        <span class="ln"><span class="c-kw">val </span><span class="c-br">(</span>user<span class="c-br">,</span> cart<span class="c-br">,</span> address<span class="c-br">)</span> = coroutineScope <span class="c-br">{</span></span>
+        <span class="ln"><span class="c-cm">// Parallel, fail fast</span></span>
+        <span class="ln"><span class="c-kw">val </span>results = coroutineScope <span class="c-br">{</span></span>
         <span class="ln">  <span class="c-kw">val </span>u = async <span class="c-br">{</span> fetchUser() <span class="c-br">}</span></span>
         <span class="ln">  <span class="c-kw">val </span>c = async <span class="c-br">{</span> fetchCart() <span class="c-br">}</span></span>
         <span class="ln">  <span class="c-kw">val </span>a = async <span class="c-br">{</span> fetchAddress() <span class="c-br">}</span></span>
-        <span class="ln">  Triple<span class="c-br">(</span>u.await()<span class="c-br">,</span> c.await()<span class="c-br">,</span> a.await()<span class="c-br">)</span></span>
+        <span class="ln">  listOf<span class="c-br">(</span>u<span class="c-br">,</span> c<span class="c-br">,</span> a<span class="c-br">)</span>.awaitAll()</span>
         <span class="ln"><span class="c-br">}</span></span>
       </div>
       <div id="hcard-hint" style="display:none; background:var(--amber-light); border:1px solid rgba(196,125,46,0.2); border-radius:10px; padding:10px 14px; font-size:13px; color:var(--amber); line-height:1.5; margin-bottom:10px;">
@@ -2109,37 +2460,19 @@
         <button class="hcard-btn fill" id="hcardAnswerBtn" onclick="handleViewAnswer()">Show the answer</button>
       </div>
     </div>
-
+    </div>
   </div>
 </section>
 
-<!-- MARQUEE -->
-<div class="marquee-strip">
-  <div class="marquee-track">
-    <div class="marquee-item"><div class="marquee-dot"></div>Kotlin Language</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Jetpack Compose</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Coroutines & Flow</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Clean Architecture</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Dependency Injection</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Retrofit & OkHttp</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Room & DataStore</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>MVVM · MVI · MVP</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>System Design</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Hilt & Dagger</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Android Performance</div>
-    <!-- duplicate for seamless loop -->
-    <div class="marquee-item"><div class="marquee-dot"></div>Kotlin Language</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Jetpack Compose</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Coroutines & Flow</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Clean Architecture</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Dependency Injection</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Retrofit & OkHttp</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Room & DataStore</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>MVVM · MVI · MVP</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>System Design</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Hilt & Dagger</div>
-    <div class="marquee-item"><div class="marquee-dot"></div>Android Performance</div>
-  </div>
+<div class="frame-strip">
+  <span><b>Free to start.</b> Premium is ₹299/month.</span>
+  <a href="#pricing" onclick="gtag('event','strip_pricing_click')"><span class="ico" aria-hidden="true">→</span>See what's in Premium</a>
+</div>
+
+<ul class="frame-topics" aria-label="Topics covered">
+  <li>Kotlin</li><li>Jetpack Compose</li><li>Coroutines &amp; Flow</li><li>Hilt</li><li>Room</li><li>Retrofit</li><li>System Design</li>
+</ul>
+</div>
 </div>
 
 <!-- ROADMAP PREVIEW -->
@@ -2154,22 +2487,47 @@
         <li>Today's tasks sized to the time you have</li>
         <li>Missed or shaky questions come back for revision</li>
       </ul>
-      <a href="/roadmap" onclick="gtag('event','preview_cta_roadmap')" class="btn-primary">Build my free plan →</a>
+      <a href="/roadmap" onclick="gtag('event','preview_cta_roadmap')" class="btn-grad"><span class="ico" aria-hidden="true">→</span><span class="lbl">Build my free plan</span></a>
       <p class="hero-micro">Free. No account needed to start.</p>
     </div>
-    <div class="rp-card" aria-label="Example roadmap (illustrative)">
-      <div class="rp-tag">Example only · not a real user's score</div>
-      <div class="rp-top">
-        <div class="rp-ring"><b>68</b><span>/100</span></div>
-        <div><div class="rp-h">Your readiness estimate</div><div class="rp-s">Product company · 2–5 yrs · 4 weeks to go</div></div>
+    <div class="rp-card" id="rpCard" aria-label="Example roadmap, animated (illustrative)">
+      <div class="rp-head">
+        <div class="rp-tag">Example only · not a real user's score</div>
+        <button type="button" class="rp-pause" id="rpPause" aria-label="Pause animation" hidden>Pause</button>
       </div>
-      <div class="rp-row"><span>Kotlin</span><em class="rp-p strong">Strong</em></div>
-      <div class="rp-row"><span>Coroutines &amp; Flow</span><em class="rp-p needs">Needs practice</em></div>
-      <div class="rp-row"><span>System design</span><em class="rp-p weak">Weak area</em></div>
-      <div class="rp-today">Today</div>
-      <div class="rp-task"><i></i>10 Coroutines &amp; Flow questions<small>~45 min</small></div>
-      <div class="rp-task"><i></i>Offline-first app design<small>25 min</small></div>
-      <div class="rp-task"><i></i>Revise 3 questions you marked "Revisit"<small>10 min</small></div>
+      <div class="rp-steps" aria-hidden="true"><span data-i="0">1 · Your goal</span><span data-i="1">2 · Rate topics</span><span data-i="2">3 · Your plan</span></div>
+      <div class="rp-stage">
+        <div class="rp-scene" data-s="0">
+          <div class="rp-q">Experience</div>
+          <div class="rp-chips"><span class="rp-chip">0–2 yrs</span><span class="rp-chip" data-pick="0">2–5 yrs</span><span class="rp-chip">5+ yrs</span></div>
+          <div class="rp-q">Target company</div>
+          <div class="rp-chips"><span class="rp-chip" data-pick="1">Product</span><span class="rp-chip">Startup</span><span class="rp-chip">Service</span></div>
+          <div class="rp-q">Time per day</div>
+          <div class="rp-chips"><span class="rp-chip">30 min</span><span class="rp-chip" data-pick="2">60 min</span><span class="rp-chip">90 min</span></div>
+          <div class="rp-q">Interview date</div>
+          <div class="rp-chips"><span class="rp-chip" data-pick="3">In 4 weeks</span><span class="rp-chip">Not sure yet</span></div>
+        </div>
+        <div class="rp-scene" data-s="1">
+          <div class="rp-q">How comfortable are you?</div>
+          <div class="rp-row"><span>Kotlin</span><span class="rp-opts" data-pick="0" data-c="strong"><b>Strong</b><b>Shaky</b><b>New to me</b></span></div>
+          <div class="rp-row"><span>Coroutines &amp; Flow</span><span class="rp-opts" data-pick="1" data-c="needs"><b>Strong</b><b>Shaky</b><b>New to me</b></span></div>
+          <div class="rp-row"><span>System design</span><span class="rp-opts" data-pick="2" data-c="weak"><b>Strong</b><b>Shaky</b><b>New to me</b></span></div>
+          <div class="rp-row rp-more"><span>+ 10 more topics</span><span></span></div>
+        </div>
+        <div class="rp-scene is-on" data-s="2">
+          <div class="rp-top">
+            <div class="rp-ring" id="rpRing"><b id="rpNum">68</b><span>/100</span></div>
+            <div><div class="rp-h">Your readiness estimate</div><div class="rp-s">Product company · 2–5 yrs · 4 weeks to go</div></div>
+          </div>
+          <div class="rp-row"><span>Kotlin</span><em class="rp-p strong">Strong</em></div>
+          <div class="rp-row"><span>Coroutines &amp; Flow</span><em class="rp-p needs">Needs practice</em></div>
+          <div class="rp-row"><span>System design</span><em class="rp-p weak">Weak area</em></div>
+          <div class="rp-today">Today · about 1 hr</div>
+          <div class="rp-task"><i></i>4 Coroutines &amp; Flow questions<small>~28 min</small></div>
+          <div class="rp-task"><i></i>Offline-first app design<small>25 min</small></div>
+          <div class="rp-task"><i></i>Revise 2 questions marked "Revisit"<small>~8 min</small></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -2213,6 +2571,26 @@
   </div>
 </section>
 
+<!-- SHOWCASE -->
+<section id="showcase" class="showcase-section">
+  <div class="section-label">Inside Droidly</div>
+  <h2>Real screens.<br><span>Not mock-ups.</span></h2>
+  <p class="section-sub-sm">This is what you get after building your plan: a readiness estimate, a daily task list, and answers with working Kotlin.</p>
+  <div class="sc-grid">
+    <figure class="sc-fig sc-a">
+      <div class="sc-browser"><i></i><i></i><i></i><span>droidly.io/roadmap</span></div>
+      <img src="/assets/img/roadmap-dashboard.webp" width="1200" height="711" loading="lazy" alt="Droidly roadmap dashboard showing a readiness score, topic ratings and today's tasks"/>
+      <figcaption><b>Your roadmap</b>Readiness estimate, weakest topics first, and a task list that fits your day.</figcaption>
+    </figure>
+    <figure class="sc-fig sc-b">
+      <div class="sc-browser"><i></i><i></i><i></i><span>droidly.io/questions</span></div>
+      <div class="sc-crop"><img src="/assets/img/question-answer.webp" width="1000" height="698" loading="lazy" alt="A Droidly answer with an explanation and Kotlin code"/></div>
+      <figcaption><b>Every answer</b>A clear explanation, Kotlin code, edge cases and an interview tip.</figcaption>
+    </figure>
+  </div>
+  <p class="sc-note">Screens show sample ratings and progress, not a real user's data.</p>
+</section>
+
 <!-- TOPICS -->
 <section id="topics" class="topics-section">
   <div class="topics-header">
@@ -2222,13 +2600,13 @@
       <p class="section-sub-sm" style="margin-top:10px; max-width:480px;">From Kotlin fundamentals to Android 15 APIs, Jetpack Compose, and architecture — all 600 Q&amp;A questions are free, forever. Upgrade only if you want System Design deep dives or Mock Interviews.</p>
     </div>
     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
-      <a href="#" onclick="goToQuestions(''); return false;" class="btn-primary" style="padding:11px 24px; font-size:14px; border-radius:100px; box-shadow:none; margin:0;">Open Question Bank →</a>
+      <a href="#" onclick="goToQuestions(''); return false;" class="btn-grad"><span class="ico" aria-hidden="true">→</span><span class="lbl">Open Question Bank</span></a>
       <span style="font-size:12px; color:var(--muted);">Sign up free · System Design &amp; Mock Interviews are Premium</span>
     </div>
   </div>
 
   <div class="topics-grid reveal-stagger">
-    <a href="#" onclick="goToQuestions('#android'); return false;" class="topic-card reveal">
+    <a href="#" onclick="goToQuestions('#android'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/android.webp)">
       <div class="tc-top">
         <div class="tc-icon">🤖</div>
 
@@ -2241,7 +2619,7 @@
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#kotlin'); return false;" class="topic-card reveal">
+    <a href="#" onclick="goToQuestions('#kotlin'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/kotlin.webp)">
       <div class="tc-top">
         <div class="tc-icon">🟣</div>
 
@@ -2254,7 +2632,7 @@
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#compose'); return false;" class="topic-card reveal">
+    <a href="#" onclick="goToQuestions('#compose'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/compose.webp)">
       <div class="tc-top">
         <div class="tc-icon">🎨</div>
 
@@ -2267,7 +2645,7 @@
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#coroutines'); return false;" class="topic-card reveal">
+    <a href="#" onclick="goToQuestions('#coroutines'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/coroutines.webp)">
       <div class="tc-top">
         <div class="tc-icon">⚡</div>
 
@@ -2280,7 +2658,7 @@
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#architecture'); return false;" class="topic-card reveal">
+    <a href="#" onclick="goToQuestions('#architecture'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/architecture.webp)">
       <div class="tc-top">
         <div class="tc-icon">🏛️</div>
 
@@ -2293,7 +2671,7 @@
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#di'); return false;" class="topic-card reveal">
+    <a href="#" onclick="goToQuestions('#di'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/di.webp)">
       <div class="tc-top">
         <div class="tc-icon">💉</div>
 
@@ -2306,7 +2684,7 @@
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#networking'); return false;" class="topic-card reveal">
+    <a href="#" onclick="goToQuestions('#networking'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/networking.webp)">
       <div class="tc-top">
         <div class="tc-icon">🌐</div>
 
@@ -2319,7 +2697,7 @@
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#storage'); return false;" class="topic-card reveal">
+    <a href="#" onclick="goToQuestions('#storage'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/storage.webp)">
       <div class="tc-top">
         <div class="tc-icon">🗄️</div>
 
@@ -2332,7 +2710,7 @@
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#buildtools'); return false;" class="topic-card reveal">
+    <a href="#" onclick="goToQuestions('#buildtools'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/buildtools.webp)">
       <div class="tc-top">
         <div class="tc-icon">🔧</div>
 
@@ -2345,7 +2723,7 @@
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#performance'); return false;" class="topic-card reveal">
+    <a href="#" onclick="goToQuestions('#performance'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/performance.webp)">
       <div class="tc-top">
         <div class="tc-icon">🚀</div>
 
@@ -2358,7 +2736,7 @@
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#sysdesign'); return false;" class="topic-card reveal">
+    <a href="#" onclick="goToQuestions('#sysdesign'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/sysdesign.webp)">
       <div class="tc-top">
         <div class="tc-icon">🏗️</div>
         <span class="tc-badge premium">Premium</span>
@@ -2371,7 +2749,7 @@
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#hr'); return false;" class="topic-card reveal">
+    <a href="#" onclick="goToQuestions('#hr'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/hr.webp)">
       <div class="tc-top">
         <div class="tc-icon">🤝</div>
 
@@ -2384,7 +2762,7 @@
       </div>
     </a>
 
-    <a href="/mock_interview" class="topic-card reveal">
+    <a href="/mock_interview" class="topic-card reveal" style="--img:url(/assets/img/topics/mock.webp)">
       <div class="tc-top">
         <div class="tc-icon">🎯</div>
         <span class="tc-badge" style="background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">1:1 · Live</span>
@@ -2396,7 +2774,7 @@
         <div class="tc-arrow">→</div>
       </div>
     </a>
-    <a href="/machine_coding" class="topic-card reveal">
+    <a href="/machine_coding" class="topic-card reveal" style="--img:url(/assets/img/topics/machine.webp)">
       <div class="tc-top">
         <div class="tc-icon">⌨️</div>
         <span class="tc-badge" style="background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">Kotlin IDE</span>
@@ -2649,6 +3027,7 @@
 <section class="preview-section">
   <div class="section-label">Premium Preview</div>
   <h2>A look inside<br>Premium</h2>
+  <p class="section-sub-sm pv-sub">System design is where senior interviews are decided. Here is a sample of what the 13 breakdowns look like, with the full answer locked.</p>
 
   <div class="preview-card reveal">
     <div class="preview-top">
@@ -2670,7 +3049,7 @@
         <div class="lock-icon">🔒</div>
         <div class="lock-title">System Design — Premium</div>
         <p class="lock-desc">Full architecture breakdown, trade-off analysis, and interviewer evaluation criteria. Only in Premium.</p>
-        <a href="/premium" class="lock-btn">Unlock for ₹299/mo →</a>
+        <a href="/premium" class="btn-grad"><span class="ico" aria-hidden="true">→</span><span class="lbl">Unlock for ₹299/mo</span></a>
       </div>
     </div>
   </div>
@@ -2739,7 +3118,8 @@
 <!-- COMPARE TABLE -->
 <section class="compare-section">
   <div class="section-label">Compare Plans</div>
-  <h2>Free vs Premium —<br>Side by Side</h2>
+  <h2>Free vs Premium,<br>side by side</h2>
+  <p class="section-sub-sm pv-sub">Every question and answer is free. Premium adds the 13 system design case studies and new content every week.</p>
 
   <div class="compare-wrap reveal">
     <div class="compare-head">
@@ -2762,8 +3142,8 @@
     <div class="compare-row"><div class="crow-feat">1:1 mock interview (booked separately, ₹1,499/session)</div><div class="crow-val">Add-on</div><div class="crow-val">Add-on</div></div>
     <div class="compare-foot">
       <div></div>
-      <div><a href="#" onclick="goToQuestions(''); return false;" class="cfoot-btn cfoot-free">Start Free</a></div>
-      <div><a href="/premium" class="cfoot-btn cfoot-premium">Get Premium →</a></div>
+      <div><a href="#" onclick="goToQuestions(''); return false;" class="btn-line block">Start free</a></div>
+      <div><a href="/premium" class="btn-grad block"><span class="ico" aria-hidden="true">→</span><span class="lbl">Get Premium</span></a></div>
     </div>
   </div>
 </section>
@@ -2787,7 +3167,7 @@
         <li><span class="chk">✓</span> Personalised 7-day roadmap</li>
         <li class="off"><span>✗</span> System Design case studies</li>
       </ul>
-      <a href="#" onclick="goToQuestions(''); return false;" class="price-btn">Start Preparing Free</a>
+      <a href="#" onclick="goToQuestions(''); return false;" class="btn-line block">Start preparing free</a>
     </div>
 
     <div class="price-card featured reveal">
@@ -2800,7 +3180,7 @@
         <li><span class="chk">✓</span> New content every week</li>
         <li><span class="chk">✓</span> Cancel anytime</li>
       </ul>
-      <a href="/premium" class="price-btn">Get Premium — ₹299/mo</a>
+      <a href="/premium" class="btn-grad block"><span class="ico" aria-hidden="true">→</span><span class="lbl">Get Premium · ₹299/mo</span></a>
     </div>
   </div>
 
@@ -2814,7 +3194,7 @@
     <blockquote class="manifesto-quote">
       Android interviews in 2026 are deceptively hard. A topic that looks simple on the surface hides layers of nuance underneath — and with AI raising the bar for every candidate, expectations have never been higher. Most platforms treat Android as an afterthought. Generic DSA grind won't get you through a Coroutines deep-dive or an Android system design round. <strong>I built Droidly because Android developers deserve a platform built specifically for them</strong> — structured, in-depth, and focused on exactly what interviewers actually ask.
     </blockquote>
-    <div class="manifesto-sig">— Vivek Choudhary, Android engineer · Founder, Droidly</div>
+    <div class="manifesto-sig"><span class="ms-av" aria-hidden="true">VC</span><span><b>Vivek Choudhary</b><br>Android engineer · Founder, Droidly</span></div>
   </div>
 </div>
 
@@ -2825,10 +3205,7 @@
   <div class="cta-orb cta-orb-3"></div>
   <h2 style="color:white;">Ready to Crack Your<br>Android Interview?</h2>
   <p class="cta-sub">Create your free account and get instant access to the most thorough Android interview prep platform.</p>
-  <a href="#" onclick="openAuthModal('signup'); return false;" class="btn-white">
-    Create Free Account
-    <span>→</span>
-  </a>
+  <a href="#" onclick="openAuthModal('signup'); return false;" class="btn-grad"><span class="ico" aria-hidden="true">→</span><span class="lbl">Create free account</span></a>
   <div class="cta-trust">Free account · No credit card needed · Upgrade anytime</div>
 </div>
 
@@ -2840,7 +3217,7 @@
       <h2>What's <span style="color:var(--green)">new</span></h2>
       <p class="section-sub-sm">We ship updates regularly. Here's what's been added recently.</p>
     </div>
-    <a href="#" onclick="goToQuestions(''); return false;" class="btn-ghost" style="white-space:nowrap; align-self:flex-start; margin-top:8px;">Explore All Content →</a>
+    <a href="#" onclick="goToQuestions(''); return false;" class="btn-line" style="white-space:nowrap; align-self:flex-start; margin-top:8px;">Explore all content →</a>
   </div>
   <div class="cl-list">
     <div class="cl-item">
@@ -3506,13 +3883,72 @@
       el.innerHTML = '<span>' + text + (guest ? ' <small style="font-weight:500;color:#6b7280">· Sign in to keep your progress</small>' : '') + '</span><span>Continue →</span>';
       el.hidden = false;
       el.onclick = function () { try { gtag('event', 'resume_strip_click'); } catch (e) {} };
-      if (cta) { cta.textContent = 'Continue my plan →'; }
+      if (cta) { var lbl = cta.querySelector('.lbl'); (lbl || cta).textContent = lbl ? 'Continue my plan' : 'Continue my plan →'; }
     } catch (e) { /* never break the homepage */ }
   }
   window.addEventListener('load', function () {
     paint();
     if (window.Readiness) window.Readiness.sync().then(paint);   // signed-in user on a new device: pull their goal
   });
+})();
+</script>
+<script>
+/* Roadmap preview: loops goal -> rate -> plan. Starts when visible, has a Pause button, skipped for reduced motion. */
+(function () {
+  var card = document.getElementById('rpCard'); if (!card) return;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) return;
+  var scenes = [].slice.call(card.querySelectorAll('.rp-scene'));
+  var steps = [].slice.call(card.querySelectorAll('.rp-steps span'));
+  var ring = card.querySelector('#rpRing'), num = card.querySelector('#rpNum');
+  var btn = card.querySelector('#rpPause');
+  var timers = [], paused = false, visible = false, running = false, raf = 0;
+  function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+  function clearAll() { timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); }
+  function show(i) { scenes.forEach(function (s, k) { s.classList.toggle('is-on', k === i); }); steps.forEach(function (s, k) { s.classList.toggle('on', k <= i); }); }
+  function reset() {
+    card.querySelectorAll('.sel,.show,.done,.lit').forEach(function (e) { e.classList.remove('sel', 'show', 'done', 'lit'); });
+    num.textContent = '0';
+  }
+  function pick(sel, idx) { var el = card.querySelector(sel + ' [data-pick="' + idx + '"]'); if (el) el.classList.add('sel'); }
+  function pickOpt(i) { var o = card.querySelector('.rp-opts[data-pick="' + i + '"]'); if (!o) return; var n = i === 0 ? 0 : i === 1 ? 1 : 2; o.children[n].classList.add('sel'); }
+  function count() {
+    var t0 = performance.now();
+    (function f(t) { var k = Math.min(1, (t - t0) / 1100); num.textContent = Math.round(68 * k); if (k < 1) raf = requestAnimationFrame(f); })(t0);
+  }
+  function cycle() {
+    clearAll(); reset(); show(0); running = true;
+    var g = '.rp-scene[data-s="0"]';
+    at(700, function () { card.querySelector(g + ' [data-pick="0"]').classList.add('sel'); });
+    at(1400, function () { card.querySelector(g + ' [data-pick="1"]').classList.add('sel'); });
+    at(2100, function () { card.querySelector(g + ' [data-pick="2"]').classList.add('sel'); });
+    at(2800, function () { card.querySelector(g + ' [data-pick="3"]').classList.add('sel'); });
+    at(4000, function () { show(1); });
+    at(4700, function () { pickOpt(0); });
+    at(5400, function () { pickOpt(1); });
+    at(6100, function () { pickOpt(2); });
+    at(7600, function () {
+      show(2); ring.classList.add('lit'); count();
+      var items = card.querySelectorAll('.rp-scene[data-s="2"] .rp-row,.rp-scene[data-s="2"] .rp-today,.rp-scene[data-s="2"] .rp-task');
+      [].forEach.call(items, function (el, i) { at(500 + i * 260, function () { el.classList.add('show'); }); });
+    });
+    var tasks = card.querySelectorAll('.rp-scene[data-s="2"] .rp-task');
+    at(10600, function () { tasks[0].classList.add('done'); });
+    at(11400, function () { tasks[1].classList.add('done'); });
+    at(14000, function () { if (!paused && visible) cycle(); else running = false; });
+  }
+  function play() { paused = false; btn.textContent = 'Pause'; btn.setAttribute('aria-label', 'Pause animation'); if (visible) cycle(); }
+  function pause() { paused = true; clearAll(); running = false; btn.textContent = 'Play'; btn.setAttribute('aria-label', 'Play animation'); }
+  card.classList.add('rp-anim'); btn.hidden = false;
+  btn.addEventListener('click', function () { if (paused) { play(); } else { pause(); } });
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) {
+      visible = es[0].isIntersecting;
+      if (visible && !paused && !running) cycle();
+      else if (!visible) { clearAll(); running = false; }
+    }, { threshold: 0.35 }).observe(card);
+  } else { visible = true; cycle(); }
+  show(0);
 })();
 </script>
 </body>
