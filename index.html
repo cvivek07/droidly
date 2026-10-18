@@ -1930,6 +1930,7 @@
   </a>
   <div class="nav-center">
     <a href="#topics" class="nav-link">Topics</a>
+    <a href="/roadmap" class="nav-link">Roadmap</a>
     <a href="#pricing" class="nav-link">Pricing</a>
     <a href="#how-it-works" class="nav-link">How it works</a>
   </div>
@@ -1989,11 +1990,11 @@
     </div>
 
     <div class="hero-ctas fade-5" style="animation-delay:0.4s">
-      <a href="#" onclick="goToQuestions(''); return false;" class="btn-primary">
-        Start Preparing →
+      <a href="/roadmap" onclick="gtag('event','hero_cta_roadmap')" class="btn-primary">
+        Build my free plan →
       </a>
-      <a href="#how-it-works" class="btn-ghost">
-        See how it works
+      <a href="#" onclick="goToQuestions(''); return false;" class="btn-ghost">
+        Browse questions
       </a>
     </div>
 
@@ -3290,6 +3291,20 @@
     grid.scrollBy({ left: dir * 332, behavior: 'smooth' });
   }
 
+  // ── New accounts: send to the roadmap once ──────────
+  function maybeWelcomeToRoadmap(user) {
+    try {
+      if (!user || new URLSearchParams(window.location.search).get('return')) return;
+      if (localStorage.getItem('droidly_rd_welcomed')) return;
+      const rd = JSON.parse(localStorage.getItem('droidly_readiness_v1') || 'null');
+      if (rd && rd.goals) return;
+      if (!user.created_at || Date.now() - Date.parse(user.created_at) > 24 * 3600 * 1000) return;
+      localStorage.setItem('droidly_rd_welcomed', '1');
+      gtag('event', 'roadmap_welcome_redirect');
+      window.location.href = '/roadmap?welcome=1';
+    } catch (e) { /* never block sign-in */ }
+  }
+
   // ── Auth gate: go to questions or prompt sign-in ────
   let currentUser = null;
   function goToQuestions(hash) {
@@ -3339,6 +3354,7 @@
     db.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         updateNavForUser(session.user);
+        if (event === 'SIGNED_IN') maybeWelcomeToRoadmap(session.user);
       } else if (event === 'SIGNED_OUT') {
         updateNavForUser(null);
       } else if (event === 'PASSWORD_RECOVERY') {
@@ -3358,6 +3374,7 @@
         window.location.href = '/' + returnTo;
         return;
       }
+      maybeWelcomeToRoadmap(session.user);
     }
 
     // Auto-open auth modal if redirected from another page (e.g. questions page)
