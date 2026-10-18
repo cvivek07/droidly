@@ -349,6 +349,16 @@
     }).catch(function (e) { console.warn('[readiness] sync failed; continuing locally', e.message); return { ok: false, reason: e.message }; });
   }
 
+  // Analytics must never break the page (gtag may be absent in tests or blocked by the browser).
+  function track(name, params) { try { if (typeof gtag === 'function') gtag('event', name, params || {}); } catch (e) { /* ignore */ } }
+  // Activation: the first time this browser marks a question Got it / Revisit.
+  function firstMarkOnce() {
+    try {
+      var s = storage(); if (!s || s.getItem('droidly_first_mark_sent')) return;
+      s.setItem('droidly_first_mark_sent', '1'); track('first_task_marked');
+    } catch (e) { /* ignore */ }
+  }
+
   function setGoals(g) {
     state.goals = Object.assign({}, DEFAULT_GOALS, g, { t: Date.now() });
     save(); emit(); queuePush('goal', 'g');
@@ -365,6 +375,8 @@
     m.t = Date.now();
     if (!m.s && !m.b) delete state.marks[id]; else state.marks[id] = m;
     save(); emit(); queuePush('mark', id);
+    track('question_marked', { status: patch.s !== undefined ? (state.marks[id] ? state.marks[id].s : 'cleared') : 'save', topic: String(id).split(':')[0] });
+    if (state.marks[id] && state.marks[id].s) firstMarkOnce();
     return state.marks[id] || null;
   }
   function clearLocal() { state = emptyState(); save(); emit(); }
