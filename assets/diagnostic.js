@@ -215,17 +215,16 @@
   /**
    * item must be the (possibly shuffled) item the user saw. choice = index into item.options, or null for "don't know".
    * conf in CONF. Returns { correct, conf, flag }:
-   *   solid        right and sure
-   *   lucky        right but a guess (not counted as strong knowledge)
-   *   misconception wrong but sure (the most useful signal)
-   *   gap          wrong and a guess / don't know
+   *   solid        right
+   *   gap          wrong, or "I don't know"
+   * conf is only 'think' (answered) or 'guess' (I don't know); the UI no longer asks how sure the user is.
    */
   function gradeMcq(item, choice, conf) {
     var c = CONF.indexOf(conf) === -1 ? 'think' : conf;
     var correct = choice != null && choice === item.answer;
     var flag;
-    if (correct) flag = c === 'guess' ? 'lucky' : 'solid';
-    else flag = c === 'sure' ? 'misconception' : (c === 'think' ? 'gap' : 'gap');
+    if (correct) flag = 'solid';
+    else flag = 'gap';
     if (choice == null) { c = 'guess'; flag = 'gap'; }
     return { id: item.id, type: 'mcq', topic: item.topic, ref: item.ref, d: item.diff, c: correct, k: c, flag: flag };
   }
@@ -254,28 +253,25 @@
 
   /**
    * Per-topic roll-up of graded results (mcq and written). results: array from gradeMcq / gradeWritten.
-   * Returns { topics: [{topic, answered, correct, pct, misconceptions, lucky, written}], gaps: [topic ids, weakest first], answered, correct }
+   * Returns { topics: [{topic, answered, correct, pct, written}], gaps: [topic ids, weakest first], answered, correct }
    */
   function summarize(results) {
     var by = {};
     results.forEach(function (r) {
-      var o = by[r.topic] = by[r.topic] || { topic: r.topic, answered: 0, correct: 0, misconceptions: 0, lucky: 0, written: [], refsMissed: [] };
+      var o = by[r.topic] = by[r.topic] || { topic: r.topic, answered: 0, correct: 0, written: [], refsMissed: [] };
       if (r.type === 'written') { o.written.push(r.s); if (r.s < 0.5 && r.ref) o.refsMissed.push(r.ref); return; }
       o.answered++;
       if (r.c) o.correct++;
-      if (r.flag === 'misconception') o.misconceptions++;
-      if (r.flag === 'lucky') o.lucky++;
       if (!r.c && r.ref) o.refsMissed.push(r.ref);
     });
     var topics = Object.keys(by).map(function (t) {
       var o = by[t];
-      var solid = o.correct - o.lucky;                                   // right answers that were not guesses
       var parts = o.answered + o.written.length;
-      var earned = solid + 0.4 * o.lucky + o.written.reduce(function (a, b) { return a + b; }, 0);
+      var earned = o.correct + o.written.reduce(function (a, b) { return a + b; }, 0);
       o.pct = parts ? Math.round(100 * earned / parts) : 0;
       return o;
     });
-    topics.sort(function (a, b) { return a.pct - b.pct || b.misconceptions - a.misconceptions || (a.topic < b.topic ? -1 : 1); });
+    topics.sort(function (a, b) { return a.pct - b.pct || (a.topic < b.topic ? -1 : 1); });
     var answered = 0, correct = 0;
     topics.forEach(function (o) { answered += o.answered; correct += o.correct; });
     return { topics: topics, gaps: topics.filter(function (o) { return o.pct < 60; }).map(function (o) { return o.topic; }), answered: answered, correct: correct };

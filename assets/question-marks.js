@@ -68,7 +68,7 @@
         var save = btn('☆ Save', 'rd-save', function () { var m = R.get().marks[id]; R.setMark(id, { b: !(m && m.b) }); });
         var link = document.createElement('a'); link.className = 'rd-link'; link.href = '/roadmap.html'; link.textContent = 'Your roadmap →';
         var hint = document.createElement('div'); hint.className = 'rd-hint'; hint.style.display = 'none';
-        hint.innerHTML = 'Saved on this device. <a href="/roadmap.html" style="color:#3d7a4f;font-weight:600">Sign in on your roadmap</a> to keep progress across devices.';
+        hint.innerHTML = 'Not saved yet. <a href="/roadmap.html" style="color:#3d7a4f;font-weight:600">Sign in on your roadmap</a> to keep your progress.';
         bar.appendChild(got); bar.appendChild(rev); bar.appendChild(save); bar.appendChild(link); bar.appendChild(hint);
         inner.appendChild(bar);
         var chip = document.createElement('span'); chip.className = 'rd-chips'; meta.appendChild(chip);

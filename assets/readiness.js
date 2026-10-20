@@ -3,7 +3,9 @@
  * Used by roadmap.html and assets/question-marks.js (questions.html).
  *
  *  - Engine: difficulty-aware topic mastery, readiness by level, skills to improve, rules-based study plan.
- *  - Store : localStorage first (works for guests), syncs to Supabase when signed in.
+ *  - Store : Supabase is the source of truth. Nothing about the user is kept in browser storage: state is loaded
+ *            from Supabase on each page load and written back as it changes. Signed-out visitors get an empty,
+ *            in-memory session that is lost on reload (the pages tell them to sign in to save).
  *
  * Honesty note: every number here is derived from the user's SELF-ASSESSMENT
  * (topic ratings + "Got it / Revisit" marks). It is an estimate, not a test score.
@@ -53,9 +55,8 @@
   var EVIDENCE_FULL = 8;      // weighted answers needed before evidence reaches its max share
   var EVIDENCE_MAX_SHARE = 0.7;
   var JD_BOOST = 0.4;          // a topic the job description stresses fully counts up to 40% more
-  // Diagnostic quiz evidence. Credit for a right answer depends on confidence (a lucky guess proves little);
-  // a confident wrong answer is the most informative miss, so it carries extra weight.
-  var DIAG_CREDIT = { sure: 1, think: 0.85, guess: 0.4 };
+  // Diagnostic quiz evidence: a right answer earns full credit, a wrong one counts against the topic.
+  var DIAG_CREDIT = { sure: 1, think: 1, guess: 0.4 };   // 'think' = answered; 'guess' = "I don't know"; 'sure' only appears in older saved rows
   var DIAG_WRONG_W = { sure: 1.3, think: 1, guess: 0.6 };
   var DIAG_WRITTEN_W = 2;
   var DAY_MS = 86400000;
@@ -89,13 +90,13 @@
 
   /** Quiz evidence for one topic: credit and weight to add to the marks evidence, plus counts for the UI. */
   function diagTopic(state, tid, level) {
-    var d = diagOf(state), out = { credit: 0, weight: 0, tested: 0, correct: 0, misconceptions: 0, missedRefs: [] };
+    var d = diagOf(state), out = { credit: 0, weight: 0, tested: 0, correct: 0, missedRefs: [] };
     Object.keys(d.results).forEach(function (id) {
       var r = d.results[id]; if (r.topic !== tid) return;
       var dw = diffWeight(level, r.d), k = DIAG_CREDIT[r.k] != null ? r.k : 'think';
       out.tested++;
       if (r.c) { out.correct++; out.credit += dw * DIAG_CREDIT[k]; out.weight += dw; }
-      else { out.weight += dw * DIAG_WRONG_W[k]; if (k === 'sure') out.misconceptions++; if (r.ref) out.missedRefs.push(r.ref); }
+      else { out.weight += dw * DIAG_WRONG_W[k]; if (r.ref) out.missedRefs.push(r.ref); }
     });
     Object.keys(d.written || {}).forEach(function (id) {
       var r = d.written[id]; if (r.topic !== tid) return;
@@ -136,7 +137,7 @@
       var evidence = wAll > 0 ? (100 * wGot / wAll) : prior;
       var mastery = prior * (1 - w) + evidence * w;
       var label;
-      if (!rated && attempted === 0 && dg.tested === 0) label = 'Not rated';
+      if (!rated && attempted === 0 && dg.tested === 0) label = 'Not assessed';
       else if (mastery >= 75) label = 'Strong';
       else if (mastery >= 50) label = 'Needs practice';
       else label = 'Weak area';
@@ -145,7 +146,7 @@
       out[tid] = { id: tid, name: topic.name, total: total, got: got, revisit: rev, attempted: attempted,
         rated: rated, mastery: Math.round(mastery), label: label,
         coverage: total ? Math.round(100 * attempted / total) : 0,
-        tested: dg.tested, quizCorrect: dg.correct, misconceptions: dg.misconceptions, missedRefs: dg.missedRefs,
+        tested: dg.tested, quizCorrect: dg.correct, missedRefs: dg.missedRefs,
         byDifficulty: byDiff, unmarkedCore: unmarkedCore, basis: basis };
     });
     return out;
@@ -160,7 +161,7 @@
     TOPIC_ORDER.forEach(function (t) {
       var s = stats[t]; if (!s) return;
       num += weights[t] * s.mastery; den += weights[t];
-      if (s.rated) ratedCount++;
+      if (s.rated || s.attempted + s.tested > 0) ratedCount++;   // topics with any evidence behind them
       attempts += s.attempted + s.tested;
     });
     var conf = 0.5 * (ratedCount / TOPIC_ORDER.length) + 0.5 * Math.min(attempts / 60, 1);
@@ -213,11 +214,10 @@
       var w = r.weights[tid];
       var priority = w * (100 - st.mastery) / 100 + (!st.rated && st.attempted === 0 ? 0.03 : 0);
       var reasons = [];
-      if (st.misconceptions > 0) reasons.push(st.misconceptions + ' quiz answer' + (st.misconceptions > 1 ? 's were' : ' was') + ' confident but wrong. That usually means a misconception worth fixing first.');
       if (st.tested > 0 && st.quizCorrect < st.tested) reasons.push('Quiz: ' + st.quizCorrect + ' of ' + st.tested + ' correct in this topic.');
       if (state.jd && state.jd.topics && state.jd.topics[tid] >= 0.34) reasons.push('Your job description stresses this topic.');
       var hard = st.byDifficulty.hard, hardTried = hard.got + hard.revisit;
-      if (!st.rated && st.attempted === 0) reasons.push('Not rated yet. Rate it so your estimate can start.');
+      if (!st.rated && st.attempted === 0) reasons.push('Not assessed yet. Take the skill check or mark questions so your estimate can start.');
       if (st.attempted > 0 && st.revisit / st.attempted >= 0.34) reasons.push(st.revisit + ' of ' + st.attempted + ' answered questions are marked Revisit.');
       if (tid === 'sysdesign') {
         if (st.attempted === 0 && w >= 0.9) reasons.push('No system design walkthroughs completed yet. This topic carries extra weight at your target level.');
@@ -382,10 +382,14 @@
   var cfg = { getSession: defaultGetSession, storage: null };
 
   function storage() {
-    if (cfg.storage) return cfg.storage;
-    try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch (e) { return null; }
+    return cfg.storage || null;   // only injected in tests; the app never persists user data in the browser
+  }
+  function purgeLegacy() {
+    // Older versions kept progress in this browser. It must not outlive a sign-out, so remove it.
+    try { if (typeof localStorage !== 'undefined') localStorage.removeItem(LS_KEY); } catch (e) { /* ignore */ }
   }
   function load() {
+    purgeLegacy();
     var s = storage();
     try { var raw = s && s.getItem(LS_KEY); if (raw) { var p = JSON.parse(raw); if (p && p.v === 1) state = Object.assign(emptyState(), p); } } catch (e) { /* ignore */ }
     return state;
@@ -410,7 +414,7 @@
   function rest(method, path, token, body, prefer) {
     var h = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
     if (prefer) h.Prefer = prefer;
-    return fetch(SUPABASE_URL + '/rest/v1/' + path, { method: method, headers: h, body: body ? JSON.stringify(body) : undefined })
+    return fetch(SUPABASE_URL + '/rest/v1/' + path, { method: method, headers: h, body: body ? JSON.stringify(body) : undefined, keepalive: method !== 'GET' })
       .then(function (r) {
         if (!r.ok) return r.text().then(function (t) { throw new Error(r.status + ' ' + t); });
         return method === 'GET' ? r.json() : null;
@@ -434,6 +438,7 @@
       if (w) return { user_id: uid, item_id: key, kind: 'written', topic: w.topic, ref: w.ref || null, difficulty: w.d, correct: null, confidence: null, score: w.s, updated_at: iso(w.t) };
       return null;
     }
+    if (kind === 'plan') return state.plan ? { user_id: uid, plan: state.plan, updated_at: iso(state.plan.at || Date.now()) } : null;
     if (kind === 'run') { var u = (diagOf(state).runs || []).filter(function (x) { return x.id === key; })[0]; return u && { user_id: uid, run_id: key, answered: u.n, correct: u.ok, updated_at: iso(u.t) }; }
     if (kind === 'jd') {
       var j = state.jd;
@@ -443,7 +448,7 @@
     var m = state.marks[key]; return m && { user_id: uid, question_id: key, status: m.s || null, bookmarked: !!m.b, updated_at: iso(m.t) };
   }
   function pushRows(sess, items) {
-    var by = { goal: [], rating: [], mark: [], dans: [], run: [], jd: [] };
+    var by = { goal: [], rating: [], mark: [], dans: [], run: [], jd: [], plan: [] };
     items.forEach(function (p) { var row = rowFor(p[0], p[1], sess.uid); if (row) by[p[0]].push(row); });
     var jobs = [];
     if (by.goal.length) jobs.push(rest('POST', 'user_goals?on_conflict=user_id', sess.token, by.goal, 'resolution=merge-duplicates,return=minimal'));
@@ -454,17 +459,31 @@
     if (by.dans.length) jobs.push(soft(rest('POST', 'diag_answers?on_conflict=user_id,item_id', sess.token, by.dans, 'resolution=merge-duplicates,return=minimal')));
     if (by.run.length) jobs.push(soft(rest('POST', 'diag_runs?on_conflict=user_id,run_id', sess.token, by.run, 'resolution=merge-duplicates,return=minimal')));
     if (by.jd.length) jobs.push(soft(rest('POST', 'user_jd?on_conflict=user_id', sess.token, by.jd, 'resolution=merge-duplicates,return=minimal')));
+    if (by.plan.length) jobs.push(soft(rest('POST', 'user_plan?on_conflict=user_id', sess.token, by.plan, 'resolution=merge-duplicates,return=minimal')));
     return Promise.all(jobs);
   }
+  var pushFails = 0;
   function flushPush() {
     var items = Object.keys(pushQueue).map(function (k) { return pushQueue[k]; });
     pushQueue = {};
     if (!items.length) return Promise.resolve();
     return cfg.getSession().then(function (sess) {
       if (!sess) return null;
-      return pushRows(sess, items);
-    }).catch(function (e) { console.warn('[readiness] push failed; will retry on next sync', e.message); });
+      return pushRows(sess, items).then(function () { pushFails = 0; });
+    }).catch(function (e) {
+      // Nothing is kept in the browser, so a failed write must be retried or it is lost.
+      console.warn('[readiness] push failed; retrying', e.message);
+      items.forEach(function (p) { pushQueue[p[0] + '|' + p[1]] = p; });
+      if (++pushFails <= 6) { clearTimeout(pushTimer); pushTimer = setTimeout(flushPush, Math.min(30000, 2000 * pushFails * pushFails)); }
+    });
   }
+  // Leaving the page: send what is pending now rather than waiting for the debounce.
+  try {
+    if (typeof document !== 'undefined' && document.addEventListener) {
+      document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') { clearTimeout(pushTimer); flushPush(); } });
+      window.addEventListener('pagehide', function () { clearTimeout(pushTimer); flushPush(); });
+    }
+  } catch (e) { /* not a browser */ }
 
   /** Merge quiz answers, runs and the JD by "newer wins". A null remote means the table does not exist yet: stay local. */
   function mergeSkillCheck(rAns, rRuns, rJd, push) {
@@ -509,7 +528,10 @@
 
   function sync() {
     return cfg.getSession().then(function (sess) {
-      if (!sess) return { ok: false, reason: 'signed-out' };
+      if (!sess) {
+        if (state.owner) { state = emptyState(); save(); emit(); }   // signed out: nothing of the previous user may remain
+        return { ok: false, reason: 'signed-out' };
+      }
       if (state.owner && state.owner !== sess.uid) { state = emptyState(); }   // different account on this browser
       state.owner = sess.uid;
       var q = 'select=*&user_id=eq.' + sess.uid;
@@ -519,7 +541,8 @@
         rest('GET', 'question_marks?' + q + '&limit=5000', sess.token),
         rest('GET', 'diag_answers?' + q + '&limit=1000', sess.token).catch(function () { return null; }),   // null = table not created yet
         rest('GET', 'diag_runs?' + q + '&order=updated_at.desc&limit=20', sess.token).catch(function () { return null; }),
-        rest('GET', 'user_jd?' + q, sess.token).catch(function () { return null; })
+        rest('GET', 'user_jd?' + q, sess.token).catch(function () { return null; }),
+        rest('GET', 'user_plan?' + q, sess.token).catch(function () { return null; })
       ]).then(function (res) {
         var push = [];
         var remoteGoal = res[0][0];
@@ -542,6 +565,11 @@
         });
         Object.keys(state.marks).forEach(function (k) { if (!seenM[k]) push.push(['mark', k]); });
         mergeSkillCheck(res[3], res[4], res[5], push);
+        if (res[6]) {
+          var rp = res[6][0], rpt = rp ? Date.parse(rp.updated_at) : 0, lpt = state.plan ? (state.plan.at || 0) : 0;
+          if (rp && rpt > lpt) state.plan = rp.plan;
+          else if (state.plan && lpt > rpt) push.push(['plan', 'p']);
+        }
         save(); emit();
         return push.length ? pushRows(sess, push).then(function () { return { ok: true, pushed: push.length }; }) : { ok: true, pushed: 0 };
       });
@@ -551,12 +579,7 @@
   // Analytics must never break the page (gtag may be absent in tests or blocked by the browser).
   function track(name, params) { try { if (typeof gtag === 'function') gtag('event', name, params || {}); } catch (e) { /* ignore */ } }
   // Activation: the first time this browser marks a question Got it / Revisit.
-  function firstMarkOnce() {
-    try {
-      var s = storage(); if (!s || s.getItem('droidly_first_mark_sent')) return;
-      s.setItem('droidly_first_mark_sent', '1'); track('first_task_marked');
-    } catch (e) { /* ignore */ }
-  }
+  function hasAnyMark() { return Object.keys(state.marks).some(function (k) { return state.marks[k].s; }); }
 
   function setGoals(g) {
     state.goals = Object.assign({}, DEFAULT_GOALS, g, { t: Date.now() });
@@ -568,14 +591,14 @@
   }
   /** patch: { s: 'got_it'|'revisit'|null, b: boolean } — only provided keys change. */
   function setMark(id, patch) {
-    var m = state.marks[id] || { s: null, b: false, t: 0 };
+    var m = state.marks[id] || { s: null, b: false, t: 0 }, hadMark = hasAnyMark();
     if ('s' in patch) m.s = patch.s === m.s ? null : patch.s;      // clicking the active state clears it
     if ('b' in patch) m.b = !!patch.b;
     m.t = Date.now();
     if (!m.s && !m.b) delete state.marks[id]; else state.marks[id] = m;
     save(); emit(); queuePush('mark', id);
     track('question_marked', { status: patch.s !== undefined ? (state.marks[id] ? state.marks[id].s : 'cleared') : 'save', topic: String(id).split(':')[0] });
-    if (state.marks[id] && state.marks[id].s) firstMarkOnce();
+    if (!hadMark && state.marks[id] && state.marks[id].s) track('first_task_marked');   // derived from the saved marks, not a browser flag
     return state.marks[id] || null;
   }
   /** jd: the object returned by DroidlyDiagnostic.analyzeJD (or null to clear). The pasted text itself is never stored. */
@@ -620,7 +643,7 @@
     var carry = [];
     if (p && p.on === ymd(now) && p.days[0]) carry = p.days[0].tasks.filter(function (t) { return isDone(t, state, p.at); });
     var plan = buildPlan(index, state, { today: now, carry: carry });
-    plan.sig = sig; state.plan = plan; save();
+    plan.sig = sig; state.plan = plan; save(); queuePush('plan', 'p');
     return plan;
   }
 

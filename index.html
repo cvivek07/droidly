@@ -3490,6 +3490,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
   async function signOut() {
     gtag('event', 'sign_out');
     await db.auth.signOut();
+    try { if (window.Readiness) window.Readiness.clearLocal(); var rs = document.getElementById('resumeStrip'); if (rs) rs.hidden = true; } catch (e) { /* ignore */ }
     updateNavForUser(null);
     showToast('You\'ve been signed out.', '');
   }
@@ -3504,13 +3505,14 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
   function maybeWelcomeToRoadmap(user) {
     try {
       if (!user || new URLSearchParams(window.location.search).get('return')) return;
-      if (localStorage.getItem('droidly_rd_welcomed')) return;
-      const rd = JSON.parse(localStorage.getItem('droidly_readiness_v1') || 'null');
-      if (rd && rd.goals) return;
       if (!user.created_at || Date.now() - Date.parse(user.created_at) > 24 * 3600 * 1000) return;
-      localStorage.setItem('droidly_rd_welcomed', '1');
-      gtag('event', 'roadmap_welcome_redirect');
-      window.location.href = '/roadmap?welcome=1';
+      const R = window.Readiness; if (!R) return;
+      // Whether they already have a goal is read from their account, not from this browser.
+      R.sync().then(function (res) {
+        if (!res || !res.ok || R.get().goals) return;
+        gtag('event', 'roadmap_welcome_redirect');
+        window.location.href = '/roadmap?welcome=1';
+      }).catch(function () { /* never block sign-in */ });
     } catch (e) { /* never block sign-in */ }
   }
 
