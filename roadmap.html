@@ -258,7 +258,7 @@ input:focus{outline:none;border-color:var(--green)}
 
   var app = document.getElementById('app');
   var index = null;
-  var view = null;            // 'onboard' | 'rate' | 'dash' | 'diag'
+  var view = null;            // 'onboard' | 'dash' | 'diag'
   var editing = false;        // true when editing existing goals
   var draft = {};
   var selectedDay = 0;
@@ -361,7 +361,6 @@ input:focus{outline:none;border-color:var(--green)}
       return;
     }
     if (view === 'onboard') return renderOnboard();
-    if (view === 'rate') return renderRate();
     if (view === 'diag') return renderDiag();
     renderDash();
   }
@@ -387,7 +386,7 @@ input:focus{outline:none;border-color:var(--green)}
       '<div class="q-group"><div class="q-label">Where are you interviewing?</div>' + chipGroup('company', COMPANIES, g.company) + '</div>' +
       '<div class="q-group"><div class="q-label">Time you can study per day</div>' + chipGroup('minutes', MINUTES, g.minutes) + '</div>' +
       '<div class="q-group"><div class="q-label">Interview date <small>(optional)</small></div><input type="date" id="dateInput" min="' + R.ymd(new Date()) + '" value="' + (g.date || '') + '"/></div>' +
-      '<div class="actions"><button class="btn" id="goalNext" type="button">' + (editing ? 'Save and rebuild plan →' : 'Next: quick self-check →') + '</button>' +
+      '<div class="actions"><button class="btn" id="goalNext" type="button">' + (editing ? 'Save and rebuild plan →' : 'Build my plan →') + '</button>' +
       (editing ? '<button class="link-btn" id="goalCancel" type="button">Cancel</button>' : '<button class="link-btn" id="goalSkip" type="button">Skip, use defaults</button>') + '</div>' +
       '</div>';
     app.querySelectorAll('.chip').forEach(function (b) {
@@ -408,8 +407,8 @@ input:focus{outline:none;border-color:var(--green)}
       draft.date = document.getElementById('dateInput').value || null;
       if (jdDraft && Object.keys(jdDraft.topics).length) { R.setJD(jdDraft); track('roadmap_jd_used', { topics: Object.keys(jdDraft.topics).length, level_hint: jdDraft.level || 'none' }); }
       R.setGoals(draft); R.ensurePlan(index, true); track('roadmap_goal_saved', { level: draft.level, company: draft.company, minutes: draft.minutes, has_date: !!draft.date });
-      var rated = Object.keys(R.get().ratings).length;
-      view = (editing || rated) ? 'dash' : 'rate'; editing = false; draft = {}; render(); window.scrollTo(0, 0);
+      track('roadmap_plan_built', { source: 'goal_step' });
+      view = 'dash'; editing = false; draft = {}; render(); window.scrollTo(0, 0);
     };
     var skip = document.getElementById('goalSkip');
     if (skip) skip.onclick = function () { R.setGoals(R.DEFAULT_GOALS); R.ensurePlan(index, true); track('roadmap_skipped_onboarding'); view = 'dash'; draft = {}; render(); };
@@ -437,37 +436,6 @@ input:focus{outline:none;border-color:var(--green)}
       draft.level = ul.dataset.level;
       app.querySelectorAll('.chip[data-key="level"]').forEach(function (x) { x.setAttribute('aria-pressed', x.dataset.val === draft.level); });
       ul.remove();
-    };
-  }
-
-  function raterHtml(tid, current) {
-    return '<div class="seg" role="group" aria-label="Rate yourself">' + [['strong', 'Strong'], ['shaky', 'Shaky'], ['new', 'New to me']].map(function (o) {
-      return '<button type="button" class="s-' + o[0] + '" data-topic="' + tid + '" data-r="' + o[0] + '" aria-pressed="' + (current === o[0]) + '">' + o[1] + '</button>';
-    }).join('') + '</div>';
-  }
-  function bindRaters(root) {
-    root.querySelectorAll('[data-r]').forEach(function (b) {
-      b.onclick = function () { R.setRating(b.dataset.topic, b.dataset.r); };
-    });
-  }
-
-  function renderRate() {
-    var s = R.get(), n = Object.keys(s.ratings).length;
-    app.innerHTML =
-      '<div class="card" style="max-width:720px;margin:0 auto">' +
-      '<span class="eyebrow">Step 2 of 2</span><h1>How confident are you, honestly?</h1>' +
-      '<p class="sub">Rate each topic. This is your starting point; it gets sharper as you mark questions "Got it" or "Revisit". Skip any you can\'t judge yet.</p>' +
-      '<div style="margin-top:14px">' + R.TOPIC_ORDER.map(function (tid) {
-        var t = index.topics[tid]; var cur = s.ratings[tid] && s.ratings[tid].v;
-        return '<div class="rate-row"><span class="rate-name">' + esc(t.name) + '</span>' + raterHtml(tid, cur) + '</div>';
-      }).join('') + '</div>' +
-      '<div class="actions"><button class="btn" id="rateQuiz" type="button">Check myself first (12 questions) →</button><button class="btn ghost" id="rateDone" type="button">Build my plan now</button><span class="sub" style="margin:0;font-size:14px">' + n + ' of ' + R.TOPIC_ORDER.length + ' rated</span></div>' +
-      '<p class="dg-note">Self-ratings are only a starting point. The check takes about 6 minutes and shows where your answers differ from your confidence.</p></div>';
-    bindRaters(app);
-    document.getElementById('rateQuiz').onclick = function () { R.ensurePlan(index, true); startDiag('after_rating'); };
-    document.getElementById('rateDone').onclick = function () {
-      R.ensurePlan(index, true); track('roadmap_plan_built', { rated_topics: Object.keys(R.get().ratings).length });
-      view = 'dash'; render(); window.scrollTo(0, 0);
     };
   }
 
@@ -552,17 +520,17 @@ input:focus{outline:none;border-color:var(--green)}
         '<div class="ring"><svg width="150" height="150" viewBox="0 0 150 150"><circle cx="75" cy="75" r="62" fill="none" stroke="#eaecf0" stroke-width="12"/>' +
         '<circle cx="75" cy="75" r="62" fill="none" stroke="' + color + '" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + dash.toFixed(1) + ' ' + circ.toFixed(1) + '"/></svg>' +
         '<div class="ring-num"><b>' + r.score + '</b><span>out of 100</span></div></div>' +
-        '<div class="meta-line">Confidence: <b>' + r.confidence + '</b> · ' + r.ratedTopics + '/' + R.TOPIC_ORDER.length + ' topics rated · ' + r.attempted + ' questions marked</div>' +
+        '<div class="meta-line">Confidence: <b>' + r.confidence + '</b> · ' + r.ratedTopics + '/' + R.TOPIC_ORDER.length + ' topics with evidence · ' + r.attempted + ' questions answered or marked</div>' +
         levelRowHtml(byLevel) +
-        '<p class="disclaimer">Self-assessed estimate based on your ratings and marks. It becomes more reliable as you mark more questions. It is not a test score.</p></div>' +
+        '<p class="disclaimer">Estimate based on your skill-check answers and the questions you mark. It becomes more reliable as you answer more. It is not a test score.</p></div>' +
         diagCardHtml(s) +
         '<div class="card" style="margin-top:20px"><h2>Skills to improve</h2><p class="sub" style="font-size:13px;margin-top:2px">Ranked by how much each matters for your target level and how far you are from Strong.</p><div style="margin-top:8px">' + skillsHtml(skills) + '</div></div>' +
-        '<div class="card" style="margin-top:20px"><h2>Topics</h2><p class="sub" style="font-size:13px;margin-top:2px">Weakest and most important first. Tap to re-rate.</p><div style="margin-top:8px">' +
+        '<div class="card" style="margin-top:20px"><h2>Topics</h2><p class="sub" style="font-size:13px;margin-top:2px">Weakest and most important first. Take the skill check to sharpen these.</p><div style="margin-top:8px">' +
         sorted.map(function (tid) {
           var st = r.stats[tid], cls = pillClass(st.label);
           return '<div class="topic"><div class="topic-head"><span class="topic-name">' + esc(st.name) + '</span><span class="pill ' + cls + '">' + st.label + '</span></div>' +
-            '<div class="bar"><i class="' + (cls === 'strong' ? '' : cls) + '" style="width:' + (st.rated || st.attempted ? st.mastery : 0) + '%"></i></div>' +
-            '<div class="topic-foot"><span>' + st.got + '/' + st.total + ' done' + (st.revisit ? ' · ' + st.revisit + ' to revisit' : '') + ' · <span title="How much evidence backs this score">' + esc(st.basis) + '</span></span>' + raterHtml(tid, s.ratings[tid] && s.ratings[tid].v) + '</div></div>';
+            '<div class="bar"><i class="' + (cls === 'strong' ? '' : cls) + '" style="width:' + (st.rated || st.attempted || st.tested ? st.mastery : 0) + '%"></i></div>' +
+            '<div class="topic-foot"><span>' + st.got + '/' + st.total + ' done' + (st.revisit ? ' · ' + st.revisit + ' to revisit' : '') + ' · <span title="How much evidence backs this score">' + esc(st.basis) + '</span></span>' + '</div></div>';
         }).join('') + '</div></div></div>' +
       '<div><div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>Your plan</h2>' +
         '<div class="progress-line"><span><b>' + doneToday.length + '/' + today.tasks.length + '</b> tasks done today · ' + doneMin + '/' + today.minutes + ' min</span></div></div>' +
@@ -579,7 +547,6 @@ input:focus{outline:none;border-color:var(--green)}
         }).join('') : '<p class="empty">Tap ☆ Save on any question to keep it here.</p>') + '</div></div>' +
       '</div></div>';
 
-    bindRaters(app);
     app.querySelectorAll('[data-skill]').forEach(function (a) { a.addEventListener('click', function () { track('roadmap_skill_clicked', { topic: a.dataset.skill }); }); });
     app.querySelectorAll('.tab').forEach(function (b) { b.onclick = function () { selectedDay = +b.dataset.day; render(); }; });
     app.querySelectorAll('[data-mark]').forEach(function (b) {
@@ -599,9 +566,7 @@ input:focus{outline:none;border-color:var(--green)}
   /* ---------- skill check (diagnostic) ---------- */
   var bankItems = null, dg = null;
   var FLAG_TEXT = {
-    solid: ['ok', 'Correct, and you were confident.'],
-    lucky: ['ok', 'Correct, but you marked it a guess. It counts for less until you can explain why.'],
-    misconception: ['bad', 'Wrong, and you were sure. This is the most useful thing the check can find, so fix it first.'],
+    solid: ['ok', 'Correct.'],
     gap: ['bad', 'Not yet. Now you know where to look.']
   };
   function loadBank() {
@@ -621,7 +586,7 @@ input:focus{outline:none;border-color:var(--green)}
   function startDiag(source) {
     var c = diagCtx();
     view = 'diag';
-    dg = { phase: 'loading', runId: 'r' + Date.now(), before: R.readiness(index, c.s).score, level: c.g.level, items: [], i: 0, picked: undefined, conf: null, answered: false, results: [], written: [], wi: 0, last: null };
+    dg = { phase: 'loading', runId: 'r' + Date.now(), before: R.readiness(index, c.s).score, level: c.g.level, items: [], i: 0, picked: undefined, answered: false, results: [], written: [], wi: 0, last: null };
     track('diagnostic_started', { source: source || 'unknown', has_jd: !!c.s.jd });
     render(); window.scrollTo(0, 0);
     loadBank().then(function (all) {
@@ -641,16 +606,15 @@ input:focus{outline:none;border-color:var(--green)}
         '<div class="actions" style="margin-top:14px"><button class="btn small" id="diagStart" type="button">Start the skill check</button></div></div>';
     }
     var when = new Date(last.t).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
-    var mis = 0; Object.keys(d.results || {}).forEach(function (id) { var r = d.results[id]; if (!r.c && r.k === 'sure') mis++; });
     return '<div class="card" style="margin-top:20px"><h2>Skill check</h2><p class="sub" style="font-size:14px;margin-top:4px">Last taken ' + esc(when) + ': ' + last.ok + ' of ' + last.n + ' correct' +
-      (mis ? ', ' + mis + ' confident but wrong (across all checks)' : '') + '. Retaking picks questions you have not seen or missed.</p>' +
+      '. Retaking picks questions you have not seen or missed.</p>' +
       '<div class="actions" style="margin-top:14px"><button class="btn small" id="diagStart" type="button">Retake with new questions</button><button class="btn ghost small" id="diagResults" type="button">See last results</button></div>' +
       '<p class="dg-note">' + syncNote() + '</p></div>';
   }
   function syncNote() { return user ? 'Saved to your account, so it follows you across devices.' : 'Saved on this device. Sign in to keep it across devices.'; }
   function showLastResults() {
     var d = R.get().diag || {}, res = [];
-    Object.keys(d.results || {}).forEach(function (id) { var r = d.results[id]; res.push({ id: id, type: 'mcq', topic: r.topic, ref: r.ref, d: r.d, c: r.c, k: r.k, flag: r.c ? (r.k === 'guess' ? 'lucky' : 'solid') : (r.k === 'sure' ? 'misconception' : 'gap') }); });
+    Object.keys(d.results || {}).forEach(function (id) { var r = d.results[id]; res.push({ id: id, type: 'mcq', topic: r.topic, ref: r.ref, d: r.d, c: r.c, k: r.k, flag: r.c ? 'solid' : 'gap' }); });
     Object.keys(d.written || {}).forEach(function (id) { var r = d.written[id]; res.push({ id: id, type: 'written', topic: r.topic, ref: r.ref, d: r.d, s: r.s }); });
     dg = { phase: 'results', fromHistory: true, results: res, written: [], before: null };
     view = 'diag'; render(); window.scrollTo(0, 0);
@@ -676,8 +640,8 @@ input:focus{outline:none;border-color:var(--green)}
   function diagIntroHtml() {
     var jd = R.get().jd;
     return '<div class="card" style="max-width:720px;margin:0 auto"><span class="eyebrow">Skill check</span><h1>Find where you actually stand</h1>' +
-      '<p class="sub">' + dg.items.length + ' multiple-choice questions at your target level (' + esc(LEVEL_NAME[dg.level]) + ')' + (jd ? ', weighted toward what your job description stresses' : '') + '. For each one, pick an answer and say how sure you are.</p>' +
-      '<ul class="ck" style="margin-top:14px"><li class="hit">A confident wrong answer tells us more than a blank, so answer honestly rather than strategically.</li>' +
+      '<p class="sub">' + dg.items.length + ' multiple-choice questions at your target level (' + esc(LEVEL_NAME[dg.level]) + ')' + (jd ? ', weighted toward what your job description stresses' : '') + '. Pick the best answer for each, or say you do not know.</p>' +
+      '<ul class="ck" style="margin-top:14px"><li class="hit">"I don\'t know" is a fine answer. It tells us where to focus.</li>' +
       '<li class="hit">You see the explanation after every question.</li>' +
       '<li class="hit">At the end, up to two short written answers, checked against a list of expected points. Optional, and not AI.</li></ul>' +
       '<div class="actions"><button class="btn" id="dgStart" type="button">Start</button><button class="link-btn" id="dgBack" type="button">Not now</button></div>' +
@@ -694,8 +658,6 @@ input:focus{outline:none;border-color:var(--green)}
       if (ans) { if (k === it.answer) cls += ' right'; else if (k === dg.picked) cls += ' wrong'; }
       return '<button type="button" class="' + cls + '" data-k="' + k + '" aria-pressed="' + (dg.picked === k) + '"' + (ans ? ' disabled' : '') + '>' + esc(o) + '</button>';
     }).join('');
-    var conf = ans ? '' : '<div class="q-label" style="margin-top:18px">How sure are you?</div><div class="seg" role="group" aria-label="Confidence">' +
-      [['sure', 'Sure'], ['think', 'Think so'], ['guess', 'Guess']].map(function (c) { return '<button type="button" data-conf="' + c[0] + '" aria-pressed="' + (dg.conf === c[0]) + '">' + c[1] + '</button>'; }).join('') + '</div>';
     var fb = '';
     if (ans) {
       var f = FLAG_TEXT[dg.last.flag], href = itemHref(it.ref);
@@ -704,26 +666,19 @@ input:focus{outline:none;border-color:var(--green)}
     }
     var report = 'mailto:support@droidly.io?subject=' + encodeURIComponent('Droidly quiz issue: ' + it.id);
     return '<div class="card" style="max-width:720px;margin:0 auto">' + progressHtml(dg.i + (ans ? 1 : 0), n, 'Question ' + (dg.i + 1) + ' of ' + n + ' · ' + esc(topicName(it.topic))) +
-      '<h2 style="font-size:19px;line-height:1.4">' + esc(it.q) + '</h2><div role="group" aria-label="Answers">' + opts + '</div>' + conf + fb +
+      '<h2 style="font-size:19px;line-height:1.4">' + esc(it.q) + '</h2><div role="group" aria-label="Answers">' + opts + '</div>' + fb +
       '<div class="actions" style="margin-top:20px">' + (ans ? '<button class="btn" id="dgNext" type="button">' + (dg.i + 1 < n ? 'Next question →' : 'Continue →') + '</button>' :
         '<button class="btn" id="dgCheck" type="button" disabled>Check answer</button><button class="link-btn" id="dgDk" type="button">I don\'t know</button>') +
       '<a class="link-btn" style="margin-left:auto" href="' + esc(report) + '">Report a problem with this question</a></div></div>';
   }
   function bindQuestion() {
     var chk = document.getElementById('dgCheck'), it = dg.items[dg.i];
-    function sync() { if (chk) chk.disabled = !(dg.picked !== undefined && dg.picked !== null && dg.conf); }
+    function sync() { if (chk) chk.disabled = (dg.picked === undefined || dg.picked === null); }
     app.querySelectorAll('.opt').forEach(function (b) {
       b.onclick = function () {
         if (dg.answered) return;
         dg.picked = +b.dataset.k;
         app.querySelectorAll('.opt').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
-        sync();
-      };
-    });
-    app.querySelectorAll('[data-conf]').forEach(function (b) {
-      b.onclick = function () {
-        dg.conf = b.dataset.conf;
-        app.querySelectorAll('[data-conf]').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
         sync();
       };
     });
@@ -733,11 +688,11 @@ input:focus{outline:none;border-color:var(--green)}
       R.recordDiag([res], { run: dg.runId });   // saved as you go, so closing the tab midway keeps what you answered
       render();
     }
-    if (chk) chk.onclick = function () { if (!chk.disabled) grade(dg.picked, dg.conf); };
+    if (chk) chk.onclick = function () { if (!chk.disabled) grade(dg.picked, 'think'); };
     var dk = document.getElementById('dgDk'); if (dk) dk.onclick = function () { grade(null, 'guess'); };
     var nx = document.getElementById('dgNext');
     if (nx) nx.onclick = function () {
-      dg.i++; dg.picked = undefined; dg.conf = null; dg.answered = false; dg.last = null;
+      dg.i++; dg.picked = undefined; dg.answered = false; dg.last = null;
       if (dg.i >= dg.items.length) prepareWritten();
       render(); window.scrollTo(0, 0);
     };
@@ -791,25 +746,25 @@ input:focus{outline:none;border-color:var(--green)}
     R.ensurePlan(index, true);
     var sum = D.summarize(dg.results);
     dg.after = R.readiness(index, R.get()).score;
-    track('diagnostic_completed', { answered: sum.answered, correct: sum.correct, misconceptions: dg.results.filter(function (r) { return r.flag === 'misconception'; }).length, gap_topics: sum.gaps.length });
+    track('diagnostic_completed', { answered: sum.answered, correct: sum.correct, gap_topics: sum.gaps.length });
   }
   function diagResultsHtml() {
-    var sum = D.summarize(dg.results), mis = dg.results.filter(function (r) { return r.flag === 'misconception'; }).length;
+    var sum = D.summarize(dg.results);
     var skills = R.skillsToImprove(index, R.get(), { limit: 3 });
     var change = (dg.before != null && dg.after != null)
       ? '<p class="sub" style="font-size:14px">Readiness estimate: <b>' + dg.before + '</b> → <b>' + dg.after + '</b>' + (dg.after === dg.before ? ' (no change)' : '') + '. This is an estimate that blends your ratings, marks and these answers.</p>' : '';
     return '<div class="card" style="max-width:720px;margin:0 auto"><span class="eyebrow">' + (dg.fromHistory ? 'Latest results across your checks' : 'Skill check complete') + '</span>' +
       '<div class="dg-big">' + sum.correct + ' of ' + sum.answered + ' correct</div>' +
-      (mis ? '<p class="sub" style="font-size:14px"><b>' + mis + ' answer' + (mis > 1 ? 's were' : ' was') + ' confident but wrong.</b> Those are the first things to fix.</p>' : '') + change +
+      change +
       '<div class="q-label" style="margin-top:20px">By topic, weakest first</div>' +
       sum.topics.map(function (o) {
         var parts = o.answered ? o.correct + '/' + o.answered + ' correct' : '';
         var wr = o.written.length ? (parts ? ' · ' : '') + 'written ' + Math.round(100 * o.written.reduce(function (a, b) { return a + b; }, 0) / o.written.length) + '%' : '';
-        return '<div class="dg-row"><span class="nm">' + esc(topicName(o.topic)) + '</span><div class="bar"><i class="' + (o.pct >= 75 ? '' : o.pct >= 50 ? 'needs' : 'weak') + '" style="width:' + o.pct + '%"></i></div><small>' + parts + wr + (o.misconceptions ? ' · ' + o.misconceptions + ' sure-but-wrong' : '') + '</small></div>';
+        return '<div class="dg-row"><span class="nm">' + esc(topicName(o.topic)) + '</span><div class="bar"><i class="' + (o.pct >= 75 ? '' : o.pct >= 50 ? 'needs' : 'weak') + '" style="width:' + o.pct + '%"></i></div><small>' + parts + wr + '' + '</small></div>';
       }).join('') +
       '<div class="q-label" style="margin-top:24px">What to work on first</div>' + skillsHtml(skills) +
       '<div class="actions"><button class="btn" id="dgPlan" type="button">See my updated plan →</button>' + (dg.fromHistory ? '' : '<button class="btn ghost" id="dgAgain" type="button">Retake with new questions</button>') + '</div>' +
-      '<p class="dg-note">Lucky guesses count for less. Written answers measure coverage of expected points only. ' + syncNote() + '</p></div>';
+      '<p class="dg-note">Written answers measure coverage of expected points only. ' + syncNote() + '</p></div>';
   }
   function bindResults() {
     document.getElementById('dgPlan').onclick = function () { leaveDiag(); };

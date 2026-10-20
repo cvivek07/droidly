@@ -55,9 +55,8 @@
   var EVIDENCE_FULL = 8;      // weighted answers needed before evidence reaches its max share
   var EVIDENCE_MAX_SHARE = 0.7;
   var JD_BOOST = 0.4;          // a topic the job description stresses fully counts up to 40% more
-  // Diagnostic quiz evidence. Credit for a right answer depends on confidence (a lucky guess proves little);
-  // a confident wrong answer is the most informative miss, so it carries extra weight.
-  var DIAG_CREDIT = { sure: 1, think: 0.85, guess: 0.4 };
+  // Diagnostic quiz evidence: a right answer earns full credit, a wrong one counts against the topic.
+  var DIAG_CREDIT = { sure: 1, think: 1, guess: 0.4 };   // 'think' = answered; 'guess' = "I don't know"; 'sure' only appears in older saved rows
   var DIAG_WRONG_W = { sure: 1.3, think: 1, guess: 0.6 };
   var DIAG_WRITTEN_W = 2;
   var DAY_MS = 86400000;
@@ -91,13 +90,13 @@
 
   /** Quiz evidence for one topic: credit and weight to add to the marks evidence, plus counts for the UI. */
   function diagTopic(state, tid, level) {
-    var d = diagOf(state), out = { credit: 0, weight: 0, tested: 0, correct: 0, misconceptions: 0, missedRefs: [] };
+    var d = diagOf(state), out = { credit: 0, weight: 0, tested: 0, correct: 0, missedRefs: [] };
     Object.keys(d.results).forEach(function (id) {
       var r = d.results[id]; if (r.topic !== tid) return;
       var dw = diffWeight(level, r.d), k = DIAG_CREDIT[r.k] != null ? r.k : 'think';
       out.tested++;
       if (r.c) { out.correct++; out.credit += dw * DIAG_CREDIT[k]; out.weight += dw; }
-      else { out.weight += dw * DIAG_WRONG_W[k]; if (k === 'sure') out.misconceptions++; if (r.ref) out.missedRefs.push(r.ref); }
+      else { out.weight += dw * DIAG_WRONG_W[k]; if (r.ref) out.missedRefs.push(r.ref); }
     });
     Object.keys(d.written || {}).forEach(function (id) {
       var r = d.written[id]; if (r.topic !== tid) return;
@@ -138,7 +137,7 @@
       var evidence = wAll > 0 ? (100 * wGot / wAll) : prior;
       var mastery = prior * (1 - w) + evidence * w;
       var label;
-      if (!rated && attempted === 0 && dg.tested === 0) label = 'Not rated';
+      if (!rated && attempted === 0 && dg.tested === 0) label = 'Not assessed';
       else if (mastery >= 75) label = 'Strong';
       else if (mastery >= 50) label = 'Needs practice';
       else label = 'Weak area';
@@ -147,7 +146,7 @@
       out[tid] = { id: tid, name: topic.name, total: total, got: got, revisit: rev, attempted: attempted,
         rated: rated, mastery: Math.round(mastery), label: label,
         coverage: total ? Math.round(100 * attempted / total) : 0,
-        tested: dg.tested, quizCorrect: dg.correct, misconceptions: dg.misconceptions, missedRefs: dg.missedRefs,
+        tested: dg.tested, quizCorrect: dg.correct, missedRefs: dg.missedRefs,
         byDifficulty: byDiff, unmarkedCore: unmarkedCore, basis: basis };
     });
     return out;
@@ -162,7 +161,7 @@
     TOPIC_ORDER.forEach(function (t) {
       var s = stats[t]; if (!s) return;
       num += weights[t] * s.mastery; den += weights[t];
-      if (s.rated) ratedCount++;
+      if (s.rated || s.attempted + s.tested > 0) ratedCount++;   // topics with any evidence behind them
       attempts += s.attempted + s.tested;
     });
     var conf = 0.5 * (ratedCount / TOPIC_ORDER.length) + 0.5 * Math.min(attempts / 60, 1);
@@ -215,11 +214,10 @@
       var w = r.weights[tid];
       var priority = w * (100 - st.mastery) / 100 + (!st.rated && st.attempted === 0 ? 0.03 : 0);
       var reasons = [];
-      if (st.misconceptions > 0) reasons.push(st.misconceptions + ' quiz answer' + (st.misconceptions > 1 ? 's were' : ' was') + ' confident but wrong. That usually means a misconception worth fixing first.');
       if (st.tested > 0 && st.quizCorrect < st.tested) reasons.push('Quiz: ' + st.quizCorrect + ' of ' + st.tested + ' correct in this topic.');
       if (state.jd && state.jd.topics && state.jd.topics[tid] >= 0.34) reasons.push('Your job description stresses this topic.');
       var hard = st.byDifficulty.hard, hardTried = hard.got + hard.revisit;
-      if (!st.rated && st.attempted === 0) reasons.push('Not rated yet. Rate it so your estimate can start.');
+      if (!st.rated && st.attempted === 0) reasons.push('Not assessed yet. Take the skill check or mark questions so your estimate can start.');
       if (st.attempted > 0 && st.revisit / st.attempted >= 0.34) reasons.push(st.revisit + ' of ' + st.attempted + ' answered questions are marked Revisit.');
       if (tid === 'sysdesign') {
         if (st.attempted === 0 && w >= 0.9) reasons.push('No system design walkthroughs completed yet. This topic carries extra weight at your target level.');
@@ -581,12 +579,7 @@
   // Analytics must never break the page (gtag may be absent in tests or blocked by the browser).
   function track(name, params) { try { if (typeof gtag === 'function') gtag('event', name, params || {}); } catch (e) { /* ignore */ } }
   // Activation: the first time this browser marks a question Got it / Revisit.
-  function firstMarkOnce() {
-    try {
-      var s = (typeof localStorage !== 'undefined') ? localStorage : null; if (!s || s.getItem('droidly_first_mark_sent')) return;   // analytics de-dupe only, not user data
-      s.setItem('droidly_first_mark_sent', '1'); track('first_task_marked');
-    } catch (e) { /* ignore */ }
-  }
+  function hasAnyMark() { return Object.keys(state.marks).some(function (k) { return state.marks[k].s; }); }
 
   function setGoals(g) {
     state.goals = Object.assign({}, DEFAULT_GOALS, g, { t: Date.now() });
@@ -598,14 +591,14 @@
   }
   /** patch: { s: 'got_it'|'revisit'|null, b: boolean } — only provided keys change. */
   function setMark(id, patch) {
-    var m = state.marks[id] || { s: null, b: false, t: 0 };
+    var m = state.marks[id] || { s: null, b: false, t: 0 }, hadMark = hasAnyMark();
     if ('s' in patch) m.s = patch.s === m.s ? null : patch.s;      // clicking the active state clears it
     if ('b' in patch) m.b = !!patch.b;
     m.t = Date.now();
     if (!m.s && !m.b) delete state.marks[id]; else state.marks[id] = m;
     save(); emit(); queuePush('mark', id);
     track('question_marked', { status: patch.s !== undefined ? (state.marks[id] ? state.marks[id].s : 'cleared') : 'save', topic: String(id).split(':')[0] });
-    if (state.marks[id] && state.marks[id].s) firstMarkOnce();
+    if (!hadMark && state.marks[id] && state.marks[id].s) track('first_task_marked');   // derived from the saved marks, not a browser flag
     return state.marks[id] || null;
   }
   /** jd: the object returned by DroidlyDiagnostic.analyzeJD (or null to clear). The pasted text itself is never stored. */

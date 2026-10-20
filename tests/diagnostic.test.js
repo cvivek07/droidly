@@ -37,13 +37,11 @@ t('written grading: short answers are scaled down, off-topic answers score low',
   const off = D.gradeWritten(w, 'I like building user interfaces with consistent spacing and typography across all of the screens in the application every day of the week.');
   assert(off.s <= 0.17, off.s);
 });
-t('mcq grading flags: solid, lucky, misconception, gap', () => {
+t('mcq grading: right is solid; wrong or "I don\'t know" is a gap; no confidence needed', () => {
   const it = bank.find(i => i.type === 'mcq'), good = it.answer, bad = (it.answer + 1) % 4;
-  assert.equal(D.gradeMcq(it, good, 'sure').flag, 'solid');
-  assert.equal(D.gradeMcq(it, good, 'guess').flag, 'lucky');
-  assert.equal(D.gradeMcq(it, bad, 'sure').flag, 'misconception');
-  assert.equal(D.gradeMcq(it, bad, 'guess').flag, 'gap');
-  assert.equal(D.gradeMcq(it, null, 'sure').flag, 'gap');
+  assert.equal(D.gradeMcq(it, good, 'think').flag, 'solid'); assert.equal(D.gradeMcq(it, good).c, true);
+  assert.equal(D.gradeMcq(it, bad, 'think').flag, 'gap'); assert.equal(D.gradeMcq(it, bad).c, false);
+  const dk = D.gradeMcq(it, null, 'guess'); assert.equal(dk.flag, 'gap'); assert.equal(dk.c, false); assert.equal(dk.k, 'guess');
 });
 t('shuffleOptions keeps the right answer pointing at the right text and is deterministic', () => {
   bank.filter(i => i.type === 'mcq').forEach(i => {
@@ -91,44 +89,42 @@ t('selection: restricting topics only returns those topics; written prefers gap 
   const wr = D.selectWritten(bank, mk(), { count: 2, gapTopics: ['networking', 'di'], weights: R.weightsFor({}) });
   assert.deepStrictEqual(wr.map(x => x.topic).sort(), ['di', 'networking']);
 });
-t('summarize: lucky answers earn partial credit; confident-wrong are counted', () => {
+t('summarize: counts correct per topic and lists weak topics first', () => {
   const mcq = bank.filter(i => i.type === 'mcq' && i.topic === 'kotlin').slice(0, 4);
-  const res = [D.gradeMcq(mcq[0], mcq[0].answer, 'sure'), D.gradeMcq(mcq[1], mcq[1].answer, 'guess'), D.gradeMcq(mcq[2], (mcq[2].answer + 1) % 4, 'sure'), D.gradeMcq(mcq[3], (mcq[3].answer + 1) % 4, 'guess')];
+  const res = [D.gradeMcq(mcq[0], mcq[0].answer, 'think'), D.gradeMcq(mcq[1], mcq[1].answer, 'think'), D.gradeMcq(mcq[2], (mcq[2].answer + 1) % 4, 'think'), D.gradeMcq(mcq[3], null, 'guess')];
   const s = D.summarize(res).topics[0];
-  assert.equal(s.answered, 4); assert.equal(s.correct, 2); assert.equal(s.misconceptions, 1); assert.equal(s.lucky, 1);
-  assert.equal(s.pct, Math.round(100 * (1 + 0.4) / 4)); assert.deepStrictEqual(D.summarize(res).gaps, ['kotlin']);
+  assert.equal(s.answered, 4); assert.equal(s.correct, 2); assert.equal(s.pct, 50); assert.deepStrictEqual(D.summarize(res).gaps, ['kotlin']);
 });
 
 /* ---- integration with the mastery model ---- */
 const recordInto = (state, results) => { R._setState(state); R.recordDiag(results); return R.get(); };
 t('quiz evidence moves mastery both ways and shows as Quiz-tested', () => {
   const good = bank.filter(i => i.type === 'mcq' && i.topic === 'compose');
-  const sGood = recordInto(mk({ ratings: { compose: { v: 'new', t: 1 } } }), good.map(i => D.gradeMcq(i, i.answer, 'sure')));
-  const sBad = recordInto(mk({ ratings: { compose: { v: 'strong', t: 1 } } }), good.map(i => D.gradeMcq(i, (i.answer + 1) % 4, 'sure')));
+  const sGood = recordInto(mk({ ratings: { compose: { v: 'new', t: 1 } } }), good.map(i => D.gradeMcq(i, i.answer, 'think')));
+  const sBad = recordInto(mk({ ratings: { compose: { v: 'strong', t: 1 } } }), good.map(i => D.gradeMcq(i, (i.answer + 1) % 4, 'think')));
   const a = R.topicStats(index, sGood).compose, b = R.topicStats(index, sBad).compose;
   assert(a.mastery > 20 + 30, 'new + all right should rise: ' + a.mastery);
-  assert(b.mastery < 80 - 25, 'strong + all confidently wrong should fall: ' + b.mastery);
-  assert.equal(a.tested, good.length); assert.equal(b.misconceptions, good.length);
+  assert(b.mastery < 80 - 25, 'strong + all wrong should fall: ' + b.mastery);
+  assert.equal(a.tested, good.length); assert.equal(b.quizCorrect, 0);
   assert.equal(a.basis, 'Quiz-tested');
 });
-t('a lucky guess proves less than a confident correct answer', () => {
+t('a right answer lifts mastery and a wrong one lowers it, with no rating needed', () => {
   const it = bank.find(i => i.type === 'mcq' && i.topic === 'storage');
-  const sure = recordInto(mk({}), [D.gradeMcq(it, it.answer, 'sure')]);
-  const m1 = R.topicStats(index, sure).storage.mastery;
-  const lucky = recordInto(mk({}), [D.gradeMcq(it, it.answer, 'guess')]);
-  assert(R.topicStats(index, lucky).storage.mastery < m1);
+  const base = R.topicStats(index, mk()).storage.mastery;
+  const right = R.topicStats(index, recordInto(mk({}), [D.gradeMcq(it, it.answer, 'think')])).storage.mastery;
+  const wrong = R.topicStats(index, recordInto(mk({}), [D.gradeMcq(it, (it.answer + 1) % 4, 'think')])).storage.mastery;
+  assert(right > base && wrong < base && right > wrong, [base, right, wrong].join());
 });
-t('skills to improve: confident-wrong answers are the first reason and the missed question is the next step', () => {
-  const it = bank.find(i => i.type === 'mcq' && i.topic === 'di');
+t('skills to improve: a failed topic shows the quiz result and the missed question is the next step', () => {
   const s = recordInto(mk({ goals: { level: '2-5', company: 'product' }, ratings: { di: { v: 'strong', t: 1 } } }),
-    bank.filter(i => i.type === 'mcq' && i.topic === 'di').map(i => D.gradeMcq(i, (i.answer + 1) % 4, 'sure')));
-  const sk = R.skillsToImprove(index, s, { limit: 11 }).find(x => x.topic === 'di');
-  assert(sk, 'di should be flagged'); assert(/confident but wrong/.test(sk.reasons[0]), sk.reasons[0]);
+    bank.filter(i => i.type === 'mcq' && i.topic === 'di').map(i => D.gradeMcq(i, (i.answer + 1) % 4, 'think')));
+  const sk = R.skillsToImprove(index, s, { limit: 13 }).find(x => x.topic === 'di');
+  assert(sk, 'di should be flagged'); assert(sk.reasons.some(r => /Quiz: 0 of/.test(r)), sk.reasons.join('|'));
   assert(sk.next.fromQuiz && /^di:/.test(sk.next.id));
 });
 t('plan puts a missed quiz question ahead of its topic peers', () => {
   const it = bank.find(i => i.id === 'm-di-20'); // di:20 is hard, so it would not normally lead for a 0-2 target
-  const s = recordInto(mk({ goals: { level: '0-2', company: 'product', minutes: 60 }, ratings: { di: { v: 'new', t: 1 } } }), [D.gradeMcq(it, (it.answer + 1) % 4, 'sure')]);
+  const s = recordInto(mk({ goals: { level: '0-2', company: 'product', minutes: 60 }, ratings: { di: { v: 'new', t: 1 } } }), [D.gradeMcq(it, (it.answer + 1) % 4, 'think')]);
   const ids = R.buildPlan(index, s, { today: new Date(2026, 9, 18) }).days.slice(0, 3).flatMap(d => d.tasks.map(x => x.id));
   assert(ids.includes('di:20'), ids.join());
 });
@@ -171,8 +167,8 @@ console.log(pass + ' passed');
 
   // 1) answering on device A queues rows; they reach the backend
   R._setState(mk({ owner: 'u1' }));
-  R.recordDiag([D.gradeMcq(mcq[0], mcq[0].answer, 'sure')], { run: 'r1' });
-  R.recordDiag([D.gradeMcq(mcq[1], (mcq[1].answer + 1) % 4, 'sure')], { run: 'r1' });
+  R.recordDiag([D.gradeMcq(mcq[0], mcq[0].answer, 'think')], { run: 'r1' });
+  R.recordDiag([D.gradeMcq(mcq[1], (mcq[1].answer + 1) % 4, 'think')], { run: 'r1' });
   R.recordDiag([D.gradeWritten(wr, 'extract a shared class and use an interface, with lazy injection as a stopgap for the cycle between the two classes')], { run: 'r1' });
   R.setJD(D.analyzeJD('Senior Android, 6 years, Kotlin and Hilt, Retrofit'));
   await wait(1200);
@@ -180,7 +176,7 @@ console.log(pass + ' passed');
   assert.equal(db.diag_runs.length, 1); assert.equal(db.diag_runs[0].answered, 2); assert.equal(db.diag_runs[0].correct, 1);
   assert.equal(db.user_jd[0].active, true); assert(db.user_jd[0].topics.di > 0);
   const wrow = db.diag_answers.find(r => r.kind === 'written'); assert(wrow.score > 0 && wrow.correct === null && wrow.confidence === null);
-  const mrow = db.diag_answers.find(r => r.kind === 'mcq' && r.correct === false); assert.equal(mrow.confidence, 'sure');
+  const mrow = db.diag_answers.find(r => r.kind === 'mcq' && r.correct === false); assert.equal(mrow.confidence, 'think');
   assert(!JSON.stringify(db).includes('Retrofit'), 'pasted text must never leave the device');
   pass++; console.log('ok - sync: answers, run and JD topics are pushed; pasted text is not');
 
@@ -190,7 +186,7 @@ console.log(pass + ' passed');
   const st = R.get();
   assert.equal(Object.keys(st.diag.results).length, 2); assert.equal(Object.keys(st.diag.written).length, 1);
   assert.equal(st.diag.runs.length, 1); assert.equal(st.diag.runs[0].n, 2); assert(st.jd && st.jd.topics.di > 0);
-  assert.equal(R.topicStats(index, st).di.misconceptions, 1);
+  assert.equal(R.topicStats(index, st).di.quizCorrect, 1);
   assert(st.diag.last > 0);
   pass++; console.log('ok - sync: a new device pulls answers, runs and JD, and mastery reflects them');
 
