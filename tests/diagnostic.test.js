@@ -149,3 +149,72 @@ t('old saved states without diag/jd still work', () => {
   assert.equal(R.readiness(index, old).score, 35); assert(R.skillsToImprove(index, old).length > 0);
 });
 console.log(pass + ' passed');
+
+/* ---- Supabase sync (fake backend) ---- */
+(async () => {
+  const mem = {}; const ls = { getItem: k => mem[k] ?? null, setItem: (k, v) => { mem[k] = v; } };
+  R.configure({ storage: ls, getSession: async () => ({ token: 'tok', uid: 'u1' }) });
+  const db = { diag_answers: [], diag_runs: [], user_jd: [], user_goals: [], topic_ratings: [], question_marks: [] };
+  let missing = false; const log = [];
+  global.fetch = async (url, o) => {
+    const path = url.split('/rest/v1/')[1], table = path.split('?')[0]; log.push([o.method, table, o.body]);
+    if (missing && /^(diag_|user_jd)/.test(table)) return { ok: false, status: 404, json: async () => ({}), text: async () => 'relation does not exist' };
+    if (o.method === 'GET') return { ok: true, json: async () => db[table], text: async () => '' };
+    if (o.method === 'POST') {
+      const keyOf = { diag_answers: 'item_id', diag_runs: 'run_id', user_jd: 'user_id', user_goals: 'user_id' }[table];
+      JSON.parse(o.body).forEach(r => { const i = db[table].findIndex(x => keyOf ? x[keyOf] === r[keyOf] : false); if (i >= 0) db[table][i] = r; else db[table].push(r); });
+    }
+    return { ok: true, json: async () => null, text: async () => '' };
+  };
+  const wait = (ms) => new Promise(r => setTimeout(r, ms));
+  const mcq = bank.filter(i => i.type === 'mcq' && i.topic === 'di').slice(0, 2), wr = bank.find(i => i.id === 'w-di-15');
+
+  // 1) answering on device A queues rows; they reach the backend
+  R._setState(mk({ owner: 'u1' }));
+  R.recordDiag([D.gradeMcq(mcq[0], mcq[0].answer, 'sure')], { run: 'r1' });
+  R.recordDiag([D.gradeMcq(mcq[1], (mcq[1].answer + 1) % 4, 'sure')], { run: 'r1' });
+  R.recordDiag([D.gradeWritten(wr, 'extract a shared class and use an interface, with lazy injection as a stopgap for the cycle between the two classes')], { run: 'r1' });
+  R.setJD(D.analyzeJD('Senior Android, 6 years, Kotlin and Hilt, Retrofit'));
+  await wait(1200);
+  assert.equal(db.diag_answers.length, 3, JSON.stringify(db.diag_answers.map(r => r.item_id)));
+  assert.equal(db.diag_runs.length, 1); assert.equal(db.diag_runs[0].answered, 2); assert.equal(db.diag_runs[0].correct, 1);
+  assert.equal(db.user_jd[0].active, true); assert(db.user_jd[0].topics.di > 0);
+  const wrow = db.diag_answers.find(r => r.kind === 'written'); assert(wrow.score > 0 && wrow.correct === null && wrow.confidence === null);
+  const mrow = db.diag_answers.find(r => r.kind === 'mcq' && r.correct === false); assert.equal(mrow.confidence, 'sure');
+  assert(!JSON.stringify(db).includes('Retrofit'), 'pasted text must never leave the device');
+  pass++; console.log('ok - sync: answers, run and JD topics are pushed; pasted text is not');
+
+  // 2) a fresh device signs in and gets everything back
+  R._setState(mk());
+  await R.sync();
+  const st = R.get();
+  assert.equal(Object.keys(st.diag.results).length, 2); assert.equal(Object.keys(st.diag.written).length, 1);
+  assert.equal(st.diag.runs.length, 1); assert.equal(st.diag.runs[0].n, 2); assert(st.jd && st.jd.topics.di > 0);
+  assert.equal(R.topicStats(index, st).di.misconceptions, 1);
+  assert(st.diag.last > 0);
+  pass++; console.log('ok - sync: a new device pulls answers, runs and JD, and mastery reflects them');
+
+  // 3) newer wins; JD removal syncs
+  R._setState(mk({ owner: 'u1' })); await R.sync();
+  R.setJD(null); await wait(1200);
+  assert.equal(db.user_jd[0].active, false);
+  R._setState(mk()); await R.sync(); assert.equal(R.get().jd, null);
+  pass++; console.log('ok - sync: removing the JD on one device removes it on the other');
+
+  // 4) the migration not applied yet: quiz stays local, goals/marks still sync, nothing throws
+  missing = true; db.user_goals.length = 0;
+  R._setState(mk({ owner: 'u1', goals: { level: '2-5', role: 'android', company: 'product', minutes: 60, t: Date.now() } }));
+  R.recordDiag([D.gradeMcq(mcq[0], mcq[0].answer, 'think')], { run: 'r9' });
+  const res = await R.sync(); await wait(1200);
+  assert(res.ok, JSON.stringify(res)); assert.equal(db.user_goals.length, 1, 'existing sync unaffected');
+  assert.equal(Object.keys(R.get().diag.results).length, 1, 'local quiz data kept');
+  pass++; console.log('ok - sync: works without the new tables (quiz stays local, existing sync unaffected)');
+
+  // 5) clearDiag wipes the saved copy
+  missing = false; db.diag_answers.length = 0; R._setState(mk({ owner: 'u1' })); log.length = 0;
+  R.clearDiag(); await wait(100);
+  assert(['diag_answers', 'diag_runs', 'user_jd'].every(t => log.some(c => c[0] === 'DELETE' && c[1] === t)));
+  pass++; console.log('ok - clearDiag deletes the signed-in copy');
+  console.log(pass + ' passed (incl. sync)');
+})().catch(e => { console.error(e); process.exit(1); });
+

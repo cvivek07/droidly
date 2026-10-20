@@ -636,8 +636,9 @@ input:focus{outline:none;border-color:var(--green)}
     return '<div class="card" style="margin-top:20px"><h2>Skill check</h2><p class="sub" style="font-size:14px;margin-top:4px">Last taken ' + esc(when) + ': ' + last.ok + ' of ' + last.n + ' correct' +
       (mis ? ', ' + mis + ' confident but wrong (across all checks)' : '') + '. Retaking picks questions you have not seen or missed.</p>' +
       '<div class="actions" style="margin-top:14px"><button class="btn small" id="diagStart" type="button">Retake with new questions</button><button class="btn ghost small" id="diagResults" type="button">See last results</button></div>' +
-      '<p class="dg-note">Quiz results are stored on this device only.</p></div>';
+      '<p class="dg-note">' + syncNote() + '</p></div>';
   }
+  function syncNote() { return user ? 'Saved to your account, so it follows you across devices.' : 'Saved on this device. Sign in to keep it across devices.'; }
   function showLastResults() {
     var d = R.get().diag || {}, res = [];
     Object.keys(d.results || {}).forEach(function (id) { var r = d.results[id]; res.push({ id: id, type: 'mcq', topic: r.topic, ref: r.ref, d: r.d, c: r.c, k: r.k, flag: r.c ? (r.k === 'guess' ? 'lucky' : 'solid') : (r.k === 'sure' ? 'misconception' : 'gap') }); });
@@ -799,7 +800,7 @@ input:focus{outline:none;border-color:var(--green)}
       }).join('') +
       '<div class="q-label" style="margin-top:24px">What to work on first</div>' + skillsHtml(skills) +
       '<div class="actions"><button class="btn" id="dgPlan" type="button">See my updated plan →</button>' + (dg.fromHistory ? '' : '<button class="btn ghost" id="dgAgain" type="button">Retake with new questions</button>') + '</div>' +
-      '<p class="dg-note">Lucky guesses count for less. Written answers measure coverage of expected points only. Results are stored on this device, so they will not follow you to another browser yet.</p></div>';
+      '<p class="dg-note">Lucky guesses count for less. Written answers measure coverage of expected points only. ' + syncNote() + '</p></div>';
   }
   function bindResults() {
     document.getElementById('dgPlan').onclick = function () { leaveDiag(); };

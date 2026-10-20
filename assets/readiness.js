@@ -428,15 +428,32 @@
   function rowFor(kind, key, uid) {
     if (kind === 'goal') { var g = state.goals; return g && { user_id: uid, level: g.level, role: g.role, company_type: g.company, minutes_per_day: g.minutes, interview_date: g.date || null, updated_at: iso(g.t || Date.now()) }; }
     if (kind === 'rating') { var r = state.ratings[key]; return r && { user_id: uid, topic_id: key, rating: r.v, updated_at: iso(r.t) }; }
+    if (kind === 'dans') {
+      var d = diagOf(state), a = d.results[key], w = d.written && d.written[key];
+      if (a) return { user_id: uid, item_id: key, kind: 'mcq', topic: a.topic, ref: a.ref || null, difficulty: a.d, correct: !!a.c, confidence: a.k, score: null, updated_at: iso(a.t) };
+      if (w) return { user_id: uid, item_id: key, kind: 'written', topic: w.topic, ref: w.ref || null, difficulty: w.d, correct: null, confidence: null, score: w.s, updated_at: iso(w.t) };
+      return null;
+    }
+    if (kind === 'run') { var u = (diagOf(state).runs || []).filter(function (x) { return x.id === key; })[0]; return u && { user_id: uid, run_id: key, answered: u.n, correct: u.ok, updated_at: iso(u.t) }; }
+    if (kind === 'jd') {
+      var j = state.jd;
+      if (j) return { user_id: uid, active: true, level: j.level || null, years: j.years == null ? null : j.years, topics: j.topics || {}, updated_at: iso(j.t || Date.now()) };
+      return state.jdT ? { user_id: uid, active: false, level: null, years: null, topics: {}, updated_at: iso(state.jdT) } : null;
+    }
     var m = state.marks[key]; return m && { user_id: uid, question_id: key, status: m.s || null, bookmarked: !!m.b, updated_at: iso(m.t) };
   }
   function pushRows(sess, items) {
-    var by = { goal: [], rating: [], mark: [] };
+    var by = { goal: [], rating: [], mark: [], dans: [], run: [], jd: [] };
     items.forEach(function (p) { var row = rowFor(p[0], p[1], sess.uid); if (row) by[p[0]].push(row); });
     var jobs = [];
     if (by.goal.length) jobs.push(rest('POST', 'user_goals?on_conflict=user_id', sess.token, by.goal, 'resolution=merge-duplicates,return=minimal'));
     if (by.rating.length) jobs.push(rest('POST', 'topic_ratings?on_conflict=user_id,topic_id', sess.token, by.rating, 'resolution=merge-duplicates,return=minimal'));
     if (by.mark.length) jobs.push(rest('POST', 'question_marks?on_conflict=user_id,question_id', sess.token, by.mark, 'resolution=merge-duplicates,return=minimal'));
+    // Skill-check tables come from a separate migration: if it is not applied yet, keep everything else syncing.
+    function soft(promise) { return promise.catch(function (e) { console.warn('[readiness] skill-check sync skipped:', e.message); }); }
+    if (by.dans.length) jobs.push(soft(rest('POST', 'diag_answers?on_conflict=user_id,item_id', sess.token, by.dans, 'resolution=merge-duplicates,return=minimal')));
+    if (by.run.length) jobs.push(soft(rest('POST', 'diag_runs?on_conflict=user_id,run_id', sess.token, by.run, 'resolution=merge-duplicates,return=minimal')));
+    if (by.jd.length) jobs.push(soft(rest('POST', 'user_jd?on_conflict=user_id', sess.token, by.jd, 'resolution=merge-duplicates,return=minimal')));
     return Promise.all(jobs);
   }
   function flushPush() {
@@ -449,6 +466,47 @@
     }).catch(function (e) { console.warn('[readiness] push failed; will retry on next sync', e.message); });
   }
 
+  /** Merge quiz answers, runs and the JD by "newer wins". A null remote means the table does not exist yet: stay local. */
+  function mergeSkillCheck(rAns, rRuns, rJd, push) {
+    var d = state.diag = state.diag && state.diag.results ? state.diag : { results: {}, written: {}, runs: [], last: 0 };
+    d.written = d.written || {}; d.runs = d.runs || [];
+    d.runs.forEach(function (r) { if (!r.id) r.id = 'l' + r.t; });
+    if (rAns) {
+      var seen = {};
+      rAns.forEach(function (r) {
+        seen[r.item_id] = 1;
+        var t = Date.parse(r.updated_at), isW = r.kind === 'written', l = isW ? d.written[r.item_id] : d.results[r.item_id];
+        if (!l || l.t < t) {
+          if (isW) d.written[r.item_id] = { s: Number(r.score), topic: r.topic, ref: r.ref, d: r.difficulty, t: t };
+          else d.results[r.item_id] = { c: !!r.correct, k: r.confidence, topic: r.topic, ref: r.ref, d: r.difficulty, t: t };
+        } else if (l.t > t) push.push(['dans', r.item_id]);
+      });
+      Object.keys(d.results).concat(Object.keys(d.written)).forEach(function (k) { if (!seen[k]) push.push(['dans', k]); });
+    }
+    if (rRuns) {
+      var byId = {}; d.runs.forEach(function (r) { byId[r.id] = r; });
+      var seenRun = {};
+      rRuns.forEach(function (r) {
+        seenRun[r.run_id] = 1; var t = Date.parse(r.updated_at), l = byId[r.run_id];
+        if (!l) d.runs.push({ id: r.run_id, t: t, n: r.answered, ok: r.correct });
+        else if (l.t < t) { l.t = t; l.n = r.answered; l.ok = r.correct; }
+        else if (l.t > t) push.push(['run', l.id]);
+      });
+      d.runs.forEach(function (r) { if (!seenRun[r.id]) push.push(['run', r.id]); });
+      d.runs.sort(function (a, b) { return a.t - b.t; }); if (d.runs.length > 20) d.runs = d.runs.slice(-20);
+    }
+    if (rJd) {
+      var rj = rJd[0], rt = rj ? Date.parse(rj.updated_at) : 0, lt = state.jd ? (state.jd.t || 0) : (state.jdT || 0);
+      if (rj && rt > lt) {
+        if (rj.active) { state.jd = { level: rj.level, years: rj.years, topics: rj.topics || {}, t: rt }; state.jdT = 0; }
+        else { state.jd = null; state.jdT = rt; }
+      } else if ((state.jd || state.jdT) && lt > rt) push.push(['jd', 'j']);
+    }
+    var last = 0; Object.keys(d.results).forEach(function (k) { last = Math.max(last, d.results[k].t || 0); });
+    Object.keys(d.written).forEach(function (k) { last = Math.max(last, d.written[k].t || 0); });
+    d.last = Math.max(d.last || 0, last);
+  }
+
   function sync() {
     return cfg.getSession().then(function (sess) {
       if (!sess) return { ok: false, reason: 'signed-out' };
@@ -458,7 +516,10 @@
       return Promise.all([
         rest('GET', 'user_goals?' + q, sess.token),
         rest('GET', 'topic_ratings?' + q, sess.token),
-        rest('GET', 'question_marks?' + q + '&limit=5000', sess.token)
+        rest('GET', 'question_marks?' + q + '&limit=5000', sess.token),
+        rest('GET', 'diag_answers?' + q + '&limit=1000', sess.token).catch(function () { return null; }),   // null = table not created yet
+        rest('GET', 'diag_runs?' + q + '&order=updated_at.desc&limit=20', sess.token).catch(function () { return null; }),
+        rest('GET', 'user_jd?' + q, sess.token).catch(function () { return null; })
       ]).then(function (res) {
         var push = [];
         var remoteGoal = res[0][0];
@@ -480,6 +541,7 @@
           else if (l.t > t) push.push(['mark', r.question_id]);
         });
         Object.keys(state.marks).forEach(function (k) { if (!seenM[k]) push.push(['mark', k]); });
+        mergeSkillCheck(res[3], res[4], res[5], push);
         save(); emit();
         return push.length ? pushRows(sess, push).then(function () { return { ok: true, pushed: push.length }; }) : { ok: true, pushed: 0 };
       });
@@ -519,7 +581,8 @@
   /** jd: the object returned by DroidlyDiagnostic.analyzeJD (or null to clear). The pasted text itself is never stored. */
   function setJD(jd) {
     state.jd = jd ? { level: jd.level || null, years: jd.years == null ? null : jd.years, topics: jd.topics || {}, t: Date.now() } : null;
-    save(); emit();
+    state.jdT = jd ? 0 : Date.now();   // when it was removed, so the removal syncs to other devices
+    save(); emit(); queuePush('jd', 'j');
   }
   /** Record graded diagnostic answers (outputs of gradeMcq / gradeWritten). Kept on this device only. */
   function recordDiag(results, opts) {
@@ -531,13 +594,21 @@
       else { d.results[r.id] = { c: !!r.c, k: r.k, topic: r.topic, ref: r.ref, d: r.d, t: now }; n++; if (r.c) ok++; }
     });
     d.last = now;
-    var tail = d.runs[d.runs.length - 1], rid = opts && opts.run;
-    if (rid && tail && tail.id === rid) { tail.n += n; tail.ok += ok; tail.t = now; }   // answers saved one by one belong to one quiz run
-    else { d.runs.push({ id: rid || null, t: now, n: n, ok: ok }); if (d.runs.length > 20) d.runs = d.runs.slice(-20); }
+    var tail = d.runs[d.runs.length - 1], rid = opts && opts.run, runKey;
+    if (rid && tail && tail.id === rid) { tail.n += n; tail.ok += ok; tail.t = now; runKey = rid; }   // answers saved one by one belong to one quiz run
+    else { runKey = rid || ('r' + now); d.runs.push({ id: runKey, t: now, n: n, ok: ok }); if (d.runs.length > 20) d.runs = d.runs.slice(-20); }
     save(); emit();
+    (results || []).forEach(function (r) { queuePush('dans', r.id); });
+    queuePush('run', runKey);
     track('diagnostic_recorded', { answered: n, correct: ok });
   }
-  function clearDiag() { state.diag = { results: {}, written: {}, runs: [], last: 0 }; state.jd = null; save(); emit(); }
+  function clearDiag() {
+    state.diag = { results: {}, written: {}, runs: [], last: 0 }; state.jd = null; state.jdT = 0; save(); emit();
+    cfg.getSession().then(function (sess) {   // best effort: wipe the signed-in user's saved copy too
+      if (!sess) return;
+      ['diag_answers', 'diag_runs', 'user_jd'].forEach(function (t) { rest('DELETE', t + '?user_id=eq.' + sess.uid, sess.token).catch(function () { /* table may not exist */ }); });
+    }).catch(function () { /* ignore */ });
+  }
   function clearLocal() { state = emptyState(); save(); emit(); }
 
   /** Today's plan: reuse the saved one unless the day, the goal or the ratings changed (or force). */
