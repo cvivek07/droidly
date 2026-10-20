@@ -1,0 +1,1646 @@
+{
+ "version": 1,
+ "note": "Drafted from existing Droidly answers; every item needs author review before it is treated as verified.",
+ "items": [
+  {
+   "id": "m-android-1",
+   "type": "mcq",
+   "topic": "android",
+   "ref": "android:1",
+   "diff": "easy",
+   "q": "A user is on a visible Activity and presses the Home button. Which callbacks are typically invoked on that Activity?",
+   "options": [
+    "onDestroy() only",
+    "onPause(), onStop() and onDestroy()",
+    "onPause() then onStop() — the Activity stays alive in the background",
+    "onStop() only; onPause() is skipped"
+   ],
+   "answer": 2,
+   "why": "Home moves the task to the background: the Activity is paused and stopped but not destroyed. Back (finishing the Activity) additionally calls onDestroy().",
+   "review": "pending"
+  },
+  {
+   "id": "m-android-12",
+   "type": "mcq",
+   "topic": "android",
+   "ref": "android:12",
+   "diff": "medium",
+   "q": "An Activity declared with launchMode=\"singleTop\" is already at the top of the back stack and receives a new Intent for itself. What happens?",
+   "options": [
+    "A new instance is created on top of the old one",
+    "The old instance is destroyed and recreated",
+    "The Intent is silently dropped",
+    "The existing instance is reused and onNewIntent() is called"
+   ],
+   "answer": 3,
+   "why": "singleTop only avoids a duplicate when the instance is already on top; it is reused and gets onNewIntent(). If it were not on top, a new instance would be created.",
+   "review": "pending"
+  },
+  {
+   "id": "m-android-8",
+   "type": "mcq",
+   "topic": "android",
+   "ref": "android:8",
+   "diff": "hard",
+   "q": "After the system kills your app's process in the background, which of these state survives and can be used to restore a screen?",
+   "options": [
+    "Fields held in a ViewModel",
+    "Data saved via onSaveInstanceState / SavedStateHandle",
+    "A value kept with plain remember {} in Compose",
+    "Values in a Kotlin object (singleton)"
+   ],
+   "answer": 1,
+   "why": "Process death wipes in-memory objects including ViewModels and singletons. The saved-instance-state Bundle (also exposed through SavedStateHandle) is persisted by the system and restored.",
+   "review": "pending"
+  },
+  {
+   "id": "m-android-4",
+   "type": "mcq",
+   "topic": "android",
+   "ref": "android:4",
+   "diff": "medium",
+   "q": "You must upload pending analytics logs even if the app is killed or the device restarts, and timing is flexible. What is the right tool?",
+   "options": [
+    "A coroutine in viewModelScope",
+    "A bound Service started from the Activity",
+    "WorkManager with a network constraint",
+    "A plain background Thread"
+   ],
+   "answer": 2,
+   "why": "WorkManager is for deferrable work that must be guaranteed to run eventually, persisted across process death and reboots. Threads and viewModelScope die with the process.",
+   "review": "pending"
+  },
+  {
+   "id": "m-android-15",
+   "type": "mcq",
+   "topic": "android",
+   "ref": "android:15",
+   "diff": "hard",
+   "q": "What does targetSdkVersion mainly control?",
+   "options": [
+    "Which API level your code is compiled against",
+    "Which platform behaviour changes your app opts into at runtime",
+    "The oldest Android version your app can be installed on",
+    "The size of the generated APK"
+   ],
+   "answer": 1,
+   "why": "minSdk is the install floor and compileSdk is the API you compile against. targetSdk tells the system which version your app was tested for, so behaviour changes for newer versions apply.",
+   "review": "pending"
+  },
+  {
+   "id": "m-android-11",
+   "type": "mcq",
+   "topic": "android",
+   "ref": "android:11",
+   "diff": "medium",
+   "q": "Why is Parcelable generally preferred over Serializable for passing data between Android components?",
+   "options": [
+    "It is the only format Bundles can hold",
+    "It encrypts the data in transit",
+    "It avoids reflection-based serialization and is faster",
+    "It can store any object graph without extra code"
+   ],
+   "answer": 2,
+   "why": "Serializable relies on reflection and creates lots of garbage; Parcelable (often generated with @Parcelize) is explicit and faster. Bundles also accept Serializable, so 'only format' is wrong.",
+   "review": "pending"
+  },
+  {
+   "id": "m-kotlin-2",
+   "type": "mcq",
+   "topic": "kotlin",
+   "ref": "kotlin:2",
+   "diff": "medium",
+   "q": "Which declaration compiles?",
+   "options": [
+    "const val A = listOf(1, 2)",
+    "const val D = StringBuilder()",
+    "const val C = System.currentTimeMillis()",
+    "const val B = \"x\" + 1"
+   ],
+   "answer": 3,
+   "why": "const val needs a compile-time constant of a primitive or String type. A concatenation of literals is a constant expression; function calls and object construction are not.",
+   "review": "pending"
+  },
+  {
+   "id": "m-kotlin-4",
+   "type": "mcq",
+   "topic": "kotlin",
+   "ref": "kotlin:4",
+   "diff": "medium",
+   "q": "What is the main benefit of using a sealed class/interface as the subject of a `when` expression?",
+   "options": [
+    "It prevents the class from being instantiated by reflection",
+    "The compiler checks all subtypes are handled, so no else branch is needed",
+    "It lets subclasses be declared in any module",
+    "It makes `when` run faster at runtime"
+   ],
+   "answer": 1,
+   "why": "Sealed hierarchies are known at compile time, so `when` used as an expression can be exhaustive without else, and adding a subtype produces compile errors where it is unhandled.",
+   "review": "pending"
+  },
+  {
+   "id": "m-kotlin-5",
+   "type": "mcq",
+   "topic": "kotlin",
+   "ref": "kotlin:5",
+   "diff": "medium",
+   "q": "Which scope function returns the receiver object itself and refers to it as `it`?",
+   "options": [
+    "let",
+    "run",
+    "also",
+    "with"
+   ],
+   "answer": 2,
+   "why": "`also` uses `it` and returns the receiver. `let` uses `it` but returns the lambda result; `run` and `with` use `this` and return the lambda result.",
+   "review": "pending"
+  },
+  {
+   "id": "m-kotlin-8",
+   "type": "mcq",
+   "topic": "kotlin",
+   "ref": "kotlin:8",
+   "diff": "hard",
+   "q": "Why can a lambda passed to an inline function use `return` to exit the enclosing function (a non-local return)?",
+   "options": [
+    "Because Kotlin lambdas always capture the caller's stack frame",
+    "Because `return` inside a lambda is ignored",
+    "Because the lambda is compiled to a goto",
+    "Because the lambda's body is inlined into the call site"
+   ],
+   "answer": 3,
+   "why": "Inlining copies the lambda body into the caller, so a return really returns from the caller. `crossinline` forbids this when the lambda runs in another context.",
+   "review": "pending"
+  },
+  {
+   "id": "m-kotlin-9",
+   "type": "mcq",
+   "topic": "kotlin",
+   "ref": "kotlin:9",
+   "diff": "hard",
+   "q": "Why is `val a: List<Any> = listOf<String>()` allowed but `val b: MutableList<Any> = mutableListOf<String>()` is not?",
+   "options": [
+    "The compiler allows both; only the second warns",
+    "List is declared covariant (out E); MutableList is invariant because it also accepts E",
+    "Because MutableList is an abstract class",
+    "Because String is not a subtype of Any in generics"
+   ],
+   "answer": 1,
+   "why": "A read-only List only produces E so it is safe to treat List<String> as List<Any>. MutableList also consumes E (add), so allowing it would break type safety.",
+   "review": "pending"
+  },
+  {
+   "id": "m-kotlin-26",
+   "type": "mcq",
+   "topic": "kotlin",
+   "ref": "kotlin:26",
+   "diff": "easy",
+   "q": "In Kotlin, what does `a === b` check?",
+   "options": [
+    "That both have the same type",
+    "Structural equality via equals()",
+    "That both have the same hashCode",
+    "Referential equality: both refer to the same object"
+   ],
+   "answer": 3,
+   "why": "`==` calls equals() (structural); `===` is identity comparison.",
+   "review": "pending"
+  },
+  {
+   "id": "m-compose-3",
+   "type": "mcq",
+   "topic": "compose",
+   "ref": "compose:3",
+   "diff": "medium",
+   "q": "A text field's value is stored with `remember { mutableStateOf(\"\") }`. The user rotates the device. What happens to the text?",
+   "options": [
+    "It is kept in the ViewModel automatically",
+    "It is kept only if the field has focus",
+    "It is lost, because the Activity is recreated",
+    "It is kept, because remember survives configuration changes"
+   ],
+   "answer": 2,
+   "why": "remember only survives recomposition. rememberSaveable stores the value in saved instance state so it survives configuration change and process death.",
+   "review": "pending"
+  },
+  {
+   "id": "m-compose-2",
+   "type": "mcq",
+   "topic": "compose",
+   "ref": "compose:2",
+   "diff": "hard",
+   "q": "What allows Compose to skip recomposing a composable when its parent recomposes?",
+   "options": [
+    "Its name is unique in the file",
+    "It was annotated with @Immutable at least once in the project",
+    "All of its parameters are unchanged from the previous composition",
+    "It has no side effects"
+   ],
+   "answer": 2,
+   "why": "Compose compares inputs; if they are all equal (stable and equal, or the same instance with strong skipping) the call is skipped and its output reused.",
+   "review": "pending"
+  },
+  {
+   "id": "m-compose-5",
+   "type": "mcq",
+   "topic": "compose",
+   "ref": "compose:5",
+   "diff": "medium",
+   "q": "What is state hoisting?",
+   "options": [
+    "Storing state in a global singleton",
+    "Caching state in rememberSaveable",
+    "Declaring state with `by` delegation",
+    "Moving state up to the caller and passing down the value plus an event callback"
+   ],
+   "answer": 3,
+   "why": "A stateless composable receives `value` and `onValueChange`, so the owner controls the state. It makes the composable reusable and testable.",
+   "review": "pending"
+  },
+  {
+   "id": "m-compose-4",
+   "type": "mcq",
+   "topic": "compose",
+   "ref": "compose:4",
+   "diff": "hard",
+   "q": "In `LaunchedEffect(userId) { load(userId) }`, when does the block run again?",
+   "options": [
+    "When userId changes",
+    "On every recomposition",
+    "Only once, ignoring key changes",
+    "Only when the composable leaves and re-enters the screen"
+   ],
+   "answer": 0,
+   "why": "LaunchedEffect starts a coroutine when it enters the composition and cancels and restarts it when its key changes. It is cancelled when it leaves the composition.",
+   "review": "pending"
+  },
+  {
+   "id": "m-compose-6",
+   "type": "mcq",
+   "topic": "compose",
+   "ref": "compose:6",
+   "diff": "medium",
+   "q": "What is the order of Compose's three phases for a frame?",
+   "options": [
+    "Composition, Layout, Drawing",
+    "Composition, Drawing, Layout",
+    "Layout, Composition, Drawing",
+    "Drawing, Layout, Composition"
+   ],
+   "answer": 0,
+   "why": "Compose decides what to show (composition), measures and places it (layout), then renders it (drawing). Reading state only in a later phase can skip earlier phases.",
+   "review": "pending"
+  },
+  {
+   "id": "m-compose-16",
+   "type": "mcq",
+   "topic": "compose",
+   "ref": "compose:16",
+   "diff": "medium",
+   "q": "When is `derivedStateOf` the right tool?",
+   "options": [
+    "To convert a Flow into State",
+    "When a value derived from fast-changing state changes much less often, like 'show scroll-to-top button' from the scroll index",
+    "To make any state survive configuration changes",
+    "To launch a coroutine when state changes"
+   ],
+   "answer": 1,
+   "why": "derivedStateOf limits recomposition to when the derived result changes, not each time its inputs change.",
+   "review": "pending"
+  },
+  {
+   "id": "m-coroutines-4",
+   "type": "mcq",
+   "topic": "coroutines",
+   "ref": "coroutines:4",
+   "diff": "easy",
+   "q": "What is the key difference between `launch` and `async`?",
+   "options": [
+    "They are identical aside from naming",
+    "async returns a Deferred whose result you get with await(); launch returns a Job with no result",
+    "launch is for suspend functions only",
+    "async runs on a background thread and launch on the main thread"
+   ],
+   "answer": 1,
+   "why": "Both start coroutines and use the same dispatcher rules. async is for when you need a result.",
+   "review": "pending"
+  },
+  {
+   "id": "m-coroutines-6",
+   "type": "mcq",
+   "topic": "coroutines",
+   "ref": "coroutines:6",
+   "diff": "medium",
+   "q": "A SupervisorJob is the parent of two child coroutines. One child throws an exception. What happens to the other child?",
+   "options": [
+    "Both are restarted automatically",
+    "It is cancelled immediately",
+    "It is cancelled once it suspends next",
+    "It keeps running; failure is not propagated to siblings"
+   ],
+   "answer": 3,
+   "why": "With a regular Job a failing child cancels its parent and siblings. SupervisorJob stops that upward propagation, so each child's failure is handled independently.",
+   "review": "pending"
+  },
+  {
+   "id": "m-coroutines-5",
+   "type": "mcq",
+   "topic": "coroutines",
+   "ref": "coroutines:5",
+   "diff": "medium",
+   "q": "A coroutine runs `while (true) { heavyComputation() }` with no suspension points. You call job.cancel(). What happens?",
+   "options": [
+    "It keeps running; cancellation is cooperative and needs isActive/ensureActive or a suspension point",
+    "It throws an IllegalStateException",
+    "It stops instantly because cancel() kills the thread",
+    "It stops after the next garbage collection"
+   ],
+   "answer": 0,
+   "why": "Cancellation is cooperative: suspending functions from kotlinx.coroutines check for cancellation, but a tight CPU loop must check isActive or call ensureActive().",
+   "review": "pending"
+  },
+  {
+   "id": "m-coroutines-7",
+   "type": "mcq",
+   "topic": "coroutines",
+   "ref": "coroutines:7",
+   "diff": "hard",
+   "q": "What happens here? try { scope.launch { throw IOException() } } catch (e: IOException) { /* handle */ }",
+   "options": [
+    "The catch block handles the exception",
+    "The catch block does not run; the exception propagates through the coroutine hierarchy",
+    "The compiler rejects the code",
+    "The exception is swallowed silently by launch"
+   ],
+   "answer": 1,
+   "why": "launch starts a new coroutine; its exception is not thrown to the code that called launch. Handle it inside the coroutine, or with a CoroutineExceptionHandler on a root coroutine.",
+   "review": "pending"
+  },
+  {
+   "id": "m-coroutines-11",
+   "type": "mcq",
+   "topic": "coroutines",
+   "ref": "coroutines:11",
+   "diff": "medium",
+   "q": "How does `withContext(Dispatchers.IO) { ... }` differ from `launch(Dispatchers.IO) { ... }`?",
+   "options": [
+    "There is no difference",
+    "withContext runs the block in parallel with the caller",
+    "launch returns the result directly",
+    "withContext suspends the caller until the block finishes and returns its value"
+   ],
+   "answer": 3,
+   "why": "withContext switches context for a block within the current coroutine and returns the result. launch starts a new concurrent coroutine.",
+   "review": "pending"
+  },
+  {
+   "id": "m-coroutines-3",
+   "type": "mcq",
+   "topic": "coroutines",
+   "ref": "coroutines:3",
+   "diff": "easy",
+   "q": "In structured concurrency, what happens when a parent coroutine is cancelled?",
+   "options": [
+    "Only the first child is cancelled",
+    "All of its children are cancelled",
+    "The children are re-parented to GlobalScope",
+    "Children continue until they finish"
+   ],
+   "answer": 1,
+   "why": "A parent waits for its children and cancellation flows down, which is how viewModelScope cleans up work when the ViewModel is cleared.",
+   "review": "pending"
+  },
+  {
+   "id": "m-flows-2",
+   "type": "mcq",
+   "topic": "flows",
+   "ref": "flows:2",
+   "diff": "medium",
+   "q": "A MutableStateFlow currently holds 1. Code sets `state.value = 1` again. How many times does a collector receive 1 for this assignment?",
+   "options": [
+    "Twice",
+    "No additional emission; StateFlow ignores equal values",
+    "Once more",
+    "It depends on the dispatcher"
+   ],
+   "answer": 1,
+   "why": "StateFlow conflates and only emits when the new value is not equal to the current one. Use SharedFlow when every event must be delivered.",
+   "review": "pending"
+  },
+  {
+   "id": "m-flows-4",
+   "type": "mcq",
+   "topic": "flows",
+   "ref": "flows:4",
+   "diff": "medium",
+   "q": "In `flow { emit(load()) }.map { transform(it) }.flowOn(Dispatchers.IO).collect { render(it) }`, which code runs on Dispatchers.IO?",
+   "options": [
+    "Only collect",
+    "Only the flow builder",
+    "Everything including collect",
+    "The flow builder and map, but not collect"
+   ],
+   "answer": 3,
+   "why": "flowOn changes the context of everything upstream of it. The collector keeps running in the context of the code that collects.",
+   "review": "pending"
+  },
+  {
+   "id": "m-flows-3",
+   "type": "mcq",
+   "topic": "flows",
+   "ref": "flows:3",
+   "diff": "hard",
+   "q": "What does `stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initial)` do?",
+   "options": [
+    "Keeps upstream active for 5s after the last collector leaves, so rotation does not restart it",
+    "Stops the upstream immediately when no collectors remain",
+    "Replays the last 5000 values to new collectors",
+    "Starts the upstream only after 5 seconds"
+   ],
+   "answer": 0,
+   "why": "The timeout bridges short gaps like configuration change while still stopping work when the UI is truly gone.",
+   "review": "pending"
+  },
+  {
+   "id": "m-flows-6",
+   "type": "mcq",
+   "topic": "flows",
+   "ref": "flows:6",
+   "diff": "hard",
+   "q": "A search box emits a query on every keystroke and you call the API per query. Which operator cancels the in-flight request when a newer query arrives?",
+   "options": [
+    "flatMapLatest (or mapLatest)",
+    "flatMapConcat",
+    "flatMapMerge",
+    "buffer"
+   ],
+   "answer": 0,
+   "why": "flatMapLatest cancels the previous inner flow when a new upstream value arrives. flatMapConcat queues them and flatMapMerge runs them concurrently.",
+   "review": "pending"
+  },
+  {
+   "id": "m-flows-21",
+   "type": "mcq",
+   "topic": "flows",
+   "ref": "flows:21",
+   "diff": "hard",
+   "q": "Why prefer collectAsStateWithLifecycle over collectAsState on Android?",
+   "options": [
+    "It caches the last value on disk",
+    "It makes the Flow hot",
+    "It collects on a background thread",
+    "It stops collecting when the lifecycle drops below STARTED, saving work in the background"
+   ],
+   "answer": 3,
+   "why": "collectAsState keeps collecting while composed even if the app is in the background; the lifecycle-aware version pauses collection.",
+   "review": "pending"
+  },
+  {
+   "id": "m-architecture-1",
+   "type": "mcq",
+   "topic": "architecture",
+   "ref": "architecture:1",
+   "diff": "easy",
+   "q": "Which is a clear MVVM violation?",
+   "options": [
+    "A ViewModel exposing StateFlow<UiState>",
+    "A ViewModel holding a reference to an Activity or View",
+    "A View observing the ViewModel",
+    "A Repository injected into the ViewModel"
+   ],
+   "answer": 1,
+   "why": "ViewModels outlive Activities across configuration changes, so holding a View/Activity reference leaks it.",
+   "review": "pending"
+  },
+  {
+   "id": "m-architecture-4",
+   "type": "mcq",
+   "topic": "architecture",
+   "ref": "architecture:4",
+   "diff": "easy",
+   "q": "What is the main role of the Repository pattern?",
+   "options": [
+    "Create database tables",
+    "Render data on screen",
+    "Hold navigation state",
+    "Expose data through one API and hide whether it comes from network, DB or cache"
+   ],
+   "answer": 3,
+   "why": "The repository is the data layer's single entry point, usually the single source of truth, so callers do not depend on where data comes from.",
+   "review": "pending"
+  },
+  {
+   "id": "m-architecture-3",
+   "type": "mcq",
+   "topic": "architecture",
+   "ref": "architecture:3",
+   "diff": "medium",
+   "q": "What defines an MVI-style architecture?",
+   "options": [
+    "One immutable state per screen, changed only by processing user intents/events",
+    "Multiple ViewModels sharing mutable state",
+    "Two-way data binding between View and Model",
+    "Business logic inside the View"
+   ],
+   "answer": 0,
+   "why": "Unidirectional data flow: intents go in, a reducer produces a new immutable state, the UI renders it.",
+   "review": "pending"
+  },
+  {
+   "id": "m-architecture-33",
+   "type": "mcq",
+   "topic": "architecture",
+   "ref": "architecture:33",
+   "diff": "medium",
+   "q": "In a multi-module Gradle project, what does `api(project(\":core\"))` do that `implementation(project(\":core\"))` does not?",
+   "options": [
+    "Makes :core a runtime-only dependency",
+    "Compiles :core faster",
+    "Exposes :core to modules that depend on this module",
+    "Includes :core only in debug builds"
+   ],
+   "answer": 2,
+   "why": "implementation keeps a dependency internal, so changes recompile fewer modules; api leaks it onto consumers' compile classpath.",
+   "review": "pending"
+  },
+  {
+   "id": "m-architecture-31",
+   "type": "mcq",
+   "topic": "architecture",
+   "ref": "architecture:31",
+   "diff": "medium",
+   "q": "What does SavedStateHandle in a ViewModel give you that a plain ViewModel field does not?",
+   "options": [
+    "State that survives configuration changes",
+    "Automatic database persistence",
+    "State that survives process death",
+    "Thread safety"
+   ],
+   "answer": 2,
+   "why": "ViewModel fields already survive configuration change. SavedStateHandle is backed by saved instance state, so values survive process death too (keep it small).",
+   "review": "pending"
+  },
+  {
+   "id": "m-di-1",
+   "type": "mcq",
+   "topic": "di",
+   "ref": "di:1",
+   "diff": "easy",
+   "q": "What is the main benefit of dependency injection?",
+   "options": [
+    "It makes code compile faster",
+    "It removes the need for interfaces",
+    "Loose coupling, which makes classes easier to test and swap implementations",
+    "It lets you use global variables safely"
+   ],
+   "answer": 2,
+   "why": "Classes receive dependencies rather than creating them, so tests can pass fakes.",
+   "review": "pending"
+  },
+  {
+   "id": "m-di-4",
+   "type": "mcq",
+   "topic": "di",
+   "ref": "di:4",
+   "diff": "medium",
+   "q": "In Hilt, when should you use @Binds instead of @Provides?",
+   "options": [
+    "To construct third-party classes like Retrofit with a builder",
+    "To declare a scope",
+    "To tell Hilt which implementation to use for an interface, with a constructor-injected implementation",
+    "To provide a primitive value"
+   ],
+   "answer": 2,
+   "why": "@Binds is an abstract mapping from interface to implementation. @Provides is for objects you cannot constructor-inject, such as builder-created ones.",
+   "review": "pending"
+  },
+  {
+   "id": "m-di-3",
+   "type": "mcq",
+   "topic": "di",
+   "ref": "di:3",
+   "diff": "medium",
+   "q": "Which Hilt scope keeps one instance per ViewModel?",
+   "options": [
+    "@ViewModelScoped",
+    "@ActivityScoped",
+    "@Singleton",
+    "@Reusable"
+   ],
+   "answer": 0,
+   "why": "@ViewModelScoped ties an object to a ViewModel's lifetime; @Singleton is application-wide and @ActivityScoped is per Activity.",
+   "review": "pending"
+  },
+  {
+   "id": "m-di-20",
+   "type": "mcq",
+   "topic": "di",
+   "ref": "di:20",
+   "diff": "hard",
+   "q": "A class needs both a dependency from the graph and a runtime argument (for example a movieId). Which Hilt/Dagger feature fits?",
+   "options": [
+    "@Singleton",
+    "@Binds",
+    "@EntryPoint",
+    "Assisted injection (@AssistedInject / @AssistedFactory)"
+   ],
+   "answer": 3,
+   "why": "Assisted injection lets you mix graph-provided dependencies with parameters provided at call time via a generated factory.",
+   "review": "pending"
+  },
+  {
+   "id": "m-networking-3",
+   "type": "mcq",
+   "topic": "networking",
+   "ref": "networking:3",
+   "diff": "medium",
+   "q": "You add an OkHttp interceptor with addNetworkInterceptor. For a response served from the HTTP cache, is that interceptor called?",
+   "options": [
+    "No; network interceptors only run when a real network request happens",
+    "Yes, always",
+    "Only for the first request",
+    "Only for HTTPS"
+   ],
+   "answer": 0,
+   "why": "Application interceptors run once per call regardless of cache; network interceptors sit closer to the wire and also see redirects.",
+   "review": "pending"
+  },
+  {
+   "id": "m-networking-6",
+   "type": "mcq",
+   "topic": "networking",
+   "ref": "networking:6",
+   "diff": "hard",
+   "q": "Which OkHttp component is designed to react to a 401 by refreshing credentials and retrying the request?",
+   "options": [
+    "Authenticator",
+    "Dispatcher",
+    "EventListener",
+    "CookieJar"
+   ],
+   "answer": 0,
+   "why": "An Authenticator is invoked on a 401 and can return a new request with updated credentials. Guard against loops and parallel refreshes.",
+   "review": "pending"
+  },
+  {
+   "id": "m-networking-4",
+   "type": "mcq",
+   "topic": "networking",
+   "ref": "networking:4",
+   "diff": "medium",
+   "q": "A Retrofit `suspend fun getUser(): User` receives a 404 response. What happens by default?",
+   "options": [
+    "It throws retrofit2.HttpException",
+    "It returns a User with default fields",
+    "It returns null",
+    "It throws a ClassCastException"
+   ],
+   "answer": 0,
+   "why": "For suspend functions returning the body, non-2xx responses throw HttpException and I/O failures throw IOException. Returning Response<T> lets you inspect the code.",
+   "review": "pending"
+  },
+  {
+   "id": "m-networking-37",
+   "type": "mcq",
+   "topic": "networking",
+   "ref": "networking:37",
+   "diff": "hard",
+   "q": "Why use an idempotency key for a POST that creates a payment?",
+   "options": [
+    "To avoid CORS preflight",
+    "To cache the response on the client",
+    "So retrying after a timeout does not charge the user twice",
+    "To encrypt the request body"
+   ],
+   "answer": 2,
+   "why": "POST is not idempotent by default. The server uses the key to detect and deduplicate retried requests.",
+   "review": "pending"
+  },
+  {
+   "id": "m-networking-39",
+   "type": "mcq",
+   "topic": "networking",
+   "ref": "networking:39",
+   "diff": "medium",
+   "q": "What is the usual difference between PUT and PATCH?",
+   "options": [
+    "They differ only in status codes",
+    "PATCH is idempotent and PUT is not",
+    "PUT replaces the whole resource; PATCH applies a partial update",
+    "PUT is for reads, PATCH is for writes"
+   ],
+   "answer": 2,
+   "why": "PUT sends a full representation; PATCH sends only the changes.",
+   "review": "pending"
+  },
+  {
+   "id": "m-storage-3",
+   "type": "mcq",
+   "topic": "storage",
+   "ref": "storage:3",
+   "diff": "medium",
+   "q": "A Room @Query function returns Flow<List<Item>>. What happens when the underlying table changes?",
+   "options": [
+    "The app crashes unless you call invalidate()",
+    "It emits only the changed rows",
+    "The Flow emits the updated query result again",
+    "Nothing; you must re-query"
+   ],
+   "answer": 2,
+   "why": "Room observes the tables used by the query and re-runs it, emitting the new full result.",
+   "review": "pending"
+  },
+  {
+   "id": "m-storage-4",
+   "type": "mcq",
+   "topic": "storage",
+   "ref": "storage:4",
+   "diff": "medium",
+   "q": "You bump the Room database version and ship without a Migration (and no fallback). What happens on an upgrade?",
+   "options": [
+    "The app crashes with an IllegalStateException about a missing migration",
+    "Room migrates automatically",
+    "Only new tables are created",
+    "Room silently keeps the old schema"
+   ],
+   "answer": 0,
+   "why": "Without a path from the old version, Room refuses to open the database. Use Migration, AutoMigration, or (losing data) a destructive fallback.",
+   "review": "pending"
+  },
+  {
+   "id": "m-storage-5",
+   "type": "mcq",
+   "topic": "storage",
+   "ref": "storage:5",
+   "diff": "medium",
+   "q": "What is a key advantage of Jetpack DataStore over SharedPreferences?",
+   "options": [
+    "It works only with JSON",
+    "It stores large relational data",
+    "It is faster because it uses a native library",
+    "Asynchronous, transactional, Flow-based API that does not block the main thread"
+   ],
+   "answer": 3,
+   "why": "SharedPreferences can block the UI thread (apply/commit and initial load). DataStore uses coroutines and Flow with consistent updates.",
+   "review": "pending"
+  },
+  {
+   "id": "m-storage-22",
+   "type": "mcq",
+   "topic": "storage",
+   "ref": "storage:22",
+   "diff": "medium",
+   "q": "Which Room DAO function can safely be called from the main thread without special configuration?",
+   "options": [
+    "A suspend function",
+    "A non-suspend function that returns a List",
+    "Any @Query function",
+    "A non-suspend function that returns an Int count"
+   ],
+   "answer": 0,
+   "why": "Room runs suspend DAO functions on its own executor, making them main-safe. Blocking calls on the main thread throw unless allowMainThreadQueries() is set.",
+   "review": "pending"
+  },
+  {
+   "id": "m-buildtools-2",
+   "type": "mcq",
+   "topic": "buildtools",
+   "ref": "buildtools:2",
+   "diff": "easy",
+   "q": "Why does Google Play require Android App Bundles (AAB) for new apps?",
+   "options": [
+    "AABs remove the need to sign the app",
+    "Play generates optimised APKs for each device configuration, reducing download size",
+    "AABs cannot be decompiled",
+    "AABs install faster than APKs on all devices"
+   ],
+   "answer": 1,
+   "why": "An AAB is a publishing format; Play builds split APKs per device (ABI, density, language).",
+   "review": "pending"
+  },
+  {
+   "id": "m-buildtools-3",
+   "type": "mcq",
+   "topic": "buildtools",
+   "ref": "buildtools:3",
+   "diff": "medium",
+   "q": "What does R8 do in a release build?",
+   "options": [
+    "Shrinks, optimises and obfuscates code (and resources with shrinkResources)",
+    "Only obfuscates class names",
+    "Compiles Kotlin to bytecode",
+    "Signs the APK"
+   ],
+   "answer": 0,
+   "why": "R8 replaced ProGuard as the default code shrinker, using the same keep-rule format.",
+   "review": "pending"
+  },
+  {
+   "id": "m-buildtools-8",
+   "type": "mcq",
+   "topic": "buildtools",
+   "ref": "buildtools:8",
+   "diff": "medium",
+   "q": "Why is KSP usually faster than KAPT?",
+   "options": [
+    "It reads Kotlin symbols directly instead of generating Java stubs",
+    "It runs only in release builds",
+    "It skips code generation entirely",
+    "It uses a bigger heap"
+   ],
+   "answer": 0,
+   "why": "KAPT first creates Java stubs for Kotlin classes; KSP works at the Kotlin symbol level.",
+   "review": "pending"
+  },
+  {
+   "id": "m-buildtools-14",
+   "type": "mcq",
+   "topic": "buildtools",
+   "ref": "buildtools:14",
+   "diff": "hard",
+   "q": "A release build crashes with ClassNotFound/NoSuchMethod errors for classes accessed via reflection or serialization, but debug works. Most likely cause?",
+   "options": [
+    "Gradle cache is corrupted",
+    "The minSdk is too low",
+    "The debug keystore was used",
+    "R8 removed or renamed code that needs keep rules"
+   ],
+   "answer": 3,
+   "why": "Minification is typically enabled only for release. Add keep rules (or use libraries that ship consumer rules) for reflectively accessed classes.",
+   "review": "pending"
+  },
+  {
+   "id": "m-buildtools-15",
+   "type": "mcq",
+   "topic": "buildtools",
+   "ref": "buildtools:15",
+   "diff": "easy",
+   "q": "What must be true of versionCode for every new Play Store upload?",
+   "options": [
+    "It must equal versionName",
+    "It must be a prime number",
+    "It can be reused if the app is unchanged",
+    "It must be higher than any previously uploaded version"
+   ],
+   "answer": 3,
+   "why": "versionCode is an integer used internally to order releases. versionName is only a display string.",
+   "review": "pending"
+  },
+  {
+   "id": "m-buildtools-21",
+   "type": "mcq",
+   "topic": "buildtools",
+   "ref": "buildtools:21",
+   "diff": "hard",
+   "q": "What does the Gradle configuration cache do?",
+   "options": [
+    "Caches downloaded dependencies",
+    "Reuses the result of the configuration phase when build inputs are unchanged",
+    "Caches test results",
+    "Caches compiled classes"
+   ],
+   "answer": 1,
+   "why": "It serialises the task graph so later builds can skip the configuration phase; build logic must be compatible with it.",
+   "review": "pending"
+  },
+  {
+   "id": "m-performance-1",
+   "type": "mcq",
+   "topic": "performance",
+   "ref": "performance:1",
+   "diff": "medium",
+   "q": "Which is a classic cause of an Activity memory leak?",
+   "options": [
+    "Calling finish()",
+    "Using Dispatchers.IO",
+    "Using a ViewModel",
+    "A singleton or static field holding a reference to an Activity/Context"
+   ],
+   "answer": 3,
+   "why": "Long-lived objects that reference a destroyed Activity prevent it from being garbage collected, with its views and bitmaps.",
+   "review": "pending"
+  },
+  {
+   "id": "m-performance-6",
+   "type": "mcq",
+   "topic": "performance",
+   "ref": "performance:6",
+   "diff": "medium",
+   "q": "What is the per-frame time budget to render at 60 fps?",
+   "options": [
+    "About 160 ms",
+    "About 1 ms",
+    "About 100 ms",
+    "About 16 ms"
+   ],
+   "answer": 3,
+   "why": "1000 ms / 60 ≈ 16.6 ms; at 120 Hz the budget is about 8.3 ms.",
+   "review": "pending"
+  },
+  {
+   "id": "m-performance-10",
+   "type": "mcq",
+   "topic": "performance",
+   "ref": "performance:10",
+   "diff": "medium",
+   "q": "What describes a cold start?",
+   "options": [
+    "The Activity is recreated but the process exists",
+    "The device just rebooted",
+    "The app is resumed from the background with its process alive",
+    "The app process does not exist and must be created before the first screen"
+   ],
+   "answer": 3,
+   "why": "Cold start does the most work: creating the process, Application, and first Activity. Warm and hot starts reuse more.",
+   "review": "pending"
+  },
+  {
+   "id": "m-performance-12",
+   "type": "mcq",
+   "topic": "performance",
+   "ref": "performance:12",
+   "diff": "easy",
+   "q": "What is StrictMode used for?",
+   "options": [
+    "Blocking network calls in production",
+    "Enforcing code style",
+    "Measuring frame rate",
+    "Detecting accidental disk or network access on the main thread and leaked resources in development"
+   ],
+   "answer": 3,
+   "why": "Enable it in debug builds with penalties like log or flash to find main-thread I/O and leaks early.",
+   "review": "pending"
+  },
+  {
+   "id": "m-performance-4",
+   "type": "mcq",
+   "topic": "performance",
+   "ref": "performance:4",
+   "diff": "medium",
+   "q": "Roughly how long can the main thread be unresponsive to input before the system reports an ANR?",
+   "options": [
+    "About 5 seconds",
+    "About 60 seconds",
+    "About 1 second",
+    "About 100 ms"
+   ],
+   "answer": 0,
+   "why": "Input dispatch timeout is about 5 seconds; broadcast receivers get longer. Slow work belongs off the main thread.",
+   "review": "pending"
+  },
+  {
+   "topic": "android",
+   "ref": "android:8",
+   "diff": "hard",
+   "q": "Explain what happens when Android kills your app's process in the background, and how you make sure the user does not lose their place.",
+   "keyPoints": [
+    {
+     "label": "The system can kill the process in the background to reclaim memory",
+     "any": [
+      "process death",
+      "killed",
+      "low memory",
+      "reclaim"
+     ]
+    },
+    {
+     "label": "In-memory state (ViewModel, singletons, plain remember) is lost",
+     "any": [
+      "viewmodel",
+      "in-memory",
+      "singleton",
+      "lost"
+     ]
+    },
+    {
+     "label": "Small UI state goes to saved instance state / SavedStateHandle",
+     "any": [
+      "savedstate",
+      "onsaveinstancestate",
+      "saved state",
+      "rememberSaveable"
+     ]
+    },
+    {
+     "label": "Larger or important data is persisted (Room / DataStore)",
+     "any": [
+      "room",
+      "datastore",
+      "database",
+      "persist"
+     ]
+    },
+    {
+     "label": "You test it, for example with 'Don't keep activities' or adb kill",
+     "any": [
+      "don't keep",
+      "dont keep",
+      "adb",
+      "am kill",
+      "developer option"
+     ]
+    }
+   ],
+   "why": "Process death loses everything in memory; restore with saved state for small UI state and persistent storage for real data; test with Don't keep activities or adb.",
+   "id": "w-android-8",
+   "type": "written",
+   "review": "pending"
+  },
+  {
+   "topic": "coroutines",
+   "ref": "coroutines:7",
+   "diff": "hard",
+   "q": "How does exception handling work for coroutines started with launch and async, and how would you stop one failure from cancelling unrelated work?",
+   "keyPoints": [
+    {
+     "label": "Use try/catch inside the coroutine (try/catch around launch does not work)",
+     "any": [
+      "try",
+      "catch"
+     ]
+    },
+    {
+     "label": "launch propagates the exception to the parent / uncaught handler",
+     "any": [
+      "propagat",
+      "parent",
+      "crash",
+      "uncaught"
+     ]
+    },
+    {
+     "label": "async holds the exception until await()",
+     "any": [
+      "await",
+      "deferred"
+     ]
+    },
+    {
+     "label": "CoroutineExceptionHandler only works on a root coroutine",
+     "any": [
+      "coroutineexceptionhandler",
+      "exceptionhandler",
+      "root"
+     ]
+    },
+    {
+     "label": "SupervisorJob / supervisorScope isolates sibling failures",
+     "any": [
+      "supervisor"
+     ]
+    },
+    {
+     "label": "Do not swallow CancellationException",
+     "any": [
+      "cancellationexception",
+      "rethrow",
+      "cancellation"
+     ]
+    }
+   ],
+   "why": "Catch inside the coroutine; launch propagates, async defers to await; handlers apply to roots; supervisors isolate siblings; rethrow CancellationException.",
+   "id": "w-coroutines-7",
+   "type": "written",
+   "review": "pending"
+  },
+  {
+   "topic": "compose",
+   "ref": "compose:2",
+   "diff": "hard",
+   "q": "A Compose screen is recomposing far more than it should. Describe how recomposition works and the steps you would take to reduce it.",
+   "keyPoints": [
+    {
+     "label": "Recomposition happens when state read by a composable changes",
+     "any": [
+      "state",
+      "snapshot",
+      "read"
+     ]
+    },
+    {
+     "label": "Compose skips composables whose inputs are unchanged",
+     "any": [
+      "skip",
+      "unchanged",
+      "stable"
+     ]
+    },
+    {
+     "label": "Unstable parameters (e.g. mutable collections) hurt skipping; use immutable/stable types or strong skipping",
+     "any": [
+      "unstable",
+      "immutable",
+      "stable",
+      "strong skipping",
+      "kotlinx.collections"
+     ]
+    },
+    {
+     "label": "Use keys in lazy lists and derivedStateOf for derived values",
+     "any": [
+      "key",
+      "derivedstateof",
+      "derived"
+     ]
+    },
+    {
+     "label": "Defer state reads (lambda modifiers) and measure with Layout Inspector recomposition counts or tracing",
+     "any": [
+      "defer",
+      "lambda",
+      "layout inspector",
+      "recomposition count",
+      "trace",
+      "profil"
+     ]
+    }
+   ],
+   "why": "Know what triggers and skips recomposition, make parameters stable, use keys/derivedStateOf, defer reads, and measure before optimising.",
+   "id": "w-compose-2",
+   "type": "written",
+   "review": "pending"
+  },
+  {
+   "topic": "flows",
+   "ref": "flows:5",
+   "diff": "hard",
+   "q": "A search bar triggers an API call for every keystroke. How would you design the flow so it is efficient and shows only the latest result?",
+   "keyPoints": [
+    {
+     "label": "debounce the input",
+     "any": [
+      "debounce"
+     ]
+    },
+    {
+     "label": "Skip duplicates / short queries",
+     "any": [
+      "distinctuntilchanged",
+      "distinct",
+      "min length",
+      "minimum",
+      "blank",
+      "filter"
+     ]
+    },
+    {
+     "label": "flatMapLatest / mapLatest cancels stale requests",
+     "any": [
+      "flatmaplatest",
+      "maplatest",
+      "cancel"
+     ]
+    },
+    {
+     "label": "Handle errors without killing the stream (catch/Result inside the inner flow)",
+     "any": [
+      "catch",
+      "error",
+      "result",
+      "retry"
+     ]
+    },
+    {
+     "label": "Expose as StateFlow from the ViewModel (stateIn / WhileSubscribed)",
+     "any": [
+      "stateflow",
+      "statein",
+      "whilesubscribed"
+     ]
+    }
+   ],
+   "why": "Debounce, distinctUntilChanged, flatMapLatest, local error handling, StateFlow in the ViewModel.",
+   "id": "w-flows-5",
+   "type": "written",
+   "review": "pending"
+  },
+  {
+   "topic": "architecture",
+   "ref": "architecture:19",
+   "diff": "hard",
+   "q": "Design offline support for a feature that shows a list from the server. What is your approach?",
+   "keyPoints": [
+    {
+     "label": "Local database is the single source of truth",
+     "any": [
+      "single source",
+      "source of truth",
+      "room",
+      "database"
+     ]
+    },
+    {
+     "label": "UI observes the local data (Flow) not the network",
+     "any": [
+      "flow",
+      "observe",
+      "livedata"
+     ]
+    },
+    {
+     "label": "Repository refreshes from network into the DB",
+     "any": [
+      "repository",
+      "refresh",
+      "network"
+     ]
+    },
+    {
+     "label": "Background sync / retry with WorkManager and connectivity constraints",
+     "any": [
+      "workmanager",
+      "sync",
+      "constraint",
+      "retry"
+     ]
+    },
+    {
+     "label": "Conflict and staleness policy (last-write-wins, timestamps, TTL)",
+     "any": [
+      "conflict",
+      "stale",
+      "ttl",
+      "last-write",
+      "timestamp",
+      "version"
+     ]
+    },
+    {
+     "label": "Show loading/error/stale state to the user",
+     "any": [
+      "error",
+      "stale",
+      "offline",
+      "indicator",
+      "banner"
+     ]
+    }
+   ],
+   "why": "Room as source of truth, observe DB, repository refresh, WorkManager sync, explicit conflict/staleness policy, visible state.",
+   "id": "w-architecture-19",
+   "type": "written",
+   "review": "pending"
+  },
+  {
+   "topic": "networking",
+   "ref": "networking:6",
+   "diff": "hard",
+   "q": "How would you implement automatic token refresh so users are not logged out and parallel requests do not all refresh at once?",
+   "keyPoints": [
+    {
+     "label": "Authenticator reacts to 401 (or an interceptor)",
+     "any": [
+      "authenticator",
+      "401"
+     ]
+    },
+    {
+     "label": "Only one refresh at a time (mutex / synchronized) and others reuse the new token",
+     "any": [
+      "mutex",
+      "synchronized",
+      "lock",
+      "single",
+      "once",
+      "one refresh"
+     ]
+    },
+    {
+     "label": "Retry the original request with the new token",
+     "any": [
+      "retry",
+      "new token",
+      "original request"
+     ]
+    },
+    {
+     "label": "Prevent infinite loops (limit attempts, don't refresh on the refresh call)",
+     "any": [
+      "loop",
+      "limit",
+      "attempt",
+      "responsecount",
+      "prior response"
+     ]
+    },
+    {
+     "label": "If refresh fails, clear session and send to login",
+     "any": [
+      "logout",
+      "log out",
+      "login",
+      "sign out",
+      "clear session"
+     ]
+    },
+    {
+     "label": "Store tokens securely",
+     "any": [
+      "encrypted",
+      "keystore",
+      "secure",
+      "encryptedsharedpreferences"
+     ]
+    }
+   ],
+   "why": "Authenticator on 401, serialized refresh, retry once, loop guards, logout on failure, secure token storage.",
+   "id": "w-networking-6",
+   "type": "written",
+   "review": "pending"
+  },
+  {
+   "topic": "performance",
+   "ref": "performance:5",
+   "diff": "hard",
+   "q": "Your app's cold start takes 4 seconds. How do you diagnose and improve it?",
+   "keyPoints": [
+    {
+     "label": "Measure first (Perfetto, Macrobenchmark, Play Console vitals, reportFullyDrawn)",
+     "any": [
+      "measure",
+      "perfetto",
+      "macrobenchmark",
+      "profil",
+      "benchmark",
+      "vitals",
+      "trace"
+     ]
+    },
+    {
+     "label": "Defer or lazy-initialise work in Application.onCreate (App Startup, background threads)",
+     "any": [
+      "application",
+      "oncreate",
+      "lazy",
+      "defer",
+      "app startup",
+      "initializ"
+     ]
+    },
+    {
+     "label": "Remove disk/network/IO from the main thread during startup",
+     "any": [
+      "main thread",
+      "io",
+      "disk"
+     ]
+    },
+    {
+     "label": "Baseline Profiles",
+     "any": [
+      "baseline profile"
+     ]
+    },
+    {
+     "label": "Use the splash screen API and keep the first screen light",
+     "any": [
+      "splash",
+      "first screen",
+      "layout",
+      "inflat"
+     ]
+    }
+   ],
+   "why": "Measure, defer initialisation, keep main thread free, add baseline profiles, light first screen.",
+   "id": "w-performance-5",
+   "type": "written",
+   "review": "pending"
+  },
+  {
+   "topic": "di",
+   "ref": "di:15",
+   "diff": "hard",
+   "q": "Your Hilt graph has a circular dependency: A needs B and B needs A. How do you resolve it?",
+   "keyPoints": [
+    {
+     "label": "It is a design smell: extract shared logic into a third class or restructure",
+     "any": [
+      "extract",
+      "third",
+      "redesign",
+      "refactor",
+      "restructure",
+      "smell",
+      "responsibilit"
+     ]
+    },
+    {
+     "label": "Depend on an interface / invert the dependency",
+     "any": [
+      "interface",
+      "invers",
+      "abstraction"
+     ]
+    },
+    {
+     "label": "As a workaround, inject Lazy<T> or Provider<T> on one side",
+     "any": [
+      "lazy",
+      "provider"
+     ]
+    }
+   ],
+   "why": "Cycles usually mean mis-drawn responsibilities; extract or invert, and use Lazy/Provider only as a workaround.",
+   "id": "w-di-15",
+   "type": "written",
+   "review": "pending"
+  },
+  {
+   "topic": "buildtools",
+   "ref": "buildtools:10",
+   "diff": "hard",
+   "q": "CI builds take 20 minutes. Where would you look and what would you change?",
+   "keyPoints": [
+    {
+     "label": "Profile first with a build scan or --profile",
+     "any": [
+      "build scan",
+      "profile",
+      "scan"
+     ]
+    },
+    {
+     "label": "Enable Gradle build cache / remote cache and configuration cache",
+     "any": [
+      "build cache",
+      "remote cache",
+      "configuration cache",
+      "caching"
+     ]
+    },
+    {
+     "label": "Modularise and use api/implementation to limit recompilation",
+     "any": [
+      "modul",
+      "implementation"
+     ]
+    },
+    {
+     "label": "Replace KAPT with KSP",
+     "any": [
+      "ksp",
+      "kapt"
+     ]
+    },
+    {
+     "label": "Run tests/lint in parallel or only on affected modules; tune CI hardware and caching of dependencies",
+     "any": [
+      "parallel",
+      "affected",
+      "shard",
+      "ci cache",
+      "dependency cache",
+      "lint"
+     ]
+    }
+   ],
+   "why": "Profile, enable caches, modularise, move to KSP, parallelise and cache on CI.",
+   "id": "w-buildtools-10",
+   "type": "written",
+   "review": "pending"
+  },
+  {
+   "topic": "sysdesign",
+   "ref": "sysdesign:offlinenews",
+   "diff": "medium",
+   "q": "Design the data and sync layer of an offline-first news app.",
+   "keyPoints": [
+    {
+     "label": "Local DB is the source of truth the UI reads from",
+     "any": [
+      "room",
+      "database",
+      "source of truth",
+      "local"
+     ]
+    },
+    {
+     "label": "Repository fetches and writes into the DB; UI observes",
+     "any": [
+      "repository",
+      "observe",
+      "flow"
+     ]
+    },
+    {
+     "label": "Background sync scheduled with constraints (WorkManager)",
+     "any": [
+      "workmanager",
+      "background",
+      "sync",
+      "constraint"
+     ]
+    },
+    {
+     "label": "Pagination and cache expiry / eviction",
+     "any": [
+      "pagina",
+      "expiry",
+      "ttl",
+      "evict",
+      "stale"
+     ]
+    },
+    {
+     "label": "Image and article content caching for offline reading",
+     "any": [
+      "image",
+      "coil",
+      "glide",
+      "cache",
+      "download",
+      "offline"
+     ]
+    },
+    {
+     "label": "Handle failures and conflicts (retry/backoff, last-write wins for bookmarks)",
+     "any": [
+      "retry",
+      "backoff",
+      "conflict",
+      "error"
+     ]
+    }
+   ],
+   "why": "DB as source of truth, repository sync, WorkManager, pagination/expiry, media caching, failure handling.",
+   "id": "w-sysdesign-offlinenews",
+   "type": "written",
+   "review": "pending"
+  },
+  {
+   "topic": "hr",
+   "ref": "hr:2",
+   "diff": "medium",
+   "q": "Tell me about a challenging technical problem you solved.",
+   "keyPoints": [
+    {
+     "label": "Clear situation and why it mattered (context, impact)",
+     "any": [
+      "situation",
+      "context",
+      "because",
+      "impact",
+      "users",
+      "business"
+     ]
+    },
+    {
+     "label": "Your own role and decisions (I, not only we)",
+     "any": [
+      "i decided",
+      "i led",
+      "i designed",
+      "i implemented",
+      "my role",
+      "i investigated",
+      "i proposed",
+      "i built",
+      "i fixed"
+     ]
+    },
+    {
+     "label": "Specific technical actions or trade-offs considered",
+     "any": [
+      "tradeoff",
+      "trade-off",
+      "alternative",
+      "considered",
+      "profil",
+      "root cause",
+      "debug",
+      "approach"
+     ]
+    },
+    {
+     "label": "Measurable result",
+     "any": [
+      "%",
+      "percent",
+      "reduced",
+      "improved",
+      "faster",
+      "crash",
+      "ms",
+      "seconds",
+      "x faster"
+     ]
+    },
+    {
+     "label": "What you learned or would do differently",
+     "any": [
+      "learned",
+      "learnt",
+      "next time",
+      "differently",
+      "retro",
+      "postmortem"
+     ]
+    }
+   ],
+   "why": "STAR: situation, your actions and trade-offs, measurable result, reflection.",
+   "id": "w-hr-2",
+   "type": "written",
+   "review": "pending"
+  }
+ ]
+}

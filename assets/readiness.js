@@ -52,6 +52,12 @@
   var ROLE_MULT = { android: {} };
   var EVIDENCE_FULL = 8;      // weighted answers needed before evidence reaches its max share
   var EVIDENCE_MAX_SHARE = 0.7;
+  var JD_BOOST = 0.4;          // a topic the job description stresses fully counts up to 40% more
+  // Diagnostic quiz evidence. Credit for a right answer depends on confidence (a lucky guess proves little);
+  // a confident wrong answer is the most informative miss, so it carries extra weight.
+  var DIAG_CREDIT = { sure: 1, think: 0.85, guess: 0.4 };
+  var DIAG_WRONG_W = { sure: 1.3, think: 1, guess: 0.6 };
+  var DIAG_WRITTEN_W = 2;
   var DAY_MS = 86400000;
 
   /* ---------- Date helpers (local time) ---------- */
@@ -65,18 +71,40 @@
   /* ---------- Engine ---------- */
   function goalsOf(goals) { return Object.assign({}, DEFAULT_GOALS, goals || {}); }
 
-  function weightsFor(goals, levelOverride) {
+  function weightsFor(goals, levelOverride, jd) {
     var g = goalsOf(goals);
+    var jdTopics = (jd && jd.topics) || {};
     var level = levelOverride || g.level;
     var base = BASE_WEIGHTS[level] || BASE_WEIGHTS['2-5'];
     var mult = COMPANY_MULT[g.company] || {};
     var rmult = ROLE_MULT[g.role] || {};
     var out = {};
-    TOPIC_ORDER.forEach(function (t) { out[t] = (base[t] != null ? base[t] : 0.5) * (mult[t] || 1) * (rmult[t] || 1); });
+    TOPIC_ORDER.forEach(function (t) { out[t] = (base[t] != null ? base[t] : 0.5) * (mult[t] || 1) * (rmult[t] || 1) * (1 + JD_BOOST * (jdTopics[t] || 0)); });
     return out;
   }
 
   function diffWeight(level, d) { return (DIFF_W[level] || DIFF_W['2-5'])[d] || 1; }
+
+  function diagOf(state) { var d = state && state.diag; return d && d.results ? d : { results: {}, written: {}, runs: [], last: 0 }; }
+
+  /** Quiz evidence for one topic: credit and weight to add to the marks evidence, plus counts for the UI. */
+  function diagTopic(state, tid, level) {
+    var d = diagOf(state), out = { credit: 0, weight: 0, tested: 0, correct: 0, misconceptions: 0, missedRefs: [] };
+    Object.keys(d.results).forEach(function (id) {
+      var r = d.results[id]; if (r.topic !== tid) return;
+      var dw = diffWeight(level, r.d), k = DIAG_CREDIT[r.k] != null ? r.k : 'think';
+      out.tested++;
+      if (r.c) { out.correct++; out.credit += dw * DIAG_CREDIT[k]; out.weight += dw; }
+      else { out.weight += dw * DIAG_WRONG_W[k]; if (k === 'sure') out.misconceptions++; if (r.ref) out.missedRefs.push(r.ref); }
+    });
+    Object.keys(d.written || {}).forEach(function (id) {
+      var r = d.written[id]; if (r.topic !== tid) return;
+      var dw = diffWeight(level, r.d) * DIAG_WRITTEN_W;
+      out.tested++; out.credit += dw * r.s; out.weight += dw;
+      if (r.s < 0.5 && r.ref) out.missedRefs.push(r.ref);
+    });
+    return out;
+  }
 
   /**
    * Per-topic mastery (0-100) from the user's self-rating (prior) and their Got it / Revisit marks (evidence).
@@ -98,23 +126,26 @@
         else if (m && m.s === 'revisit') { rev++; bd.revisit++; wAll += w; }
         else if (it.m) unmarkedCore++;
       });
+      var dg = diagTopic(state, tid, level);
+      wGot += dg.credit; wAll += dg.weight;
       var r = state.ratings[tid];
       var rated = !!(r && RATING_PRIOR[r.v] != null);
       var prior = rated ? RATING_PRIOR[r.v] : UNRATED_PRIOR;
       var attempted = got + rev;
       var w = Math.min(wAll / EVIDENCE_FULL, 1) * EVIDENCE_MAX_SHARE;
-      var evidence = attempted > 0 ? (100 * wGot / wAll) : prior;
+      var evidence = wAll > 0 ? (100 * wGot / wAll) : prior;
       var mastery = prior * (1 - w) + evidence * w;
       var label;
-      if (!rated && attempted === 0) label = 'Not rated';
+      if (!rated && attempted === 0 && dg.tested === 0) label = 'Not rated';
       else if (mastery >= 75) label = 'Strong';
       else if (mastery >= 50) label = 'Needs practice';
       else label = 'Weak area';
       // How much real evidence sits behind the number (so the UI can be honest about it).
-      var basis = attempted === 0 ? 'Rating only' : wAll < 3 ? 'Early signal' : wAll < EVIDENCE_FULL ? 'Building' : 'Solid';
+      var basis = (attempted === 0 && dg.tested === 0) ? 'Rating only' : (attempted === 0 && wAll < EVIDENCE_FULL) ? 'Quiz-tested' : wAll < 3 ? 'Early signal' : wAll < EVIDENCE_FULL ? 'Building' : 'Solid';
       out[tid] = { id: tid, name: topic.name, total: total, got: got, revisit: rev, attempted: attempted,
         rated: rated, mastery: Math.round(mastery), label: label,
         coverage: total ? Math.round(100 * attempted / total) : 0,
+        tested: dg.tested, quizCorrect: dg.correct, misconceptions: dg.misconceptions, missedRefs: dg.missedRefs,
         byDifficulty: byDiff, unmarkedCore: unmarkedCore, basis: basis };
     });
     return out;
@@ -124,13 +155,13 @@
     var g = goalsOf(state.goals);
     var level = (opts && opts.level) || g.level;
     var stats = topicStats(index, state, { level: level });
-    var weights = weightsFor(g, level);
+    var weights = weightsFor(g, level, state.jd);
     var num = 0, den = 0, ratedCount = 0, attempts = 0;
     TOPIC_ORDER.forEach(function (t) {
       var s = stats[t]; if (!s) return;
       num += weights[t] * s.mastery; den += weights[t];
       if (s.rated) ratedCount++;
-      attempts += s.attempted;
+      attempts += s.attempted + s.tested;
     });
     var conf = 0.5 * (ratedCount / TOPIC_ORDER.length) + 0.5 * Math.min(attempts / 60, 1);
     return {
@@ -182,6 +213,9 @@
       var w = r.weights[tid];
       var priority = w * (100 - st.mastery) / 100 + (!st.rated && st.attempted === 0 ? 0.03 : 0);
       var reasons = [];
+      if (st.misconceptions > 0) reasons.push(st.misconceptions + ' quiz answer' + (st.misconceptions > 1 ? 's were' : ' was') + ' confident but wrong. That usually means a misconception worth fixing first.');
+      if (st.tested > 0 && st.quizCorrect < st.tested) reasons.push('Quiz: ' + st.quizCorrect + ' of ' + st.tested + ' correct in this topic.');
+      if (state.jd && state.jd.topics && state.jd.topics[tid] >= 0.34) reasons.push('Your job description stresses this topic.');
       var hard = st.byDifficulty.hard, hardTried = hard.got + hard.revisit;
       if (!st.rated && st.attempted === 0) reasons.push('Not rated yet. Rate it so your estimate can start.');
       if (st.attempted > 0 && st.revisit / st.attempted >= 0.34) reasons.push(st.revisit + ' of ' + st.attempted + ' answered questions are marked Revisit.');
@@ -192,9 +226,16 @@
       }
       if (st.unmarkedCore > 0 && st.attempted > 0) reasons.push(st.unmarkedCore + ' core question' + (st.unmarkedCore > 1 ? 's' : '') + ' still unattempted.');
       if (!reasons.length) reasons.push('Mastery is ' + st.mastery + '/100 from your rating and marks.');
+      var nx = null;
+      (st.missedRefs || []).some(function (ref) {
+        var it = null; ((index.topics[tid] && index.topics[tid].items) || []).forEach(function (x) { if (x.id === ref) it = x; });
+        if (!it || (state.marks[ref] && state.marks[ref].s)) return false;
+        nx = { id: it.id, title: it.q, diff: it.d, href: hrefFor(it, tid), min: tid === 'sysdesign' ? SYSDESIGN_MIN : (MIN_BY_DIFF[it.d] || 7), fromQuiz: true };
+        return true;
+      });
       out.push({ topic: tid, name: st.name, mastery: st.mastery, label: st.label, basis: st.basis,
         weight: Math.round(w * 100) / 100, priority: Math.round(priority * 1000) / 1000,
-        reasons: reasons.slice(0, 2), next: nextItem(index, state, tid, g.level) });
+        reasons: reasons.slice(0, 2), next: nx || nextItem(index, state, tid, g.level) });
     });
     out.sort(function (a, b) { return b.priority - a.priority || TOPIC_ORDER.indexOf(a.topic) - TOPIC_ORDER.indexOf(b.topic); });
     return out.slice(0, opts.limit || 5);
@@ -233,8 +274,10 @@
       else if (left < horizon) { horizon = left; note = left + ' day' + (left > 1 ? 's' : '') + ' to go: plan compressed to what matters most.'; }
     }
 
-    var weights = weightsFor(goals);
+    var weights = weightsFor(goals, null, state.jd);
     var stats = topicStats(index, state);
+    var missedRef = {};
+    Object.keys(stats).forEach(function (t) { (stats[t].missedRefs || []).forEach(function (r) { missedRef[r] = true; }); });
     var targetRank = { '0-2': 0.5, '2-5': 1, '5+': 1.7 }[goals.level] != null ? { '0-2': 0.5, '2-5': 1, '5+': 1.7 }[goals.level] : 1;
     var rank = { easy: 0, medium: 1, hard: 2 };
 
@@ -250,7 +293,7 @@
       arr.sort(function (a, b) {
         function sc(it) {
           var m = state.marks[it.id];
-          return (it.m ? 0 : 10) + Math.abs((rank[it.d] != null ? rank[it.d] : 1) - targetRank) * 3 - (m && m.b ? 5 : 0) + (it.n || 0) * 0.001;
+          return (it.m ? 0 : 10) + Math.abs((rank[it.d] != null ? rank[it.d] : 1) - targetRank) * 3 - (m && m.b ? 5 : 0) - (missedRef[it.id] ? 20 : 0) + (it.n || 0) * 0.001;
         }
         return sc(a) - sc(b);
       });
@@ -333,7 +376,7 @@
   }
 
   /* ---------- State / store ---------- */
-  function emptyState() { return { v: 1, owner: null, goals: null, ratings: {}, marks: {}, plan: null }; }
+  function emptyState() { return { v: 1, owner: null, goals: null, ratings: {}, marks: {}, plan: null, jd: null, diag: { results: {}, written: {}, runs: [], last: 0 } }; }
   var state = emptyState();
   var listeners = [];
   var cfg = { getSession: defaultGetSession, storage: null };
@@ -473,12 +516,34 @@
     if (state.marks[id] && state.marks[id].s) firstMarkOnce();
     return state.marks[id] || null;
   }
+  /** jd: the object returned by DroidlyDiagnostic.analyzeJD (or null to clear). The pasted text itself is never stored. */
+  function setJD(jd) {
+    state.jd = jd ? { level: jd.level || null, years: jd.years == null ? null : jd.years, topics: jd.topics || {}, t: Date.now() } : null;
+    save(); emit();
+  }
+  /** Record graded diagnostic answers (outputs of gradeMcq / gradeWritten). Kept on this device only. */
+  function recordDiag(results, opts) {
+    var d = state.diag = state.diag && state.diag.results ? state.diag : { results: {}, written: {}, runs: [], last: 0 };
+    d.written = d.written || {}; d.runs = d.runs || [];
+    var now = Date.now(), n = 0, ok = 0;
+    (results || []).forEach(function (r) {
+      if (r.type === 'written') d.written[r.id] = { s: r.s, topic: r.topic, ref: r.ref, d: r.d, t: now };
+      else { d.results[r.id] = { c: !!r.c, k: r.k, topic: r.topic, ref: r.ref, d: r.d, t: now }; n++; if (r.c) ok++; }
+    });
+    d.last = now;
+    var tail = d.runs[d.runs.length - 1], rid = opts && opts.run;
+    if (rid && tail && tail.id === rid) { tail.n += n; tail.ok += ok; tail.t = now; }   // answers saved one by one belong to one quiz run
+    else { d.runs.push({ id: rid || null, t: now, n: n, ok: ok }); if (d.runs.length > 20) d.runs = d.runs.slice(-20); }
+    save(); emit();
+    track('diagnostic_recorded', { answered: n, correct: ok });
+  }
+  function clearDiag() { state.diag = { results: {}, written: {}, runs: [], last: 0 }; state.jd = null; save(); emit(); }
   function clearLocal() { state = emptyState(); save(); emit(); }
 
   /** Today's plan: reuse the saved one unless the day, the goal or the ratings changed (or force). */
   function ensurePlan(index, force) {
     var now = new Date();
-    var sig = JSON.stringify([state.goals && [state.goals.level, state.goals.company, state.goals.minutes, state.goals.date], state.ratings && Object.keys(state.ratings).sort().map(function (k) { return k + state.ratings[k].v; })]);
+    var sig = JSON.stringify([state.goals && [state.goals.level, state.goals.company, state.goals.minutes, state.goals.date], state.ratings && Object.keys(state.ratings).sort().map(function (k) { return k + state.ratings[k].v; }), diagOf(state).last, state.jd && state.jd.t]);
     var p = state.plan;
     if (!force && p && p.on === ymd(now) && p.sig === sig) return p;
     var carry = [];
@@ -494,7 +559,7 @@
     skillsToImprove: skillsToImprove, buildPlan: buildPlan, isDone: isDone,
     ymd: ymd, parseYmd: parseYmd, daysBetween: daysBetween,
     load: load, get: function () { return state; }, onChange: onChange, configure: configure, sync: sync,
-    setGoals: setGoals, setRating: setRating, setMark: setMark, clearLocal: clearLocal, ensurePlan: ensurePlan,
+    setGoals: setGoals, setRating: setRating, setMark: setMark, setJD: setJD, recordDiag: recordDiag, clearDiag: clearDiag, clearLocal: clearLocal, ensurePlan: ensurePlan,
     _setState: function (s) { state = s; }                           // tests only
   };
 });
