@@ -385,7 +385,6 @@
 const PROBLEMS = [
   {
     id: 1, title: 'LRU Cache', difficulty: 'Medium', timeMin: 45,
-    companies: ['Flipkart', 'Google', 'Amazon'],
     description: `<h3>Problem</h3>
 <p>Design and implement a <strong>Least Recently Used (LRU) Cache</strong>. It should support <code>get</code> and <code>put</code> operations in <strong>O(1)</strong> time.</p>
 <div class="req-box"><div class="req-box-title">Functional Requirements</div>
@@ -456,7 +455,6 @@ fun main() {
   },
   {
     id: 2, title: 'Token Bucket Rate Limiter', difficulty: 'Medium', timeMin: 40,
-    companies: ['Razorpay', 'PhonePe', 'Swiggy'],
     description: `<h3>Problem</h3>
 <p>Implement a <strong>Token Bucket Rate Limiter</strong> that controls how many requests each user can make per second.</p>
 <div class="req-box"><div class="req-box-title">Functional Requirements</div>
@@ -520,7 +518,6 @@ fun main() {
   },
   {
     id: 3, title: 'Event Bus', difficulty: 'Medium', timeMin: 35,
-    companies: ['CRED', 'Swiggy', 'Meesho'],
     description: `<h3>Problem</h3>
 <p>Implement a <strong>publish-subscribe Event Bus</strong> that allows components to communicate without direct references to each other.</p>
 <div class="req-box"><div class="req-box-title">Functional Requirements</div>
@@ -584,7 +581,6 @@ fun main() {
   },
   {
     id: 4, title: 'Pagination Manager', difficulty: 'Easy', timeMin: 25,
-    companies: ['Any', 'Ixigo', 'MakeMyTrip'],
     description: `<h3>Problem</h3>
 <p>Implement a <strong>Pagination Manager</strong> that splits a dataset into pages and supports navigation.</p>
 <div class="req-box"><div class="req-box-title">Functional Requirements</div>
@@ -658,7 +654,6 @@ fun main() {
   },
   {
     id: 5, title: 'Retry with Exponential Backoff', difficulty: 'Medium', timeMin: 40,
-    companies: ['Google', 'PhonePe', 'Zepto'],
     description: `<h3>Problem</h3>
 <p>Implement a <strong>retry mechanism with exponential backoff</strong> that wraps any suspending function and retries it automatically on failure.</p>
 <div class="req-box"><div class="req-box-title">Functional Requirements</div>
@@ -734,7 +729,6 @@ fun main() = runBlocking {
   },
   {
     id: 6, title: 'Shopping Cart with Discounts', difficulty: 'Medium', timeMin: 45,
-    companies: ['Flipkart', 'Myntra', 'Meesho'],
     description: `<h3>Problem</h3>
 <p>Design a <strong>Shopping Cart</strong> that supports multiple discount types using Kotlin's sealed classes.</p>
 <div class="req-box"><div class="req-box-title">Discount Types</div>
@@ -818,7 +812,6 @@ fun main() {
   },
   {
     id: 7, title: 'In-Memory Cache with TTL', difficulty: 'Medium', timeMin: 35,
-    companies: ['CRED', 'Groww', 'Any'],
     description: `<h3>Problem</h3>
 <p>Implement a <strong>generic in-memory cache with TTL (time-to-live)</strong> expiry for each entry.</p>
 <div class="req-box"><div class="req-box-title">Functional Requirements</div>
@@ -885,7 +878,6 @@ fun main() {
   },
   {
     id: 8, title: 'Order State Machine', difficulty: 'Medium', timeMin: 35,
-    companies: ['Zomato', 'Swiggy', 'Blinkit'],
     description: `<h3>Problem</h3>
 <p>Implement a <strong>finite state machine</strong> for a food delivery order lifecycle using Kotlin sealed classes.</p>
 <div class="req-box"><div class="req-box-title">State Transitions</div>
@@ -969,9 +961,8 @@ fun main() {
   },
   {
     id: 9, title: 'Restaurant Bill Screen', difficulty: 'Hard', timeMin: 60,
-    companies: ['Toast'],
     description: `<h3>Problem</h3>
-<p>Design and implement the restaurant bill screen below. Fetch bill data from a dummy API (simulated with a <strong>1.5s delay</strong>), show a loading state, then render the check. This is a real machine coding question from Toast's Android interview.</p>
+<p>Design and implement the restaurant bill screen below. Fetch bill data from a dummy API (simulated with a <strong>1.5s delay</strong>), show a loading state, then render the check. This is a UI-focused machine coding challenge.</p>
 
 <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;margin:14px 0">
   <div style="flex-shrink:0">
@@ -1148,7 +1139,6 @@ function loadProblem(id) {
   document.getElementById('probTags').innerHTML =
     `<span class="diff-badge diff-${p.difficulty.toLowerCase()}">${p.difficulty}</span>` +
     (p.uiChallenge ? '<span class="tag-ui-challenge">📱 UI Challenge</span>' : '') +
-    p.companies.map(c => `<span class="tag-company">${c}</span>`).join('') +
     `<span class="tag-time">⏱ ${p.timeMin} min</span>`;
 
   // Timer

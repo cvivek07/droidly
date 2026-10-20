@@ -2,7 +2,7 @@
  * Droidly Readiness — shared engine + store (no DOM, no framework).
  * Used by roadmap.html and assets/question-marks.js (questions.html).
  *
- *  - Engine: topic mastery, readiness score, rules-based study plan.
+ *  - Engine: difficulty-aware topic mastery, readiness by level, skills to improve, rules-based study plan.
  *  - Store : localStorage first (works for guests), syncs to Supabase when signed in.
  *
  * Honesty note: every number here is derived from the user's SELF-ASSESSMENT
@@ -39,6 +39,19 @@
   var MIN_BY_DIFF = { easy: 4, medium: 7, hard: 10 };
   var SYSDESIGN_MIN = 25;
   var DEFAULT_GOALS = { level: '2-5', role: 'android', company: 'product', minutes: 60, date: null };
+  var LEVELS = ['0-2', '2-5', '5+'];
+  /* How much one answered question counts as evidence, by target level and difficulty.
+     Easy answers prove less for senior targets; hard answers prove more. */
+  var DIFF_W = {
+    '0-2': { easy: 1.0, medium: 1.0, hard: 0.7 },
+    '2-5': { easy: 0.8, medium: 1.1, hard: 1.0 },
+    '5+':  { easy: 0.6, medium: 1.0, hard: 1.3 }
+  };
+  /* Role presets: topic multipliers applied on top of level weights. Only 'android' exists today;
+     add a role here (e.g. { kmp: { ... } }) and it flows through weights, readiness and skills. */
+  var ROLE_MULT = { android: {} };
+  var EVIDENCE_FULL = 8;      // weighted answers needed before evidence reaches its max share
+  var EVIDENCE_MAX_SHARE = 0.7;
   var DAY_MS = 86400000;
 
   /* ---------- Date helpers (local time) ---------- */
@@ -50,47 +63,68 @@
   function daysBetween(a, b) { return Math.round((startOfDay(b) - startOfDay(a)) / DAY_MS); }
 
   /* ---------- Engine ---------- */
-  function weightsFor(goals) {
-    var g = Object.assign({}, DEFAULT_GOALS, goals || {});
-    var base = BASE_WEIGHTS[g.level] || BASE_WEIGHTS['2-5'];
+  function goalsOf(goals) { return Object.assign({}, DEFAULT_GOALS, goals || {}); }
+
+  function weightsFor(goals, levelOverride) {
+    var g = goalsOf(goals);
+    var level = levelOverride || g.level;
+    var base = BASE_WEIGHTS[level] || BASE_WEIGHTS['2-5'];
     var mult = COMPANY_MULT[g.company] || {};
+    var rmult = ROLE_MULT[g.role] || {};
     var out = {};
-    TOPIC_ORDER.forEach(function (t) { out[t] = (base[t] != null ? base[t] : 0.5) * (mult[t] || 1); });
+    TOPIC_ORDER.forEach(function (t) { out[t] = (base[t] != null ? base[t] : 0.5) * (mult[t] || 1) * (rmult[t] || 1); });
     return out;
   }
 
-  function topicStats(index, state) {
+  function diffWeight(level, d) { return (DIFF_W[level] || DIFF_W['2-5'])[d] || 1; }
+
+  /**
+   * Per-topic mastery (0-100) from the user's self-rating (prior) and their Got it / Revisit marks (evidence).
+   * Evidence is difficulty-weighted for the target level, and gains up to 70% of the score as it accumulates.
+   * opts.level overrides the goal's level (used to compare readiness across levels).
+   */
+  function topicStats(index, state, opts) {
+    var level = (opts && opts.level) || goalsOf(state.goals).level;
     var out = {};
     TOPIC_ORDER.forEach(function (tid) {
       var topic = index.topics[tid];
       if (!topic) return;
-      var total = topic.items.length, got = 0, rev = 0;
+      var total = topic.items.length, got = 0, rev = 0, wGot = 0, wAll = 0, unmarkedCore = 0;
+      var byDiff = { easy: { got: 0, revisit: 0, total: 0 }, medium: { got: 0, revisit: 0, total: 0 }, hard: { got: 0, revisit: 0, total: 0 } };
       topic.items.forEach(function (it) {
-        var m = state.marks[it.id];
-        if (m && m.s === 'got_it') got++;
-        else if (m && m.s === 'revisit') rev++;
+        var bd = byDiff[it.d] || byDiff.medium; bd.total++;
+        var m = state.marks[it.id], w = diffWeight(level, it.d);
+        if (m && m.s === 'got_it') { got++; bd.got++; wGot += w; wAll += w; }
+        else if (m && m.s === 'revisit') { rev++; bd.revisit++; wAll += w; }
+        else if (it.m) unmarkedCore++;
       });
       var r = state.ratings[tid];
       var rated = !!(r && RATING_PRIOR[r.v] != null);
       var prior = rated ? RATING_PRIOR[r.v] : UNRATED_PRIOR;
       var attempted = got + rev;
-      var w = Math.min(attempted / 8, 1) * 0.7;           // evidence gains weight up to 70%
-      var evidence = attempted > 0 ? (100 * got / attempted) : prior;
+      var w = Math.min(wAll / EVIDENCE_FULL, 1) * EVIDENCE_MAX_SHARE;
+      var evidence = attempted > 0 ? (100 * wGot / wAll) : prior;
       var mastery = prior * (1 - w) + evidence * w;
       var label;
       if (!rated && attempted === 0) label = 'Not rated';
       else if (mastery >= 75) label = 'Strong';
       else if (mastery >= 50) label = 'Needs practice';
       else label = 'Weak area';
+      // How much real evidence sits behind the number (so the UI can be honest about it).
+      var basis = attempted === 0 ? 'Rating only' : wAll < 3 ? 'Early signal' : wAll < EVIDENCE_FULL ? 'Building' : 'Solid';
       out[tid] = { id: tid, name: topic.name, total: total, got: got, revisit: rev, attempted: attempted,
-        rated: rated, mastery: Math.round(mastery), label: label };
+        rated: rated, mastery: Math.round(mastery), label: label,
+        coverage: total ? Math.round(100 * attempted / total) : 0,
+        byDifficulty: byDiff, unmarkedCore: unmarkedCore, basis: basis };
     });
     return out;
   }
 
-  function readiness(index, state) {
-    var stats = topicStats(index, state);
-    var weights = weightsFor(state.goals);
+  function readiness(index, state, opts) {
+    var g = goalsOf(state.goals);
+    var level = (opts && opts.level) || g.level;
+    var stats = topicStats(index, state, { level: level });
+    var weights = weightsFor(g, level);
     var num = 0, den = 0, ratedCount = 0, attempts = 0;
     TOPIC_ORDER.forEach(function (t) {
       var s = stats[t]; if (!s) return;
@@ -102,8 +136,68 @@
     return {
       score: den ? Math.round(num / den) : 0,
       confidence: conf < 0.3 ? 'Low' : conf < 0.65 ? 'Medium' : 'High',
+      level: level, role: g.role,
       ratedTopics: ratedCount, attempted: attempts, stats: stats, weights: weights
     };
+  }
+
+  /** The same progress scored against each experience level (0-2, 2-5, 5+), for the same role and company type. */
+  function readinessByLevel(index, state) {
+    var g = goalsOf(state.goals);
+    return LEVELS.map(function (lv) {
+      var r = readiness(index, state, { level: lv });
+      return { level: lv, score: r.score, isTarget: lv === g.level, confidence: r.confidence };
+    });
+  }
+
+  /* Order used to pick what to study next inside a topic: core questions first, then closest to the target difficulty. */
+  var DIFF_RANK = { easy: 0, medium: 1, hard: 2 };
+  var LEVEL_TARGET_RANK = { '0-2': 0.5, '2-5': 1, '5+': 1.7 };
+  function nextItem(index, state, tid, level) {
+    var topic = index.topics[tid]; if (!topic) return null;
+    var target = LEVEL_TARGET_RANK[level] != null ? LEVEL_TARGET_RANK[level] : 1;
+    var best = null, bestSc = 0;
+    topic.items.forEach(function (it) {
+      var m = state.marks[it.id]; if (m && m.s) return;
+      var sc = (it.m ? 0 : 10) + Math.abs((DIFF_RANK[it.d] != null ? DIFF_RANK[it.d] : 1) - target) * 3 + (it.n || 0) * 0.001;
+      if (best === null || sc < bestSc) { best = it; bestSc = sc; }
+    });
+    if (!best) return null;
+    return { id: best.id, title: best.q, diff: best.d, href: hrefFor(best, tid),
+      min: tid === 'sysdesign' ? SYSDESIGN_MIN : (MIN_BY_DIFF[best.d] || 7) };
+  }
+
+  /**
+   * Ranked list of skills to improve before the interview: topics that matter for the target level and role,
+   * where mastery is below "Strong". Each entry says why, and what to do next.
+   * opts: { limit (default 5) }
+   */
+  function skillsToImprove(index, state, opts) {
+    opts = opts || {};
+    var g = goalsOf(state.goals);
+    var r = readiness(index, state, { level: g.level });
+    var out = [];
+    TOPIC_ORDER.forEach(function (tid) {
+      var st = r.stats[tid]; if (!st || st.mastery >= 75) return;
+      var w = r.weights[tid];
+      var priority = w * (100 - st.mastery) / 100 + (!st.rated && st.attempted === 0 ? 0.03 : 0);
+      var reasons = [];
+      var hard = st.byDifficulty.hard, hardTried = hard.got + hard.revisit;
+      if (!st.rated && st.attempted === 0) reasons.push('Not rated yet. Rate it so your estimate can start.');
+      if (st.attempted > 0 && st.revisit / st.attempted >= 0.34) reasons.push(st.revisit + ' of ' + st.attempted + ' answered questions are marked Revisit.');
+      if (tid === 'sysdesign') {
+        if (st.attempted === 0 && w >= 0.9) reasons.push('No system design walkthroughs completed yet. This topic carries extra weight at your target level.');
+      } else if (g.level !== '0-2' && hard.total > 0 && hardTried === 0) {
+        reasons.push('No hard questions attempted yet' + (g.level === '5+' ? '. They carry the most weight at your target level.' : '.'));
+      }
+      if (st.unmarkedCore > 0 && st.attempted > 0) reasons.push(st.unmarkedCore + ' core question' + (st.unmarkedCore > 1 ? 's' : '') + ' still unattempted.');
+      if (!reasons.length) reasons.push('Mastery is ' + st.mastery + '/100 from your rating and marks.');
+      out.push({ topic: tid, name: st.name, mastery: st.mastery, label: st.label, basis: st.basis,
+        weight: Math.round(w * 100) / 100, priority: Math.round(priority * 1000) / 1000,
+        reasons: reasons.slice(0, 2), next: nextItem(index, state, tid, g.level) });
+    });
+    out.sort(function (a, b) { return b.priority - a.priority || TOPIC_ORDER.indexOf(a.topic) - TOPIC_ORDER.indexOf(b.topic); });
+    return out.slice(0, opts.limit || 5);
   }
 
   function isDone(task, state, planAt) {
@@ -396,7 +490,8 @@
 
   return {
     TOPIC_ORDER: TOPIC_ORDER, DEFAULT_GOALS: DEFAULT_GOALS, RATING_PRIOR: RATING_PRIOR,
-    weightsFor: weightsFor, topicStats: topicStats, readiness: readiness, buildPlan: buildPlan, isDone: isDone,
+    LEVELS: LEVELS, weightsFor: weightsFor, topicStats: topicStats, readiness: readiness, readinessByLevel: readinessByLevel,
+    skillsToImprove: skillsToImprove, buildPlan: buildPlan, isDone: isDone,
     ymd: ymd, parseYmd: parseYmd, daysBetween: daysBetween,
     load: load, get: function () { return state; }, onChange: onChange, configure: configure, sync: sync,
     setGoals: setGoals, setRating: setRating, setMark: setMark, clearLocal: clearLocal, ensurePlan: ensurePlan,
