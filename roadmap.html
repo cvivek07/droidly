@@ -186,12 +186,13 @@ input:focus{outline:none;border-color:var(--green)}
   h1{font-size:28px}
   .wrap{padding:24px 16px 60px}
 }
-.lv-row{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.lv-row{align-self:stretch;width:100%;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
 .lv{display:grid;grid-template-columns:64px 1fr 34px;align-items:center;gap:10px;margin-top:8px;font-size:13px;color:var(--ink2)}
 .lv .lv-name{font-weight:600}
 .lv b{text-align:right;font-variant-numeric:tabular-nums}
 .lv.target .lv-name,.lv.target b{color:var(--green2)}
 .lv.target .bar{outline:2px solid var(--border-green);outline-offset:2px}
+.info{cursor:help;color:var(--muted);margin-left:2px}
 .lv-note{font-size:12px;color:var(--muted);margin-top:8px}
 .skill{padding:13px 0;border-top:1px solid var(--border)}
 .skill:first-child{border-top:none}
@@ -506,12 +507,12 @@ input:focus{outline:none;border-color:var(--green)}
   }
 
   function levelRowHtml(byLevel) {
-    return '<div class="lv-row"><div class="q-label" style="margin:0">Same progress, scored per level</div>' +
+    return '<div class="lv-row"><div class="q-label" style="margin:0;font-size:13px;color:var(--muted)">By level</div>' +
       byLevel.map(function (x) {
-        return '<div class="lv' + (x.isTarget ? ' target' : '') + '"><span class="lv-name">' + esc(LEVEL_NAME[x.level]) + '</span>' +
+        return '<div class="lv' + (x.isTarget ? ' target' : '') + '"><span class="lv-name">' + esc(LEVEL_NAME[x.level].split(' · ')[0]) + '</span>' +
           '<div class="bar"><i style="width:' + x.score + '%"></i></div><b>' + x.score + '</b></div>';
       }).join('') +
-      '<p class="lv-note">Your target is outlined. Senior levels weight system design, architecture and hard questions more.</p></div>';
+      '</div>';
   }
 
   function renderDash() {
@@ -542,13 +543,12 @@ input:focus{outline:none;border-color:var(--green)}
       '<div style="display:flex;gap:8px"><button class="btn small" id="rebuild" type="button">Rebuild my plan</button></div></div>' +
       (plan.note ? '<div class="note">' + esc(plan.note) + '</div>' : '') +
       '<div class="grid"><div>' +
-        '<div class="card score-card"><div class="q-label" style="margin:0">Readiness estimate</div>' +
+        '<div class="card score-card"><div class="q-label" style="margin:0">Interview readiness estimate</div>' +
         '<div class="ring"><svg width="150" height="150" viewBox="0 0 150 150"><circle cx="75" cy="75" r="62" fill="none" stroke="#eaecf0" stroke-width="12"/>' +
         '<circle cx="75" cy="75" r="62" fill="none" stroke="' + color + '" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + dash.toFixed(1) + ' ' + circ.toFixed(1) + '"/></svg>' +
         '<div class="ring-num"><b>' + r.score + '</b><span>out of 100</span></div></div>' +
-        '<div class="meta-line">Confidence: <b>' + r.confidence + '</b> · ' + r.ratedTopics + '/' + R.TOPIC_ORDER.length + ' topics with evidence · ' + r.attempted + ' questions answered or marked</div>' +
-        levelRowHtml(byLevel) +
-        '<p class="disclaimer">Estimate based on your skill-check answers and the questions you mark. It becomes more reliable as you answer more. It is not a test score.</p></div>' +
+        '<div class="meta-line">Confidence: <b>' + r.confidence + '</b> · ' + r.attempted + ' answered <span class="info" tabindex="0" title="Based on your skill-check answers and the questions you mark. It gets more reliable as you answer more. It is a study estimate, not a test score.">ⓘ</span></div>' +
+        levelRowHtml(byLevel) + '</div>' +
         diagCardHtml(s) +
         '<div class="card" style="margin-top:20px"><h2>Skills to improve</h2><p class="sub" style="font-size:13px;margin-top:2px">Ranked by how much each matters for your target level and how far you are from Strong.</p><div style="margin-top:8px">' + skillsHtml(skills) + '</div></div>' +
         '<div class="card" style="margin-top:20px"><h2>Topics</h2><p class="sub" style="font-size:13px;margin-top:2px">Weakest and most important first. Take the skill check to sharpen these.</p><div style="margin-top:8px">' +
@@ -773,7 +773,7 @@ input:focus{outline:none;border-color:var(--green)}
     var sum = D.summarize(dg.results);
     var skills = R.skillsToImprove(index, R.get(), { limit: 3 });
     var change = (dg.before != null && dg.after != null)
-      ? '<p class="sub" style="font-size:14px">Readiness estimate: <b>' + dg.before + '</b> → <b>' + dg.after + '</b>' + (dg.after === dg.before ? ' (no change)' : '') + '. This is an estimate that blends your ratings, marks and these answers.</p>' : '';
+      ? '<p class="sub" style="font-size:14px">Interview readiness: <b>' + dg.before + '</b> → <b>' + dg.after + '</b>' + (dg.after === dg.before ? ' (no change)' : '') + '. This is an estimate that blends your ratings, marks and these answers.</p>' : '';
     return '<div class="card" style="max-width:720px;margin:0 auto"><span class="eyebrow">' + (dg.fromHistory ? 'Latest results across your checks' : 'Skill check complete') + '</span>' +
       '<div class="dg-big">' + sum.correct + ' of ' + sum.answered + ' correct</div>' +
       change +
