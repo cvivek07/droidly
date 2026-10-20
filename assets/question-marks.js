@@ -92,7 +92,39 @@
     });
   }
 
-  function paintAll() { Object.keys(cards).forEach(paint); }
+  // Floating "up next" pill: shows today's progress and the next task; pulses with a one-tap link after a mark.
+  var pill = null, pillDismissed = false, lastMarks = -1;
+  function pillCss() {
+    var c = document.createElement('style');
+    c.textContent = '.rd-pill{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:900;max-width:min(560px,calc(100vw - 32px));display:flex;align-items:center;gap:10px;padding:10px 12px 10px 16px;border-radius:100px;background:#0f1117;color:#fff;font:600 13px/1.3 inherit;font-family:inherit;box-shadow:0 8px 24px rgba(15,17,23,.25)}' +
+      '.rd-pill[hidden]{display:none}.rd-pill span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+      '.rd-pill a{flex:none;background:#3d7a4f;color:#fff;text-decoration:none;padding:7px 14px;border-radius:100px}' +
+      '.rd-pill button{flex:none;background:none;border:0;color:#9ca3af;font-size:18px;line-height:1;cursor:pointer;padding:0 4px}' +
+      '.rd-pill.pop{animation:rdpop .5s}@keyframes rdpop{50%{transform:translateX(-50%) scale(1.04)}}';
+    document.head.appendChild(c);
+  }
+  function paintPill(afterMark) {
+    if (!signedIn || pillDismissed) { if (pill) pill.hidden = true; return; }
+    var n = R.nudgeFor(R.get());
+    if (n.kind === 'start') { if (pill) pill.hidden = true; return; }
+    if (!pill) {
+      pillCss();
+      pill = document.createElement('div'); pill.className = 'rd-pill'; pill.setAttribute('role', 'status');
+      pill.innerHTML = '<span></span><a></a><button type="button" aria-label="Dismiss">\u00d7</button>';
+      pill.querySelector('button').addEventListener('click', function () { pillDismissed = true; pill.hidden = true; });
+      document.body.appendChild(pill);
+    }
+    pill.querySelector('span').textContent = (afterMark ? '\u2713 Saved. ' : '') + n.headline + (n.kind === 'continue' || n.kind === 'start_today' ? ' \u00b7 ' + n.detail : '');
+    var a = pill.querySelector('a'); a.textContent = n.cta + ' \u2192'; a.href = n.href;
+    pill.hidden = false;
+    if (afterMark) { pill.classList.remove('pop'); void pill.offsetWidth; pill.classList.add('pop'); }
+  }
+  function paintAll() {
+    Object.keys(cards).forEach(paint);
+    var cnt = Object.keys(R.get().marks || {}).length;
+    paintPill(lastMarks >= 0 && cnt > lastMarks);
+    lastMarks = cnt;
+  }
 
   function deepLink() {
     var p = new URLSearchParams(location.search); var q = p.get('q'), topic = p.get('topic');
@@ -106,7 +138,7 @@
   function start() {
     enhance();
     R.onChange(paintAll);
-    R.sync().then(function (r) { signedIn = !!(r && r.ok); loadFailed = !!(r && !r.ok && r.reason !== 'signed-out'); paintAll(); var cbs = knownCbs; knownCbs = []; cbs.forEach(function (f) { f(); }); });
+    R.sync().then(function (r) { signedIn = !!(r && r.ok); loadFailed = !!(r && !r.ok && r.reason !== 'signed-out'); lastMarks = Object.keys(R.get().marks || {}).length; paintAll(); var cbs = knownCbs; knownCbs = []; cbs.forEach(function (f) { f(); }); });
     // questions.html builds its own UI on load; deep-link after it settles.
     if (document.readyState === 'complete') setTimeout(deepLink, 300);
     else window.addEventListener('load', function () { setTimeout(deepLink, 300); });

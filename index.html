@@ -3628,7 +3628,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       el.textContent = ''; el.appendChild(head); el.appendChild(go);
       el.href = n.href; el.hidden = false;
       el.onclick = function () { try { gtag('event', 'resume_strip_click', { kind: n.kind }); } catch (e) {} };
-      if (cta && s.goals) { var lbl = cta.querySelector('.lbl'); (lbl || cta).textContent = lbl ? 'Continue my plan' : 'Continue my plan →'; cta.href = n.kind === 'continue' || n.kind === 'start_today' ? n.href : '/roadmap'; }
+      if (cta && s.goals) { var lbl = cta.querySelector('.lbl'); (lbl || cta).textContent = lbl ? 'Continue my plan' : 'Continue my plan →'; cta.href = n.kind === 'continue' || n.kind === 'start_today' || n.kind === 'welcome_back' ? n.href : '/roadmap'; }
     } catch (e) { /* never break the homepage */ }
   }
   window.addEventListener('load', function () {
