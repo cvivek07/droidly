@@ -370,8 +370,8 @@ input:focus{outline:none;border-color:var(--green)}
     draft = { level: g.level, company: g.company, minutes: g.minutes, date: g.date };
     app.innerHTML =
       '<div class="card" style="max-width:720px;margin:0 auto">' +
-      '<span class="eyebrow">' + (editing ? 'Edit your goal' : 'Free · about 30 seconds') + '</span>' +
-      '<h1>' + (editing ? 'Update your goal' : 'Build your Android interview roadmap') + '</h1>' +
+      '<span class="eyebrow">' + (editing ? 'Check your goal, then take the skill check' : 'Free · about 10 minutes') + '</span>' +
+      '<h1>' + (editing ? 'Rebuild your plan' : 'Build your Android interview roadmap') + '</h1>' +
       '<p class="sub">Tell us where you\'re headed. We\'ll turn the question bank into a day-by-day plan that focuses on what matters for your level and company type.</p>' +
       '<div class="q-group">' + qLabel(1, 'Your level') + levelCards(g.level) + '</div>' +
       '<div class="q-group">' + qLabel(2, 'Where are you interviewing?') + chipGroup('company', COMPANIES, g.company) + '</div>' +
@@ -381,8 +381,9 @@ input:focus{outline:none;border-color:var(--green)}
       '<textarea class="jd-in" id="jdInput" rows="4" maxlength="8000" placeholder="Paste the job description for the role you are targeting. It is read in your browser to see which topics it stresses. The text itself is not saved."></textarea>' +
       '<div class="jd-detect" id="jdDetect" aria-live="polite">' + jdSavedLine() + '</div></details>' +
       '<div class="ob-sum" id="obSum" aria-live="polite"></div>' +
-      '<div class="actions"><button class="btn" id="goalNext" type="button">' + (editing ? 'Save and rebuild plan ›' : 'Start my plan') + '</button>' +
-      (editing ? '<button class="link-btn" id="goalCancel" type="button">Cancel</button>' : '<button class="link-btn" id="goalSkip" type="button">Skip, use defaults</button>') + '</div>' +
+      '<div class="actions"><button class="btn" id="goalNext" type="button">' + (editing ? 'Rebuild my plan' : 'Start my plan') + '</button>' +
+      (editing ? '<button class="link-btn" id="goalCancel" type="button">Cancel</button>' : '') + '</div>' +
+      '<p class="dg-note" style="margin-top:12px">Next: a short skill check (about 10 minutes) so your plan targets your real gaps.</p>' +
       '</div>';
     function paintSum() {
       var el = document.getElementById('obSum'); if (!el) return;
@@ -410,10 +411,9 @@ input:focus{outline:none;border-color:var(--green)}
       if (jdDraft && Object.keys(jdDraft.topics).length) { R.setJD(jdDraft); track('roadmap_jd_used', { topics: Object.keys(jdDraft.topics).length, level_hint: jdDraft.level || 'none' }); }
       R.setGoals(draft); R.ensurePlan(index, true); track('roadmap_goal_saved', { level: draft.level, company: draft.company, minutes: draft.minutes, has_date: !!draft.date });
       track('roadmap_plan_built', { source: 'goal_step' });
-      view = 'dash'; editing = false; draft = {}; render(); window.scrollTo(0, 0);
+      var src = editing ? 'rebuild' : 'setup'; editing = false; draft = {};
+      startDiag(src);
     };
-    var skip = document.getElementById('goalSkip');
-    if (skip) skip.onclick = function () { R.setGoals(R.DEFAULT_GOALS); R.ensurePlan(index, true); track('roadmap_skipped_onboarding'); view = 'dash'; draft = {}; render(); };
     var cancel = document.getElementById('goalCancel');
     if (cancel) cancel.onclick = function () { editing = false; draft = {}; view = 'dash'; render(); };
   }
@@ -514,7 +514,7 @@ input:focus{outline:none;border-color:var(--green)}
       '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">' +
       '<div><span class="eyebrow">Your roadmap</span><h1>' + (left != null && left > 0 ? left + ' day' + (left > 1 ? 's' : '') + ' to your interview' : left === 0 ? 'Interview day. You\'ve got this.' : 'Keep your prep on track') + '</h1>' +
       '<p class="sub">' + esc(COMPANY_NAME[g.company]) + ' · ' + esc(LEVEL_NAME[g.level]) + ' · ' + g.minutes + ' min/day</p></div>' +
-      '<div style="display:flex;gap:8px"><button class="btn ghost small" id="editGoals" type="button">Edit goal</button><button class="btn ghost small" id="rebuild" type="button">Rebuild plan</button></div></div>' +
+      '<div style="display:flex;gap:8px"><button class="btn small" id="rebuild" type="button">Rebuild my plan</button></div></div>' +
       (plan.note ? '<div class="note">' + esc(plan.note) + '</div>' : '') +
       '<div class="grid"><div>' +
         '<div class="card score-card"><div class="q-label" style="margin:0">Readiness estimate</div>' +
@@ -558,8 +558,7 @@ input:focus{outline:none;border-color:var(--green)}
     });
     var dgb = document.getElementById('diagStart'); if (dgb) dgb.onclick = function () { startDiag('dashboard'); };
     var dgr = document.getElementById('diagResults'); if (dgr) dgr.onclick = function () { showLastResults(); };
-    document.getElementById('editGoals').onclick = function () { editing = true; view = 'onboard'; render(); window.scrollTo(0, 0); };
-    document.getElementById('rebuild').onclick = function () { R.ensurePlan(index, true); track('roadmap_plan_rebuilt'); render(); toast('Plan rebuilt from your latest progress.'); };
+    document.getElementById('rebuild').onclick = function () { track('roadmap_plan_rebuild_click'); editing = true; view = 'onboard'; render(); window.scrollTo(0, 0); };
   }
 
 
@@ -603,12 +602,12 @@ input:focus{outline:none;border-color:var(--green)}
     var d = s.diag || {}, runs = d.runs || [], last = runs.length ? runs[runs.length - 1] : null;
     if (!last) {
       return '<div class="card" style="margin-top:20px"><h2>Find your real gaps</h2><p class="sub" style="font-size:14px;margin-top:4px">12 multiple-choice questions picked for your level' + (s.jd ? ' and job description' : '') + ', plus two optional written answers. About 10 minutes. No sign-in needed.</p>' +
-        '<div class="actions" style="margin-top:14px"><button class="btn small" id="diagStart" type="button">Start the skill check</button></div></div>';
+        '<p class="dg-note" style="margin-top:12px">Press <b>Rebuild my plan</b> above to take it. Your plan is then rebuilt from the results.</p></div>';
     }
     var when = new Date(last.t).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
     return '<div class="card" style="margin-top:20px"><h2>Skill check</h2><p class="sub" style="font-size:14px;margin-top:4px">Last taken ' + esc(when) + ': ' + last.ok + ' of ' + last.n + ' correct' +
-      '. Retaking picks questions you have not seen or missed.</p>' +
-      '<div class="actions" style="margin-top:14px"><button class="btn small" id="diagStart" type="button">Retake with new questions</button><button class="btn ghost small" id="diagResults" type="button">See last results</button></div>' +
+      '. Press <b>Rebuild my plan</b> to retake it with new questions and rebuild your plan.</p>' +
+      '<div class="actions" style="margin-top:14px"><button class="btn ghost small" id="diagResults" type="button">See last results</button></div>' +
       '<p class="dg-note">' + syncNote() + '</p></div>';
   }
   function syncNote() { return 'Saved to your account, so it follows you across devices.'; }
@@ -763,7 +762,7 @@ input:focus{outline:none;border-color:var(--green)}
         return '<div class="dg-row"><span class="nm">' + esc(topicName(o.topic)) + '</span><div class="bar"><i class="' + (o.pct >= 75 ? '' : o.pct >= 50 ? 'needs' : 'weak') + '" style="width:' + o.pct + '%"></i></div><small>' + parts + wr + '' + '</small></div>';
       }).join('') +
       '<div class="q-label" style="margin-top:24px">What to work on first</div>' + skillsHtml(skills) +
-      '<div class="actions"><button class="btn" id="dgPlan" type="button">See my updated plan ›</button>' + (dg.fromHistory ? '' : '<button class="btn ghost" id="dgAgain" type="button">Retake with new questions</button>') + '</div>' +
+      '<div class="actions"><button class="btn" id="dgPlan" type="button">See my updated plan ›</button>' + '' + '</div>' +
       '<p class="dg-note">Written answers measure coverage of expected points only. ' + syncNote() + '</p></div>';
   }
   function bindResults() {
