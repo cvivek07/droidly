@@ -16,6 +16,7 @@
 <meta property="og:image" content="https://droidly.io/assets/og-image.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/auth-dialog.js" defer></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -254,6 +255,7 @@ input:focus{outline:none;border-color:var(--green)}
   var SUPABASE_URL = 'https://dquheflcmcppldrnckzf.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
   var db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  window.DroidlyDb = db;   // the sign-in dialog reuses this client
 
   var app = document.getElementById('app');
   var index = null;
@@ -296,8 +298,8 @@ input:focus{outline:none;border-color:var(--green)}
       document.getElementById('navEmail').textContent = u.email;
     }
   }
-  // Sign-in and sign-up use the one dialog on the homepage, then return here.
-  function openAuth(mode) { window.location.href = '/?auth=' + (mode === 'signup' ? 'signup' : 'signin') + '&return=roadmap'; }
+  // Same dialog as the homepage, opened in place so the visitor stays on this page.
+  function openAuth(mode) { if (typeof window.openAuthModal === 'function') window.openAuthModal(mode === 'signup' ? 'signup' : 'signin'); else window.location.href = '/?auth=' + (mode === 'signup' ? 'signup' : 'signin') + '&return=roadmap'; }
   document.getElementById('navSignIn').onclick = function () { openAuth('signin'); };
   document.getElementById('navSignOut').onclick = function () {
     db.auth.signOut().then(function () { setUser(null); signedOut(); toast('Signed out.'); });

@@ -138,6 +138,8 @@
   function start() {
     enhance();
     R.onChange(paintAll);
+    function resync() { return R.sync().then(function (r) { signedIn = !!(r && r.ok); loadFailed = !!(r && !r.ok && r.reason !== 'signed-out'); lastMarks = Object.keys(R.get().marks || {}).length; paintAll(); var cbs = knownCbs; knownCbs = []; cbs.forEach(function (f) { f(); }); }); }
+    window.addEventListener('droidly:signed-in', function () { setTimeout(resync, 400); });
     R.sync().then(function (r) { signedIn = !!(r && r.ok); loadFailed = !!(r && !r.ok && r.reason !== 'signed-out'); lastMarks = Object.keys(R.get().marks || {}).length; paintAll(); var cbs = knownCbs; knownCbs = []; cbs.forEach(function (f) { f(); }); });
     // questions.html builds its own UI on load; deep-link after it settles.
     if (document.readyState === 'complete') setTimeout(deepLink, 300);
