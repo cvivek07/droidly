@@ -241,6 +241,35 @@
     return out.slice(0, opts.limit || 5);
   }
 
+  /**
+   * What to say to a returning, signed-in user (homepage strip). Pure: depends only on the saved state and the date.
+   * Returns { kind, headline, detail, cta, href }. Picks the single most useful next step instead of a bare progress count.
+   */
+  function nudgeFor(state, now) {
+    now = now || new Date();
+    if (!state || !state.goals) return { kind: 'start', headline: 'Build your interview plan', detail: 'Answer a few questions and get a day-by-day plan.', cta: 'Start', href: '/roadmap' };
+    var prefix = '';
+    if (state.goals.date) {
+      var left = daysBetween(startOfDay(now), parseYmd(state.goals.date));
+      if (left === 0) prefix = 'Interview day · ';
+      else if (left > 0 && left <= 14) prefix = left + ' day' + (left > 1 ? 's' : '') + ' to your interview · ';
+    }
+    var plan = state.plan, tasks = plan && plan.on === ymd(now) && plan.days && plan.days[0] ? plan.days[0].tasks : null;
+    if (!tasks || !tasks.length) return { kind: 'plan_ready', headline: prefix + 'Today\'s plan is ready', detail: 'Open it to see what to study today.', cta: 'Open plan', href: '/roadmap' };
+    var open = tasks.filter(function (t) { return !isDone(t, state, plan.at); });
+    var done = tasks.length - open.length;
+    if (!open.length) {
+      var tookCheck = state.diag && state.diag.runs && state.diag.runs.length;
+      return tookCheck
+        ? { kind: 'done', headline: prefix + 'Today\'s plan is done. Nice work.', detail: 'Come back tomorrow, or review your weakest topics now.', cta: 'See weak areas', href: '/roadmap' }
+        : { kind: 'check', headline: prefix + 'Today\'s plan is done', detail: 'Next: a 10-minute skill check shows where you are really weak.', cta: 'Take the skill check', href: '/roadmap' };
+    }
+    var next = open[0], remaining = open.reduce(function (a, t) { return a + (t.min || 0); }, 0), total = tasks.reduce(function (a, t) { return a + (t.min || 0); }, 0);
+    return done === 0
+      ? { kind: 'start_today', headline: prefix + 'Start today\'s ' + total + '-min plan', detail: 'First up: ' + next.title, cta: 'Start', href: next.href }
+      : { kind: 'continue', headline: prefix + done + ' of ' + tasks.length + ' done · about ' + remaining + ' min left', detail: 'Next: ' + next.title, cta: 'Continue', href: next.href };
+  }
+
   function isDone(task, state, planAt) {
     var m = state.marks[task.id];
     if (!m || !m.s) return false;
@@ -650,7 +679,7 @@
   return {
     TOPIC_ORDER: TOPIC_ORDER, DEFAULT_GOALS: DEFAULT_GOALS, RATING_PRIOR: RATING_PRIOR,
     LEVELS: LEVELS, weightsFor: weightsFor, topicStats: topicStats, readiness: readiness, readinessByLevel: readinessByLevel,
-    skillsToImprove: skillsToImprove, buildPlan: buildPlan, isDone: isDone,
+    skillsToImprove: skillsToImprove, buildPlan: buildPlan, isDone: isDone, nudgeFor: nudgeFor,
     ymd: ymd, parseYmd: parseYmd, daysBetween: daysBetween,
     load: load, get: function () { return state; }, onChange: onChange, configure: configure, sync: sync,
     setGoals: setGoals, setRating: setRating, setMark: setMark, setJD: setJD, recordDiag: recordDiag, clearDiag: clearDiag, clearLocal: clearLocal, ensurePlan: ensurePlan,
