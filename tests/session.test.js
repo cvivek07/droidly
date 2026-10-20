@@ -15,31 +15,32 @@ let pass = 0; const t = (n) => { pass++; console.log('ok -', n); };
   R.load();
   assert(!('droidly_readiness_v1' in store), 'legacy cached progress is purged on load'); t('legacy browser copy is purged');
 
-  const db = { user_goals: [], topic_ratings: [], question_marks: [], user_plan: [], diag_answers: [], diag_runs: [], user_jd: [] };
+  const db = { user_goals: [], topic_ratings: [], question_marks: [], user_plan: [], topic_progress: [], diag_answers: [], diag_runs: [], user_jd: [] };
   let failPosts = 0; const log = [];
   global.fetch = async (url, o) => {
     const table = url.split('/rest/v1/')[1].split('?')[0]; log.push([o.method, table, o.keepalive]);
     if (o.method === 'GET') return { ok: true, json: async () => db[table], text: async () => '' };
     if (failPosts > 0) { failPosts--; return { ok: false, status: 503, json: async () => null, text: async () => 'unavailable' }; }
-    const keyOf = { user_goals: 'user_id', user_plan: 'user_id', topic_ratings: 'topic_id', question_marks: 'question_id' }[table];
+    const keyOf = { user_goals: 'user_id', user_plan: 'user_id', topic_progress: 'topic_id', topic_ratings: 'topic_id', question_marks: 'question_id' }[table];
     JSON.parse(o.body).forEach(r => { const i = db[table].findIndex(x => keyOf && x[keyOf] === r[keyOf]); if (i >= 0) db[table][i] = r; else db[table].push(r); });
     return { ok: true, json: async () => null, text: async () => '' };
   };
 
   R.setGoals({ level: '2-5', company: 'product', minutes: 60 }); R.setRating('kotlin', 'new'); R.setMark('kotlin:1', { s: 'got_it' });
-  R.ensurePlan(index, true);
+  R.ensurePlan(index, true); R.setTopicComplete('kotlin', true);
   await wait(1200);
   assert.deepStrictEqual(writes.filter(k => k !== 'droidly_first_mark_sent'), [], 'no browser-storage writes: ' + writes.join());   // the one allowed key is an analytics de-dupe flag, not user data
-  assert.equal(db.user_goals.length, 1); assert.equal(db.user_plan.length, 1); assert(db.user_plan[0].plan.days.length > 0);
+  assert.equal(db.topic_progress.length, 1); assert.equal(db.topic_progress[0].completed, true);
+  assert.equal(db.user_goals.length, 1); assert.equal(db.user_plan.length, 1); assert(db.user_plan[0].plan.path.length > 0);
   assert(log.filter(c => c[0] === 'POST').every(c => c[2] === true), 'writes use keepalive so they survive a page unload');
   t('user data goes to Supabase (goal, rating, mark, plan) and never to browser storage');
 
   // A new browser/device gets the same plan back, including what was done today.
-  const planBefore = JSON.stringify(R.get().plan.days[0].tasks.map(x => x.id));
+  const planBefore = JSON.stringify(R.get().plan.path.map(x => x.id));
   R._setState(mk()); await R.sync();
-  assert.deepStrictEqual(JSON.stringify(R.get().plan.days[0].tasks.map(x => x.id)), planBefore); assert(R.get().goals && R.get().marks['kotlin:1']);
+  assert.deepStrictEqual(JSON.stringify(R.get().plan.path.map(x => x.id)), planBefore); assert(R.get().goals && R.get().marks['kotlin:1']); assert(R.get().topics.kotlin.c, 'completion syncs to a new device');
   const again = R.ensurePlan(index, false);   // same signature => reused, not rebuilt
-  assert.equal(JSON.stringify(again.days[0].tasks.map(x => x.id)), planBefore);
+  assert.equal(JSON.stringify(again.path.map(x => x.id)), planBefore);
   t('a fresh browser loads the same goal, marks and plan from Supabase');
 
   // Signing out: the next sync with no session wipes the previous user's data from memory.

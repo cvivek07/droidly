@@ -165,14 +165,14 @@
     var ranked = {};
     order.forEach(function (t) { ranked[t] = rankItems(byTopic[t]); });
 
-    // Allocate with D'Hondt: a topic's next slot is worth score / (slots so far + 1), capped at 3 per topic.
+    // Allocate with D'Hondt: a topic's next slot is worth score / (slots so far + 1), capped at opts.perTopic (default 3) per topic.
     // Important topics (and ones the JD stresses) earn extra slots; low-weight topics may be left out of a short quiz.
-    var alloc = {}, used = 0, inc = [];
+    var alloc = {}, used = 0, inc = [], cap = opts.perTopic || 3;
     order.forEach(function (t) { alloc[t] = 0; });
     while (used < count) {
       var bestT = null, bestQ = -1;
       order.forEach(function (t) {
-        if (alloc[t] >= 3 || alloc[t] >= ranked[t].length) return;
+        if (alloc[t] >= cap || alloc[t] >= ranked[t].length) return;
         var q = (scores[t] || 0.5) / (alloc[t] + 1);
         if (q > bestQ) { bestQ = q; bestT = t; }
       });

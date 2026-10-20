@@ -19,7 +19,7 @@
     '.rd-btn[aria-pressed=true].rd-save{background:#e8f2ec;border-color:#3d7a4f;color:#2e6040}' +
     '.rd-link{margin-left:auto;font-size:13px;font-weight:600;color:#3d7a4f;text-decoration:none}' +
     '.rd-hint{flex-basis:100%;font-size:12px;color:#6b7280}' +
-    '.rd-side{display:flex;gap:8px;align-items:center;margin-left:auto;margin-right:10px;flex:none}' +
+    '.rd-side{display:flex;gap:8px;align-items:center;margin-left:auto;flex:none}' +
     '.rd-ic{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(15,17,23,.12);background:#fff;color:#c4c9d2;display:grid;place-items:center;cursor:pointer;padding:0;transition:all .15s}' +
     '.rd-ic:hover{border-color:#3d7a4f;color:#3d7a4f}.rd-ic.rd-ic-save:hover{border-color:#e6b25c;color:#d99a2b}' +
     '.rd-ic-done[aria-pressed=true]{background:#3d7a4f;border-color:#3d7a4f;color:#fff}' +
@@ -92,7 +92,7 @@
         var got = icoBtn('rd-ic-done', '<path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>', gate(id, function () { var m = R.get().marks[id]; R.setMark(id, { s: m && m.s ? m.s : 'got_it' }); }));
         var save = icoBtn('rd-ic-save', '<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1L3.2 9.6l6.1-.8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>', gate(id, function () { var m = R.get().marks[id]; R.setMark(id, { b: !(m && m.b) }); }));
         var side = document.createElement('div'); side.className = 'rd-side'; side.appendChild(got); side.appendChild(save);
-        var tog = card.querySelector('.q-toggle'); if (tog && tog.parentNode) tog.parentNode.insertBefore(side, tog);
+        meta.appendChild(side);
         var link = document.createElement('a'); link.className = 'rd-link'; link.href = '/roadmap.html'; link.textContent = 'Your roadmap ›';
         var hint = document.createElement('div'); hint.className = 'rd-hint'; hint.style.display = 'none';
         hint.innerHTML = 'Sign in to save your progress and build your plan. It is free. <a href="#" class="rd-signin" style="color:#3d7a4f;font-weight:600">Sign in</a>';
@@ -128,7 +128,7 @@
       pill.querySelector('button').addEventListener('click', function () { pillDismissed = true; pill.hidden = true; });
       document.body.appendChild(pill);
     }
-    pill.querySelector('span').textContent = (afterMark ? '\u2713 Saved. ' : '') + n.headline + (n.kind === 'continue' || n.kind === 'start_today' ? ' \u00b7 ' + n.detail : '');
+    pill.querySelector('span').textContent = (afterMark ? '\u2713 Saved. ' : '') + n.headline + (n.kind === 'continue' || n.kind === 'start_topic' ? ' \u00b7 ' + n.detail : '');
     var a = pill.querySelector('a'); a.textContent = n.cta + ' \u203a'; a.href = n.href;
     pill.hidden = false;
     if (afterMark) { pill.classList.remove('pop'); void pill.offsetWidth; pill.classList.add('pop'); }
