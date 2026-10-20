@@ -177,6 +177,30 @@ input:focus{outline:none;border-color:var(--green)}
 .skill-go{display:block;margin:9px 0 0 32px;font-size:13px;font-weight:600;color:var(--green2);text-decoration:none}
 .skill-go:hover{text-decoration:underline}
 .skill-go small{font-weight:500;color:var(--muted)}
+.jd-in{font:inherit;width:100%;padding:10px 14px;border:1.5px solid var(--bg3);border-radius:10px;background:#fff;color:var(--ink);resize:vertical}
+.jd-detect{font-size:13px;color:var(--ink2);margin-top:8px;min-height:18px}
+.jd-detect .pill{margin:2px 4px 2px 0}
+.dg-prog{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted);margin-bottom:14px}
+.dg-prog .bar{flex:1;margin:0}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:15px;line-height:1.45;padding:12px 16px;margin-top:10px;border:1.5px solid var(--bg3);border-radius:12px;background:#fff;color:var(--ink);cursor:pointer}
+.opt:hover{border-color:var(--green)}
+.opt[aria-pressed=true]{border-color:var(--green);background:var(--green-pale)}
+.opt.right{border-color:var(--green);background:var(--green-light)}
+.opt.wrong{border-color:#ef4444;background:var(--red-bg)}
+.opt[disabled]{cursor:default}
+.dg-fb{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--bg2);font-size:14px;color:var(--ink2)}
+.dg-fb b{color:var(--ink)}
+.dg-fb.bad{background:var(--red-bg)}.dg-fb.ok{background:var(--green-pale)}
+.ck{list-style:none;margin:10px 0 0;padding:0;font-size:14px}
+.ck li{padding:5px 0 5px 26px;position:relative}
+.ck li::before{content:"✗";position:absolute;left:2px;color:#ef4444;font-weight:700}
+.ck li.hit::before{content:"✓";color:var(--green)}
+.dg-ta{font:inherit;width:100%;min-height:150px;padding:12px 14px;border:1.5px solid var(--bg3);border-radius:12px;background:#fff;color:var(--ink);resize:vertical;margin-top:12px}
+.dg-big{font-size:34px;font-weight:800;letter-spacing:-.02em}
+.dg-row{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:14px}
+.dg-row .nm{flex:0 0 150px;font-weight:600}.dg-row .bar{flex:1;margin:0}.dg-row small{flex:0 0 auto;color:var(--muted)}
+.dg-note{font-size:12px;color:var(--muted);margin-top:14px}
+@media(max-width:560px){.dg-row{flex-wrap:wrap}.dg-row .nm{flex:1 0 100%}}
 </style>
 </head>
 <body>
@@ -222,17 +246,19 @@ input:focus{outline:none;border-color:var(--green)}
 <div class="toast" id="toast" role="status"></div>
 
 <script src="assets/readiness.js"></script>
+<script src="assets/diagnostic.js"></script>
 <script>
 (function () {
   'use strict';
   var R = window.Readiness;
+  var D = window.DroidlyDiagnostic;
   var SUPABASE_URL = 'https://dquheflcmcppldrnckzf.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
   var db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   var app = document.getElementById('app');
   var index = null;
-  var view = null;            // 'onboard' | 'rate' | 'dash'
+  var view = null;            // 'onboard' | 'rate' | 'dash' | 'diag'
   var editing = false;        // true when editing existing goals
   var draft = {};
   var selectedDay = 0;
@@ -327,6 +353,7 @@ input:focus{outline:none;border-color:var(--green)}
     if (!index) return;
     if (view === 'onboard') return renderOnboard();
     if (view === 'rate') return renderRate();
+    if (view === 'diag') return renderDiag();
     renderDash();
   }
 
@@ -345,6 +372,9 @@ input:focus{outline:none;border-color:var(--green)}
       '<h1>' + (editing ? 'Update your goal' : 'Build your Android interview roadmap') + '</h1>' +
       '<p class="sub">Tell us where you\'re headed. We\'ll turn the question bank into a day-by-day plan that focuses on what matters for your level and company type.</p>' +
       '<div class="q-group"><div class="q-label">Your Android experience</div>' + chipGroup('level', LEVELS, g.level) + '</div>' +
+      '<div class="q-group"><div class="q-label">Job description <small>(optional)</small></div>' +
+      '<textarea class="jd-in" id="jdInput" rows="4" maxlength="8000" placeholder="Paste the job description for the role you are targeting. It is read in your browser to see which topics it stresses. The text itself is not saved."></textarea>' +
+      '<div class="jd-detect" id="jdDetect" aria-live="polite">' + jdSavedLine() + '</div></div>' +
       '<div class="q-group"><div class="q-label">Where are you interviewing?</div>' + chipGroup('company', COMPANIES, g.company) + '</div>' +
       '<div class="q-group"><div class="q-label">Time you can study per day</div>' + chipGroup('minutes', MINUTES, g.minutes) + '</div>' +
       '<div class="q-group"><div class="q-label">Interview date <small>(optional)</small></div><input type="date" id="dateInput" min="' + R.ymd(new Date()) + '" value="' + (g.date || '') + '"/></div>' +
@@ -357,8 +387,17 @@ input:focus{outline:none;border-color:var(--green)}
         app.querySelectorAll('.chip[data-key="' + k + '"]').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
       };
     });
+    var jdDraft = null;
+    var jdIn = document.getElementById('jdInput'), jdOut = document.getElementById('jdDetect');
+    jdIn.oninput = function () {
+      jdDraft = jdIn.value.trim().length > 20 ? D.analyzeJD(jdIn.value) : null;
+      jdOut.innerHTML = jdDraft ? jdDetectHtml(jdDraft, draft.level) : jdSavedLine();
+      bindJdOut(jdOut);
+    };
+    bindJdOut(jdOut);
     document.getElementById('goalNext').onclick = function () {
       draft.date = document.getElementById('dateInput').value || null;
+      if (jdDraft && Object.keys(jdDraft.topics).length) { R.setJD(jdDraft); track('roadmap_jd_used', { topics: Object.keys(jdDraft.topics).length, level_hint: jdDraft.level || 'none' }); }
       R.setGoals(draft); R.ensurePlan(index, true); track('roadmap_goal_saved', { level: draft.level, company: draft.company, minutes: draft.minutes, has_date: !!draft.date });
       var rated = Object.keys(R.get().ratings).length;
       view = (editing || rated) ? 'dash' : 'rate'; editing = false; draft = {}; render(); window.scrollTo(0, 0);
@@ -367,6 +406,29 @@ input:focus{outline:none;border-color:var(--green)}
     if (skip) skip.onclick = function () { R.setGoals(R.DEFAULT_GOALS); R.ensurePlan(index, true); track('roadmap_skipped_onboarding'); view = 'dash'; draft = {}; render(); };
     var cancel = document.getElementById('goalCancel');
     if (cancel) cancel.onclick = function () { editing = false; draft = {}; view = 'dash'; render(); };
+  }
+
+  function topicName(t) { return index.topics[t] ? index.topics[t].name : t; }
+  function jdSavedLine() {
+    var j = R.get().jd; if (!j) return '';
+    var names = Object.keys(j.topics).map(topicName);
+    return 'Job description applied (' + (names.length ? esc(names.join(', ')) : 'no topics found') + '). Paste a new one to replace it. <button type="button" class="link-btn" id="jdRemove">Remove</button>';
+  }
+  function jdDetectHtml(a, curLevel) {
+    var top = a.top.slice(0, 6);
+    if (!top.length && !a.level) return 'Could not find Android topics in that text. Nothing will be applied.';
+    return 'Found: ' + top.map(function (x) { return '<span class="pill none">' + esc(topicName(x.topic)) + '</span>'; }).join('') +
+      (a.level ? '<br>Experience hint: <b>' + esc(LEVEL_NAME[a.level]) + '</b> (' + esc(a.levelSource) + ')' +
+        (a.level !== curLevel ? ' <button type="button" class="link-btn" id="jdUseLevel" data-level="' + a.level + '">Use ' + esc(LEVEL_NAME[a.level]) + '</button>' : '') : '');
+  }
+  function bindJdOut(out) {
+    var rm = out.querySelector('#jdRemove'); if (rm) rm.onclick = function () { R.setJD(null); out.innerHTML = ''; };
+    var ul = out.querySelector('#jdUseLevel');
+    if (ul) ul.onclick = function () {
+      draft.level = ul.dataset.level;
+      app.querySelectorAll('.chip[data-key="level"]').forEach(function (x) { x.setAttribute('aria-pressed', x.dataset.val === draft.level); });
+      ul.remove();
+    };
   }
 
   function raterHtml(tid, current) {
@@ -390,8 +452,10 @@ input:focus{outline:none;border-color:var(--green)}
         var t = index.topics[tid]; var cur = s.ratings[tid] && s.ratings[tid].v;
         return '<div class="rate-row"><span class="rate-name">' + esc(t.name) + '</span>' + raterHtml(tid, cur) + '</div>';
       }).join('') + '</div>' +
-      '<div class="actions"><button class="btn" id="rateDone" type="button">Build my plan →</button><span class="sub" style="margin:0;font-size:14px">' + n + ' of ' + R.TOPIC_ORDER.length + ' rated</span></div></div>';
+      '<div class="actions"><button class="btn" id="rateQuiz" type="button">Check myself first (12 questions) →</button><button class="btn ghost" id="rateDone" type="button">Build my plan now</button><span class="sub" style="margin:0;font-size:14px">' + n + ' of ' + R.TOPIC_ORDER.length + ' rated</span></div>' +
+      '<p class="dg-note">Self-ratings are only a starting point. The check takes about 6 minutes and shows where your answers differ from your confidence.</p></div>';
     bindRaters(app);
+    document.getElementById('rateQuiz').onclick = function () { R.ensurePlan(index, true); startDiag('after_rating'); };
     document.getElementById('rateDone').onclick = function () {
       R.ensurePlan(index, true); track('roadmap_plan_built', { rated_topics: Object.keys(R.get().ratings).length });
       view = 'dash'; render(); window.scrollTo(0, 0);
@@ -482,6 +546,7 @@ input:focus{outline:none;border-color:var(--green)}
         '<div class="meta-line">Confidence: <b>' + r.confidence + '</b> · ' + r.ratedTopics + '/' + R.TOPIC_ORDER.length + ' topics rated · ' + r.attempted + ' questions marked</div>' +
         levelRowHtml(byLevel) +
         '<p class="disclaimer">Self-assessed estimate based on your ratings and marks. It becomes more reliable as you mark more questions. It is not a test score.</p></div>' +
+        diagCardHtml(s) +
         '<div class="card" style="margin-top:20px"><h2>Skills to improve</h2><p class="sub" style="font-size:13px;margin-top:2px">Ranked by how much each matters for your target level and how far you are from Strong.</p><div style="margin-top:8px">' + skillsHtml(skills) + '</div></div>' +
         '<div class="card" style="margin-top:20px"><h2>Topics</h2><p class="sub" style="font-size:13px;margin-top:2px">Weakest and most important first. Tap to re-rate.</p><div style="margin-top:8px">' +
         sorted.map(function (tid) {
@@ -514,14 +579,238 @@ input:focus{outline:none;border-color:var(--green)}
         track('roadmap_task_marked', { status: b.dataset.mark, topic: id.split(':')[0] });
       };
     });
+    var dgb = document.getElementById('diagStart'); if (dgb) dgb.onclick = function () { startDiag('dashboard'); };
+    var dgr = document.getElementById('diagResults'); if (dgr) dgr.onclick = function () { showLastResults(); };
     document.getElementById('editGoals').onclick = function () { editing = true; view = 'onboard'; render(); window.scrollTo(0, 0); };
     document.getElementById('rebuild').onclick = function () { R.ensurePlan(index, true); track('roadmap_plan_rebuilt'); render(); toast('Plan rebuilt from your latest progress.'); };
     var bs = document.getElementById('bannerSignIn'); if (bs) bs.onclick = function () { openAuth('signup'); };
   }
 
+
+  /* ---------- skill check (diagnostic) ---------- */
+  var bankItems = null, dg = null;
+  var FLAG_TEXT = {
+    solid: ['ok', 'Correct, and you were confident.'],
+    lucky: ['ok', 'Correct, but you marked it a guess. It counts for less until you can explain why.'],
+    misconception: ['bad', 'Wrong, and you were sure. This is the most useful thing the check can find, so fix it first.'],
+    gap: ['bad', 'Not yet. Now you know where to look.']
+  };
+  function loadBank() {
+    if (bankItems) return Promise.resolve(bankItems);
+    return fetch('assets/diagnostic-items.json').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (j) { bankItems = j.items; return bankItems; });
+  }
+  function itemHref(ref) {
+    var parts = String(ref).split(':'), t = index.topics[parts[0]], hit = null;
+    if (t) t.items.forEach(function (it) { if (it.id === ref) hit = it; });
+    if (!hit) return null;
+    return hit.href ? hit.href : '/questions.html?topic=' + parts[0] + '&q=' + hit.n + '#' + parts[0];
+  }
+  function diagCtx() {
+    var s = R.get(), g = Object.assign({}, R.DEFAULT_GOALS, s.goals);
+    return { s: s, g: g, weights: R.weightsFor(g, g.level), jd: s.jd };   // weights without JD: selectMcq applies the JD itself
+  }
+  function startDiag(source) {
+    var c = diagCtx();
+    view = 'diag';
+    dg = { phase: 'loading', runId: 'r' + Date.now(), before: R.readiness(index, c.s).score, level: c.g.level, items: [], i: 0, picked: undefined, conf: null, answered: false, results: [], written: [], wi: 0, last: null };
+    track('diagnostic_started', { source: source || 'unknown', has_jd: !!c.s.jd });
+    render(); window.scrollTo(0, 0);
+    loadBank().then(function (all) {
+      var runs = (R.get().diag && R.get().diag.runs) ? R.get().diag.runs.length : 0;
+      dg.all = all;
+      dg.items = D.selectMcq(all, R.get(), { count: 12, level: c.g.level, weights: c.weights, jd: c.jd, seed: runs });
+      dg.phase = dg.items.length ? 'intro' : 'error'; if (!dg.items.length) dg.err = 'no questions available';
+      render();
+    }).catch(function (e) { dg.phase = 'error'; dg.err = e.message; render(); });
+  }
+  function leaveDiag() { view = 'dash'; dg = null; render(); window.scrollTo(0, 0); }
+
+  function diagCardHtml(s) {
+    var d = s.diag || {}, runs = d.runs || [], last = runs.length ? runs[runs.length - 1] : null;
+    if (!last) {
+      return '<div class="card" style="margin-top:20px"><h2>Find your real gaps</h2><p class="sub" style="font-size:14px;margin-top:4px">12 multiple-choice questions picked for your level' + (s.jd ? ' and job description' : '') + ', plus two optional written answers. About 10 minutes. No sign-in needed.</p>' +
+        '<div class="actions" style="margin-top:14px"><button class="btn small" id="diagStart" type="button">Start the skill check</button></div></div>';
+    }
+    var when = new Date(last.t).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    var mis = 0; Object.keys(d.results || {}).forEach(function (id) { var r = d.results[id]; if (!r.c && r.k === 'sure') mis++; });
+    return '<div class="card" style="margin-top:20px"><h2>Skill check</h2><p class="sub" style="font-size:14px;margin-top:4px">Last taken ' + esc(when) + ': ' + last.ok + ' of ' + last.n + ' correct' +
+      (mis ? ', ' + mis + ' confident but wrong (across all checks)' : '') + '. Retaking picks questions you have not seen or missed.</p>' +
+      '<div class="actions" style="margin-top:14px"><button class="btn small" id="diagStart" type="button">Retake with new questions</button><button class="btn ghost small" id="diagResults" type="button">See last results</button></div>' +
+      '<p class="dg-note">' + syncNote() + '</p></div>';
+  }
+  function syncNote() { return user ? 'Saved to your account, so it follows you across devices.' : 'Saved on this device. Sign in to keep it across devices.'; }
+  function showLastResults() {
+    var d = R.get().diag || {}, res = [];
+    Object.keys(d.results || {}).forEach(function (id) { var r = d.results[id]; res.push({ id: id, type: 'mcq', topic: r.topic, ref: r.ref, d: r.d, c: r.c, k: r.k, flag: r.c ? (r.k === 'guess' ? 'lucky' : 'solid') : (r.k === 'sure' ? 'misconception' : 'gap') }); });
+    Object.keys(d.written || {}).forEach(function (id) { var r = d.written[id]; res.push({ id: id, type: 'written', topic: r.topic, ref: r.ref, d: r.d, s: r.s }); });
+    dg = { phase: 'results', fromHistory: true, results: res, written: [], before: null };
+    view = 'diag'; render(); window.scrollTo(0, 0);
+  }
+
+  function renderDiag() {
+    if (!dg) { view = 'dash'; return render(); }
+    var h = '';
+    if (dg.phase === 'loading') h = '<div class="card" style="max-width:720px;margin:0 auto"><p class="sub">Picking questions…</p></div>';
+    else if (dg.phase === 'error') h = '<div class="card" style="max-width:720px;margin:0 auto"><h2>Could not load the questions</h2><p class="sub">Please try again. (' + esc(dg.err || '') + ')</p><div class="actions"><button class="btn ghost" id="dgBack" type="button">Back</button></div></div>';
+    else if (dg.phase === 'intro') h = diagIntroHtml();
+    else if (dg.phase === 'q') h = diagQuestionHtml();
+    else if (dg.phase === 'written') h = diagWrittenHtml();
+    else h = diagResultsHtml();
+    app.innerHTML = h;
+    var back = document.getElementById('dgBack'); if (back) back.onclick = leaveDiag;
+    if (dg.phase === 'intro') document.getElementById('dgStart').onclick = function () { dg.phase = 'q'; render(); window.scrollTo(0, 0); };
+    if (dg.phase === 'q') bindQuestion();
+    if (dg.phase === 'written') bindWritten();
+    if (dg.phase === 'results') bindResults();
+  }
+
+  function diagIntroHtml() {
+    var jd = R.get().jd;
+    return '<div class="card" style="max-width:720px;margin:0 auto"><span class="eyebrow">Skill check</span><h1>Find where you actually stand</h1>' +
+      '<p class="sub">' + dg.items.length + ' multiple-choice questions at your target level (' + esc(LEVEL_NAME[dg.level]) + ')' + (jd ? ', weighted toward what your job description stresses' : '') + '. For each one, pick an answer and say how sure you are.</p>' +
+      '<ul class="ck" style="margin-top:14px"><li class="hit">A confident wrong answer tells us more than a blank, so answer honestly rather than strategically.</li>' +
+      '<li class="hit">You see the explanation after every question.</li>' +
+      '<li class="hit">At the end, up to two short written answers, checked against a list of expected points. Optional, and not AI.</li></ul>' +
+      '<div class="actions"><button class="btn" id="dgStart" type="button">Start</button><button class="link-btn" id="dgBack" type="button">Not now</button></div>' +
+      '<p class="dg-note">This is a self-study check, not a test score. Questions are drafted from Droidly answers; if one looks wrong, use the report link under it.</p></div>';
+  }
+
+  function progressHtml(i, n, label) {
+    return '<div class="dg-prog"><span>' + label + '</span><div class="bar"><i style="width:' + Math.round(100 * i / n) + '%"></i></div></div>';
+  }
+  function diagQuestionHtml() {
+    var it = dg.items[dg.i], n = dg.items.length, ans = dg.answered;
+    var opts = it.options.map(function (o, k) {
+      var cls = 'opt';
+      if (ans) { if (k === it.answer) cls += ' right'; else if (k === dg.picked) cls += ' wrong'; }
+      return '<button type="button" class="' + cls + '" data-k="' + k + '" aria-pressed="' + (dg.picked === k) + '"' + (ans ? ' disabled' : '') + '>' + esc(o) + '</button>';
+    }).join('');
+    var conf = ans ? '' : '<div class="q-label" style="margin-top:18px">How sure are you?</div><div class="seg" role="group" aria-label="Confidence">' +
+      [['sure', 'Sure'], ['think', 'Think so'], ['guess', 'Guess']].map(function (c) { return '<button type="button" data-conf="' + c[0] + '" aria-pressed="' + (dg.conf === c[0]) + '">' + c[1] + '</button>'; }).join('') + '</div>';
+    var fb = '';
+    if (ans) {
+      var f = FLAG_TEXT[dg.last.flag], href = itemHref(it.ref);
+      fb = '<div class="dg-fb ' + f[0] + '"><b>' + esc(f[1]) + '</b><p style="margin-top:6px">' + esc(it.why) + '</p>' +
+        (href ? '<p style="margin-top:6px"><a class="skill-go" href="' + esc(href) + '" target="_blank" rel="noopener">Read the full answer</a></p>' : '') + '</div>';
+    }
+    var report = 'mailto:support@droidly.io?subject=' + encodeURIComponent('Droidly quiz issue: ' + it.id);
+    return '<div class="card" style="max-width:720px;margin:0 auto">' + progressHtml(dg.i + (ans ? 1 : 0), n, 'Question ' + (dg.i + 1) + ' of ' + n + ' · ' + esc(topicName(it.topic))) +
+      '<h2 style="font-size:19px;line-height:1.4">' + esc(it.q) + '</h2><div role="group" aria-label="Answers">' + opts + '</div>' + conf + fb +
+      '<div class="actions" style="margin-top:20px">' + (ans ? '<button class="btn" id="dgNext" type="button">' + (dg.i + 1 < n ? 'Next question →' : 'Continue →') + '</button>' :
+        '<button class="btn" id="dgCheck" type="button" disabled>Check answer</button><button class="link-btn" id="dgDk" type="button">I don\'t know</button>') +
+      '<a class="link-btn" style="margin-left:auto" href="' + esc(report) + '">Report a problem with this question</a></div></div>';
+  }
+  function bindQuestion() {
+    var chk = document.getElementById('dgCheck'), it = dg.items[dg.i];
+    function sync() { if (chk) chk.disabled = !(dg.picked !== undefined && dg.picked !== null && dg.conf); }
+    app.querySelectorAll('.opt').forEach(function (b) {
+      b.onclick = function () {
+        if (dg.answered) return;
+        dg.picked = +b.dataset.k;
+        app.querySelectorAll('.opt').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+        sync();
+      };
+    });
+    app.querySelectorAll('[data-conf]').forEach(function (b) {
+      b.onclick = function () {
+        dg.conf = b.dataset.conf;
+        app.querySelectorAll('[data-conf]').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+        sync();
+      };
+    });
+    function grade(choice, conf) {
+      var res = D.gradeMcq(it, choice, conf);
+      dg.results.push(res); dg.last = res; dg.answered = true; dg.picked = choice;
+      R.recordDiag([res], { run: dg.runId });   // saved as you go, so closing the tab midway keeps what you answered
+      render();
+    }
+    if (chk) chk.onclick = function () { if (!chk.disabled) grade(dg.picked, dg.conf); };
+    var dk = document.getElementById('dgDk'); if (dk) dk.onclick = function () { grade(null, 'guess'); };
+    var nx = document.getElementById('dgNext');
+    if (nx) nx.onclick = function () {
+      dg.i++; dg.picked = undefined; dg.conf = null; dg.answered = false; dg.last = null;
+      if (dg.i >= dg.items.length) prepareWritten();
+      render(); window.scrollTo(0, 0);
+    };
+  }
+
+  function prepareWritten() {
+    var c = diagCtx(), sum = D.summarize(dg.results);
+    dg.written = D.selectWritten(dg.all, R.get(), { count: 2, gapTopics: sum.gaps, weights: c.weights, jd: c.jd, level: c.g.level });
+    dg.wi = 0; dg.wres = null; dg.text = '';
+    dg.phase = dg.written.length ? 'written' : 'results';
+    if (dg.phase === 'results') finishDiag();
+  }
+  function diagWrittenHtml() {
+    var w = dg.written[dg.wi], n = dg.written.length, res = dg.wres;
+    var body = '';
+    if (!res) {
+      body = '<textarea class="dg-ta" id="dgText" placeholder="Write it the way you would say it in an interview. Aim for 4–8 sentences." aria-label="Your answer">' + esc(dg.text || '') + '</textarea>' +
+        '<div class="dg-note" id="dgWc">0 words</div>' +
+        '<div class="actions" style="margin-top:14px"><button class="btn" id="dgGrade" type="button">Check against the key points</button><button class="link-btn" id="dgSkipW" type="button">Skip written answers</button></div>';
+    } else {
+      body = '<p class="sub" style="font-size:14px">You covered <b>' + res.matched + ' of ' + res.total + '</b> expected points' + (res.short ? ' (answer was short, so the score is scaled down)' : '') + '.</p>' +
+        '<ul class="ck">' + res.hits.map(function (h) { return '<li class="' + (h.hit ? 'hit' : '') + '">' + esc(h.label) + '</li>'; }).join('') + '</ul>' +
+        '<div class="dg-fb"><b>How to read this.</b> It checks whether your answer mentions each expected point. It cannot judge whether your reasoning is right, and a different valid wording can be missed, so treat unchecked points as prompts to review, not as a verdict.<p style="margin-top:6px">' + esc(w.why) + '</p>' +
+        (itemHref(w.ref) ? '<p style="margin-top:6px"><a class="skill-go" href="' + esc(itemHref(w.ref)) + '" target="_blank" rel="noopener">Read the full answer</a></p>' : '') + '</div>' +
+        '<div class="actions"><button class="btn" id="dgWNext" type="button">' + (dg.wi + 1 < n ? 'Next written question →' : 'See results →') + '</button></div>';
+    }
+    return '<div class="card" style="max-width:720px;margin:0 auto">' + progressHtml(dg.items.length + dg.wi + (res ? 1 : 0), dg.items.length + n, 'Written answer ' + (dg.wi + 1) + ' of ' + n + ' · ' + esc(topicName(w.topic))) +
+      '<h2 style="font-size:19px;line-height:1.4">' + esc(w.q) + '</h2>' + body + '</div>';
+  }
+  function bindWritten() {
+    var ta = document.getElementById('dgText'), w = dg.written[dg.wi];
+    if (ta) {
+      var wc = document.getElementById('dgWc');
+      var upd = function () { dg.text = ta.value; var n = (ta.value.trim().match(/\S+/g) || []).length; wc.textContent = n + ' word' + (n === 1 ? '' : 's') + (n < D.MIN_WORDS_FULL ? ' · short answers are scaled down' : ''); };
+      ta.oninput = upd; upd();
+      document.getElementById('dgGrade').onclick = function () {
+        var res = D.gradeWritten(w, ta.value); dg.wres = res; dg.results.push(res); R.recordDiag([res], { run: dg.runId }); render();
+      };
+      document.getElementById('dgSkipW').onclick = function () { dg.phase = 'results'; finishDiag(); render(); window.scrollTo(0, 0); };
+    }
+    var nx = document.getElementById('dgWNext');
+    if (nx) nx.onclick = function () {
+      dg.wi++; dg.wres = null; dg.text = '';
+      if (dg.wi >= dg.written.length) { dg.phase = 'results'; finishDiag(); }
+      render(); window.scrollTo(0, 0);
+    };
+  }
+
+  function finishDiag() {
+    if (dg.finished) return; dg.finished = true;
+    R.ensurePlan(index, true);
+    var sum = D.summarize(dg.results);
+    dg.after = R.readiness(index, R.get()).score;
+    track('diagnostic_completed', { answered: sum.answered, correct: sum.correct, misconceptions: dg.results.filter(function (r) { return r.flag === 'misconception'; }).length, gap_topics: sum.gaps.length });
+  }
+  function diagResultsHtml() {
+    var sum = D.summarize(dg.results), mis = dg.results.filter(function (r) { return r.flag === 'misconception'; }).length;
+    var skills = R.skillsToImprove(index, R.get(), { limit: 3 });
+    var change = (dg.before != null && dg.after != null)
+      ? '<p class="sub" style="font-size:14px">Readiness estimate: <b>' + dg.before + '</b> → <b>' + dg.after + '</b>' + (dg.after === dg.before ? ' (no change)' : '') + '. This is an estimate that blends your ratings, marks and these answers.</p>' : '';
+    return '<div class="card" style="max-width:720px;margin:0 auto"><span class="eyebrow">' + (dg.fromHistory ? 'Latest results across your checks' : 'Skill check complete') + '</span>' +
+      '<div class="dg-big">' + sum.correct + ' of ' + sum.answered + ' correct</div>' +
+      (mis ? '<p class="sub" style="font-size:14px"><b>' + mis + ' answer' + (mis > 1 ? 's were' : ' was') + ' confident but wrong.</b> Those are the first things to fix.</p>' : '') + change +
+      '<div class="q-label" style="margin-top:20px">By topic, weakest first</div>' +
+      sum.topics.map(function (o) {
+        var parts = o.answered ? o.correct + '/' + o.answered + ' correct' : '';
+        var wr = o.written.length ? (parts ? ' · ' : '') + 'written ' + Math.round(100 * o.written.reduce(function (a, b) { return a + b; }, 0) / o.written.length) + '%' : '';
+        return '<div class="dg-row"><span class="nm">' + esc(topicName(o.topic)) + '</span><div class="bar"><i class="' + (o.pct >= 75 ? '' : o.pct >= 50 ? 'needs' : 'weak') + '" style="width:' + o.pct + '%"></i></div><small>' + parts + wr + (o.misconceptions ? ' · ' + o.misconceptions + ' sure-but-wrong' : '') + '</small></div>';
+      }).join('') +
+      '<div class="q-label" style="margin-top:24px">What to work on first</div>' + skillsHtml(skills) +
+      '<div class="actions"><button class="btn" id="dgPlan" type="button">See my updated plan →</button>' + (dg.fromHistory ? '' : '<button class="btn ghost" id="dgAgain" type="button">Retake with new questions</button>') + '</div>' +
+      '<p class="dg-note">Lucky guesses count for less. Written answers measure coverage of expected points only. ' + syncNote() + '</p></div>';
+  }
+  function bindResults() {
+    document.getElementById('dgPlan').onclick = function () { leaveDiag(); };
+    var again = document.getElementById('dgAgain'); if (again) again.onclick = function () { startDiag('retake'); };
+    app.querySelectorAll('[data-skill]').forEach(function (a) { a.addEventListener('click', function () { track('roadmap_skill_clicked', { topic: a.dataset.skill, from: 'diagnostic' }); }); });
+  }
+
   /* ---------- boot ---------- */
   R.load();
-  R.onChange(function () { if (index && view) render(); });
+  R.onChange(function () { if (index && view && view !== 'diag') render(); });   // the quiz saves as you go; do not redraw it under the user
   fetch('assets/roadmap-index.json').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (j) {
     index = j; route();
     track('roadmap_viewed', { has_goals: !!R.get().goals });
