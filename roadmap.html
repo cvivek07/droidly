@@ -136,6 +136,7 @@ input:focus{outline:none;border-color:var(--green)}
 .topic-foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:12px;color:var(--muted);gap:8px;flex-wrap:wrap}
 .tabs{display:flex;gap:6px;overflow-x:auto;margin:16px 0 6px;padding-bottom:4px}
 .tab{border:1.5px solid var(--bg3);background:#fff;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap}
+.tab-saved{margin-right:6px;position:relative}.tab-saved::after{content:'';position:absolute;right:-7px;top:6px;bottom:6px;width:1px;background:var(--bg3)}
 .tab[aria-selected=true]{background:var(--ink);border-color:var(--ink);color:#fff}
 .sec-title{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 0 6px}
 .task{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--border)}
@@ -471,6 +472,14 @@ input:focus{outline:none;border-color:var(--green)}
       '</div>';
   }
 
+  function savedBlock(saved, lookup, state, plan) {
+    var rows = saved.map(function (id) {
+      var x = lookup[id]; if (!x) return '';
+      return taskHtml({ id: id, topic: x.topic, title: x.it.q, diff: x.it.d, min: 7, href: x.it.href || ('/questions.html?topic=' + x.topic + '&q=' + x.it.n + '#' + x.topic) }, state, plan, true);
+    }).join('');
+    return rows || '<p class="empty">Nothing saved yet. Tap the ☆ on any question to keep it here for later.</p>';
+  }
+
   function tasksBlock(day, state, plan, interactive) {
     if (!day.tasks.length) return '<p class="empty">Nothing left to schedule. You\'ve covered every available question. Nice.</p>';
     var groups = [['revision', 'Revision'], ['sysdesign', 'System design'], ['study', 'Study']];
@@ -510,7 +519,8 @@ input:focus{outline:none;border-color:var(--green)}
     var plan = R.ensurePlan(index, false);
     var r = R.readiness(index, s);
     var g = Object.assign({}, R.DEFAULT_GOALS, s.goals);
-    if (selectedDay >= plan.days.length) selectedDay = 0;
+    if (selectedDay !== 'saved' && selectedDay >= plan.days.length) selectedDay = 0;
+    if (location.hash === '#saved' && !renderDash._jumped) { renderDash._jumped = true; selectedDay = 'saved'; }
     var left = g.date ? R.daysBetween(new Date(), R.parseYmd(g.date)) : null;
     var today = plan.days[0] || { tasks: [], minutes: 0 };
     var doneToday = today.tasks.filter(function (t) { return R.isDone(t, s, plan.at); });
@@ -550,21 +560,17 @@ input:focus{outline:none;border-color:var(--green)}
         }).join('') + '</div></div></div>' +
       '<div><div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>Your plan</h2>' +
         '<div class="progress-line"><span><b>' + doneToday.length + '/' + today.tasks.length + '</b> tasks done today · ' + doneMin + '/' + today.minutes + ' min</span></div></div>' +
-        '<div class="tabs" role="tablist">' + plan.days.map(function (d, i) {
+        '<div class="tabs" role="tablist">' + '<button class="tab tab-saved" role="tab" data-day="saved" aria-selected="' + (selectedDay === 'saved') + '">★ Saved' + (saved.length ? ' (' + saved.length + ')' : '') + '</button>' + plan.days.map(function (d, i) {
           var lab = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : new Date(R.parseYmd(d.date)).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
           return '<button class="tab" role="tab" data-day="' + i + '" aria-selected="' + (i === selectedDay) + '">' + lab + '</button>';
         }).join('') + '</div>' +
-        '<div id="dayBody">' + tasksBlock(plan.days[selectedDay], s, plan, selectedDay === 0) + '</div>' +
+        '<div id="dayBody">' + (selectedDay === 'saved' ? savedBlock(saved, lookup, s, plan) : tasksBlock(plan.days[selectedDay], s, plan, selectedDay === 0)) + '</div>' +
         (revisitCount ? '<p class="disclaimer">↻ ' + revisitCount + ' question' + (revisitCount > 1 ? 's' : '') + ' marked "Revisit". They return in your plan a day after you marked them.</p>' : '') +
       '</div>' +
-      '<div class="card saved" id="saved" style="margin-top:20px;scroll-margin-top:84px"><h2>Saved questions</h2><div style="margin-top:6px">' +
-        (saved.length ? saved.slice(0, 12).map(function (id) {
-          var x = lookup[id]; if (!x) return ''; return '<a href="' + esc(x.it.href || ('/questions.html?topic=' + x.topic + '&q=' + x.it.n + '#' + x.topic)) + '">' + esc(x.it.q) + ' <small>· ' + esc(index.topics[x.topic].name) + '</small></a>';
-        }).join('') : '<p class="empty">Tap ☆ Save on a question in your plan to keep it here for later.</p>') + '</div></div>' +
       '</div></div>';
 
     app.querySelectorAll('[data-skill]').forEach(function (a) { a.addEventListener('click', function () { track('roadmap_skill_clicked', { topic: a.dataset.skill }); }); });
-    app.querySelectorAll('.tab').forEach(function (b) { b.onclick = function () { selectedDay = +b.dataset.day; render(); }; });
+    app.querySelectorAll('.tab').forEach(function (b) { b.onclick = function () { selectedDay = b.dataset.day === 'saved' ? 'saved' : +b.dataset.day; render(); }; });
     app.querySelectorAll('[data-act]').forEach(function (b) {
       b.onclick = function () {
         var id = b.closest('.task').dataset.id, m = R.get().marks[id] || {};
@@ -572,7 +578,6 @@ input:focus{outline:none;border-color:var(--green)}
         else { R.setMark(id, { s: m.s ? m.s : 'got_it' }); track('roadmap_task_marked', { status: 'got_it', topic: id.split(':')[0] }); }
       };
     });
-    if (location.hash === '#saved' && !renderDash._jumped) { renderDash._jumped = true; var sv = document.getElementById('saved'); if (sv) setTimeout(function () { sv.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60); }
     var dgb = document.getElementById('diagStart'); if (dgb) dgb.onclick = function () { startDiag('dashboard'); };
     var dgr = document.getElementById('diagResults'); if (dgr) dgr.onclick = function () { showLastResults(); };
     document.getElementById('rebuild').onclick = function () { track('roadmap_plan_rebuild_click'); editing = true; view = 'onboard'; render(); window.scrollTo(0, 0); };
