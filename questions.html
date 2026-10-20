@@ -867,6 +867,88 @@ nav::before { height: 3px !important; }
     transform: translateX(-100%);
   }
 }
+
+/* ===== colourful pass: matches the homepage and roadmap ===== */
+body{background:linear-gradient(160deg,#eaf7ef 0%,#e8f1fb 38%,#fff3e4 72%,#fdebf3 100%) fixed !important}
+#topic-android{--ta:#2e6040;--tb:#5cc07f}
+.topic-nav-item:nth-child(2){--ta:#2e6040;--tb:#5cc07f}
+#topic-kotlin{--ta:#4452c8;--tb:#8f98f4}
+.topic-nav-item:nth-child(3){--ta:#4452c8;--tb:#8f98f4}
+#topic-compose{--ta:#c97a14;--tb:#f3c45f}
+.topic-nav-item:nth-child(4){--ta:#c97a14;--tb:#f3c45f}
+#topic-coroutines{--ta:#17707d;--tb:#4cc4d3}
+.topic-nav-item:nth-child(5){--ta:#17707d;--tb:#4cc4d3}
+#topic-flows{--ta:#7a3fc0;--tb:#c58ff2}
+.topic-nav-item:nth-child(6){--ta:#7a3fc0;--tb:#c58ff2}
+#topic-architecture{--ta:#d0432b;--tb:#f59372}
+.topic-nav-item:nth-child(7){--ta:#d0432b;--tb:#f59372}
+#topic-di{--ta:#3b5bdb;--tb:#4cc4d3}
+.topic-nav-item:nth-child(8){--ta:#3b5bdb;--tb:#4cc4d3}
+#topic-networking{--ta:#2e8b6e;--tb:#6bdba8}
+.topic-nav-item:nth-child(9){--ta:#2e8b6e;--tb:#6bdba8}
+#topic-storage{--ta:#c9601f;--tb:#f59372}
+.topic-nav-item:nth-child(10){--ta:#c9601f;--tb:#f59372}
+#topic-buildtools{--ta:#4a5a8a;--tb:#8f98f4}
+.topic-nav-item:nth-child(11){--ta:#4a5a8a;--tb:#8f98f4}
+#topic-performance{--ta:#d0432b;--tb:#f3c45f}
+.topic-nav-item:nth-child(12){--ta:#d0432b;--tb:#f3c45f}
+#topic-hr{--ta:#9150d8;--tb:#f59ac0}
+.topic-nav-item:nth-child(13){--ta:#9150d8;--tb:#f59ac0}
+#topic-sysdesign{--ta:#2e6040;--tb:#5566d9}
+.topic-nav-item:nth-child(14){--ta:#2e6040;--tb:#5566d9}
+
+.topic-section{--ta:#2e6040;--tb:#5cc07f;max-width:1040px;margin:0 auto}
+.sidebar{background:rgba(255,255,255,.72) !important;backdrop-filter:blur(14px);border-right:0 !important;box-shadow:6px 0 30px rgba(40,50,90,.06)}
+.sidebar-section-label{border-bottom:0 !important;color:#6b7280}
+.topic-nav-item{--ta:#2e6040;--tb:#5cc07f;margin:3px 10px;border-radius:14px;border-left:0 !important;padding:9px 12px !important}
+.topic-nav-item .topic-nav-emoji{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,color-mix(in srgb,var(--ta) 16%,#fff),color-mix(in srgb,var(--tb) 26%,#fff));font-size:15px}
+.topic-nav-item:hover{background:rgba(255,255,255,.9) !important}
+.topic-nav-item.active{background:linear-gradient(100deg,var(--ta),var(--tb)) !important;color:#fff !important;box-shadow:0 8px 18px color-mix(in srgb,var(--ta) 32%,transparent)}
+.topic-nav-item.active .topic-nav-emoji{background:rgba(255,255,255,.22)}
+.topic-nav-item.active .topic-nav-count{background:rgba(255,255,255,.22) !important;color:#fff !important;border-color:rgba(255,255,255,.3) !important}
+.content-toolbar{background:rgba(255,255,255,.78) !important;border-bottom:0 !important;box-shadow:0 6px 20px rgba(40,50,90,.06)}
+.toolbar-topic-name{font-weight:800}
+.diff-btn{border-radius:100px !important;background:#fff}
+.diff-btn.active-easy{background:#dcf5e6 !important;color:#1d6b3e !important;border-color:#9fdcb7 !important}
+.diff-btn.active-medium{background:#fff0d4 !important;color:#a15f06 !important;border-color:#f1c76b !important}
+.diff-btn.active-hard{background:#ffe1da !important;color:#b6341c !important;border-color:#f5a595 !important}
+.topic-header{position:relative;overflow:hidden;margin:24px 0 26px !important;padding:28px 30px !important;border:0 !important;border-radius:26px;color:#fff;background:linear-gradient(115deg,var(--ta),var(--tb));box-shadow:0 18px 40px color-mix(in srgb,var(--ta) 30%,transparent)}
+.topic-header::after{content:"";position:absolute;right:-60px;top:-70px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.3),transparent 68%);pointer-events:none}
+.topic-header .topic-badge{background:rgba(255,255,255,.2) !important;border-color:rgba(255,255,255,.4) !important;color:#fff !important}
+.topic-header .topic-title{color:#fff !important;font-size:32px !important}
+.topic-header .topic-desc,.topic-header .topic-verify{color:rgba(255,255,255,.9) !important}
+.topic-header .topic-verify a{color:#fff !important;text-decoration:underline}
+.q-card{border:0 !important;border-radius:20px !important;background:#fff !important;box-shadow:0 8px 24px rgba(40,50,90,.08) !important;overflow:hidden;position:relative;margin-bottom:14px !important}
+.q-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:#cbd5e1}
+.q-card:has(.diff-easy)::before{background:linear-gradient(180deg,#2e6040,#5cc07f)}
+.q-card:has(.diff-medium)::before{background:linear-gradient(180deg,#c97a14,#f3c45f)}
+.q-card:has(.diff-hard)::before{background:linear-gradient(180deg,#d0432b,#f59372)}
+.q-card:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(40,50,90,.14) !important}
+.q-card.open{box-shadow:0 18px 44px color-mix(in srgb,var(--ta) 26%,transparent) !important}
+.q-card.open .q-card-header{background:linear-gradient(135deg,color-mix(in srgb,var(--ta) 9%,#fff),#fff 70%) !important}
+.q-diff.diff-easy{background:#dcf5e6 !important;color:#1d6b3e !important}
+.q-diff.diff-medium{background:#fff0d4 !important;color:#a15f06 !important}
+.q-diff.diff-hard{background:#ffe1da !important;color:#b6341c !important}
+.q-number{background:linear-gradient(135deg,var(--ta),var(--tb)) !important}
+.q-card .q-toggle{background:#f1f4f8}
+.q-card-header>div:first-child{flex:1;min-width:0}
+.q-card-header .q-meta{margin-bottom:12px}
+.q-card.open .q-toggle{background:linear-gradient(135deg,var(--ta),var(--tb)) !important;color:#fff !important}
+.answer-label{color:var(--ta) !important}
+@media(max-width:640px){
+  nav .nav-right{gap:8px}
+  nav .nav-right>a:first-child{font-size:13px !important;white-space:nowrap;margin-right:0 !important}
+  nav .nav-cta{padding:7px 11px !important;font-size:12px !important;white-space:nowrap}
+  .topic-section{padding:0 14px 40px !important}
+  .topic-header{padding:22px 20px !important;border-radius:22px;margin-top:16px !important}
+  .topic-header .topic-title{font-size:25px !important}
+  .q-card-header{padding:16px 14px 16px 20px !important}
+  .q-meta .q-tag{display:none}
+  .rd-ic{width:32px !important;height:32px !important}
+  .rd-side{gap:6px !important}
+  nav .logo{font-size:0 !important}
+  nav .logo-mark img{height:30px;width:auto}
+}
 </style>
 </head>
 <body>
