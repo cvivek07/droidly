@@ -2121,6 +2121,7 @@ body{background:#fff}
 
 /* single CTA */
 .btn-grad{display:inline-flex;align-items:center;gap:14px;padding:9px 30px 9px 9px;border-radius:20px;font-weight:700;font-size:18px;letter-spacing:-.01em;color:#fff !important;text-decoration:none;background:linear-gradient(100deg,#2e6040 0%,#3f9a6c 62%,#cf8a30 100%);box-shadow:0 0 0 4px rgba(61,122,79,.14),0 16px 36px rgba(46,96,64,.30);transition:transform .2s,box-shadow .2s;cursor:pointer;border:0;font-family:inherit}
+.btn-grad.no-ico{padding:17px 32px;justify-content:center}
 .btn-grad.block{display:flex;width:100%;justify-content:center;padding-right:24px}
 .btn-line{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 28px;border-radius:20px;font-weight:700;font-size:16px;color:#14171f;text-decoration:none;background:#fff;border:1.5px solid rgba(15,17,23,.16);transition:all .2s;font-family:inherit}
 .btn-line.block{display:flex;width:100%}
@@ -2383,8 +2384,8 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     </p>
 
     <div class="hero-ctas fade-5">
-      <a href="/roadmap" id="heroPrimaryCta" onclick="gtag('event','hero_cta_roadmap')" class="btn-grad">
-        <span class="ico" aria-hidden="true">→</span><span class="lbl">Get my interview plan</span>
+      <a href="/roadmap" id="heroPrimaryCta" onclick="gtag('event','hero_cta_roadmap')" class="btn-grad no-ico">
+        <span class="lbl">Get my interview plan</span>
       </a>
     </div>
 
@@ -2439,7 +2440,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <div id="hcard-answer" class="hcard-answer" style="display:none">
         <strong>Answer.</strong> Wrap the calls in <code>coroutineScope { }</code> and start each with <code>async { }</code>. They run in parallel, and if any one throws, the scope cancels its siblings and rethrows to the caller (structured concurrency gives you fail-fast for free). Call <code>await()</code> on each result and catch the exception around the whole scope to show your error state. Use <code>supervisorScope</code> only if you want one failure <em>not</em> to cancel the others.
         <div class="hcard-save">Want the full set, plus a plan for your interview date?
-          <a href="/roadmap" onclick="gtag('event','hero_answer_plan_click')">Get my interview plan →</a>
+          <a href="/roadmap" onclick="gtag('event','hero_answer_plan_click')">Get my interview plan</a>
           <button type="button" onclick="gtag('event','hero_answer_signup_click'); openAuthModal('signup')">Create free account</button>
         </div>
       </div>
@@ -2475,7 +2476,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
         <li>Today's tasks sized to the time you have</li>
         <li>Missed or shaky questions come back for revision</li>
       </ul>
-      <a href="/roadmap" onclick="gtag('event','preview_cta_roadmap')" class="btn-grad"><span class="ico" aria-hidden="true">→</span><span class="lbl">Get my interview plan</span></a>
+      <a href="/roadmap" onclick="gtag('event','preview_cta_roadmap')" class="btn-grad no-ico"><span class="lbl">Get my interview plan</span></a>
       <p class="hero-micro">Free to start. Sign in to save your plan.</p>
     </div>
     <div class="rp-card" id="rpCard" aria-label="Example roadmap, animated (illustrative)">
@@ -3628,7 +3629,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       el.textContent = ''; el.appendChild(head); el.appendChild(go);
       el.href = n.href; el.hidden = false;
       el.onclick = function () { try { gtag('event', 'resume_strip_click', { kind: n.kind }); } catch (e) {} };
-      if (cta && s.goals) { var lbl = cta.querySelector('.lbl'); (lbl || cta).textContent = lbl ? 'Continue my plan' : 'Continue my plan →'; cta.href = n.kind === 'continue' || n.kind === 'start_today' || n.kind === 'welcome_back' ? n.href : '/roadmap'; }
+      if (cta && s.goals) { var lbl = cta.querySelector('.lbl'); (lbl || cta).textContent = lbl ? 'Continue my plan' : 'Continue my plan'; cta.href = n.kind === 'continue' || n.kind === 'start_today' || n.kind === 'welcome_back' ? n.href : '/roadmap'; }
     } catch (e) { /* never break the homepage */ }
   }
   window.addEventListener('load', function () {

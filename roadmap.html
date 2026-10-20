@@ -356,7 +356,7 @@ input:focus{outline:none;border-color:var(--green)}
       '<div class="q-group"><div class="q-label">Where are you interviewing?</div>' + chipGroup('company', COMPANIES, g.company) + '</div>' +
       '<div class="q-group"><div class="q-label">Time you can study per day</div>' + chipGroup('minutes', MINUTES, g.minutes) + '</div>' +
       '<div class="q-group"><div class="q-label">Interview date <small>(optional)</small></div><input type="date" id="dateInput" min="' + R.ymd(new Date()) + '" value="' + (g.date || '') + '"/></div>' +
-      '<div class="actions"><button class="btn" id="goalNext" type="button">' + (editing ? 'Save and rebuild plan →' : 'Get my interview plan →') + '</button>' +
+      '<div class="actions"><button class="btn" id="goalNext" type="button">' + (editing ? 'Save and rebuild plan →' : 'Get my interview plan') + '</button>' +
       (editing ? '<button class="link-btn" id="goalCancel" type="button">Cancel</button>' : '<button class="link-btn" id="goalSkip" type="button">Skip, use defaults</button>') + '</div>' +
       '</div>';
     app.querySelectorAll('.chip').forEach(function (b) {
