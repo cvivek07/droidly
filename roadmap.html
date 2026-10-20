@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
 <meta name="theme-color" content="#3d7a4f"/>
 <title>Your Android Interview Roadmap — Droidly</title>
-<meta name="description" content="Tell Droidly your experience, target company and interview date. Get a personalised day-by-day Android interview plan built from the Droidly question bank, with progress tracking and spaced revision."/>
+<meta name="description" content="Tell Droidly your experience, target company and interview date. Get a personalised topic-by-topic Android interview learning path built from the Droidly question bank, with progress tracking and spaced revision."/>
 <link rel="canonical" href="https://droidly.io/roadmap.html"/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://droidly.io/roadmap.html"/>
@@ -266,6 +266,85 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
 .t-meta .pill.easy{background:#dcf5e6;color:#1d6b3e}.t-meta .pill.medium{background:#fff0d4;color:#a15f06}.t-meta .pill.hard{background:#ffe1da;color:#b6341c}
 .ic-done[aria-pressed=true]{background:linear-gradient(135deg,#2e6040,#3f9a6c)}
 .sec-title{color:var(--a2)}
+
+/* ===== topic-focused roadmap ===== */
+.pill.nxt{background:#e4e8ff;color:#3340b8}
+.back{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:700;color:var(--ink2);text-decoration:none;margin-bottom:14px}
+.back .chev{transform:rotate(180deg)}.back:hover{color:var(--green2)}
+.chev{flex:none}
+.cl-card{display:flex;align-items:center;gap:18px;margin-top:20px;padding:22px 24px;border-radius:24px;text-decoration:none;color:var(--ink);background:linear-gradient(115deg,#fff 0%,color-mix(in srgb,var(--cb) 16%,#fff) 100%);box-shadow:0 10px 30px rgba(40,50,90,.09);position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}
+.cl-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:linear-gradient(180deg,var(--ca),var(--cb))}
+.cl-card:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(40,50,90,.14)}
+.cl-card.done{--ca:#3d7a4f;--cb:#5cc07f}
+.cl-ic{flex:none;width:60px;height:60px;border-radius:18px;display:grid;place-items:center;font-size:30px;background:color-mix(in srgb,var(--cb) 30%,#fff)}
+.cl-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.cl-kick{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ca)}
+.cl-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.4px}
+.cl-why{font-size:14px;color:var(--ink2)}
+.cl-prog{display:flex;align-items:center;gap:12px;margin-top:8px;font-size:13px;color:var(--muted)}
+.cl-prog .bar{flex:0 1 220px;width:220px}
+.cl-prog .bar i,.tp-prog .bar i,.rm-bar i{background:linear-gradient(90deg,var(--ca,#3d7a4f),var(--cb,#5cc07f))}
+.cl-go{flex:none;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(100deg,var(--ca),var(--cb));box-shadow:0 8px 20px rgba(40,50,90,.2)}
+.cl-card:hover .cl-go{transform:translateY(-1px)}
+.saved-card{display:flex!important;align-items:center;gap:14px;margin-top:20px;padding:18px 22px!important;text-decoration:none;color:var(--ink);--ca:var(--a3)!important;--cb:var(--a4)!important;background:linear-gradient(180deg,#fff7e6 0%,#fff 90%)!important}
+.saved-card .sv-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;color:#e0a21c;background:var(--amber-bg)}
+.saved-card .sv-t{flex:1;display:flex;flex-direction:column}.saved-card small{color:var(--muted);font-size:13px}
+.rm-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.rm-total{font-size:14px;color:var(--ink2);white-space:nowrap}.rm-total b{font-size:18px}
+.rm-bar{height:9px;border-radius:99px;background:var(--bg3);overflow:hidden;margin:12px 0 8px}
+.rm-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--a1),var(--a2),var(--a5))}
+.rm-list{margin-top:6px}
+.rm-row{display:grid;grid-template-columns:26px 46px minmax(0,1fr) auto;align-items:center;gap:14px;padding:14px 12px;border-top:1px solid var(--border);border-radius:14px;text-decoration:none;color:var(--ink);transition:background .15s}
+.rm-row:first-child{border-top:none}
+.rm-row:hover{background:linear-gradient(90deg,color-mix(in srgb,var(--cb) 14%,#fff),transparent)}
+.rm-num{font-weight:800;font-size:13px;color:#a3acba;font-variant-numeric:tabular-nums}
+.rm-ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:color-mix(in srgb,var(--cb) 28%,#fff)}
+.rm-body{min-width:0;display:flex;flex-direction:column;gap:1px}
+.rm-body b{font-size:15.5px;font-weight:700}
+.rm-body small{color:var(--muted);font-size:13px;line-height:1.4}
+.rm-meta{font-size:12px;font-weight:600;color:var(--ca);margin-top:2px}
+.rm-end{display:flex;align-items:center;gap:8px;color:#a3acba}
+.rm-row.completed .rm-ic{background:linear-gradient(135deg,#2e6040,#3f9a6c);color:#fff}
+.rm-row.completed .rm-body b{color:var(--ink2)}
+.rm-row.next,.rm-row.in_progress{background:linear-gradient(90deg,color-mix(in srgb,var(--cb) 12%,#fff),transparent)}
+.tp-card{border:0!important;border-radius:24px!important;box-shadow:0 10px 30px rgba(40,50,90,.09)!important;position:relative;overflow:hidden;padding:26px 28px}
+.tp-card::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,var(--ca),var(--cb))}
+.tp-top{display:flex;align-items:center;gap:18px}
+.tp-ring{position:relative;flex:none;width:68px;height:68px}
+.tp-ring b{position:absolute;inset:0;display:grid;place-items:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:var(--ca)}
+.tp-title{flex:1;min-width:0}.tp-title h1{font-size:30px}
+.tp-prog{display:flex;align-items:center;gap:14px;margin-top:20px;font-size:14px;color:var(--ink2)}
+.tp-prog .bar{flex:1;height:9px}
+.tp-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;flex-wrap:wrap}
+.tp-tabs{margin:0!important;padding:0!important}
+.tp-card .tab[aria-selected=true]{background:linear-gradient(100deg,var(--ca),var(--cb));box-shadow:0 6px 16px rgba(40,50,90,.2)}
+#markDone:not(.ghost){background:linear-gradient(100deg,var(--ca),var(--cb))}
+.tp-body{margin-top:16px;border:0!important;border-radius:24px!important;box-shadow:0 10px 30px rgba(40,50,90,.07)!important}
+.lessons{display:flex;flex-direction:column;gap:10px}
+.lesson{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid var(--bg3);border-radius:16px;text-decoration:none;color:var(--ink);transition:all .15s}
+.lesson:hover{border-color:var(--ca);transform:translateX(2px)}
+.ls-ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:color-mix(in srgb,var(--cb) 28%,#fff);flex:none}
+.ls-body{flex:1;min-width:0;display:flex;flex-direction:column}.ls-body small{color:var(--muted);font-size:13px}
+.lesson .chev{color:#a3acba}
+.cover{margin:6px 0 0 18px;font-size:14px;color:var(--ink2)}.cover li{margin-top:5px}.cover .more{color:var(--muted);list-style:none;margin-left:-18px}
+.note-soft{background:var(--bg2);border-radius:14px;padding:14px 16px;font-size:14px;color:var(--ink2)}
+.prac-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--ink2);padding-bottom:6px}
+.prac-head .skill-go{display:inline-flex;align-items:center;gap:2px}
+.quiz-box h2{margin-bottom:4px}
+.banner a.btn{display:inline-flex;align-items:center;gap:4px;text-decoration:none}
+.tp-foot{display:flex;justify-content:space-between;gap:12px;margin-top:16px}
+.tp-nav{display:flex;flex-direction:column;gap:2px;padding:12px 18px;border-radius:16px;background:#fff;box-shadow:0 4px 14px rgba(40,50,90,.07);text-decoration:none;color:var(--ink);max-width:48%}
+.tp-nav small{font-size:12px;color:var(--muted);font-weight:600}.tp-nav.r{text-align:right;margin-left:auto}
+.tp-nav:hover b{color:var(--green2)}
+.btn .chev,.skill-go .chev{vertical-align:-3px}
+@media(max-width:640px){
+  .cl-card{flex-wrap:wrap;padding:18px}.cl-ic{width:48px;height:48px;font-size:24px}.cl-go{width:100%;justify-content:center}.cl-prog .bar{flex:1;width:auto}
+  .rm-row{grid-template-columns:44px minmax(0,1fr) auto;gap:12px;padding:12px 6px}.rm-num,.rm-body small{display:none}
+  .rm-ic{width:42px;height:42px}.rm-end .pill{font-size:10.5px;padding:3px 8px}.rm-end .chev{display:none}
+  .tp-card{padding:20px 18px}.tp-title h1{font-size:23px}.tp-top{align-items:flex-start;gap:14px}.tp-side{display:none}.tp-ring{width:56px;height:56px}.tp-ring svg{width:56px;height:56px}
+  .tp-bar{flex-direction:column;align-items:stretch}.tp-bar .btn{width:100%}.tp-tabs{width:100%}.tp-tabs .tab{flex:1;text-align:center}
+  .tp-nav{max-width:100%;flex:1}
+}
 </style>
 </head>
 <body>
@@ -383,7 +462,7 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
     track('roadmap_gate_shown', {});
     app.innerHTML = '<div class="card" style="max-width:720px;margin:0 auto"><span class="eyebrow">Free account</span><h1>Sign in to build your plan</h1>' +
       '<p class="sub">Your plan, skill-check results and progress are personal to you, so they are saved to your account and follow you across devices. Creating an account is free and takes under a minute.</p>' +
-      '<ul class="ck" style="margin-top:14px"><li class="hit">A day-by-day plan for your level and company type</li><li class="hit">A skill check that finds your real gaps</li><li class="hit">The same progress on your phone and your laptop</li></ul>' +
+      '<ul class="ck" style="margin-top:14px"><li class="hit">A topic-by-topic learning path for your level and company type</li><li class="hit">A skill check that finds your real gaps</li><li class="hit">The same progress on your phone and your laptop</li></ul>' +
       '<div class="actions"><button class="btn" id="gateUp" type="button">Create free account</button><button class="btn ghost" id="gateIn" type="button">Sign in</button></div></div>';
     document.getElementById('gateUp').onclick = function () { track('roadmap_gate_click', { action: 'signup' }); openAuth('signup'); };
     document.getElementById('gateIn').onclick = function () { track('roadmap_gate_click', { action: 'signin' }); openAuth('signin'); };
@@ -425,12 +504,11 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
       '<div class="card" style="max-width:720px;margin:0 auto">' +
       '<span class="eyebrow">' + (editing ? 'Check your goal, then take the skill check' : 'Free · about 10 minutes') + '</span>' +
       '<h1>' + (editing ? 'Rebuild your plan' : 'Build your Android interview roadmap') + '</h1>' +
-      '<p class="sub">Tell us where you\'re headed. We\'ll turn the question bank into a day-by-day plan that focuses on what matters for your level and company type.</p>' +
+      '<p class="sub">Tell us where you\'re headed. We\'ll turn the question bank into a topic-by-topic learning path, ordered for your level and company type.</p>' +
       '<div class="q-group">' + qLabel(1, 'Your level') + levelCards(g.level) + '</div>' +
       '<div class="q-group">' + qLabel(2, 'Where are you interviewing?') + chipGroup('company', COMPANIES, g.company) + '</div>' +
-      '<div class="q-group">' + qLabel(3, 'Time you can study per day') + chipGroup('minutes', MINUTES, g.minutes) + '</div>' +
-      '<div class="q-group">' + qLabel(4, 'Interview date', true) + '<input type="date" id="dateInput" min="' + R.ymd(new Date()) + '" value="' + (g.date || '') + '"/></div>' +
-      '<details class="q-group jd-box"><summary>' + qLabel(5, 'Have a job description? Paste it to tailor your plan', true) + '</summary>' +
+      '<div class="q-group">' + qLabel(3, 'Interview date', true) + '<input type="date" id="dateInput" min="' + R.ymd(new Date()) + '" value="' + (g.date || '') + '"/></div>' +
+      '<details class="q-group jd-box"><summary>' + qLabel(4, 'Have a job description? Paste it to tailor your plan', true) + '</summary>' +
       '<textarea class="jd-in" id="jdInput" rows="4" maxlength="8000" placeholder="Paste the job description for the role you are targeting. It is read in your browser to see which topics it stresses. The text itself is not saved."></textarea>' +
       '<div class="jd-detect" id="jdDetect" aria-live="polite">' + jdSavedLine() + '</div></details>' +
       '<div class="ob-sum" id="obSum" aria-live="polite"></div>' +
@@ -440,12 +518,11 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
       '</div>';
     function paintSum() {
       var el = document.getElementById('obSum'); if (!el) return;
-      var m = MINUTES.filter(function (x) { return x[0] === draft.minutes; })[0];
-      el.innerHTML = '<b>Your plan:</b> ' + esc(LEVEL_NAME[draft.level]) + ' · ' + esc(COMPANY_NAME[draft.company]) + ' · ' + esc(m ? m[1] : '') + ' a day';
+      el.innerHTML = '<b>Your plan:</b> ' + esc(LEVEL_NAME[draft.level]) + ' · ' + esc(COMPANY_NAME[draft.company]); 
     }
     app.querySelectorAll('.chip').forEach(function (b) {
       b.onclick = function () {
-        var k = b.dataset.key; draft[k] = k === 'minutes' ? +b.dataset.val : b.dataset.val;
+        var k = b.dataset.key; draft[k] = b.dataset.val;
         app.querySelectorAll('.chip[data-key="' + k + '"]').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
         paintSum();
       };
@@ -496,11 +573,51 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
 
   function pillClass(label) { return label === 'Strong' ? 'strong' : label === 'Needs practice' ? 'needs' : label === 'Weak area' ? 'weak' : 'none'; }
 
-  function taskHtml(t, state, plan, interactive) {
-    var done = R.isDone(t, state, plan.at), m = state.marks[t.id] || {};
-    var locked = lockedTopics[t.topic] && !isPremium;
-    var isDone = !!m.s;
-    return '<div class="task' + (done ? ' done' : '') + '" data-id="' + esc(t.id) + '">' +
+  /* ---------- learning path: overview, topic page, saved ---------- */
+  var TOPIC_INFO = {
+    android: ['🤖', 'Activity and Fragment lifecycle, Intents, Services, Context and the core platform APIs.'],
+    kotlin: ['📘', 'The language features interviewers probe: null safety, sealed and data classes, delegation, generics.'],
+    compose: ['🎨', 'Declarative UI, state, recomposition, side effects and Compose performance.'],
+    coroutines: ['⚡', 'Structured concurrency, dispatchers, cancellation and exception handling.'],
+    flows: ['🌊', 'Cold and hot flows, StateFlow, SharedFlow, operators and collecting safely.'],
+    architecture: ['🏗️', 'MVVM, MVI, Clean Architecture, repositories and modularisation.'],
+    di: ['💉', 'Dagger and Hilt: scopes, components, modules, qualifiers and testing.'],
+    networking: ['🌐', 'Retrofit, OkHttp, interceptors, caching, token refresh and error handling.'],
+    storage: ['💾', 'Room, SQLite, DataStore, migrations and offline-first patterns.'],
+    buildtools: ['🛠️', 'Gradle, build variants, R8, signing and build performance.'],
+    performance: ['🚀', 'Startup time, memory, jank, profiling and list efficiency.'],
+    hr: ['💬', 'Behavioural stories, ownership, conflict and how to present your experience.'],
+    sysdesign: ['🧩', 'Design mobile systems end to end: chat, feeds, downloads, payments, offline sync.']
+  };
+  var GUIDES = {
+    android: [['/concept_android_fundamentals', 'Core Android fundamentals', 'Lifecycle, Intents, Context, Services and BroadcastReceivers.']],
+    kotlin: [['/concept_kotlin', 'Kotlin interview topics', 'Sealed and data classes, delegation, inline and extension functions.']],
+    compose: [['/concept_compose', 'Jetpack Compose', 'Recomposition, state, side effects, remember and performance.'], ['/explainer_recomposition', 'Recomposition explained', 'A short visual explainer of how and when Compose redraws.']],
+    coroutines: [['/concept_coroutines', 'Coroutines and Flow', 'Structured concurrency, StateFlow, SharedFlow and cancellation.'], ['/explainer_coroutines', 'Coroutines lifecycle', 'A short visual explainer of a coroutine from launch to cancel.']],
+    flows: [['/explainer_flow', 'Flow vs LiveData', 'A short visual explainer of when to use which.'], ['/concept_coroutines', 'Coroutines and Flow', 'The full guide, including StateFlow and SharedFlow.']],
+    architecture: [['/concept_mvvm', 'MVVM architecture', 'ViewModel, repository pattern and Clean Architecture layers.']],
+    di: [['/concept_di', 'Dependency Injection and Hilt', 'Scopes, components, @Inject, @Provides, @Binds and qualifiers.']],
+    networking: [['/concept_networking', 'OkHttp and networking', 'Interceptors, Retrofit, token refresh, pinning and HTTP caching.']],
+    storage: [['/concept_room', 'Room and SQLite', 'Entities, DAOs, migrations, transactions and Room with Flow.']],
+    performance: [['/concept_recyclerview', 'RecyclerView', 'Internals, DiffUtil, ListAdapter and smooth scrolling.']]
+  };
+  var topicTab = null, topicTabFor = null, bankErr = null;
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function palette(id) { var k = R.TOPIC_ORDER.indexOf(id); k = (k < 0 ? 0 : k) % 6 + 1; return '--ca:var(--a' + k + ');--cb:var(--b' + k + ')'; }
+  function parseHash() {
+    var h = location.hash.replace(/^#/, ''); if (h === 'saved') return { v: 'saved' };
+    var m = /^topic\/([a-z0-9_]+)$/.exec(h); if (m && index && index.topics[m[1]]) return { v: 'topic', id: m[1] };
+    return { v: 'path' };
+  }
+  var CHEV = '<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+  var CHECK = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  function statusPill(st) {
+    return st === 'completed' ? '<span class="pill strong">Completed</span>' : st === 'in_progress' ? '<span class="pill needs">In progress</span>' : st === 'next' ? '<span class="pill nxt">Next</span>' : '<span class="pill none">Not started</span>';
+  }
+
+  function taskHtml(t, state, interactive) {
+    var m = state.marks[t.id] || {}, locked = lockedTopics[t.topic] && !isPremium, isDone = !!m.s;
+    return '<div class="task' + (isDone ? ' done' : '') + '" data-id="' + esc(t.id) + '">' +
       '<div style="flex:1;min-width:0">' +
       '<a class="t-title" href="' + esc(t.href) + '" target="_self">' + esc(t.title) + '</a>' +
       '<div class="t-meta"><span class="pill ' + esc(t.diff) + '">' + esc(t.diff) + '</span><span>' + t.min + ' min</span><span>· ' + esc(index.topics[t.topic].name) + '</span>' +
@@ -510,24 +627,11 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
         '<button type="button" class="ic-btn ic-save" data-act="save" aria-pressed="' + (!!m.b) + '" aria-label="' + (m.b ? 'Remove from saved' : 'Save to revisit later') + '" title="' + (m.b ? 'Saved' : 'Save to revisit later') + '"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1L3.2 9.6l6.1-.8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="' + (m.b ? 'currentColor' : 'none') + '"/></svg></button></div>' : '') +
       '</div>';
   }
-
-  function savedBlock(saved, lookup, state, plan) {
-    var rows = saved.map(function (id) {
-      var x = lookup[id]; if (!x) return '';
-      return taskHtml({ id: id, topic: x.topic, title: x.it.q, diff: x.it.d, min: 7, href: x.it.href || ('/questions.html?topic=' + x.topic + '&q=' + x.it.n + '#' + x.topic) }, state, plan, true);
-    }).join('');
-    return rows || '<p class="empty">Nothing saved yet. Tap the ☆ on any question to keep it here for later.</p>';
-  }
-
-  function tasksBlock(day, state, plan, interactive) {
-    if (!day.tasks.length) return '<p class="empty">Nothing left to schedule. You\'ve covered every available question. Nice.</p>';
-    var groups = [['revision', 'Revision'], ['sysdesign', 'System design'], ['study', 'Study']];
-    return groups.map(function (g) {
-      var list = day.tasks.filter(function (t) { return t.type === g[0]; });
-      if (!list.length) return '';
-      var mins = list.reduce(function (a, t) { return a + t.min; }, 0);
-      return '<div class="sec-title">' + g[1] + ' · ' + mins + ' min</div>' + list.map(function (t) { return taskHtml(t, state, plan, interactive); }).join('');
-    }).join('');
+  function itemTask(id) {
+    var tid = String(id).split(':')[0], t = index.topics[tid], hit = null;
+    if (t) t.items.forEach(function (it) { if (it.id === id) hit = it; });
+    if (!hit) return null;
+    return { id: id, topic: tid, title: hit.q, diff: hit.d, min: R.stepMin(hit, tid), href: hit.href ? hit.href : ('/questions.html?topic=' + tid + '&q=' + hit.n + '#' + tid) };
   }
 
   function skillsHtml(skills) {
@@ -553,62 +657,13 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
       '</div>';
   }
 
-  function renderDash() {
-    var s = R.get();
-    var plan = R.ensurePlan(index, false);
-    var r = R.readiness(index, s);
-    var g = Object.assign({}, R.DEFAULT_GOALS, s.goals);
-    if (selectedDay !== 'saved' && selectedDay >= plan.days.length) selectedDay = 0;
-    if (location.hash === '#saved' && !renderDash._jumped) { renderDash._jumped = true; selectedDay = 'saved'; }
-    var left = g.date ? R.daysBetween(new Date(), R.parseYmd(g.date)) : null;
-    var today = plan.days[0] || { tasks: [], minutes: 0 };
-    var doneToday = today.tasks.filter(function (t) { return R.isDone(t, s, plan.at); });
-    var doneMin = doneToday.reduce(function (a, t) { return a + t.min; }, 0);
-    var circ = 2 * Math.PI * 62, dash = circ * r.score / 100;
-    var color = r.score >= 75 ? '#3d7a4f' : r.score >= 50 ? '#f59e0b' : '#ef4444';
-    var revisitCount = Object.keys(s.marks).filter(function (k) { return s.marks[k].s === 'revisit'; }).length;
-    var saved = Object.keys(s.marks).filter(function (k) { return s.marks[k].b; });
-    var lookup = {}; R.TOPIC_ORDER.forEach(function (tid) { index.topics[tid].items.forEach(function (it) { lookup[it.id] = { it: it, topic: tid }; }); });
-
-    var byLevel = R.readinessByLevel(index, s);
-    var skills = R.skillsToImprove(index, s, { limit: 5 });
-    var sorted = R.TOPIC_ORDER.slice().sort(function (a, b) { return (r.weights[b] * (100 - r.stats[b].mastery)) - (r.weights[a] * (100 - r.stats[a].mastery)); });
-
-    app.innerHTML =
-      '<div class="dash-head">' +
-      '<div><span class="eyebrow">Your roadmap</span><h1>' + (left != null && left > 0 ? left + ' day' + (left > 1 ? 's' : '') + ' to your interview' : left === 0 ? 'Interview day. You\'ve got this.' : 'Keep your prep on track') + '</h1>' +
-      '<p class="sub">' + esc(COMPANY_NAME[g.company]) + ' · ' + esc(LEVEL_NAME[g.level]) + ' · ' + g.minutes + ' min/day</p></div>' +
-      '<div style="display:flex;gap:8px"><button class="btn small" id="rebuild" type="button">Rebuild my plan</button></div></div>' +
-      (plan.note ? '<div class="note">' + esc(plan.note) + '</div>' : '') +
-      '<div class="grid"><div>' +
-        '<div class="card score-card"><div class="q-label" style="margin:0">Interview readiness estimate</div>' +
-        '<div class="ring"><svg width="150" height="150" viewBox="0 0 150 150"><circle cx="75" cy="75" r="62" fill="none" stroke="#eaecf0" stroke-width="12"/>' +
-        '<circle cx="75" cy="75" r="62" fill="none" stroke="' + color + '" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + dash.toFixed(1) + ' ' + circ.toFixed(1) + '"/></svg>' +
-        '<div class="ring-num"><b>' + r.score + '</b><span>out of 100</span></div></div>' +
-        '<div class="meta-line">Confidence: <b>' + r.confidence + '</b> · ' + r.attempted + ' answered <span class="info" tabindex="0" title="Based on your skill-check answers and the questions you mark. It gets more reliable as you answer more. It is a study estimate, not a test score.">ⓘ</span></div>' +
-        levelRowHtml(byLevel) + '</div>' +
-        diagCardHtml(s) +
-        '<div class="card" style="margin-top:20px"><h2>Skills to improve</h2><p class="sub" style="font-size:13px;margin-top:2px">Ranked by how much each matters for your target level and how far you are from Strong.</p><div style="margin-top:8px">' + skillsHtml(skills) + '</div></div>' +
-        '<div class="card" style="margin-top:20px"><h2>Topics</h2><p class="sub" style="font-size:13px;margin-top:2px">Weakest and most important first. Take the skill check to sharpen these.</p><div style="margin-top:8px">' +
-        sorted.map(function (tid) {
-          var st = r.stats[tid], cls = pillClass(st.label);
-          return '<div class="topic"><div class="topic-head"><span class="topic-name">' + esc(st.name) + '</span><span class="pill ' + cls + '">' + st.label + '</span></div>' +
-            '<div class="bar"><i class="' + (cls === 'strong' ? '' : cls) + '" style="width:' + (st.rated || st.attempted || st.tested ? st.mastery : 0) + '%"></i></div>' +
-            '<div class="topic-foot"><span>' + st.got + '/' + st.total + ' done' + (st.revisit ? ' · ' + st.revisit + ' to revisit' : '') + ' · <span title="How much evidence backs this score">' + esc(st.basis) + '</span></span>' + '</div></div>';
-        }).join('') + '</div></div></div>' +
-      '<div><div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>Your plan</h2>' +
-        '<div class="progress-line"><span><b>' + doneToday.length + '/' + today.tasks.length + '</b> tasks done today · ' + doneMin + '/' + today.minutes + ' min</span></div></div>' +
-        '<div class="tabs" role="tablist">' + '<button class="tab tab-saved" role="tab" data-day="saved" aria-selected="' + (selectedDay === 'saved') + '">★ Saved' + (saved.length ? ' (' + saved.length + ')' : '') + '</button>' + plan.days.map(function (d, i) {
-          var lab = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : new Date(R.parseYmd(d.date)).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
-          return '<button class="tab" role="tab" data-day="' + i + '" aria-selected="' + (i === selectedDay) + '">' + lab + '</button>';
-        }).join('') + '</div>' +
-        '<div id="dayBody">' + (selectedDay === 'saved' ? savedBlock(saved, lookup, s, plan) : tasksBlock(plan.days[selectedDay], s, plan, selectedDay === 0)) + '</div>' +
-        (revisitCount ? '<p class="disclaimer">↻ ' + revisitCount + ' question' + (revisitCount > 1 ? 's' : '') + ' marked "Revisit". They return in your plan a day after you marked them.</p>' : '') +
-      '</div>' +
-      '</div></div>';
-
+  function headHtml(eyebrow, title, sub) {
+    return '<div class="dash-head"><div><span class="eyebrow">' + eyebrow + '</span><h1>' + title + '</h1><p class="sub">' + sub + '</p></div>' +
+      '<div style="display:flex;gap:8px"><button class="btn small" id="rebuild" type="button">Rebuild my plan</button></div></div>';
+  }
+  function savedIds(s) { return Object.keys(s.marks).filter(function (k) { return s.marks[k].b; }); }
+  function bindCommon() {
     app.querySelectorAll('[data-skill]').forEach(function (a) { a.addEventListener('click', function () { track('roadmap_skill_clicked', { topic: a.dataset.skill }); }); });
-    app.querySelectorAll('.tab').forEach(function (b) { b.onclick = function () { selectedDay = b.dataset.day === 'saved' ? 'saved' : +b.dataset.day; render(); }; });
     app.querySelectorAll('[data-act]').forEach(function (b) {
       b.onclick = function () {
         var id = b.closest('.task').dataset.id, m = R.get().marks[id] || {};
@@ -618,7 +673,148 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
     });
     var dgb = document.getElementById('diagStart'); if (dgb) dgb.onclick = function () { startDiag('dashboard'); };
     var dgr = document.getElementById('diagResults'); if (dgr) dgr.onclick = function () { showLastResults(); };
-    document.getElementById('rebuild').onclick = function () { track('roadmap_plan_rebuild_click'); editing = true; view = 'onboard'; render(); window.scrollTo(0, 0); };
+    var rb = document.getElementById('rebuild');
+    if (rb) rb.onclick = function () { track('roadmap_plan_rebuild_click'); editing = true; view = 'onboard'; render(); window.scrollTo(0, 0); };
+  }
+
+  function renderDash() {
+    var s = R.get();
+    R.ensurePlan(index, false);
+    var pp = R.pathProgress(s), h = parseHash();
+    if (!pp) { app.innerHTML = '<div class="card"><h2>Building your roadmap…</h2></div>'; return; }
+    if (h.v === 'topic') return renderTopic(pp, h.id);
+    if (h.v === 'saved') return renderSaved(pp);
+    renderPath(pp);
+  }
+
+  function rowHtml(x) {
+    var info = TOPIC_INFO[x.id] || ['📚', ''], locked = lockedTopics[x.id] && !isPremium;
+    var shown = x.complete ? x.total : Math.min(x.done, x.total);
+    return '<a class="rm-row ' + x.status + '" href="#topic/' + esc(x.id) + '" style="' + palette(x.id) + '">' +
+      '<span class="rm-num">' + pad2(x.index + 1) + '</span>' +
+      '<span class="rm-ic">' + (x.complete ? CHECK : info[0]) + '</span>' +
+      '<span class="rm-body"><b>' + esc(x.name) + '</b><small>' + esc(info[1]) + '</small>' +
+      '<span class="rm-meta">' + (x.why ? esc(x.why) + ' · ' : '') + shown + ' of ' + x.total + ' steps</span></span>' +
+      '<span class="rm-end">' + statusPill(x.status) + (locked ? '<span class="pill lock">🔒</span>' : '') + CHEV + '</span></a>';
+  }
+
+  function renderPath(pp) {
+    var s = R.get(), g = Object.assign({}, R.DEFAULT_GOALS, s.goals), r = R.readiness(index, s);
+    var left = g.date ? R.daysBetween(new Date(), R.parseYmd(g.date)) : null;
+    var cur = pp.current, saved = savedIds(s);
+    var circ = 2 * Math.PI * 62, dash = circ * r.score / 100;
+    var color = r.score >= 75 ? '#3d7a4f' : r.score >= 50 ? '#f59e0b' : '#ef4444';
+    var byLevel = R.readinessByLevel(index, s);
+    var cl;
+    if (cur) {
+      var info = TOPIC_INFO[cur.id] || ['📚', ''];
+      cl = '<a class="cl-card" href="#topic/' + esc(cur.id) + '" style="' + palette(cur.id) + '">' +
+        '<span class="cl-ic">' + info[0] + '</span><span class="cl-main"><span class="cl-kick">' + (cur.done > 0 ? 'Continue learning' : 'Start here') + '</span>' +
+        '<b class="cl-name">' + pad2(cur.index + 1) + ' · ' + esc(cur.name) + '</b>' +
+        '<span class="cl-why">' + esc(cur.why || info[1]) + '</span>' +
+        '<span class="cl-prog"><span class="bar"><i style="width:' + cur.pct + '%"></i></span><span>' + cur.done + ' of ' + cur.total + ' steps · about ' + cur.minLeft + ' min left</span></span></span>' +
+        '<span class="btn cl-go">' + (cur.done > 0 ? 'Continue' : 'Start') + ' ' + CHEV + '</span></a>';
+    } else {
+      cl = '<div class="cl-card done"><span class="cl-ic">🎉</span><span class="cl-main"><span class="cl-kick">Roadmap complete</span><b class="cl-name">All ' + pp.total + ' topics done</b><span class="cl-why">Retake the skill check to find what to revise before the interview.</span></span>' +
+        '<button class="btn cl-go" id="rebuild2" type="button">Retake skill check</button></div>';
+    }
+    app.innerHTML =
+      headHtml('Your learning roadmap', left != null && left > 0 ? left + ' day' + (left > 1 ? 's' : '') + ' to your interview' : left === 0 ? 'Interview day. You\'ve got this.' : 'Learn Android, one topic at a time',
+        esc(COMPANY_NAME[g.company]) + ' · ' + esc(LEVEL_NAME[g.level])) +
+      cl +
+      '<div class="grid"><div>' +
+        '<div class="card score-card"><div class="q-label" style="margin:0">Interview readiness estimate</div>' +
+        '<div class="ring"><svg width="150" height="150" viewBox="0 0 150 150"><circle cx="75" cy="75" r="62" fill="none" stroke="#eaecf0" stroke-width="12"/>' +
+        '<circle cx="75" cy="75" r="62" fill="none" stroke="' + color + '" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + dash.toFixed(1) + ' ' + circ.toFixed(1) + '"/></svg>' +
+        '<div class="ring-num"><b>' + r.score + '</b><span>out of 100</span></div></div>' +
+        '<div class="meta-line">Confidence: <b>' + r.confidence + '</b> · ' + r.attempted + ' answered <span class="info" tabindex="0" title="Based on your skill-check answers and the questions you mark. It gets more reliable as you answer more. It is a study estimate, not a test score.">ⓘ</span></div>' +
+        levelRowHtml(byLevel) + '</div>' +
+        diagCardHtml(s) +
+        '<a class="card saved-card" href="#saved"><span class="sv-ic">★</span><span class="sv-t"><b>Saved questions</b><small>' + (saved.length ? saved.length + ' to revisit later' : 'Tap ☆ on any question to keep it here') + '</small></span>' + CHEV + '</a>' +
+      '</div>' +
+      '<div><div class="card"><div class="rm-head"><div><h2>Learning roadmap</h2><p class="sub" style="font-size:13px;margin-top:2px">Ordered for your level and weak areas. Tap a topic to learn it.</p></div>' +
+        '<div class="rm-total"><b>' + pp.completed + '</b> of ' + pp.total + ' topics complete</div></div>' +
+        '<div class="rm-bar" role="progressbar" aria-valuenow="' + pp.pct + '" aria-valuemin="0" aria-valuemax="100" aria-label="Overall progress"><i style="width:' + pp.pct + '%"></i></div>' +
+        '<div class="rm-list">' + pp.items.map(rowHtml).join('') + '</div>' +
+        '<p class="disclaimer">A topic is complete when you mark it complete. Nothing is locked, so jump to any topic.</p></div></div></div>';
+    bindCommon();
+    var rb2 = document.getElementById('rebuild2'); if (rb2) rb2.onclick = function () { editing = true; view = 'onboard'; render(); window.scrollTo(0, 0); };
+  }
+
+  function renderSaved(pp) {
+    var s = R.get(), saved = savedIds(s);
+    var rows = saved.map(function (id) { var t = itemTask(id); return t ? taskHtml(t, s, true) : ''; }).join('');
+    app.innerHTML =
+      '<a class="back" href="#roadmap">' + CHEV + ' Learning roadmap</a>' +
+      '<div class="card tp-card" style="--ca:var(--a3);--cb:var(--a4)"><h1 style="font-size:28px">★ Saved questions</h1><p class="sub">' + (saved.length ? saved.length + ' question' + (saved.length > 1 ? 's' : '') + ' to revisit before your interview.' : 'Questions you star appear here.') + '</p>' +
+      '<div style="margin-top:10px">' + (rows || '<p class="empty">Nothing saved yet. Tap the ☆ on any question to keep it here for later.</p>') + '</div></div>';
+    bindCommon();
+  }
+
+  function renderTopic(pp, id) {
+    var s = R.get(), x = pp.items.filter(function (i) { return i.id === id; })[0];
+    if (!x) { location.hash = 'roadmap'; return; }
+    var info = TOPIC_INFO[id] || ['📚', ''], guides = GUIDES[id] || [], topic = index.topics[id];
+    if (topicTabFor !== id) { topicTabFor = id; topicTab = (guides.length || id === 'sysdesign') ? 'learn' : 'practice'; }
+    var pct = x.complete ? 100 : x.pct, circ = 2 * Math.PI * 27, shown = x.complete ? x.total : Math.min(x.done, x.total);
+    var prev = pp.items[x.index - 1], next = pp.items[x.index + 1];
+    var steps = x.steps.map(itemTask).filter(Boolean);
+    var body;
+    if (topicTab === 'learn') {
+      var lessons = guides.length ? guides.map(function (gd) { return { href: gd[0], title: gd[1], desc: gd[2], ic: '📖' }; })
+        : id === 'sysdesign' ? steps.map(function (t) { return { href: t.href, title: 'Design: ' + t.title, desc: 'Step-by-step system design walkthrough.', ic: '🧩' }; }) : [];
+      body = (lessons.length ? '<div class="sec-title" style="margin-top:0">Read</div><div class="lessons">' + lessons.map(function (l) {
+        return '<a class="lesson" href="' + esc(l.href) + '"><span class="ls-ic">' + l.ic + '</span><span class="ls-body"><b>' + esc(l.title) + '</b><small>' + esc(l.desc) + '</small></span>' + CHEV + '</a>';
+      }).join('') + '</div>'
+        : '<div class="note-soft">There is no long-form guide for this topic yet. Every practice question has a worked answer, so start there.</div>') +
+        '<div class="sec-title">What you will cover</div><ul class="cover">' + steps.slice(0, 6).map(function (t) { return '<li>' + esc(t.title) + '</li>'; }).join('') + (steps.length > 6 ? '<li class="more">and ' + (steps.length - 6) + ' more</li>' : '') + '</ul>' +
+        '<div class="actions" style="margin-top:18px"><button class="btn" data-tab-go="practice" type="button">Go to practice ' + CHEV + '</button></div>';
+    } else if (topicTab === 'practice') {
+      body = '<div class="prac-head"><span><b>' + shown + '</b> of ' + x.total + ' steps done</span><a class="skill-go" style="margin:0" href="/questions.html?topic=' + esc(id) + '#' + esc(id) + '">Browse all ' + topic.items.length + ' questions ' + CHEV + '</a></div>' +
+        steps.map(function (t) { return taskHtml(t, s, true); }).join('');
+    } else {
+      body = quizPanel(x);
+    }
+    var banner = x.complete && pp.current && pp.current.id !== id
+      ? '<div class="banner"><span>Topic complete. Next up: <b>' + esc(pp.current.name) + '</b></span><a class="btn small" href="#topic/' + esc(pp.current.id) + '">Continue ' + CHEV + '</a></div>' : '';
+    app.innerHTML =
+      '<a class="back" href="#roadmap">' + CHEV + ' Learning roadmap</a>' +
+      '<div class="card tp-card" style="' + palette(id) + '">' +
+        '<div class="tp-top"><div class="tp-ring"><svg width="68" height="68" viewBox="0 0 68 68"><circle cx="34" cy="34" r="27" fill="none" stroke="#eaecf0" stroke-width="6"/><circle cx="34" cy="34" r="27" fill="none" stroke="url(#tpg)" stroke-width="6" stroke-linecap="round" stroke-dasharray="' + (circ * pct / 100).toFixed(1) + ' ' + circ.toFixed(1) + '" transform="rotate(-90 34 34)"/>' +
+        '<defs><linearGradient id="tpg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--ca)"/><stop offset="1" stop-color="var(--cb)"/></linearGradient></defs></svg><b>' + pad2(x.index + 1) + '</b></div>' +
+        '<div class="tp-title"><h1>' + info[0] + ' ' + esc(x.name) + '</h1><p class="sub">' + esc(info[1]) + '</p></div>' +
+        '<div class="tp-side">' + statusPill(x.status) + '</div></div>' +
+        '<div class="tp-prog"><div class="bar"><i style="width:' + pct + '%"></i></div><span><b>' + shown + '</b> of ' + x.total + ' steps completed</span></div>' +
+        '<div class="tp-bar"><div class="tabs tp-tabs" role="tablist">' + [['learn', 'Learn'], ['practice', 'Practice'], ['quiz', 'Quiz']].map(function (t) {
+          return '<button class="tab" role="tab" data-tab="' + t[0] + '" aria-selected="' + (topicTab === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+        '<button type="button" class="btn small ' + (x.complete ? 'ghost' : '') + '" id="markDone">' + (x.complete ? '✓ Completed · Undo' : 'Mark as complete') + '</button></div>' +
+      '</div>' + banner +
+      '<div class="card tp-body">' + body + '</div>' +
+      '<div class="tp-foot">' + (prev ? '<a class="tp-nav" href="#topic/' + esc(prev.id) + '"><small>Previous</small><b>' + esc(prev.name) + '</b></a>' : '<span></span>') +
+        (next ? '<a class="tp-nav r" href="#topic/' + esc(next.id) + '"><small>Next topic</small><b>' + esc(next.name) + '</b></a>' : '') + '</div>';
+    bindCommon();
+    app.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { topicTab = b.dataset.tab; track('roadmap_topic_tab', { topic: id, tab: topicTab }); render(); }; });
+    app.querySelectorAll('[data-tab-go]').forEach(function (b) { b.onclick = function () { topicTab = b.dataset.tabGo; render(); }; });
+    document.getElementById('markDone').onclick = function () {
+      var on = !x.complete; R.setTopicComplete(id, on); track('roadmap_topic_complete', { topic: id, on: on });
+      if (on) { var np = R.pathProgress(R.get()); toast(np.current ? 'Topic complete. Next up: ' + np.current.name : 'Every topic complete. Nice work.'); }
+    };
+    var tq = document.getElementById('topicQuiz'); if (tq) tq.onclick = function () { startDiag('topic', id); };
+  }
+
+  function quizPanel(x) {
+    if (!bankItems) {
+      if (bankErr) return '<p class="empty">Could not load the quiz. Please refresh and try again.</p>';
+      loadBank().then(function () { if (view === 'dash' && topicTab === 'quiz') render(); }).catch(function (e) { bankErr = e.message; if (view === 'dash') render(); });
+      return '<p class="empty">Loading quiz…</p>';
+    }
+    var all = bankItems.filter(function (i) { return i.type === 'mcq' && i.topic === x.id; });
+    if (!all.length) return '<div class="note-soft">There is no quiz for this topic yet. The practice questions are the best way to check yourself here.</div>';
+    var d = R.get().diag || {}, tested = 0, ok = 0;
+    Object.keys(d.results || {}).forEach(function (k) { var r = d.results[k]; if (r.topic === x.id) { tested++; if (r.c) ok++; } });
+    return '<div class="quiz-box"><h2>Check what you learned</h2><p class="sub">' + Math.min(5, all.length) + ' multiple-choice questions on ' + esc(x.name) + ', about 3 minutes. You see the explanation after each one, and your answers sharpen your readiness estimate.</p>' +
+      (tested ? '<p class="dg-note">Answered so far in this topic: ' + ok + ' of ' + tested + ' correct.</p>' : '') +
+      '<div class="actions" style="margin-top:16px"><button class="btn" id="topicQuiz" type="button">' + (tested ? 'Take another quiz' : 'Start quiz') + ' ' + CHEV + '</button></div></div>';
   }
 
 
@@ -642,17 +838,17 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
     var s = R.get(), g = Object.assign({}, R.DEFAULT_GOALS, s.goals);
     return { s: s, g: g, weights: R.weightsFor(g, g.level), jd: s.jd };   // weights without JD: selectMcq applies the JD itself
   }
-  function startDiag(source) {
+  function startDiag(source, tid) {
     var c = diagCtx();
     view = 'diag';
-    dg = { phase: 'loading', runId: 'r' + Date.now(), before: R.readiness(index, c.s).score, level: c.g.level, items: [], i: 0, picked: undefined, answered: false, results: [], written: [], wi: 0, last: null };
-    track('diagnostic_started', { source: source || 'unknown', has_jd: !!c.s.jd });
+    dg = { topic: tid || null, phase: 'loading', runId: 'r' + Date.now(), before: R.readiness(index, c.s).score, level: c.g.level, items: [], i: 0, picked: undefined, answered: false, results: [], written: [], wi: 0, last: null };
+    track(tid ? 'topic_quiz_started' : 'diagnostic_started', { source: source || 'unknown', topic: tid || null, has_jd: !!c.s.jd });
     render(); window.scrollTo(0, 0);
     loadBank().then(function (all) {
       var runs = (R.get().diag && R.get().diag.runs) ? R.get().diag.runs.length : 0;
       dg.all = all;
-      dg.items = D.selectMcq(all, R.get(), { count: 12, level: c.g.level, weights: c.weights, jd: c.jd, seed: runs });
-      dg.phase = dg.items.length ? 'intro' : 'error'; if (!dg.items.length) dg.err = 'no questions available';
+      dg.items = D.selectMcq(all, R.get(), { count: tid ? 5 : 12, perTopic: tid ? 5 : undefined, topics: tid ? [tid] : undefined, level: c.g.level, weights: c.weights, jd: c.jd, seed: runs });
+      dg.phase = dg.items.length ? (tid ? 'q' : 'intro') : 'error'; if (!dg.items.length) dg.err = 'no questions available';
       render();
     }).catch(function (e) { dg.phase = 'error'; dg.err = e.message; render(); });
   }
@@ -662,11 +858,11 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
     var d = s.diag || {}, runs = d.runs || [], last = runs.length ? runs[runs.length - 1] : null;
     if (!last) {
       return '<div class="card" style="margin-top:20px"><h2>Find your real gaps</h2><p class="sub" style="font-size:14px;margin-top:4px">12 multiple-choice questions picked for your level' + (s.jd ? ' and job description' : '') + ', plus two optional written answers. About 10 minutes.</p>' +
-        '<p class="dg-note" style="margin-top:12px">Press <b>Rebuild my plan</b> above to take it. Your plan is then rebuilt from the results.</p></div>';
+        '<p class="dg-note" style="margin-top:12px">Press <b>Rebuild my plan</b> above to take it. Your learning path is then re-ordered from the results.</p></div>';
     }
     var when = new Date(last.t).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
     return '<div class="card" style="margin-top:20px"><h2>Skill check</h2><p class="sub" style="font-size:14px;margin-top:4px">Last taken ' + esc(when) + ': ' + last.ok + ' of ' + last.n + ' correct' +
-      '. Press <b>Rebuild my plan</b> to retake it with new questions and rebuild your plan.</p>' +
+      '. Press <b>Rebuild my plan</b> to retake it with new questions and re-order your path.</p>' +
       '<div class="actions" style="margin-top:14px"><button class="btn ghost small" id="diagResults" type="button">See last results</button></div>' +
       '<p class="dg-note">' + syncNote() + '</p></div>';
   }
@@ -752,7 +948,7 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
     var nx = document.getElementById('dgNext');
     if (nx) nx.onclick = function () {
       dg.i++; dg.picked = undefined; dg.answered = false; dg.last = null;
-      if (dg.i >= dg.items.length) prepareWritten();
+      if (dg.i >= dg.items.length) { if (dg.topic) { dg.phase = 'results'; finishDiag(); } else prepareWritten(); }
       render(); window.scrollTo(0, 0);
     };
   }
@@ -802,12 +998,26 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
 
   function finishDiag() {
     if (dg.finished) return; dg.finished = true;
-    R.ensurePlan(index, true);
+    R.ensurePlan(index, !dg.topic);
     var sum = D.summarize(dg.results);
     dg.after = R.readiness(index, R.get()).score;
-    track('diagnostic_completed', { answered: sum.answered, correct: sum.correct, gap_topics: sum.gaps.length });
+    track(dg.topic ? 'topic_quiz_completed' : 'diagnostic_completed', { topic: dg.topic || null, answered: sum.answered, correct: sum.correct, gap_topics: sum.gaps.length });
+  }
+  function topicQuizResultsHtml() {
+    var sum = D.summarize(dg.results), tn = topicName(dg.topic);
+    var missed = dg.results.filter(function (r) { return r.type !== 'written' && !r.c; }).map(function (r) {
+      var q = dg.items.filter(function (it) { return it.id === r.id; })[0], href = itemHref(r.ref);
+      return q ? '<li>' + esc(q.q) + (href ? ' <a class="skill-go" style="display:inline;margin:0" href="' + esc(href) + '" target="_blank" rel="noopener">Read the answer</a>' : '') + '</li>' : '';
+    }).join('');
+    return '<div class="card" style="max-width:720px;margin:0 auto"><span class="eyebrow">Topic quiz · ' + esc(tn) + '</span>' +
+      '<div class="dg-big">' + sum.correct + ' of ' + sum.answered + ' correct</div>' +
+      (dg.before != null && dg.after != null ? '<p class="sub" style="font-size:14px">Interview readiness: <b>' + dg.before + '</b> → <b>' + dg.after + '</b>' + (dg.after === dg.before ? ' (no change)' : '') + '.</p>' : '') +
+      (missed ? '<div class="q-label" style="margin-top:20px">Worth another look</div><ul class="ck">' + missed + '</ul>' : '<p class="sub" style="margin-top:14px">Clean sweep. Mark the topic complete when you feel ready.</p>') +
+      '<div class="actions"><button class="btn" id="dgPlan" type="button">Back to ' + esc(tn) + ' ' + CHEV + '</button><button class="btn ghost" id="dgAgain" type="button">Take another quiz</button></div>' +
+      '<p class="dg-note">' + syncNote() + '</p></div>';
   }
   function diagResultsHtml() {
+    if (dg.topic) return topicQuizResultsHtml();
     var sum = D.summarize(dg.results);
     var skills = R.skillsToImprove(index, R.get(), { limit: 3 });
     var change = (dg.before != null && dg.after != null)
@@ -827,11 +1037,12 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
   }
   function bindResults() {
     document.getElementById('dgPlan').onclick = function () { leaveDiag(); };
-    var again = document.getElementById('dgAgain'); if (again) again.onclick = function () { startDiag('retake'); };
+    var again = document.getElementById('dgAgain'); if (again) again.onclick = function () { startDiag('retake', dg.topic || undefined); };
     app.querySelectorAll('[data-skill]').forEach(function (a) { a.addEventListener('click', function () { track('roadmap_skill_clicked', { topic: a.dataset.skill, from: 'diagnostic' }); }); });
   }
 
   /* ---------- boot ---------- */
+  window.addEventListener('hashchange', function () { if (index && authReady && view === 'dash') { render(); window.scrollTo(0, 0); } });
   R.load();   // also removes anything older versions left in this browser
   R.onChange(function () { if (index && view && view !== 'diag' && authReady) render(); });   // the quiz saves as you go; do not redraw it under the user
   fetch('assets/roadmap-index.json').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (j) {

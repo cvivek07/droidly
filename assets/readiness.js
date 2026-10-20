@@ -241,55 +241,116 @@
     return out.slice(0, opts.limit || 5);
   }
 
+  /* ---------- Learning path: a topic-by-topic route, ordered for this person ---------- */
+  var STEPS_CAP = 10, CORE_MIN = 8;
+  /** The "steps" of a topic: its core questions, or (for thin topics) the first questions up to a sensible size. */
+  function stepsFor(topic) {
+    var core = topic.items.filter(function (i) { return i.m; }), rest = topic.items.filter(function (i) { return !i.m; });
+    var pick = core.length >= CORE_MIN ? core : core.concat(rest).slice(0, Math.max(STEPS_CAP, core.length));
+    return pick.sort(function (a, b) { return (a.n || 0) - (b.n || 0); });
+  }
+  function stepMin(it, tid) { return tid === 'sysdesign' ? SYSDESIGN_MIN : (MIN_BY_DIFF[it.d] || 7); }
+  function whyFor(st, w, jd, tid) {
+    if (st.tested > 0 && st.quizCorrect < st.tested) return 'Quiz: ' + st.quizCorrect + ' of ' + st.tested + ' right';
+    if (jd && jd.topics && jd.topics[tid] >= 0.34) return 'Your job description stresses this';
+    if (st.label === 'Weak area') return 'Weak area for you';
+    if (st.label === 'Needs practice') return 'Needs practice';
+    if (st.label === 'Strong') return 'Already strong: quick revision';
+    return w >= 1 ? 'Core topic at your level' : 'Good to cover';
+  }
   /**
-   * What to say to a returning, signed-in user (homepage strip). Pure: depends only on the saved state and the date.
-   * Returns { kind, headline, detail, cta, href }. Picks the single most useful next step instead of a bare progress count.
+   * The learning path saved with the plan: every topic once, weakest and most important first.
+   * Topics already completed keep their earlier place at the front, so numbers do not jump around.
+   */
+  function buildPath(index, state, now) {
+    now = now || new Date();
+    var g = goalsOf(state.goals), r = readiness(index, state, { level: g.level });
+    var prev = state.plan && state.plan.path ? state.plan.path.map(function (e) { return e.id; }) : [];
+    var list = [];
+    TOPIC_ORDER.forEach(function (tid) {
+      var t = index.topics[tid], st = r.stats[tid]; if (!t || !st) return;
+      var steps = stepsFor(t), min = 0; steps.forEach(function (it) { min += stepMin(it, tid); });
+      var tp = state.topics && state.topics[tid];
+      list.push({ id: tid, name: t.name, steps: steps.map(function (i) { return i.id; }), min: min, why: whyFor(st, r.weights[tid], state.jd, tid),
+        pri: r.weights[tid] * (100 - st.mastery) / 100, c: !!(tp && tp.c) });
+    });
+    list.sort(function (a, b) {
+      if (a.c !== b.c) return a.c ? -1 : 1;
+      if (a.c) return prev.indexOf(a.id) - prev.indexOf(b.id);
+      return b.pri - a.pri || TOPIC_ORDER.indexOf(a.id) - TOPIC_ORDER.indexOf(b.id);
+    });
+    list.forEach(function (e) { delete e.pri; delete e.c; });
+    return { on: ymd(now), at: now.getTime(), path: list };
+  }
+  function pathOf(state) { var p = state && state.plan; return p && p.path && p.path.length ? p.path : null; }
+  /**
+   * Where the person stands on their path. Pure: depends on the saved path, marks and completions.
+   * status per topic: completed | in_progress | next | not_started. "current" is the topic to work on now:
+   * the most recently touched unfinished topic, else the first unfinished one.
+   */
+  function pathProgress(state) {
+    var path = pathOf(state); if (!path) return null;
+    var items = path.map(function (e, i) {
+      var done = 0, touch = 0;
+      e.steps.forEach(function (id) { var m = state.marks[id]; if (m && m.s) { done++; if (m.t > touch) touch = m.t; } });
+      var tp = state.topics && state.topics[e.id];
+      return { id: e.id, name: e.name, index: i, total: e.steps.length, done: done, touch: touch, complete: !!(tp && tp.c), min: e.min, why: e.why || '', steps: e.steps,
+        pct: e.steps.length ? Math.round(100 * Math.min(done, e.steps.length) / e.steps.length) : 0,
+        minLeft: e.steps.length ? Math.round(e.min * (e.steps.length - done) / e.steps.length) : 0 };
+    });
+    var cur = null;
+    items.forEach(function (x) { if (!x.complete && x.done > 0 && (!cur || x.touch > cur.touch)) cur = x; });
+    if (!cur) items.some(function (x) { if (!x.complete) { cur = x; return true; } return false; });
+    var stepsDone = 0, stepsAll = 0, completed = 0;
+    items.forEach(function (x) {
+      x.status = x.complete ? 'completed' : x === cur ? (x.done > 0 ? 'in_progress' : 'next') : x.done > 0 ? 'in_progress' : 'not_started';
+      stepsDone += x.complete ? x.total : Math.min(x.done, x.total); stepsAll += x.total; if (x.complete) completed++;
+    });
+    return { items: items, current: cur, completed: completed, total: items.length, stepsDone: stepsDone, stepsAll: stepsAll,
+      pct: stepsAll ? Math.round(100 * stepsDone / stepsAll) : 0 };
+  }
+
+  /**
+   * What to say to a returning, signed-in user (homepage strip, question pill). Pure: depends only on the saved state and the date.
+   * Returns { kind, headline, detail, cta, href }. Points at the topic to learn next, not at a single question.
    */
   function nudgeCore(state, now) {
     now = now || new Date();
-    if (!state || !state.goals) return { kind: 'start', headline: 'Build your interview plan', detail: 'Answer a few questions and get a day-by-day plan.', cta: 'Start', href: '/roadmap' };
+    if (!state || !state.goals) return { kind: 'start', headline: 'Build your interview plan', detail: 'Answer a few questions and get a topic-by-topic learning path.', cta: 'Start', href: '/roadmap' };
     var prefix = '';
     if (state.goals.date) {
       var left = daysBetween(startOfDay(now), parseYmd(state.goals.date));
       if (left === 0) prefix = 'Interview day · ';
       else if (left > 0 && left <= 14) prefix = left + ' day' + (left > 1 ? 's' : '') + ' to your interview · ';
     }
-    var plan = state.plan, tasks = plan && plan.on === ymd(now) && plan.days && plan.days[0] ? plan.days[0].tasks : null;
-    var last = 0;
-    Object.keys(state.marks || {}).forEach(function (k) { var t = state.marks[k] && state.marks[k].t; if (t > last) last = t; });
-    var away = last ? Math.floor((now.getTime() - last) / 86400000) : 0;
-    var untouched = !tasks || tasks.every(function (t) { return !isDone(t, state, plan.at); });
-    if (away >= 3 && untouched) {
-      var quick = tasks && tasks.length ? tasks.slice().sort(function (a, b) { return (a.min || 0) - (b.min || 0); })[0] : null;
-      return { kind: 'welcome_back', headline: prefix + 'Welcome back', detail: quick ? 'Ease in with one ' + (quick.min || 5) + '-min task: ' + quick.title : 'It has been ' + away + ' days. Open your plan for a short restart.', cta: 'Restart', href: '/roadmap' };
-    }
-    if (!tasks || !tasks.length) return { kind: 'plan_ready', headline: prefix + 'Today\'s plan is ready', detail: 'Open it to see what to study today.', cta: 'Open plan', href: '/roadmap' };
-    var open = tasks.filter(function (t) { return !isDone(t, state, plan.at); });
-    var done = tasks.length - open.length;
-    if (!open.length) {
+    var pp = pathProgress(state);
+    if (!pp) return { kind: 'plan_ready', headline: prefix + 'Your learning path is ready', detail: 'Open it to see which topic to learn first.', cta: 'Open roadmap', href: '/roadmap' };
+    var cur = pp.current;
+    if (!cur) {
       var tookCheck = state.diag && state.diag.runs && state.diag.runs.length;
       return tookCheck
-        ? { kind: 'done', headline: prefix + 'Today\'s plan is done. Nice work.', detail: 'Come back tomorrow, or review your weakest topics now.', cta: 'See weak areas', href: '/roadmap' }
-        : { kind: 'check', headline: prefix + 'Today\'s plan is done', detail: 'Next: a 10-minute skill check shows where you are really weak.', cta: 'Take the skill check', href: '/roadmap' };
+        ? { kind: 'done', headline: prefix + 'All ' + pp.total + ' topics complete. Nice work.', detail: 'Revisit your weakest topics before the interview.', cta: 'Review topics', href: '/roadmap' }
+        : { kind: 'check', headline: prefix + 'All ' + pp.total + ' topics complete', detail: 'Next: a 10-minute skill check shows where you are really weak.', cta: 'Take the skill check', href: '/roadmap' };
     }
-    var next = open[0], remaining = open.reduce(function (a, t) { return a + (t.min || 0); }, 0), total = tasks.reduce(function (a, t) { return a + (t.min || 0); }, 0);
-    return done === 0
-      ? { kind: 'start_today', headline: prefix + 'Start today\'s ' + total + '-min plan', detail: 'First up: ' + next.title, cta: 'Start', href: '/roadmap' }
-      : { kind: 'continue', headline: prefix + done + ' of ' + tasks.length + ' done · about ' + remaining + ' min left', detail: 'Next: ' + next.title, cta: 'Continue', href: '/roadmap' };
+    var href = '/roadmap#topic/' + cur.id, last = 0;
+    Object.keys(state.marks || {}).forEach(function (k) { var t = state.marks[k] && state.marks[k].t; if (t > last) last = t; });
+    var away = last ? Math.floor((now.getTime() - last) / 86400000) : 0;
+    if (away >= 3) return { kind: 'welcome_back', headline: prefix + 'Welcome back', detail: cur.done > 0 ? 'Pick up ' + cur.name + ': ' + cur.done + ' of ' + cur.total + ' steps done.' : 'Ease in with ' + cur.name + ' (about ' + cur.min + ' min).', cta: 'Restart', href: href };
+    if (cur.done > 0) return { kind: 'continue', headline: prefix + 'Continue ' + cur.name, detail: cur.done + ' of ' + cur.total + ' steps done · about ' + cur.minLeft + ' min left', cta: 'Continue', href: href };
+    return { kind: 'start_topic', headline: prefix + 'Start with ' + cur.name, detail: 'Topic ' + (cur.index + 1) + ' of ' + pp.total + (cur.why ? ' · ' + cur.why : ''), cta: 'Start', href: href };
   }
 
-  /** nudgeCore plus what a UI needs to draw progress: stats {done,total,minLeft,nextTitle,daysLeft} and a short kicker. */
-  var KICKERS = { start: 'Get started', plan_ready: 'Today\'s plan', start_today: 'Today\'s plan', continue: 'Keep going', welcome_back: 'Welcome back', check: 'Plan complete', done: 'All done' };
+  /** nudgeCore plus what a UI needs to draw progress: stats {done,total,minLeft,nextTitle,daysLeft,topicsDone,topicsTotal} and a short kicker. */
+  var KICKERS = { start: 'Get started', plan_ready: 'Your roadmap', start_topic: 'Next topic', continue: 'Keep going', welcome_back: 'Welcome back', check: 'Path complete', done: 'All done' };
   function nudgeFor(state, now) {
     now = now || new Date();
-    var n = nudgeCore(state, now), st = { done: 0, total: 0, minLeft: 0, nextTitle: '', daysLeft: null };
+    var n = nudgeCore(state, now), st = { done: 0, total: 0, minLeft: 0, nextTitle: '', daysLeft: null, topicsDone: 0, topicsTotal: 0 };
     if (state && state.goals && state.goals.date) { var d = daysBetween(startOfDay(now), parseYmd(state.goals.date)); if (d >= 0 && d <= 14) st.daysLeft = d; }
-    var plan = state && state.plan, tasks = plan && plan.on === ymd(now) && plan.days && plan.days[0] ? plan.days[0].tasks : null;
-    if (tasks && tasks.length) {
-      var open = tasks.filter(function (t) { return !isDone(t, state, plan.at); });
-      st.total = tasks.length; st.done = tasks.length - open.length;
-      st.minLeft = open.reduce(function (a, t) { return a + (t.min || 0); }, 0);
-      st.nextTitle = open[0] ? open[0].title : '';
+    var pp = state && state.goals ? pathProgress(state) : null;
+    if (pp) {
+      st.topicsDone = pp.completed; st.topicsTotal = pp.total;
+      if (pp.current) { st.done = pp.current.done; st.total = pp.current.total; st.minLeft = pp.current.minLeft; st.nextTitle = pp.current.name; }
+      else { st.done = pp.total; st.total = pp.total; }
     }
     n.stats = st; n.kicker = st.daysLeft === 0 ? 'Interview day' : st.daysLeft != null ? st.daysLeft + ' day' + (st.daysLeft > 1 ? 's' : '') + ' to your interview' : (KICKERS[n.kind] || '');
     return n;
@@ -430,7 +491,7 @@
   }
 
   /* ---------- State / store ---------- */
-  function emptyState() { return { v: 1, owner: null, goals: null, ratings: {}, marks: {}, plan: null, jd: null, diag: { results: {}, written: {}, runs: [], last: 0 } }; }
+  function emptyState() { return { v: 1, owner: null, goals: null, ratings: {}, marks: {}, topics: {}, plan: null, jd: null, diag: { results: {}, written: {}, runs: [], last: 0 } }; }
   var state = emptyState();
   var listeners = [];
   var cfg = { getSession: defaultGetSession, storage: null };
@@ -492,6 +553,7 @@
       if (w) return { user_id: uid, item_id: key, kind: 'written', topic: w.topic, ref: w.ref || null, difficulty: w.d, correct: null, confidence: null, score: w.s, updated_at: iso(w.t) };
       return null;
     }
+    if (kind === 'topic') { var tp = state.topics && state.topics[key]; return tp && { user_id: uid, topic_id: key, completed: !!tp.c, updated_at: iso(tp.t) }; }
     if (kind === 'plan') return state.plan ? { user_id: uid, plan: state.plan, updated_at: iso(state.plan.at || Date.now()) } : null;
     if (kind === 'run') { var u = (diagOf(state).runs || []).filter(function (x) { return x.id === key; })[0]; return u && { user_id: uid, run_id: key, answered: u.n, correct: u.ok, updated_at: iso(u.t) }; }
     if (kind === 'jd') {
@@ -502,7 +564,7 @@
     var m = state.marks[key]; return m && { user_id: uid, question_id: key, status: m.s || null, bookmarked: !!m.b, updated_at: iso(m.t) };
   }
   function pushRows(sess, items) {
-    var by = { goal: [], rating: [], mark: [], dans: [], run: [], jd: [], plan: [] };
+    var by = { goal: [], rating: [], mark: [], dans: [], run: [], jd: [], plan: [], topic: [] };
     items.forEach(function (p) { var row = rowFor(p[0], p[1], sess.uid); if (row) by[p[0]].push(row); });
     var jobs = [];
     if (by.goal.length) jobs.push(rest('POST', 'user_goals?on_conflict=user_id', sess.token, by.goal, 'resolution=merge-duplicates,return=minimal'));
@@ -514,6 +576,7 @@
     if (by.run.length) jobs.push(soft(rest('POST', 'diag_runs?on_conflict=user_id,run_id', sess.token, by.run, 'resolution=merge-duplicates,return=minimal')));
     if (by.jd.length) jobs.push(soft(rest('POST', 'user_jd?on_conflict=user_id', sess.token, by.jd, 'resolution=merge-duplicates,return=minimal')));
     if (by.plan.length) jobs.push(soft(rest('POST', 'user_plan?on_conflict=user_id', sess.token, by.plan, 'resolution=merge-duplicates,return=minimal')));
+    if (by.topic.length) jobs.push(soft(rest('POST', 'topic_progress?on_conflict=user_id,topic_id', sess.token, by.topic, 'resolution=merge-duplicates,return=minimal')));
     return Promise.all(jobs);
   }
   var pushFails = 0;
@@ -596,7 +659,8 @@
         rest('GET', 'diag_answers?' + q + '&limit=1000', sess.token).catch(function () { return null; }),   // null = table not created yet
         rest('GET', 'diag_runs?' + q + '&order=updated_at.desc&limit=20', sess.token).catch(function () { return null; }),
         rest('GET', 'user_jd?' + q, sess.token).catch(function () { return null; }),
-        rest('GET', 'user_plan?' + q, sess.token).catch(function () { return null; })
+        rest('GET', 'user_plan?' + q, sess.token).catch(function () { return null; }),
+        rest('GET', 'topic_progress?' + q, sess.token).catch(function () { return null; })
       ]).then(function (res) {
         var push = [];
         var remoteGoal = res[0][0];
@@ -623,6 +687,16 @@
           var rp = res[6][0], rpt = rp ? Date.parse(rp.updated_at) : 0, lpt = state.plan ? (state.plan.at || 0) : 0;
           if (rp && rpt > lpt) state.plan = rp.plan;
           else if (state.plan && lpt > rpt) push.push(['plan', 'p']);
+        }
+        if (res[7]) {
+          state.topics = state.topics || {};
+          var seenT = {};
+          res[7].forEach(function (r) {
+            seenT[r.topic_id] = 1; var t = Date.parse(r.updated_at), l = state.topics[r.topic_id];
+            if (!l || l.t < t) state.topics[r.topic_id] = { c: !!r.completed, t: t };
+            else if (l.t > t) push.push(['topic', r.topic_id]);
+          });
+          Object.keys(state.topics).forEach(function (k) { if (!seenT[k]) push.push(['topic', k]); });
         }
         save(); emit();
         return push.length ? pushRows(sess, push).then(function () { return { ok: true, pushed: push.length }; }) : { ok: true, pushed: 0 };
@@ -654,6 +728,13 @@
     track('question_marked', { status: patch.s !== undefined ? (state.marks[id] ? state.marks[id].s : 'cleared') : 'save', topic: String(id).split(':')[0] });
     if (!hadMark && state.marks[id] && state.marks[id].s) track('first_task_marked');   // derived from the saved marks, not a browser flag
     return state.marks[id] || null;
+  }
+  /** Mark a topic complete (or undo). The person decides: nothing is locked and nothing completes by itself. */
+  function setTopicComplete(tid, on) {
+    state.topics = state.topics || {};
+    state.topics[tid] = { c: !!on, t: Date.now() };
+    save(); emit(); queuePush('topic', tid);
+    track('topic_completed', { topic: tid, completed: !!on });
   }
   /** jd: the object returned by DroidlyDiagnostic.analyzeJD (or null to clear). The pasted text itself is never stored. */
   function setJD(jd) {
@@ -688,15 +769,13 @@
   }
   function clearLocal() { state = emptyState(); save(); emit(); }
 
-  /** Today's plan: reuse the saved one unless the day, the goal or the ratings changed (or force). */
+  /** The learning path: reuse the saved one unless the goal, ratings, skill check or job description changed (or force). */
   function ensurePlan(index, force) {
     var now = new Date();
-    var sig = JSON.stringify([state.goals && [state.goals.level, state.goals.company, state.goals.minutes, state.goals.date], state.ratings && Object.keys(state.ratings).sort().map(function (k) { return k + state.ratings[k].v; }), diagOf(state).last, state.jd && state.jd.t]);
+    var sig = JSON.stringify([state.goals && [state.goals.level, state.goals.company, state.goals.date], state.ratings && Object.keys(state.ratings).sort().map(function (k) { return k + state.ratings[k].v; }), diagOf(state).last, state.jd && state.jd.t]);
     var p = state.plan;
-    if (!force && p && p.on === ymd(now) && p.sig === sig) return p;
-    var carry = [];
-    if (p && p.on === ymd(now) && p.days[0]) carry = p.days[0].tasks.filter(function (t) { return isDone(t, state, p.at); });
-    var plan = buildPlan(index, state, { today: now, carry: carry });
+    if (!force && p && p.path && p.sig === sig) return p;
+    var plan = buildPath(index, state, now);
     plan.sig = sig; state.plan = plan; save(); queuePush('plan', 'p');
     return plan;
   }
@@ -704,10 +783,10 @@
   return {
     TOPIC_ORDER: TOPIC_ORDER, DEFAULT_GOALS: DEFAULT_GOALS, RATING_PRIOR: RATING_PRIOR,
     LEVELS: LEVELS, weightsFor: weightsFor, topicStats: topicStats, readiness: readiness, readinessByLevel: readinessByLevel,
-    skillsToImprove: skillsToImprove, buildPlan: buildPlan, isDone: isDone, nudgeFor: nudgeFor,
+    skillsToImprove: skillsToImprove, stepMin: stepMin, buildPlan: buildPlan, buildPath: buildPath, pathProgress: pathProgress, isDone: isDone, nudgeFor: nudgeFor,
     ymd: ymd, parseYmd: parseYmd, daysBetween: daysBetween,
     load: load, get: function () { return state; }, onChange: onChange, configure: configure, sync: sync,
-    setGoals: setGoals, setRating: setRating, setMark: setMark, setJD: setJD, recordDiag: recordDiag, clearDiag: clearDiag, clearLocal: clearLocal, ensurePlan: ensurePlan,
+    setGoals: setGoals, setRating: setRating, setMark: setMark, setJD: setJD, setTopicComplete: setTopicComplete, recordDiag: recordDiag, clearDiag: clearDiag, clearLocal: clearLocal, ensurePlan: ensurePlan,
     _setState: function (s) { state = s; }                           // tests only
   };
 });
