@@ -25,6 +25,8 @@
 
   var cards = {};      // id -> { card, bar, chip }
   var signedIn = null; // null = unknown
+  var loadFailed = false; // signed in but the saved progress could not be loaded
+  var knownCbs = [];   // actions waiting for the sign-in check to finish
 
   function idFor(card, topic) {
     var n = card.querySelector('.q-number');
@@ -44,9 +46,20 @@
     if (m.s === 'revisit') html += '<span class="rd-chip rev">↻ Revisit</span>';
     if (m.b) html += '<span class="rd-chip save">★ Saved</span>';
     c.chip.innerHTML = html;
-    c.hint.style.display = (signedIn === false && (m.s || m.b)) ? '' : 'none';
   }
 
+  // Marks are saved to the user's account, so a signed-out visitor is asked to sign in instead of marking.
+  function gate(id, action) {
+    return function () {
+      var run = function () {
+        if (signedIn) return action();
+        var c = cards[id]; if (c && loadFailed) c.hint.textContent = 'Could not load your saved progress. Refresh the page to try again.';
+        if (c) { c.hint.style.display = ''; c.hint.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+        try { window.gtag && gtag('event', 'marks_gate_shown'); } catch (e) { /* ignore */ }
+      };
+      if (signedIn === null) knownCbs.push(run); else run();
+    };
+  }
   function btn(label, cls, onClick) {
     var b = document.createElement('button');
     b.type = 'button'; b.className = 'rd-btn ' + cls; b.textContent = label; b.setAttribute('aria-pressed', 'false');
@@ -63,12 +76,13 @@
         var inner = card.querySelector('.q-answer-inner'); var meta = card.querySelector('.q-meta');
         if (!inner || !meta) return;
         var bar = document.createElement('div'); bar.className = 'rd-bar';
-        var got = btn('✓ Got it', 'rd-got', function () { R.setMark(id, { s: 'got_it' }); });
-        var rev = btn('↻ Revisit later', 'rd-rev', function () { R.setMark(id, { s: 'revisit' }); });
-        var save = btn('☆ Save', 'rd-save', function () { var m = R.get().marks[id]; R.setMark(id, { b: !(m && m.b) }); });
+        var got = btn('✓ Got it', 'rd-got', gate(id, function () { R.setMark(id, { s: 'got_it' }); }));
+        var rev = btn('↻ Revisit later', 'rd-rev', gate(id, function () { R.setMark(id, { s: 'revisit' }); }));
+        var save = btn('☆ Save', 'rd-save', gate(id, function () { var m = R.get().marks[id]; R.setMark(id, { b: !(m && m.b) }); }));
         var link = document.createElement('a'); link.className = 'rd-link'; link.href = '/roadmap.html'; link.textContent = 'Your roadmap →';
         var hint = document.createElement('div'); hint.className = 'rd-hint'; hint.style.display = 'none';
-        hint.innerHTML = 'Not saved yet. <a href="/roadmap.html" style="color:#3d7a4f;font-weight:600">Sign in on your roadmap</a> to keep your progress.';
+        hint.innerHTML = 'Sign in to save your progress and build your plan. It is free. <a href="#" class="rd-signin" style="color:#3d7a4f;font-weight:600">Sign in</a>';
+        hint.querySelector('.rd-signin').addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); if (typeof window.openAuthModal === 'function') window.openAuthModal(); else location.href = '/?auth=signin&return=questions'; });
         bar.appendChild(got); bar.appendChild(rev); bar.appendChild(save); bar.appendChild(link); bar.appendChild(hint);
         inner.appendChild(bar);
         var chip = document.createElement('span'); chip.className = 'rd-chips'; meta.appendChild(chip);
@@ -92,7 +106,7 @@
   function start() {
     enhance();
     R.onChange(paintAll);
-    R.sync().then(function (r) { signedIn = !!(r && r.ok); paintAll(); });
+    R.sync().then(function (r) { signedIn = !!(r && r.ok); loadFailed = !!(r && !r.ok && r.reason !== 'signed-out'); paintAll(); var cbs = knownCbs; knownCbs = []; cbs.forEach(function (f) { f(); }); });
     // questions.html builds its own UI on load; deep-link after it settles.
     if (document.readyState === 'complete') setTimeout(deepLink, 300);
     else window.addEventListener('load', function () { setTimeout(deepLink, 300); });
