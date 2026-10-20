@@ -19,6 +19,11 @@
     '.rd-btn[aria-pressed=true].rd-save{background:#e8f2ec;border-color:#3d7a4f;color:#2e6040}' +
     '.rd-link{margin-left:auto;font-size:13px;font-weight:600;color:#3d7a4f;text-decoration:none}' +
     '.rd-hint{flex-basis:100%;font-size:12px;color:#6b7280}' +
+    '.rd-side{display:flex;gap:8px;align-items:center;margin-left:auto;margin-right:10px;flex:none}' +
+    '.rd-ic{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(15,17,23,.12);background:#fff;color:#c4c9d2;display:grid;place-items:center;cursor:pointer;padding:0;transition:all .15s}' +
+    '.rd-ic:hover{border-color:#3d7a4f;color:#3d7a4f}.rd-ic.rd-ic-save:hover{border-color:#e6b25c;color:#d99a2b}' +
+    '.rd-ic-done[aria-pressed=true]{background:#3d7a4f;border-color:#3d7a4f;color:#fff}' +
+    '.rd-ic-save[aria-pressed=true]{background:#fef3c7;border-color:#f1c76b;color:#e0a21c}' +
     '.rd-chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px;margin-left:6px}' +
     '.rd-chip.got{background:#e8f2ec;color:#2e6040}.rd-chip.rev{background:#fef3c7;color:#92400e}.rd-chip.save{background:#eef2ff;color:#3730a3}';
   document.head.appendChild(css);
@@ -37,13 +42,13 @@
   function paint(id) {
     var c = cards[id]; if (!c) return;
     var m = R.get().marks[id] || {};
-    c.btns.got.setAttribute('aria-pressed', m.s === 'got_it');
+    c.btns.got.setAttribute('aria-pressed', !!m.s);
+    c.btns.got.title = m.s ? 'Done' : 'Mark as done'; c.btns.got.setAttribute('aria-label', c.btns.got.title);
     c.btns.save.setAttribute('aria-pressed', !!m.b);
-    c.btns.save.textContent = m.b ? '★ Saved' : '☆ Save';
+    c.btns.save.title = m.b ? 'Saved' : 'Save to revisit later'; c.btns.save.setAttribute('aria-label', c.btns.save.title);
+    c.btns.save.querySelector('path').setAttribute('fill', m.b ? 'currentColor' : 'none');
     var html = '';
-    if (m.s === 'got_it') html += '<span class="rd-chip got">✓ Done</span>';
     if (m.s === 'revisit') html += '<span class="rd-chip rev">↻ Revisit</span>';
-    if (m.b) html += '<span class="rd-chip save">★ Saved</span>';
     c.chip.innerHTML = html;
   }
 
@@ -52,12 +57,21 @@
     return function () {
       var run = function () {
         if (signedIn) return action();
-        var c = cards[id]; if (c && loadFailed) c.hint.textContent = 'Could not load your saved progress. Refresh the page to try again.';
-        if (c) { c.hint.style.display = ''; c.hint.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+        var c = cards[id];
+        if (loadFailed) { if (c) { c.hint.textContent = 'Could not load your saved progress. Refresh the page to try again.'; c.hint.style.display = ''; c.card.classList.add('open'); } }
+        else if (typeof window.openAuthModal === 'function') window.openAuthModal('signin');
+        else if (c) { c.hint.style.display = ''; c.card.classList.add('open'); }
         try { window.gtag && gtag('event', 'marks_gate_shown'); } catch (e) { /* ignore */ }
       };
       if (signedIn === null) knownCbs.push(run); else run();
     };
+  }
+  function icoBtn(cls, path, onClick) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'rd-ic ' + cls; b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">' + path + '</svg>';
+    b.addEventListener('click', function (e) { e.stopPropagation(); onClick(); });
+    return b;
   }
   function btn(label, cls, onClick) {
     var b = document.createElement('button');
@@ -75,13 +89,15 @@
         var inner = card.querySelector('.q-answer-inner'); var meta = card.querySelector('.q-meta');
         if (!inner || !meta) return;
         var bar = document.createElement('div'); bar.className = 'rd-bar';
-        var got = btn('✓ Done', 'rd-got', gate(id, function () { R.setMark(id, { s: 'got_it' }); }));
-        var save = btn('☆ Save', 'rd-save', gate(id, function () { var m = R.get().marks[id]; R.setMark(id, { b: !(m && m.b) }); }));
+        var got = icoBtn('rd-ic-done', '<path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>', gate(id, function () { var m = R.get().marks[id]; R.setMark(id, { s: m && m.s ? m.s : 'got_it' }); }));
+        var save = icoBtn('rd-ic-save', '<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1L3.2 9.6l6.1-.8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>', gate(id, function () { var m = R.get().marks[id]; R.setMark(id, { b: !(m && m.b) }); }));
+        var side = document.createElement('div'); side.className = 'rd-side'; side.appendChild(got); side.appendChild(save);
+        var tog = card.querySelector('.q-toggle'); if (tog && tog.parentNode) tog.parentNode.insertBefore(side, tog);
         var link = document.createElement('a'); link.className = 'rd-link'; link.href = '/roadmap.html'; link.textContent = 'Your roadmap ›';
         var hint = document.createElement('div'); hint.className = 'rd-hint'; hint.style.display = 'none';
         hint.innerHTML = 'Sign in to save your progress and build your plan. It is free. <a href="#" class="rd-signin" style="color:#3d7a4f;font-weight:600">Sign in</a>';
         hint.querySelector('.rd-signin').addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); if (typeof window.openAuthModal === 'function') window.openAuthModal(); else location.href = '/?auth=signin&return=questions'; });
-        bar.appendChild(got); bar.appendChild(save); bar.appendChild(link); bar.appendChild(hint);
+        bar.appendChild(link); bar.appendChild(hint);
         inner.appendChild(bar);
         var chip = document.createElement('span'); chip.className = 'rd-chips'; meta.appendChild(chip);
         cards[id] = { card: card, topic: topic, btns: { got: got, save: save }, chip: chip, hint: hint };

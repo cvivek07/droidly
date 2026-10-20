@@ -146,6 +146,13 @@ input:focus{outline:none;border-color:var(--green)}
 .t-title{font-weight:600;text-decoration:none;display:block}
 .t-title:hover{color:var(--green2)}
 .t-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px;font-size:12px;color:var(--muted)}
+.t-right{flex:none;display:flex;gap:8px;align-items:center;margin-left:8px}
+.ic-btn{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--bg3);background:#fff;color:#c4c9d2;display:grid;place-items:center;cursor:pointer;padding:0;transition:all .15s}
+.ic-btn:hover{border-color:var(--green);color:var(--green)}
+.ic-done[aria-pressed=true]{background:var(--green);border-color:var(--green);color:#fff}
+.ic-save:hover{border-color:#e6b25c;color:#d99a2b}
+.ic-save[aria-pressed=true]{border-color:#f1c76b;background:var(--amber-bg);color:#e0a21c}
+.task{align-items:center}
 .t-act{display:flex;gap:6px;margin-top:8px}
 .mini{border:1px solid var(--bg3);background:#fff;border-radius:100px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer}
 .mini:hover{border-color:var(--green);color:var(--green2)}
@@ -452,14 +459,16 @@ input:focus{outline:none;border-color:var(--green)}
   function taskHtml(t, state, plan, interactive) {
     var done = R.isDone(t, state, plan.at), m = state.marks[t.id] || {};
     var locked = lockedTopics[t.topic] && !isPremium;
+    var isDone = !!m.s;
     return '<div class="task' + (done ? ' done' : '') + '" data-id="' + esc(t.id) + '">' +
-      '<div class="check" aria-hidden="true">' + (done ? '✓' : '') + '</div><div style="flex:1;min-width:0">' +
+      '<div style="flex:1;min-width:0">' +
       '<a class="t-title" href="' + esc(t.href) + '" target="_self">' + esc(t.title) + '</a>' +
       '<div class="t-meta"><span class="pill ' + esc(t.diff) + '">' + esc(t.diff) + '</span><span>' + t.min + ' min</span><span>· ' + esc(index.topics[t.topic].name) + '</span>' +
-      (locked ? '<span class="pill lock">🔒 Premium</span>' : '') + '</div>' +
-      (interactive ? '<div class="t-act"><button class="mini act-done" type="button" data-act="done" aria-pressed="' + (!!m.s) + '">' + (m.s ? '✓ Done' : 'Mark done') + '</button>' +
-        '<button class="mini act-save" type="button" data-act="save" aria-pressed="' + (!!m.b) + '" aria-label="' + (m.b ? 'Remove from saved' : 'Save to revisit later') + '">' + (m.b ? '★ Saved' : '☆ Save') + '</button></div>' : '') +
-      '</div></div>';
+      (locked ? '<span class="pill lock">🔒 Premium</span>' : '') + '</div></div>' +
+      (interactive ? '<div class="t-right">' +
+        '<button type="button" class="ic-btn ic-done" data-act="done" aria-pressed="' + isDone + '" aria-label="' + (isDone ? 'Mark as not done' : 'Mark as done') + '" title="' + (isDone ? 'Done' : 'Mark as done') + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>' +
+        '<button type="button" class="ic-btn ic-save" data-act="save" aria-pressed="' + (!!m.b) + '" aria-label="' + (m.b ? 'Remove from saved' : 'Save to revisit later') + '" title="' + (m.b ? 'Saved' : 'Save to revisit later') + '"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1L3.2 9.6l6.1-.8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="' + (m.b ? 'currentColor' : 'none') + '"/></svg></button></div>' : '') +
+      '</div>';
   }
 
   function tasksBlock(day, state, plan, interactive) {
