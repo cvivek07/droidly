@@ -987,7 +987,7 @@ adapter.loadStateFlow.<span class="fn">collect</span> { states ->
     }
   });
   async function handleSignOut() { await sbClient.auth.signOut(); }
-  function openAuthModal() { window.location.href = '/#auth'; }
+  function openAuthModal(tab) { window.location.href = '/?auth=' + (tab === 'signup' ? 'signup' : 'signin') + '&return=concept_recyclerview'; }
 </script>
 </body>
 </html>

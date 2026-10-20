@@ -1121,7 +1121,7 @@ repeatOnLifecycle(<span class="cl">Lifecycle</span>.State.STARTED) {
     }
   });
   async function handleSignOut() { await sbClient.auth.signOut(); }
-  function openAuthModal() { window.location.href = '/#auth'; }
+  function openAuthModal(tab) { window.location.href = '/?auth=' + (tab === 'signup' ? 'signup' : 'signin') + '&return=concept_coroutines'; }
 </script>
 </body>
 </html>

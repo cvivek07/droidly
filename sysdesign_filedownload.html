@@ -1738,9 +1738,7 @@
     updateNavForUser(null);
   };
 
-  window.openAuthModal = function () {
-    window.location.href = '/?auth=signin&return=sysdesign_filedownload';
-  };
+  window.openAuthModal = function (tab) { window.location.href = '/?auth=' + (tab === 'signup' ? 'signup' : 'signin') + '&return=sysdesign_filedownload'; };
 
   document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
     this.classList.toggle('open');

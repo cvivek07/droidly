@@ -228,21 +228,6 @@ input:focus{outline:none;border-color:var(--green)}
 
 <main class="wrap" id="app" aria-live="polite"><noscript>This page needs JavaScript.</noscript></main>
 
-<div class="modal-bg" id="authBg">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
-    <h2 id="authTitle">Sign in</h2>
-    <p class="sub" style="margin-top:2px;font-size:14px">Sync your roadmap across devices. Your progress so far comes with you.</p>
-    <button class="btn ghost" style="width:100%;margin-top:16px" id="googleBtn" type="button">Continue with Google</button>
-    <div class="divider">or with email</div>
-    <div class="f"><label for="authEmail">Email</label><input type="email" id="authEmail" autocomplete="email"/></div>
-    <div class="f"><label for="authPass">Password <small style="font-weight:400;color:var(--muted)">(min 6 characters)</small></label><input type="password" id="authPass" autocomplete="current-password"/></div>
-    <button class="btn" style="width:100%;margin-top:16px" id="authSubmit" type="button">Sign in</button>
-    <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:13px">
-      <button class="link-btn" id="authToggle" type="button">Create a free account</button>
-      <button class="link-btn" id="authClose" type="button">Not now</button>
-    </div>
-  </div>
-</div>
 <div class="toast" id="toast" role="status"></div>
 
 <script src="assets/readiness.js"></script>
@@ -263,7 +248,6 @@ input:focus{outline:none;border-color:var(--green)}
   var draft = {};
   var selectedDay = 0;
   var user = null, isPremium = false, lockedTopics = {};
-  var authMode = 'signin';
   var authReady = false;      // true once we know whether someone is signed in and, if so, their data has loaded
   var loadErr = null;         // set when a signed-in user's data could not be loaded
 
@@ -296,35 +280,9 @@ input:focus{outline:none;border-color:var(--green)}
       document.getElementById('navEmail').textContent = u.email;
     }
   }
-  function openAuth(mode) {
-    authMode = mode || 'signin';
-    document.getElementById('authTitle').textContent = authMode === 'signin' ? 'Sign in' : 'Create your free account';
-    document.getElementById('authSubmit').textContent = authMode === 'signin' ? 'Sign in' : 'Create account';
-    document.getElementById('authToggle').textContent = authMode === 'signin' ? 'Create a free account' : 'I already have an account';
-    document.getElementById('authBg').classList.add('show');
-    document.getElementById('authEmail').focus();
-  }
-  function closeAuth() { document.getElementById('authBg').classList.remove('show'); }
+  // Sign-in and sign-up use the one dialog on the homepage, then return here.
+  function openAuth(mode) { window.location.href = '/?auth=' + (mode === 'signup' ? 'signup' : 'signin') + '&return=roadmap'; }
   document.getElementById('navSignIn').onclick = function () { openAuth('signin'); };
-  document.getElementById('authClose').onclick = closeAuth;
-  document.getElementById('authBg').addEventListener('click', function (e) { if (e.target.id === 'authBg') closeAuth(); });
-  document.getElementById('authToggle').onclick = function () { openAuth(authMode === 'signin' ? 'signup' : 'signin'); };
-  document.getElementById('googleBtn').onclick = function () {
-    db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.href.split('?')[0].split('#')[0] } })
-      .then(function (r) { if (r.error) toast('Google sign-in failed: ' + r.error.message); });
-  };
-  document.getElementById('authSubmit').onclick = function () {
-    var email = document.getElementById('authEmail').value.trim(), pass = document.getElementById('authPass').value;
-    if (!email || pass.length < 6) { toast('Enter your email and a password of at least 6 characters.'); return; }
-    var p = authMode === 'signin'
-      ? db.auth.signInWithPassword({ email: email, password: pass })
-      : db.auth.signUp({ email: email, password: pass, options: { emailRedirectTo: location.href.split('?')[0].split('#')[0] } });
-    p.then(function (r) {
-      if (r.error) { toast(r.error.message); return; }
-      if (authMode === 'signup' && !(r.data && r.data.session)) { toast('Check your email to verify your account, then sign in.'); closeAuth(); return; }
-      closeAuth();
-    });
-  };
   document.getElementById('navSignOut').onclick = function () {
     db.auth.signOut().then(function () { setUser(null); signedOut(); toast('Signed out.'); });
   };

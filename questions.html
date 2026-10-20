@@ -30945,9 +30945,7 @@ function handleSignOut() {
   }
 
   // ── Open auth modal — redirect to homepage modal ─
-  window.openAuthModal = function () {
-    window.location.href = '/?auth=signin&return=questions';
-  };
+  window.openAuthModal = function (tab) { window.location.href = '/?auth=' + (tab === 'signup' ? 'signup' : 'signin') + '&return=questions'; };
 
   // ── Boot — load topics immediately, auth separately ──
   fetchPremiumTopics().then(() => updateLockIcons());
