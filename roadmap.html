@@ -228,6 +228,44 @@ input:focus{outline:none;border-color:var(--green)}
 .dg-row .nm{flex:0 0 150px;font-weight:600}.dg-row .bar{flex:1;margin:0}.dg-row small{flex:0 0 auto;color:var(--muted)}
 .dg-note{font-size:12px;color:var(--muted);margin-top:14px}
 @media(max-width:560px){.dg-row{flex-wrap:wrap}.dg-row .nm{flex:1 0 100%}}
+
+/* ===== colourful pass (matches the homepage palette) ===== */
+:root{--a1:#3d7a4f;--b1:#5cc07f;--a2:#1f8a99;--b2:#4cc4d3;--a3:#d9902f;--b3:#f3c45f;--a4:#e0583f;--b4:#f59372;--a5:#5566d9;--b5:#8f98f4;--a6:#9150d8;--b6:#c58ff2}
+body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf3 100%) fixed}
+.dash-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:26px 28px;border-radius:26px;color:#fff;background:linear-gradient(115deg,#2e6040 0%,#1f8a99 55%,#5566d9 100%);box-shadow:0 18px 40px rgba(31,100,120,.25);position:relative;overflow:hidden}
+.dash-head::after{content:"";position:absolute;right:-60px;top:-70px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.28),transparent 68%);pointer-events:none}
+.dash-head h1{color:#fff}.dash-head .sub{color:rgba(255,255,255,.88)}
+.dash-head .eyebrow{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.35);color:#fff}
+.dash-head .btn{background:#fff;color:#1c5a45;border-color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.18);position:relative;z-index:1}
+.dash-head .btn:hover{background:#f3fff8;color:#14442f}
+.grid .card{border:0;border-radius:24px;box-shadow:0 10px 30px rgba(40,50,90,.09);position:relative;overflow:hidden}
+.grid .card::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,var(--ca,#3d7a4f),var(--cb,#5cc07f))}
+.grid>div:first-child>.card:nth-child(1){--ca:var(--a1);--cb:var(--b1);background:linear-gradient(180deg,#f1fbf5 0%,#fff 46%)}
+.grid>div:first-child>.card:nth-child(2){--ca:var(--a5);--cb:var(--b5);background:linear-gradient(180deg,#eff1ff 0%,#fff 60%)}
+.grid>div:first-child>.card:nth-child(3){--ca:var(--a4);--cb:var(--b4);background:linear-gradient(180deg,#fff2ee 0%,#fff 30%)}
+.grid>div:first-child>.card:nth-child(4){--ca:var(--a6);--cb:var(--b6);background:linear-gradient(180deg,#f7efff 0%,#fff 24%)}
+.grid>div:last-child>.card:first-child{--ca:var(--a2);--cb:var(--a3);background:linear-gradient(180deg,#eaf8fb 0%,#fff 22%)}
+.grid h2{font-weight:800}
+.tab{border-radius:100px;background:#fff}
+.tab[aria-selected=true]{background:linear-gradient(100deg,#2e6040,#1f8a99);border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(31,138,153,.3)}
+.tab-saved[aria-selected=false]{background:#fff8e6;border-color:#f1d28a;color:#a76a07}
+.tab-saved[aria-selected=true]{background:linear-gradient(100deg,#d9902f,#e0583f)}
+.skill-rank{background:linear-gradient(135deg,var(--a4),var(--b4))!important;color:#fff!important}
+.skill-go{color:var(--a4)}
+.pill.strong{background:#dcf5e6;color:#1d6b3e}.pill.needs{background:#fff0d4;color:#a15f06}.pill.weak{background:#ffe1da;color:#b6341c}
+.topic .bar i:not(.weak):not(.needs):not(.none){background:linear-gradient(90deg,var(--a6),var(--b6))}
+.topic:nth-child(5n+1) .bar i:not(.weak):not(.needs):not(.none){background:linear-gradient(90deg,var(--a1),var(--b1))}
+.topic:nth-child(5n+2) .bar i:not(.weak):not(.needs):not(.none){background:linear-gradient(90deg,var(--a5),var(--b5))}
+.topic:nth-child(5n+3) .bar i:not(.weak):not(.needs):not(.none){background:linear-gradient(90deg,var(--a3),var(--b3))}
+.topic:nth-child(5n+4) .bar i:not(.weak):not(.needs):not(.none){background:linear-gradient(90deg,var(--a2),var(--b2))}
+.lv .bar i{background:linear-gradient(90deg,var(--a2),var(--b1))}
+.ring svg circle:nth-child(2){filter:drop-shadow(0 4px 8px rgba(239,68,68,.25))}
+.ring-num b{background:linear-gradient(135deg,#2e6040,#1f8a99);-webkit-background-clip:text;background-clip:text;color:transparent}
+.task{transition:background .15s}.task:hover{background:linear-gradient(90deg,rgba(31,138,153,.06),transparent)}
+.task.done .t-title{color:#8aa39a}
+.t-meta .pill.easy{background:#dcf5e6;color:#1d6b3e}.t-meta .pill.medium{background:#fff0d4;color:#a15f06}.t-meta .pill.hard{background:#ffe1da;color:#b6341c}
+.ic-done[aria-pressed=true]{background:linear-gradient(135deg,#2e6040,#3f9a6c)}
+.sec-title{color:var(--a2)}
 </style>
 </head>
 <body>
@@ -537,7 +575,7 @@ input:focus{outline:none;border-color:var(--green)}
     var sorted = R.TOPIC_ORDER.slice().sort(function (a, b) { return (r.weights[b] * (100 - r.stats[b].mastery)) - (r.weights[a] * (100 - r.stats[a].mastery)); });
 
     app.innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">' +
+      '<div class="dash-head">' +
       '<div><span class="eyebrow">Your roadmap</span><h1>' + (left != null && left > 0 ? left + ' day' + (left > 1 ? 's' : '') + ' to your interview' : left === 0 ? 'Interview day. You\'ve got this.' : 'Keep your prep on track') + '</h1>' +
       '<p class="sub">' + esc(COMPANY_NAME[g.company]) + ' · ' + esc(LEVEL_NAME[g.level]) + ' · ' + g.minutes + ' min/day</p></div>' +
       '<div style="display:flex;gap:8px"><button class="btn small" id="rebuild" type="button">Rebuild my plan</button></div></div>' +
@@ -623,7 +661,7 @@ input:focus{outline:none;border-color:var(--green)}
   function diagCardHtml(s) {
     var d = s.diag || {}, runs = d.runs || [], last = runs.length ? runs[runs.length - 1] : null;
     if (!last) {
-      return '<div class="card" style="margin-top:20px"><h2>Find your real gaps</h2><p class="sub" style="font-size:14px;margin-top:4px">12 multiple-choice questions picked for your level' + (s.jd ? ' and job description' : '') + ', plus two optional written answers. About 10 minutes. No sign-in needed.</p>' +
+      return '<div class="card" style="margin-top:20px"><h2>Find your real gaps</h2><p class="sub" style="font-size:14px;margin-top:4px">12 multiple-choice questions picked for your level' + (s.jd ? ' and job description' : '') + ', plus two optional written answers. About 10 minutes.</p>' +
         '<p class="dg-note" style="margin-top:12px">Press <b>Rebuild my plan</b> above to take it. Your plan is then rebuilt from the results.</p></div>';
     }
     var when = new Date(last.t).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
