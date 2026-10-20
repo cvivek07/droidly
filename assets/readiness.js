@@ -261,7 +261,7 @@
     var untouched = !tasks || tasks.every(function (t) { return !isDone(t, state, plan.at); });
     if (away >= 3 && untouched) {
       var quick = tasks && tasks.length ? tasks.slice().sort(function (a, b) { return (a.min || 0) - (b.min || 0); })[0] : null;
-      return { kind: 'welcome_back', headline: prefix + 'Welcome back', detail: quick ? 'Ease in with one ' + (quick.min || 5) + '-min task: ' + quick.title : 'It has been ' + away + ' days. Open your plan for a short restart.', cta: 'Restart', href: quick ? quick.href : '/roadmap' };
+      return { kind: 'welcome_back', headline: prefix + 'Welcome back', detail: quick ? 'Ease in with one ' + (quick.min || 5) + '-min task: ' + quick.title : 'It has been ' + away + ' days. Open your plan for a short restart.', cta: 'Restart', href: '/roadmap' };
     }
     if (!tasks || !tasks.length) return { kind: 'plan_ready', headline: prefix + 'Today\'s plan is ready', detail: 'Open it to see what to study today.', cta: 'Open plan', href: '/roadmap' };
     var open = tasks.filter(function (t) { return !isDone(t, state, plan.at); });
@@ -274,8 +274,8 @@
     }
     var next = open[0], remaining = open.reduce(function (a, t) { return a + (t.min || 0); }, 0), total = tasks.reduce(function (a, t) { return a + (t.min || 0); }, 0);
     return done === 0
-      ? { kind: 'start_today', headline: prefix + 'Start today\'s ' + total + '-min plan', detail: 'First up: ' + next.title, cta: 'Start', href: next.href }
-      : { kind: 'continue', headline: prefix + done + ' of ' + tasks.length + ' done · about ' + remaining + ' min left', detail: 'Next: ' + next.title, cta: 'Continue', href: next.href };
+      ? { kind: 'start_today', headline: prefix + 'Start today\'s ' + total + '-min plan', detail: 'First up: ' + next.title, cta: 'Start', href: '/roadmap' }
+      : { kind: 'continue', headline: prefix + done + ' of ' + tasks.length + ' done · about ' + remaining + ' min left', detail: 'Next: ' + next.title, cta: 'Continue', href: '/roadmap' };
   }
 
   function isDone(task, state, planAt) {
