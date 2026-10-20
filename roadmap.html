@@ -238,6 +238,7 @@ input:focus{outline:none;border-color:var(--green)}
       <div class="user-dropdown">
         <div class="user-dropdown-email" id="navEmail"></div>
         <a href="/questions" class="user-dropdown-item">📚 Questions</a>
+        <a href="/roadmap#saved" class="user-dropdown-item">⭐ Saved questions</a>
         <div class="user-dropdown-item danger" id="navSignOut">🚪 Sign Out</div>
       </div>
     </div>
@@ -547,7 +548,7 @@ input:focus{outline:none;border-color:var(--green)}
         '<div id="dayBody">' + tasksBlock(plan.days[selectedDay], s, plan, selectedDay === 0) + '</div>' +
         (revisitCount ? '<p class="disclaimer">↻ ' + revisitCount + ' question' + (revisitCount > 1 ? 's' : '') + ' marked "Revisit". They return in your plan a day after you marked them.</p>' : '') +
       '</div>' +
-      '<div class="card saved" style="margin-top:20px"><h2>Saved questions</h2><div style="margin-top:6px">' +
+      '<div class="card saved" id="saved" style="margin-top:20px;scroll-margin-top:84px"><h2>Saved questions</h2><div style="margin-top:6px">' +
         (saved.length ? saved.slice(0, 12).map(function (id) {
           var x = lookup[id]; if (!x) return ''; return '<a href="' + esc(x.it.href || ('/questions.html?topic=' + x.topic + '&q=' + x.it.n + '#' + x.topic)) + '">' + esc(x.it.q) + ' <small>· ' + esc(index.topics[x.topic].name) + '</small></a>';
         }).join('') : '<p class="empty">Tap ☆ Save on a question in your plan to keep it here for later.</p>') + '</div></div>' +
@@ -562,6 +563,7 @@ input:focus{outline:none;border-color:var(--green)}
         else { R.setMark(id, { s: m.s ? m.s : 'got_it' }); track('roadmap_task_marked', { status: 'got_it', topic: id.split(':')[0] }); }
       };
     });
+    if (location.hash === '#saved' && !renderDash._jumped) { renderDash._jumped = true; var sv = document.getElementById('saved'); if (sv) setTimeout(function () { sv.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60); }
     var dgb = document.getElementById('diagStart'); if (dgb) dgb.onclick = function () { startDiag('dashboard'); };
     var dgr = document.getElementById('diagResults'); if (dgr) dgr.onclick = function () { showLastResults(); };
     document.getElementById('rebuild').onclick = function () { track('roadmap_plan_rebuild_click'); editing = true; view = 'onboard'; render(); window.scrollTo(0, 0); };
