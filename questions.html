@@ -30945,7 +30945,9 @@ function handleSignOut() {
   }
 
   // ── Open auth modal — redirect to homepage modal ─
+  // The shared dialog (assets/auth-dialog.js) opens in place; the redirect below is only a fallback if it failed to load.
   window.openAuthModal = function (tab) { window.location.href = '/?auth=' + (tab === 'signup' ? 'signup' : 'signin') + '&return=questions'; };
+  window.addEventListener('droidly:signed-in', function () { refreshAuth().then(function () { updateLockIcons(); }); });
 
   // ── Boot — load topics immediately, auth separately ──
   fetchPremiumTopics().then(() => updateLockIcons());
@@ -30961,6 +30963,7 @@ function handleSignOut() {
 
 })();
 </script>
+<script src="/assets/auth-dialog.js" defer></script>
 <script src="/assets/readiness.js" defer></script>
 <script src="/assets/question-marks.js" defer></script>
 <script>
