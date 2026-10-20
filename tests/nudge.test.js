@@ -10,13 +10,13 @@ t('no goal: invites to build a plan', () => { assert.equal(R.nudgeFor(mk({ goals
 t('stale or missing plan: says today\'s plan is ready', () => { assert.equal(R.nudgeFor(mk(), now).kind, 'plan_ready'); });
 t('nothing done: names the first task and the total time, and links straight to it', () => {
   const s = withPlan(), n = R.nudgeFor(s, now), first = s.plan.days[0].tasks[0];
-  assert.equal(n.kind, 'start_today'); assert(n.detail.includes(first.title)); assert.equal(n.href, first.href); assert(/\d+-min plan/.test(n.headline));
+  assert.equal(n.kind, 'start_today'); assert(n.detail.includes(first.title)); assert.equal(n.href, '/roadmap'); assert(/\d+-min plan/.test(n.headline));
 });
 t('partly done: shows progress, time left and the next undone task', () => {
   const s = withPlan(), tasks = s.plan.days[0].tasks;
   s.marks[tasks[0].id] = { s: 'got_it', b: false, t: Date.now() + 1000 };
   const n = R.nudgeFor(s, now);
-  assert.equal(n.kind, 'continue'); assert(n.headline.startsWith('1 of ' + tasks.length + ' done')); assert.equal(n.href, tasks[1].href); assert(n.detail.includes(tasks[1].title));
+  assert.equal(n.kind, 'continue'); assert(n.headline.startsWith('1 of ' + tasks.length + ' done')); assert.equal(n.href, '/roadmap'); assert(n.detail.includes(tasks[1].title));
 });
 t('all done, no skill check yet: points to the skill check; after it, to weak areas', () => {
   const s = withPlan(); s.plan.days[0].tasks.forEach(x => { s.marks[x.id] = { s: 'got_it', b: false, t: Date.now() + 1000 }; });
@@ -32,7 +32,7 @@ t('away 3+ days with nothing done today: welcome back with the shortest task', (
   const s = withPlan(), tasks = s.plan.days[0].tasks;
   s.marks['x:1'] = { s: 'got_it', b: false, t: now.getTime() - 5 * 86400000 };
   const n = R.nudgeFor(s, now), quick = tasks.slice().sort((a, b) => a.min - b.min)[0];
-  assert.equal(n.kind, 'welcome_back'); assert.equal(n.href, quick.href); assert(n.detail.includes(quick.title));
+  assert.equal(n.kind, 'welcome_back'); assert.equal(n.href, '/roadmap'); assert(n.detail.includes(quick.title));
   s.marks['x:1'].t = now.getTime() - 86400000; assert.equal(R.nudgeFor(s, now).kind, 'start_today');
   const stale = mk(); stale.marks['x:1'] = { s: 'got_it', b: false, t: now.getTime() - 9 * 86400000 };
   assert.equal(R.nudgeFor(stale, now).kind, 'welcome_back'); assert.equal(R.nudgeFor(stale, now).href, '/roadmap');
