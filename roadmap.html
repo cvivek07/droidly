@@ -356,7 +356,7 @@ input:focus{outline:none;border-color:var(--green)}
       '<div class="q-group"><div class="q-label">Where are you interviewing?</div>' + chipGroup('company', COMPANIES, g.company) + '</div>' +
       '<div class="q-group"><div class="q-label">Time you can study per day</div>' + chipGroup('minutes', MINUTES, g.minutes) + '</div>' +
       '<div class="q-group"><div class="q-label">Interview date <small>(optional)</small></div><input type="date" id="dateInput" min="' + R.ymd(new Date()) + '" value="' + (g.date || '') + '"/></div>' +
-      '<div class="actions"><button class="btn" id="goalNext" type="button">' + (editing ? 'Save and rebuild plan →' : 'Start my plan') + '</button>' +
+      '<div class="actions"><button class="btn" id="goalNext" type="button">' + (editing ? 'Save and rebuild plan ›' : 'Start my plan') + '</button>' +
       (editing ? '<button class="link-btn" id="goalCancel" type="button">Cancel</button>' : '<button class="link-btn" id="goalSkip" type="button">Skip, use defaults</button>') + '</div>' +
       '</div>';
     app.querySelectorAll('.chip').forEach(function (b) {
@@ -635,7 +635,7 @@ input:focus{outline:none;border-color:var(--green)}
     var report = 'mailto:support@droidly.io?subject=' + encodeURIComponent('Droidly quiz issue: ' + it.id);
     return '<div class="card" style="max-width:720px;margin:0 auto">' + progressHtml(dg.i + (ans ? 1 : 0), n, 'Question ' + (dg.i + 1) + ' of ' + n + ' · ' + esc(topicName(it.topic))) +
       '<h2 style="font-size:19px;line-height:1.4">' + esc(it.q) + '</h2><div role="group" aria-label="Answers">' + opts + '</div>' + fb +
-      '<div class="actions" style="margin-top:20px">' + (ans ? '<button class="btn" id="dgNext" type="button">' + (dg.i + 1 < n ? 'Next question →' : 'Continue →') + '</button>' :
+      '<div class="actions" style="margin-top:20px">' + (ans ? '<button class="btn" id="dgNext" type="button">' + (dg.i + 1 < n ? 'Next question ›' : 'Continue ›') + '</button>' :
         '<button class="btn" id="dgCheck" type="button" disabled>Check answer</button><button class="link-btn" id="dgDk" type="button">I don\'t know</button>') +
       '<a class="link-btn" style="margin-left:auto" href="' + esc(report) + '">Report a problem with this question</a></div></div>';
   }
@@ -685,7 +685,7 @@ input:focus{outline:none;border-color:var(--green)}
         '<ul class="ck">' + res.hits.map(function (h) { return '<li class="' + (h.hit ? 'hit' : '') + '">' + esc(h.label) + '</li>'; }).join('') + '</ul>' +
         '<div class="dg-fb"><b>How to read this.</b> It checks whether your answer mentions each expected point. It cannot judge whether your reasoning is right, and a different valid wording can be missed, so treat unchecked points as prompts to review, not as a verdict.<p style="margin-top:6px">' + esc(w.why) + '</p>' +
         (itemHref(w.ref) ? '<p style="margin-top:6px"><a class="skill-go" href="' + esc(itemHref(w.ref)) + '" target="_blank" rel="noopener">Read the full answer</a></p>' : '') + '</div>' +
-        '<div class="actions"><button class="btn" id="dgWNext" type="button">' + (dg.wi + 1 < n ? 'Next written question →' : 'See results →') + '</button></div>';
+        '<div class="actions"><button class="btn" id="dgWNext" type="button">' + (dg.wi + 1 < n ? 'Next written question ›' : 'See results ›') + '</button></div>';
     }
     return '<div class="card" style="max-width:720px;margin:0 auto">' + progressHtml(dg.items.length + dg.wi + (res ? 1 : 0), dg.items.length + n, 'Written answer ' + (dg.wi + 1) + ' of ' + n + ' · ' + esc(topicName(w.topic))) +
       '<h2 style="font-size:19px;line-height:1.4">' + esc(w.q) + '</h2>' + body + '</div>';
@@ -731,7 +731,7 @@ input:focus{outline:none;border-color:var(--green)}
         return '<div class="dg-row"><span class="nm">' + esc(topicName(o.topic)) + '</span><div class="bar"><i class="' + (o.pct >= 75 ? '' : o.pct >= 50 ? 'needs' : 'weak') + '" style="width:' + o.pct + '%"></i></div><small>' + parts + wr + '' + '</small></div>';
       }).join('') +
       '<div class="q-label" style="margin-top:24px">What to work on first</div>' + skillsHtml(skills) +
-      '<div class="actions"><button class="btn" id="dgPlan" type="button">See my updated plan →</button>' + (dg.fromHistory ? '' : '<button class="btn ghost" id="dgAgain" type="button">Retake with new questions</button>') + '</div>' +
+      '<div class="actions"><button class="btn" id="dgPlan" type="button">See my updated plan ›</button>' + (dg.fromHistory ? '' : '<button class="btn ghost" id="dgAgain" type="button">Retake with new questions</button>') + '</div>' +
       '<p class="dg-note">Written answers measure coverage of expected points only. ' + syncNote() + '</p></div>';
   }
   function bindResults() {
