@@ -245,7 +245,7 @@
    * What to say to a returning, signed-in user (homepage strip). Pure: depends only on the saved state and the date.
    * Returns { kind, headline, detail, cta, href }. Picks the single most useful next step instead of a bare progress count.
    */
-  function nudgeFor(state, now) {
+  function nudgeCore(state, now) {
     now = now || new Date();
     if (!state || !state.goals) return { kind: 'start', headline: 'Build your interview plan', detail: 'Answer a few questions and get a day-by-day plan.', cta: 'Start', href: '/roadmap' };
     var prefix = '';
@@ -276,6 +276,23 @@
     return done === 0
       ? { kind: 'start_today', headline: prefix + 'Start today\'s ' + total + '-min plan', detail: 'First up: ' + next.title, cta: 'Start', href: '/roadmap' }
       : { kind: 'continue', headline: prefix + done + ' of ' + tasks.length + ' done · about ' + remaining + ' min left', detail: 'Next: ' + next.title, cta: 'Continue', href: '/roadmap' };
+  }
+
+  /** nudgeCore plus what a UI needs to draw progress: stats {done,total,minLeft,nextTitle,daysLeft} and a short kicker. */
+  var KICKERS = { start: 'Get started', plan_ready: 'Today\'s plan', start_today: 'Today\'s plan', continue: 'Keep going', welcome_back: 'Welcome back', check: 'Plan complete', done: 'All done' };
+  function nudgeFor(state, now) {
+    now = now || new Date();
+    var n = nudgeCore(state, now), st = { done: 0, total: 0, minLeft: 0, nextTitle: '', daysLeft: null };
+    if (state && state.goals && state.goals.date) { var d = daysBetween(startOfDay(now), parseYmd(state.goals.date)); if (d >= 0 && d <= 14) st.daysLeft = d; }
+    var plan = state && state.plan, tasks = plan && plan.on === ymd(now) && plan.days && plan.days[0] ? plan.days[0].tasks : null;
+    if (tasks && tasks.length) {
+      var open = tasks.filter(function (t) { return !isDone(t, state, plan.at); });
+      st.total = tasks.length; st.done = tasks.length - open.length;
+      st.minLeft = open.reduce(function (a, t) { return a + (t.min || 0); }, 0);
+      st.nextTitle = open[0] ? open[0].title : '';
+    }
+    n.stats = st; n.kicker = st.daysLeft === 0 ? 'Interview day' : st.daysLeft != null ? st.daysLeft + ' day' + (st.daysLeft > 1 ? 's' : '') + ' to your interview' : (KICKERS[n.kind] || '');
+    return n;
   }
 
   function isDone(task, state, planAt) {

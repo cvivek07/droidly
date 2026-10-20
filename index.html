@@ -1917,10 +1917,19 @@
     }
   
 /* --- audit fixes: resume strip, hero micro-copy, answer reveal, roadmap preview, mobile nav --- */
-.resume-strip{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px;padding:12px 16px;border-radius:14px;background:var(--green-light,#e8f2ec);border:1px solid rgba(61,122,79,.25);color:var(--ink,#0f1117);text-decoration:none;font-size:14px;font-weight:600}
+.resume-strip{display:flex;align-items:center;gap:16px;margin:0 0 20px;padding:14px 16px 14px 14px;border-radius:20px;background:linear-gradient(115deg,#f0faf4 0%,#e9f4fb 60%,#fff5e4 100%);border:1px solid rgba(61,122,79,.22);box-shadow:0 10px 28px rgba(46,96,64,.12);color:var(--ink,#0f1117);text-decoration:none;transition:transform .2s,box-shadow .2s}
+.resume-strip:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(46,96,64,.2)}
 .resume-strip[hidden]{display:none}
-.resume-strip span:last-child{color:var(--green,#3d7a4f);white-space:nowrap}
-.resume-strip small{display:block;font-weight:500;color:#4b5563;margin-top:2px;font-size:13px}
+.rs-ring{flex:none;position:relative;width:54px;height:54px}
+.rs-ring svg{display:block;transform:rotate(-90deg)}
+.rs-ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;font-weight:800;letter-spacing:-.02em}
+.rs-ico{flex:none;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:24px;background:linear-gradient(135deg,#d6f2e2,#cfe8f7)}
+.rs-body{flex:1;min-width:0}
+.rs-kicker{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#1f8a99}
+.rs-title{font-size:17px;font-weight:800;letter-spacing:-.01em;margin-top:1px}
+.rs-sub{font-size:13px;font-weight:500;color:#4b5563;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rs-go{flex:none;display:inline-flex;align-items:center;gap:6px;padding:11px 20px;border-radius:100px;font-weight:700;font-size:15px;color:#fff;background:linear-gradient(100deg,#2e6040 0%,#3f9a6c 62%,#cf8a30 100%);box-shadow:0 8px 18px rgba(46,96,64,.28);white-space:nowrap}
+@media(max-width:560px){.resume-strip{flex-wrap:wrap;gap:12px}.rs-body{flex-basis:calc(100% - 70px)}.rs-sub{white-space:normal}.rs-go{width:100%;justify-content:center}}
 .hero-micro{margin-top:12px;font-size:13px;color:var(--muted,#6b7280)}
 .hcard-answer{font-size:13px;line-height:1.55;background:#f0f8f2;border:1px solid rgba(61,122,79,.2);border-radius:10px;padding:12px 14px;margin-bottom:10px;color:#1f2937}
 .hcard-answer code{font-size:12px}
@@ -3625,10 +3634,21 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       var s = R.load(), el = document.getElementById('resumeStrip'), cta = document.getElementById('heroPrimaryCta');
       if (!el || !s.owner) return;   // signed-out visitors see nothing personal
       var n = R.nudgeFor(s, new Date());
-      var head = document.createElement('span'), b = document.createElement('b'), small = document.createElement('small'), go = document.createElement('span');
-      b.textContent = n.headline; small.textContent = n.detail.length > 90 ? n.detail.slice(0, 87) + '…' : n.detail; go.textContent = n.cta + ' ›';
-      head.appendChild(b); head.appendChild(small);
-      el.textContent = ''; el.appendChild(head); el.appendChild(go);
+      var st = n.stats || {}, ttl, sub;
+      if (n.kind === 'start_today') { ttl = 'Start today\'s plan'; sub = 'Up next: ' + st.nextTitle + ' · ' + st.minLeft + ' min today'; }
+      else if (n.kind === 'continue') { ttl = 'Pick up where you left off'; sub = 'Up next: ' + st.nextTitle + ' · about ' + st.minLeft + ' min left'; }
+      else { ttl = n.headline; sub = n.detail; }
+      function mk(tag, cls, text) { var x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; }
+      el.textContent = '';
+      if (st.total) {
+        var r = 25, c = 2 * Math.PI * r, w = mk('span', 'rs-ring'), pct = st.done / st.total;
+        w.innerHTML = '<svg width="54" height="54" viewBox="0 0 54 54" aria-hidden="true"><circle cx="27" cy="27" r="' + r + '" fill="none" stroke="#dbe7e0" stroke-width="5"/><circle cx="27" cy="27" r="' + r + '" fill="none" stroke="#3d7a4f" stroke-width="5" stroke-linecap="round" stroke-dasharray="' + (c * pct).toFixed(1) + ' ' + c.toFixed(1) + '"/></svg>';
+        w.appendChild(mk('b', '', st.done + '/' + st.total)); w.setAttribute('role', 'img'); w.setAttribute('aria-label', st.done + ' of ' + st.total + ' tasks done today');
+        el.appendChild(w);
+      } else el.appendChild(mk('span', 'rs-ico', n.kind === 'welcome_back' ? '👋' : '🎯'));
+      var body = mk('span', 'rs-body');
+      body.appendChild(mk('div', 'rs-kicker', n.kicker)); body.appendChild(mk('div', 'rs-title', ttl)); body.appendChild(mk('div', 'rs-sub', sub.length > 110 ? sub.slice(0, 107) + '…' : sub));
+      el.appendChild(body); el.appendChild(mk('span', 'rs-go', n.cta + ' ›'));
       el.href = n.href; el.hidden = false;
       el.onclick = function () { try { gtag('event', 'resume_strip_click', { kind: n.kind }); } catch (e) {} };
       if (cta && s.goals) { var lbl = cta.querySelector('.lbl'); (lbl || cta).textContent = lbl ? 'Continue my plan' : 'Continue my plan'; cta.href = n.kind === 'continue' || n.kind === 'start_today' || n.kind === 'welcome_back' ? n.href : '/roadmap'; }
