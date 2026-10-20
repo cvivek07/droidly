@@ -66,6 +66,20 @@ h2{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;letter-spacing:-.4
 .sub{color:var(--muted);margin-top:8px}
 .eyebrow{display:inline-block;font-size:12px;font-weight:700;color:var(--green);background:var(--green-light);border:1px solid var(--border-green);border-radius:100px;padding:4px 12px;margin-bottom:14px}
 /* FORM */
+.q-num{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--green-light);color:var(--green);font-size:12px;font-weight:800;margin-right:9px;vertical-align:1px}
+.lvl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.chip.lvl-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;border-radius:14px;padding:14px 16px;text-align:left;font-family:inherit}
+.lvl-card .lvl-top{display:flex;flex-direction:column;gap:2px}
+.lvl-card .lvl-top b{font-size:17px;font-weight:800;letter-spacing:-.01em}
+.lvl-card .lvl-top em{font-style:normal;font-size:12px;font-weight:700;color:var(--green)}
+.lvl-card .lvl-desc{font-size:12.5px;font-weight:500;line-height:1.4;color:var(--muted)}
+.lvl-card[aria-pressed=true]{background:linear-gradient(135deg,#2e6040,#3f9a6c);border-color:transparent;box-shadow:0 10px 24px rgba(46,96,64,.28)}
+.lvl-card[aria-pressed=true] .lvl-top em,.lvl-card[aria-pressed=true] .lvl-desc{color:rgba(255,255,255,.88)}
+.jd-box{border:1.5px dashed var(--bg3);border-radius:14px;padding:12px 16px}
+.jd-box summary{cursor:pointer;list-style:none}.jd-box summary::-webkit-details-marker{display:none}
+.jd-box summary .q-label{margin:0}.jd-box[open] summary{margin-bottom:12px}
+.ob-sum{margin-top:26px;padding:12px 16px;border-radius:12px;background:var(--green-light);color:var(--ink2);font-size:14px}
+@media(max-width:600px){.lvl-grid{grid-template-columns:1fr}}
 .q-group{margin-top:24px}
 .q-label{font-weight:700;font-size:15px;margin-bottom:10px}
 .q-label small{font-weight:500;color:var(--muted)}
@@ -251,10 +265,12 @@ input:focus{outline:none;border-color:var(--green)}
   var authReady = false;      // true once we know whether someone is signed in and, if so, their data has loaded
   var loadErr = null;         // set when a signed-in user's data could not be loaded
 
-  var LEVELS = [['0-2', '0–2 years'], ['2-5', '2–5 years'], ['5+', '5+ years']];
+  var LEVELS = [['0-2', 'SDE 1', '0–2 years', 'Lifecycle, Kotlin basics, RecyclerView, core APIs'],
+                ['2-5', 'SDE 2', '2–5 years', 'Architecture, Compose, coroutines, testing'],
+                ['5+', 'SDE 3 / Senior', '5+ years', 'System design, performance, scale, leadership']];
   var COMPANIES = [['product', 'Product company'], ['startup', 'Startup'], ['service', 'Service company']];
   var MINUTES = [[30, '30 min'], [60, '1 hour'], [120, '2 hours']];
-  var LEVEL_NAME = { '0-2': '0–2 yrs', '2-5': '2–5 yrs', '5+': '5+ yrs' };
+  var LEVEL_NAME = { '0-2': 'SDE 1 · 0–2 yrs', '2-5': 'SDE 2 · 2–5 yrs', '5+': 'SDE 3 · 5+ yrs' };
   var COMPANY_NAME = { product: 'Product company', startup: 'Startup', service: 'Service company' };
 
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -341,6 +357,14 @@ input:focus{outline:none;border-color:var(--green)}
     }).join('') + '</div>';
   }
 
+  function levelCards(current) {
+    return '<div class="lvl-grid" role="group">' + LEVELS.map(function (o) {
+      return '<button type="button" class="chip lvl-card" data-key="level" data-val="' + o[0] + '" aria-pressed="' + (current === o[0]) + '">' +
+        '<span class="lvl-top"><b>' + o[1] + '</b><em>' + o[2] + '</em></span><span class="lvl-desc">' + o[3] + '</span></button>';
+    }).join('') + '</div>';
+  }
+  function qLabel(n, text, opt) { return '<div class="q-label"><span class="q-num">' + n + '</span>' + text + (opt ? ' <small>(optional)</small>' : '') + '</div>'; }
+
   function renderOnboard() {
     var g = Object.assign({}, R.DEFAULT_GOALS, R.get().goals || {}, draft);
     draft = { level: g.level, company: g.company, minutes: g.minutes, date: g.date };
@@ -349,22 +373,30 @@ input:focus{outline:none;border-color:var(--green)}
       '<span class="eyebrow">' + (editing ? 'Edit your goal' : 'Free · about 30 seconds') + '</span>' +
       '<h1>' + (editing ? 'Update your goal' : 'Build your Android interview roadmap') + '</h1>' +
       '<p class="sub">Tell us where you\'re headed. We\'ll turn the question bank into a day-by-day plan that focuses on what matters for your level and company type.</p>' +
-      '<div class="q-group"><div class="q-label">Your Android experience</div>' + chipGroup('level', LEVELS, g.level) + '</div>' +
-      '<div class="q-group"><div class="q-label">Job description <small>(optional)</small></div>' +
+      '<div class="q-group">' + qLabel(1, 'Your level') + levelCards(g.level) + '</div>' +
+      '<div class="q-group">' + qLabel(2, 'Where are you interviewing?') + chipGroup('company', COMPANIES, g.company) + '</div>' +
+      '<div class="q-group">' + qLabel(3, 'Time you can study per day') + chipGroup('minutes', MINUTES, g.minutes) + '</div>' +
+      '<div class="q-group">' + qLabel(4, 'Interview date', true) + '<input type="date" id="dateInput" min="' + R.ymd(new Date()) + '" value="' + (g.date || '') + '"/></div>' +
+      '<details class="q-group jd-box"><summary>' + qLabel(5, 'Have a job description? Paste it to tailor your plan', true) + '</summary>' +
       '<textarea class="jd-in" id="jdInput" rows="4" maxlength="8000" placeholder="Paste the job description for the role you are targeting. It is read in your browser to see which topics it stresses. The text itself is not saved."></textarea>' +
-      '<div class="jd-detect" id="jdDetect" aria-live="polite">' + jdSavedLine() + '</div></div>' +
-      '<div class="q-group"><div class="q-label">Where are you interviewing?</div>' + chipGroup('company', COMPANIES, g.company) + '</div>' +
-      '<div class="q-group"><div class="q-label">Time you can study per day</div>' + chipGroup('minutes', MINUTES, g.minutes) + '</div>' +
-      '<div class="q-group"><div class="q-label">Interview date <small>(optional)</small></div><input type="date" id="dateInput" min="' + R.ymd(new Date()) + '" value="' + (g.date || '') + '"/></div>' +
+      '<div class="jd-detect" id="jdDetect" aria-live="polite">' + jdSavedLine() + '</div></details>' +
+      '<div class="ob-sum" id="obSum" aria-live="polite"></div>' +
       '<div class="actions"><button class="btn" id="goalNext" type="button">' + (editing ? 'Save and rebuild plan ›' : 'Start my plan') + '</button>' +
       (editing ? '<button class="link-btn" id="goalCancel" type="button">Cancel</button>' : '<button class="link-btn" id="goalSkip" type="button">Skip, use defaults</button>') + '</div>' +
       '</div>';
+    function paintSum() {
+      var el = document.getElementById('obSum'); if (!el) return;
+      var m = MINUTES.filter(function (x) { return x[0] === draft.minutes; })[0];
+      el.innerHTML = '<b>Your plan:</b> ' + esc(LEVEL_NAME[draft.level]) + ' · ' + esc(COMPANY_NAME[draft.company]) + ' · ' + esc(m ? m[1] : '') + ' a day';
+    }
     app.querySelectorAll('.chip').forEach(function (b) {
       b.onclick = function () {
         var k = b.dataset.key; draft[k] = k === 'minutes' ? +b.dataset.val : b.dataset.val;
         app.querySelectorAll('.chip[data-key="' + k + '"]').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+        paintSum();
       };
     });
+    paintSum();
     var jdDraft = null;
     var jdIn = document.getElementById('jdInput'), jdOut = document.getElementById('jdDetect');
     jdIn.oninput = function () {
