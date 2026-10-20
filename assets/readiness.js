@@ -255,6 +255,14 @@
       else if (left > 0 && left <= 14) prefix = left + ' day' + (left > 1 ? 's' : '') + ' to your interview · ';
     }
     var plan = state.plan, tasks = plan && plan.on === ymd(now) && plan.days && plan.days[0] ? plan.days[0].tasks : null;
+    var last = 0;
+    Object.keys(state.marks || {}).forEach(function (k) { var t = state.marks[k] && state.marks[k].t; if (t > last) last = t; });
+    var away = last ? Math.floor((now.getTime() - last) / 86400000) : 0;
+    var untouched = !tasks || tasks.every(function (t) { return !isDone(t, state, plan.at); });
+    if (away >= 3 && untouched) {
+      var quick = tasks && tasks.length ? tasks.slice().sort(function (a, b) { return (a.min || 0) - (b.min || 0); })[0] : null;
+      return { kind: 'welcome_back', headline: prefix + 'Welcome back', detail: quick ? 'Ease in with one ' + (quick.min || 5) + '-min task: ' + quick.title : 'It has been ' + away + ' days. Open your plan for a short restart.', cta: 'Restart', href: quick ? quick.href : '/roadmap' };
+    }
     if (!tasks || !tasks.length) return { kind: 'plan_ready', headline: prefix + 'Today\'s plan is ready', detail: 'Open it to see what to study today.', cta: 'Open plan', href: '/roadmap' };
     var open = tasks.filter(function (t) { return !isDone(t, state, plan.at); });
     var done = tasks.length - open.length;

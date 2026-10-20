@@ -28,4 +28,14 @@ t('interview within two weeks is mentioned; further away is not', () => {
   assert(!/interview/.test(R.nudgeFor(withPlan({ goals: { level: '2-5', company: 'product', minutes: 60, date: '2026-12-27', t: 1 } }), now).headline));
   assert(R.nudgeFor(withPlan({ goals: { level: '2-5', company: 'product', minutes: 60, date: '2026-10-20', t: 1 } }), now).headline.startsWith('Interview day'));
 });
+t('away 3+ days with nothing done today: welcome back with the shortest task', () => {
+  const s = withPlan(), tasks = s.plan.days[0].tasks;
+  s.marks['x:1'] = { s: 'got_it', b: false, t: now.getTime() - 5 * 86400000 };
+  const n = R.nudgeFor(s, now), quick = tasks.slice().sort((a, b) => a.min - b.min)[0];
+  assert.equal(n.kind, 'welcome_back'); assert.equal(n.href, quick.href); assert(n.detail.includes(quick.title));
+  s.marks['x:1'].t = now.getTime() - 86400000; assert.equal(R.nudgeFor(s, now).kind, 'start_today');
+  const stale = mk(); stale.marks['x:1'] = { s: 'got_it', b: false, t: now.getTime() - 9 * 86400000 };
+  assert.equal(R.nudgeFor(stale, now).kind, 'welcome_back'); assert.equal(R.nudgeFor(stale, now).href, '/roadmap');
+});
+
 console.log(pass + ' passed');
