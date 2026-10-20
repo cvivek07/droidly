@@ -1997,6 +1997,10 @@
 .rp-opt.right{background:#dcf5e6;border-color:#3d7a4f;color:#1d6b3e}
 .rp-why{font-size:12.5px;color:#374151;background:#f0f8f2;border-radius:10px;padding:8px 12px;opacity:0;transform:translateY(4px);transition:all .3s}
 .rp-why.show{opacity:1;transform:none}
+.rp-tabs{display:flex;gap:6px;margin:2px 0 10px;overflow:hidden}
+.rp-tab{font-size:12px;font-weight:700;padding:6px 12px;border-radius:100px;border:1.5px solid rgba(15,17,23,.12);color:#374151;white-space:nowrap}
+.rp-tab.on{background:linear-gradient(100deg,#2e6040,#1f8a99);border-color:transparent;color:#fff}
+.rp-tab.saved-t{background:#fff8e6;border-color:#f1d28a;color:#a76a07}
 .rp-more{color:#9ca3af;font-size:13px}
 .rp-card.rp-anim .rp-ring{border-color:#e5e7eb;transition:border-color .6s}
 .rp-card.rp-anim .rp-ring.lit{border-color:#f59e0b}
@@ -2534,13 +2538,14 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
             <div class="rp-ring" id="rpRing"><b id="rpNum">68</b><span>/100</span></div>
             <div><div class="rp-h">Interview readiness estimate</div><div class="rp-s">Product company · SDE 2 · 4 weeks to go</div></div>
           </div>
+          <div class="rp-tabs"><span class="rp-tab saved-t">★ Saved <b id="rpSavedN">1</b></span><span class="rp-tab on">Today</span><span class="rp-tab">Tomorrow</span><span class="rp-tab">Thu, Oct 22</span></div>
           <div class="rp-row"><span>Kotlin</span><em class="rp-p strong">Strong</em></div>
           <div class="rp-row"><span>Coroutines &amp; Flow</span><em class="rp-p needs">Needs practice</em></div>
           <div class="rp-row"><span>System design</span><em class="rp-p weak">Weak area</em></div>
-          <div class="rp-today">Today · about 1 hr</div>
-          <div class="rp-task"><span class="rp-tt">4 Coroutines &amp; Flow questions</span><small>~28 min</small><span class="rp-icons"><span class="rp-ic rp-ok" aria-hidden="true">✓</span><span class="rp-ic rp-star" aria-hidden="true">☆</span></span></div>
-          <div class="rp-task"><span class="rp-tt">Offline-first app design</span><small>25 min</small><span class="rp-icons"><span class="rp-ic rp-ok" aria-hidden="true">✓</span><span class="rp-ic rp-star" aria-hidden="true">☆</span></span></div>
-          <div class="rp-task"><span class="rp-tt">Retry 2 questions missed in your skill check</span><small>~14 min</small><span class="rp-icons"><span class="rp-ic rp-ok" aria-hidden="true">✓</span><span class="rp-ic rp-star" aria-hidden="true">☆</span></span></div>
+          <div class="rp-today">Today · <span id="rpDoneN">2</span>/3 tasks done · about 1 hr</div>
+          <div class="rp-task done"><span class="rp-tt">4 Coroutines &amp; Flow questions</span><small>~28 min</small><span class="rp-icons"><span class="rp-ic rp-ok" aria-hidden="true">✓</span><span class="rp-ic rp-star" aria-hidden="true">☆</span></span></div>
+          <div class="rp-task saved"><span class="rp-tt">Offline-first app design</span><small>25 min</small><span class="rp-icons"><span class="rp-ic rp-ok" aria-hidden="true">✓</span><span class="rp-ic rp-star" aria-hidden="true">☆</span></span></div>
+          <div class="rp-task done"><span class="rp-tt">Retry 2 questions missed in your skill check</span><small>~14 min</small><span class="rp-icons"><span class="rp-ic rp-ok" aria-hidden="true">✓</span><span class="rp-ic rp-star" aria-hidden="true">☆</span></span></div>
         </div>
       </div>
     </div>
@@ -3650,8 +3655,9 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
   function clearAll() { timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); }
   function show(i) { scenes.forEach(function (s, k) { s.classList.toggle('is-on', k === i); }); steps.forEach(function (s, k) { s.classList.toggle('on', k <= i); }); }
   function reset() {
-    card.querySelectorAll('.sel,.show,.done,.lit').forEach(function (e) { e.classList.remove('sel', 'right', 'show', 'done', 'saved', 'lit'); });
+    card.querySelectorAll('.sel,.right,.show,.done,.saved,.lit').forEach(function (e) { e.classList.remove('sel', 'right', 'show', 'done', 'saved', 'lit'); });
     num.textContent = '0';
+    var a = card.querySelector('#rpDoneN'), b = card.querySelector('#rpSavedN'); if (a) a.textContent = '0'; if (b) b.textContent = '0';
   }
   function pick(sel, idx) { var el = card.querySelector(sel + ' [data-pick="' + idx + '"]'); if (el) el.classList.add('sel'); }
   function pickOpt(i) { var o = card.querySelector('.rp-opts[data-pick="' + i + '"]'); if (!o) return; var n = i === 0 ? 0 : i === 1 ? 1 : 2; o.children[n].classList.add('sel'); }
@@ -3675,10 +3681,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       [].forEach.call(items, function (el, i) { at(500 + i * 260, function () { el.classList.add('show'); }); });
     });
     var tasks = card.querySelectorAll('.rp-scene[data-s="2"] .rp-task');
-    at(10600, function () { tasks[0].classList.add('done'); });
-    at(11400, function () { tasks[1].classList.add('saved'); });
-    at(12200, function () { tasks[2].classList.add('done'); });
-    at(14500, function () { if (!paused && visible) cycle(); else running = false; });
+    var dn = card.querySelector('#rpDoneN'), sn = card.querySelector('#rpSavedN');
+    at(10600, function () { tasks[0].classList.add('done'); dn.textContent = '1'; });
+    at(11600, function () { tasks[1].classList.add('saved'); sn.textContent = '1'; });
+    at(12600, function () { tasks[2].classList.add('done'); dn.textContent = '2'; });
+    at(20000, function () { if (!paused && visible) cycle(); else running = false; });
   }
   function play() { paused = false; btn.textContent = 'Pause'; btn.setAttribute('aria-label', 'Pause animation'); if (visible) cycle(); }
   function pause() { paused = true; clearAll(); running = false; btn.textContent = 'Play'; btn.setAttribute('aria-label', 'Play animation'); }
