@@ -1,5 +1,5 @@
 /*!
- * Adds "Got it / Revisit / Save" to every question on questions.html and supports
+ * Adds "Done / Save" to every question on questions.html and supports
  * deep links like /questions.html?topic=kotlin&q=12 (used by the Roadmap).
  * Question ids are "<topic>:<Q number as printed on the card>", e.g. kotlin:12.
  */
@@ -38,11 +38,10 @@
     var c = cards[id]; if (!c) return;
     var m = R.get().marks[id] || {};
     c.btns.got.setAttribute('aria-pressed', m.s === 'got_it');
-    c.btns.rev.setAttribute('aria-pressed', m.s === 'revisit');
     c.btns.save.setAttribute('aria-pressed', !!m.b);
     c.btns.save.textContent = m.b ? '★ Saved' : '☆ Save';
     var html = '';
-    if (m.s === 'got_it') html += '<span class="rd-chip got">✓ Got it</span>';
+    if (m.s === 'got_it') html += '<span class="rd-chip got">✓ Done</span>';
     if (m.s === 'revisit') html += '<span class="rd-chip rev">↻ Revisit</span>';
     if (m.b) html += '<span class="rd-chip save">★ Saved</span>';
     c.chip.innerHTML = html;
@@ -76,17 +75,16 @@
         var inner = card.querySelector('.q-answer-inner'); var meta = card.querySelector('.q-meta');
         if (!inner || !meta) return;
         var bar = document.createElement('div'); bar.className = 'rd-bar';
-        var got = btn('✓ Got it', 'rd-got', gate(id, function () { R.setMark(id, { s: 'got_it' }); }));
-        var rev = btn('↻ Revisit later', 'rd-rev', gate(id, function () { R.setMark(id, { s: 'revisit' }); }));
+        var got = btn('✓ Done', 'rd-got', gate(id, function () { R.setMark(id, { s: 'got_it' }); }));
         var save = btn('☆ Save', 'rd-save', gate(id, function () { var m = R.get().marks[id]; R.setMark(id, { b: !(m && m.b) }); }));
         var link = document.createElement('a'); link.className = 'rd-link'; link.href = '/roadmap.html'; link.textContent = 'Your roadmap ›';
         var hint = document.createElement('div'); hint.className = 'rd-hint'; hint.style.display = 'none';
         hint.innerHTML = 'Sign in to save your progress and build your plan. It is free. <a href="#" class="rd-signin" style="color:#3d7a4f;font-weight:600">Sign in</a>';
         hint.querySelector('.rd-signin').addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); if (typeof window.openAuthModal === 'function') window.openAuthModal(); else location.href = '/?auth=signin&return=questions'; });
-        bar.appendChild(got); bar.appendChild(rev); bar.appendChild(save); bar.appendChild(link); bar.appendChild(hint);
+        bar.appendChild(got); bar.appendChild(save); bar.appendChild(link); bar.appendChild(hint);
         inner.appendChild(bar);
         var chip = document.createElement('span'); chip.className = 'rd-chips'; meta.appendChild(chip);
-        cards[id] = { card: card, topic: topic, btns: { got: got, rev: rev, save: save }, chip: chip, hint: hint };
+        cards[id] = { card: card, topic: topic, btns: { got: got, save: save }, chip: chip, hint: hint };
         paint(id);
       });
     });
