@@ -1,6 +1,6 @@
 {
  "version": 1,
- "note": "Drafted from existing Droidly answers; every item needs author review before it is treated as verified.",
+ "note": "Drafted from existing Droidly answers; reviewed and approved by the author on 2026-10-20.",
  "items": [
   {
    "id": "m-android-1",
@@ -17,7 +17,7 @@
    ],
    "answer": 2,
    "why": "Home moves the task to the background: the Activity is paused and stopped but not destroyed. Back (finishing the Activity) additionally calls onDestroy().",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-android-12",
@@ -34,7 +34,7 @@
    ],
    "answer": 3,
    "why": "singleTop only avoids a duplicate when the instance is already on top; it is reused and gets onNewIntent(). If it were not on top, a new instance would be created.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-android-8",
@@ -51,7 +51,7 @@
    ],
    "answer": 1,
    "why": "Process death wipes in-memory objects including ViewModels and singletons. The saved-instance-state Bundle (also exposed through SavedStateHandle) is persisted by the system and restored.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-android-4",
@@ -68,7 +68,7 @@
    ],
    "answer": 2,
    "why": "WorkManager is for deferrable work that must be guaranteed to run eventually, persisted across process death and reboots. Threads and viewModelScope die with the process.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-android-15",
@@ -85,7 +85,7 @@
    ],
    "answer": 1,
    "why": "minSdk is the install floor and compileSdk is the API you compile against. targetSdk tells the system which version your app was tested for, so behaviour changes for newer versions apply.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-android-11",
@@ -102,7 +102,7 @@
    ],
    "answer": 2,
    "why": "Serializable relies on reflection and creates lots of garbage; Parcelable (often generated with @Parcelize) is explicit and faster. Bundles also accept Serializable, so 'only format' is wrong.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-kotlin-2",
@@ -119,7 +119,7 @@
    ],
    "answer": 3,
    "why": "const val needs a compile-time constant of a primitive or String type. A concatenation of literals is a constant expression; function calls and object construction are not.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-kotlin-4",
@@ -136,7 +136,7 @@
    ],
    "answer": 1,
    "why": "Sealed hierarchies are known at compile time, so `when` used as an expression can be exhaustive without else, and adding a subtype produces compile errors where it is unhandled.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-kotlin-5",
@@ -153,7 +153,7 @@
    ],
    "answer": 2,
    "why": "`also` uses `it` and returns the receiver. `let` uses `it` but returns the lambda result; `run` and `with` use `this` and return the lambda result.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-kotlin-8",
@@ -170,7 +170,7 @@
    ],
    "answer": 3,
    "why": "Inlining copies the lambda body into the caller, so a return really returns from the caller. `crossinline` forbids this when the lambda runs in another context.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-kotlin-9",
@@ -187,7 +187,7 @@
    ],
    "answer": 1,
    "why": "A read-only List only produces E so it is safe to treat List<String> as List<Any>. MutableList also consumes E (add), so allowing it would break type safety.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-kotlin-26",
@@ -204,7 +204,7 @@
    ],
    "answer": 3,
    "why": "`==` calls equals() (structural); `===` is identity comparison.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-compose-3",
@@ -221,7 +221,7 @@
    ],
    "answer": 2,
    "why": "remember only survives recomposition. rememberSaveable stores the value in saved instance state so it survives configuration change and process death.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-compose-2",
@@ -238,7 +238,7 @@
    ],
    "answer": 2,
    "why": "Compose compares inputs; if they are all equal (stable and equal, or the same instance with strong skipping) the call is skipped and its output reused.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-compose-5",
@@ -255,7 +255,7 @@
    ],
    "answer": 3,
    "why": "A stateless composable receives `value` and `onValueChange`, so the owner controls the state. It makes the composable reusable and testable.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-compose-4",
@@ -272,7 +272,7 @@
    ],
    "answer": 0,
    "why": "LaunchedEffect starts a coroutine when it enters the composition and cancels and restarts it when its key changes. It is cancelled when it leaves the composition.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-compose-6",
@@ -289,7 +289,7 @@
    ],
    "answer": 0,
    "why": "Compose decides what to show (composition), measures and places it (layout), then renders it (drawing). Reading state only in a later phase can skip earlier phases.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-compose-16",
@@ -306,7 +306,7 @@
    ],
    "answer": 1,
    "why": "derivedStateOf limits recomposition to when the derived result changes, not each time its inputs change.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-coroutines-4",
@@ -323,7 +323,7 @@
    ],
    "answer": 1,
    "why": "Both start coroutines and use the same dispatcher rules. async is for when you need a result.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-coroutines-6",
@@ -340,7 +340,7 @@
    ],
    "answer": 3,
    "why": "With a regular Job a failing child cancels its parent and siblings. SupervisorJob stops that upward propagation, so each child's failure is handled independently.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-coroutines-5",
@@ -357,7 +357,7 @@
    ],
    "answer": 0,
    "why": "Cancellation is cooperative: suspending functions from kotlinx.coroutines check for cancellation, but a tight CPU loop must check isActive or call ensureActive().",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-coroutines-7",
@@ -374,7 +374,7 @@
    ],
    "answer": 1,
    "why": "launch starts a new coroutine; its exception is not thrown to the code that called launch. Handle it inside the coroutine, or with a CoroutineExceptionHandler on a root coroutine.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-coroutines-11",
@@ -391,7 +391,7 @@
    ],
    "answer": 3,
    "why": "withContext switches context for a block within the current coroutine and returns the result. launch starts a new concurrent coroutine.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-coroutines-3",
@@ -408,7 +408,7 @@
    ],
    "answer": 1,
    "why": "A parent waits for its children and cancellation flows down, which is how viewModelScope cleans up work when the ViewModel is cleared.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-flows-2",
@@ -425,7 +425,7 @@
    ],
    "answer": 1,
    "why": "StateFlow conflates and only emits when the new value is not equal to the current one. Use SharedFlow when every event must be delivered.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-flows-4",
@@ -442,7 +442,7 @@
    ],
    "answer": 3,
    "why": "flowOn changes the context of everything upstream of it. The collector keeps running in the context of the code that collects.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-flows-3",
@@ -459,7 +459,7 @@
    ],
    "answer": 0,
    "why": "The timeout bridges short gaps like configuration change while still stopping work when the UI is truly gone.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-flows-6",
@@ -476,7 +476,7 @@
    ],
    "answer": 0,
    "why": "flatMapLatest cancels the previous inner flow when a new upstream value arrives. flatMapConcat queues them and flatMapMerge runs them concurrently.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-flows-21",
@@ -493,7 +493,7 @@
    ],
    "answer": 3,
    "why": "collectAsState keeps collecting while composed even if the app is in the background; the lifecycle-aware version pauses collection.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-architecture-1",
@@ -510,7 +510,7 @@
    ],
    "answer": 1,
    "why": "ViewModels outlive Activities across configuration changes, so holding a View/Activity reference leaks it.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-architecture-4",
@@ -527,7 +527,7 @@
    ],
    "answer": 3,
    "why": "The repository is the data layer's single entry point, usually the single source of truth, so callers do not depend on where data comes from.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-architecture-3",
@@ -544,7 +544,7 @@
    ],
    "answer": 0,
    "why": "Unidirectional data flow: intents go in, a reducer produces a new immutable state, the UI renders it.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-architecture-33",
@@ -561,7 +561,7 @@
    ],
    "answer": 2,
    "why": "implementation keeps a dependency internal, so changes recompile fewer modules; api leaks it onto consumers' compile classpath.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-architecture-31",
@@ -578,7 +578,7 @@
    ],
    "answer": 2,
    "why": "ViewModel fields already survive configuration change. SavedStateHandle is backed by saved instance state, so values survive process death too (keep it small).",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-di-1",
@@ -595,7 +595,7 @@
    ],
    "answer": 2,
    "why": "Classes receive dependencies rather than creating them, so tests can pass fakes.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-di-4",
@@ -612,7 +612,7 @@
    ],
    "answer": 2,
    "why": "@Binds is an abstract mapping from interface to implementation. @Provides is for objects you cannot constructor-inject, such as builder-created ones.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-di-3",
@@ -629,7 +629,7 @@
    ],
    "answer": 0,
    "why": "@ViewModelScoped ties an object to a ViewModel's lifetime; @Singleton is application-wide and @ActivityScoped is per Activity.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-di-20",
@@ -646,7 +646,7 @@
    ],
    "answer": 3,
    "why": "Assisted injection lets you mix graph-provided dependencies with parameters provided at call time via a generated factory.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-networking-3",
@@ -663,7 +663,7 @@
    ],
    "answer": 0,
    "why": "Application interceptors run once per call regardless of cache; network interceptors sit closer to the wire and also see redirects.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-networking-6",
@@ -680,7 +680,7 @@
    ],
    "answer": 0,
    "why": "An Authenticator is invoked on a 401 and can return a new request with updated credentials. Guard against loops and parallel refreshes.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-networking-4",
@@ -697,7 +697,7 @@
    ],
    "answer": 0,
    "why": "For suspend functions returning the body, non-2xx responses throw HttpException and I/O failures throw IOException. Returning Response<T> lets you inspect the code.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-networking-37",
@@ -714,7 +714,7 @@
    ],
    "answer": 2,
    "why": "POST is not idempotent by default. The server uses the key to detect and deduplicate retried requests.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-networking-39",
@@ -731,7 +731,7 @@
    ],
    "answer": 2,
    "why": "PUT sends a full representation; PATCH sends only the changes.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-storage-3",
@@ -748,7 +748,7 @@
    ],
    "answer": 2,
    "why": "Room observes the tables used by the query and re-runs it, emitting the new full result.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-storage-4",
@@ -765,7 +765,7 @@
    ],
    "answer": 0,
    "why": "Without a path from the old version, Room refuses to open the database. Use Migration, AutoMigration, or (losing data) a destructive fallback.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-storage-5",
@@ -782,7 +782,7 @@
    ],
    "answer": 3,
    "why": "SharedPreferences can block the UI thread (apply/commit and initial load). DataStore uses coroutines and Flow with consistent updates.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-storage-22",
@@ -799,7 +799,7 @@
    ],
    "answer": 0,
    "why": "Room runs suspend DAO functions on its own executor, making them main-safe. Blocking calls on the main thread throw unless allowMainThreadQueries() is set.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-buildtools-2",
@@ -816,7 +816,7 @@
    ],
    "answer": 1,
    "why": "An AAB is a publishing format; Play builds split APKs per device (ABI, density, language).",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-buildtools-3",
@@ -833,7 +833,7 @@
    ],
    "answer": 0,
    "why": "R8 replaced ProGuard as the default code shrinker, using the same keep-rule format.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-buildtools-8",
@@ -850,7 +850,7 @@
    ],
    "answer": 0,
    "why": "KAPT first creates Java stubs for Kotlin classes; KSP works at the Kotlin symbol level.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-buildtools-14",
@@ -867,7 +867,7 @@
    ],
    "answer": 3,
    "why": "Minification is typically enabled only for release. Add keep rules (or use libraries that ship consumer rules) for reflectively accessed classes.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-buildtools-15",
@@ -884,7 +884,7 @@
    ],
    "answer": 3,
    "why": "versionCode is an integer used internally to order releases. versionName is only a display string.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-buildtools-21",
@@ -901,7 +901,7 @@
    ],
    "answer": 1,
    "why": "It serialises the task graph so later builds can skip the configuration phase; build logic must be compatible with it.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-performance-1",
@@ -918,7 +918,7 @@
    ],
    "answer": 3,
    "why": "Long-lived objects that reference a destroyed Activity prevent it from being garbage collected, with its views and bitmaps.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-performance-6",
@@ -935,7 +935,7 @@
    ],
    "answer": 3,
    "why": "1000 ms / 60 ≈ 16.6 ms; at 120 Hz the budget is about 8.3 ms.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-performance-10",
@@ -952,7 +952,7 @@
    ],
    "answer": 3,
    "why": "Cold start does the most work: creating the process, Application, and first Activity. Warm and hot starts reuse more.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-performance-12",
@@ -969,7 +969,7 @@
    ],
    "answer": 3,
    "why": "Enable it in debug builds with penalties like log or flash to find main-thread I/O and leaks early.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "id": "m-performance-4",
@@ -986,7 +986,7 @@
    ],
    "answer": 0,
    "why": "Input dispatch timeout is about 5 seconds; broadcast receivers get longer. Slow work belongs off the main thread.",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "topic": "android",
@@ -1044,7 +1044,7 @@
    "why": "Process death loses everything in memory; restore with saved state for small UI state and persistent storage for real data; test with Don't keep activities or adb.",
    "id": "w-android-8",
    "type": "written",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "topic": "coroutines",
@@ -1101,7 +1101,7 @@
    "why": "Catch inside the coroutine; launch propagates, async defers to await; handlers apply to roots; supervisors isolate siblings; rethrow CancellationException.",
    "id": "w-coroutines-7",
    "type": "written",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "topic": "compose",
@@ -1158,7 +1158,7 @@
    "why": "Know what triggers and skips recomposition, make parameters stable, use keys/derivedStateOf, defer reads, and measure before optimising.",
    "id": "w-compose-2",
    "type": "written",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "topic": "flows",
@@ -1212,7 +1212,7 @@
    "why": "Debounce, distinctUntilChanged, flatMapLatest, local error handling, StateFlow in the ViewModel.",
    "id": "w-flows-5",
    "type": "written",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "topic": "architecture",
@@ -1279,7 +1279,7 @@
    "why": "Room as source of truth, observe DB, repository refresh, WorkManager sync, explicit conflict/staleness policy, visible state.",
    "id": "w-architecture-19",
    "type": "written",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "topic": "networking",
@@ -1346,7 +1346,7 @@
    "why": "Authenticator on 401, serialized refresh, retry once, loop guards, logout on failure, secure token storage.",
    "id": "w-networking-6",
    "type": "written",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "topic": "performance",
@@ -1404,7 +1404,7 @@
    "why": "Measure, defer initialisation, keep main thread free, add baseline profiles, light first screen.",
    "id": "w-performance-5",
    "type": "written",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "topic": "di",
@@ -1443,7 +1443,7 @@
    "why": "Cycles usually mean mis-drawn responsibilities; extract or invert, and use Lazy/Provider only as a workaround.",
    "id": "w-di-15",
    "type": "written",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "topic": "buildtools",
@@ -1497,7 +1497,7 @@
    "why": "Profile, enable caches, modularise, move to KSP, parallelise and cache on CI.",
    "id": "w-buildtools-10",
    "type": "written",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "topic": "sysdesign",
@@ -1565,7 +1565,7 @@
    "why": "DB as source of truth, repository sync, WorkManager, pagination/expiry, media caching, failure handling.",
    "id": "w-sysdesign-offlinenews",
    "type": "written",
-   "review": "pending"
+   "review": "approved"
   },
   {
    "topic": "hr",
@@ -1640,7 +1640,7 @@
    "why": "STAR: situation, your actions and trade-offs, measurable result, reflection.",
    "id": "w-hr-2",
    "type": "written",
-   "review": "pending"
+   "review": "approved"
   }
  ]
 }

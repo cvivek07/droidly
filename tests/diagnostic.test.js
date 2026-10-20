@@ -18,8 +18,8 @@ t('correct answers are not concentrated in one position', () => {
   const c = [0,0,0,0]; bank.filter(i => i.type === 'mcq').forEach(i => c[i.answer]++);
   const n = c.reduce((a, b) => a + b, 0); c.forEach(v => assert(v / n < 0.4, JSON.stringify(c)));
 });
-t('every item is marked pending review (nothing claims to be verified)', () => {
-  bank.forEach(i => assert.equal(i.review, 'pending', i.id));
+t('every item carries an explicit review status', () => {
+  bank.forEach(i => assert(['pending','approved'].includes(i.review), i.id));
 });
 t('written rubrics: a model answer built from the key points scores full, an empty answer scores zero', () => {
   bank.filter(i => i.type === 'written').forEach(w => {
