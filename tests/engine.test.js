@@ -58,6 +58,76 @@ t('deterministic', () => {
   const s = mk({ goals: { level: '2-5', company: 'startup', minutes: 60 } });
   assert.deepEqual(R.buildPlan(index, s, { today: now }), R.buildPlan(index, s, { today: now }));
 });
+
+/* ---------- mastery v2: difficulty-aware, level-aware, honest about evidence ---------- */
+const itemsOf = (topic, d) => index.topics[topic].items.filter(x => x.d === d);
+const markAll = (items, st) => { const m = {}; items.forEach(x => { m[x.id] = { s: st, b: false, t: 1 }; }); return m; };
+
+t('mastery: hard answers count for more than easy ones at a senior target', () => {
+  const g = { level: '5+', company: 'product', minutes: 60 };
+  const easy = mk({ goals: g, marks: markAll(itemsOf('coroutines', 'easy').slice(0, 4), 'got_it') });
+  const hard = mk({ goals: g, marks: markAll(itemsOf('coroutines', 'hard').slice(0, 4), 'got_it') });
+  assert(R.topicStats(index, hard).coroutines.mastery > R.topicStats(index, easy).coroutines.mastery);
+});
+t('mastery: the same hard answers prove more for 5+ than for 0-2', () => {
+  const s = mk({ marks: markAll(itemsOf('coroutines', 'hard').slice(0, 4), 'got_it') });
+  const senior = R.topicStats(index, s, { level: '5+' }).coroutines.mastery;
+  const junior = R.topicStats(index, s, { level: '0-2' }).coroutines.mastery;
+  assert(senior > junior, senior + ' vs ' + junior);
+});
+t('mastery: evidence basis is reported honestly', () => {
+  const med = itemsOf('coroutines', 'medium');
+  const b = (n) => R.topicStats(index, mk({ marks: markAll(med.slice(0, n), 'got_it') })).coroutines.basis;
+  assert.equal(R.topicStats(index, mk()).coroutines.basis, 'Rating only');
+  assert.equal(b(2), 'Early signal'); assert.equal(b(5), 'Building'); assert.equal(b(9), 'Solid');
+});
+t('mastery: per-difficulty breakdown, coverage and core-left are exposed', () => {
+  const st = R.topicStats(index, mk({ marks: markAll(itemsOf('kotlin', 'hard').slice(0, 3), 'revisit') })).kotlin;
+  assert.equal(st.byDifficulty.hard.revisit, 3); assert.equal(st.byDifficulty.hard.total, itemsOf('kotlin', 'hard').length);
+  assert.equal(st.attempted, 3); assert.equal(st.coverage, Math.round(100 * 3 / st.total)); assert(st.unmarkedCore > 0);
+});
+t('readiness by level: three levels, target flagged, senior bar is higher when system design is untouched', () => {
+  const ratings = {}; R.TOPIC_ORDER.forEach(tid => ratings[tid] = { v: tid === 'sysdesign' ? 'new' : 'strong', t: 1 });
+  const by = R.readinessByLevel(index, mk({ goals: { level: '2-5', company: 'product', minutes: 60 }, ratings }));
+  assert.deepEqual(by.map(x => x.level), ['0-2', '2-5', '5+']);
+  assert.deepEqual(by.map(x => x.isTarget), [false, true, false]);
+  assert(by[0].score > by[2].score, JSON.stringify(by));
+  assert.equal(by[1].score, R.readiness(index, mk({ goals: { level: '2-5', company: 'product', minutes: 60 }, ratings })).score);
+});
+t('readiness: unknown role falls back to the default weights', () => {
+  assert.deepEqual(R.weightsFor({ level: '2-5', company: 'product', role: 'nope' }), R.weightsFor({ level: '2-5', company: 'product', role: 'android' }));
+});
+t('skills to improve: ranked, excludes strong topics, respects the limit', () => {
+  const s = mk({ goals: { level: '2-5', company: 'product', minutes: 60 }, ratings: { kotlin: { v: 'strong', t: 1 }, coroutines: { v: 'new', t: 1 } } });
+  const list = R.skillsToImprove(index, s, { limit: 4 });
+  assert.equal(list.length, 4);
+  assert(!list.some(x => x.topic === 'kotlin'), 'strong topic listed');
+  for (let i = 1; i < list.length; i++) assert(list[i - 1].priority >= list[i].priority, 'not sorted');
+  assert(R.skillsToImprove(index, s, { limit: 2 }).length === 2);
+  list.forEach(x => { assert(x.reasons.length >= 1 && x.reasons.length <= 2); assert(x.next && x.next.href && x.next.title); });
+});
+t('skills to improve: next question skips what is already marked', () => {
+  const s = mk({ goals: { level: '2-5', company: 'product', minutes: 60 }, ratings: { coroutines: { v: 'new', t: 1 } } });
+  const before = R.skillsToImprove(index, s, { limit: 13 }).find(x => x.topic === 'coroutines').next;
+  s.marks[before.id] = { s: 'got_it', b: false, t: 1 };
+  const after = R.skillsToImprove(index, s, { limit: 13 }).find(x => x.topic === 'coroutines').next;
+  assert.notEqual(before.id, after.id);
+});
+t('skills to improve: "no hard questions" reason only for levels that expect them', () => {
+  const marks = markAll(itemsOf('coroutines', 'easy').slice(0, 2), 'got_it');
+  const reasonsAt = (level) => R.skillsToImprove(index, mk({ goals: { level, company: 'product', minutes: 60 }, ratings: { coroutines: { v: 'new', t: 1 } }, marks }), { limit: 13 })
+    .find(x => x.topic === 'coroutines').reasons.join(' ');
+  assert(/No hard questions/.test(reasonsAt('2-5')) && /No hard questions/.test(reasonsAt('5+')));
+  assert(!/No hard questions/.test(reasonsAt('0-2')));
+});
+t('skills to improve: system design is flagged for senior targets, with its own walkthrough as the next step', () => {
+  const top = R.skillsToImprove(index, mk({ goals: { level: '5+', company: 'product', minutes: 60 } }), { limit: 1 })[0];
+  assert.equal(top.topic, 'sysdesign'); assert(top.next.href.startsWith('/sysdesign_'));
+});
+t('skills to improve: deterministic', () => {
+  const s = mk({ goals: { level: '5+', company: 'startup', minutes: 90 }, ratings: { di: { v: 'shaky', t: 1 } } });
+  assert.deepEqual(R.skillsToImprove(index, s), R.skillsToImprove(index, s));
+});
 t('store: toggle semantics + sync merge (newer wins, local-only pushed)', async () => {});
 console.log(pass + ' passed');
 

@@ -10,7 +10,8 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
   <link rel="manifest" href="/site.webmanifest"/>
   <meta name="theme-color" content="#3d7a4f"/>
-  <title>Droidly Premium — Unlock Everything</title>
+  <title>Droidly Premium — Android System Design Deep-Dives</title>
+  <meta name="description" content="Droidly Premium: full Android system design walkthroughs with architecture, trade-offs, edge cases and interview Q&amp;As. All interview questions stay free."/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -541,6 +542,23 @@
       .faq-section { padding: 0 16px 60px; }
       footer { padding: 24px 20px; flex-direction: column; align-items: flex-start; gap: 16px; }
     }
+
+    /* ── What's inside Premium ── */
+    .inside { max-width: 860px; margin: 0 auto; padding: 8px 24px 56px; }
+    .inside h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+    .inside .sub { color: var(--muted); font-size: 15px; margin-bottom: 22px; }
+    .inside-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; margin-bottom: 36px; }
+    .inside-item { background: var(--bg2); border: 1px solid rgba(15,17,23,0.08); border-radius: 12px; padding: 12px 14px; font-size: 14px; font-weight: 600; color: var(--ink2); }
+    .anatomy { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 36px; counter-reset: a; }
+    .anatomy span { counter-increment: a; background: var(--green-pale); border: 1px solid rgba(61,122,79,0.2); border-radius: 100px; padding: 6px 14px; font-size: 13px; font-weight: 600; color: var(--green2); }
+    .anatomy span::before { content: counter(a) ". "; opacity: .6; }
+    .cmp { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .cmp th, .cmp td { text-align: left; padding: 10px 12px; border-bottom: 1px solid rgba(15,17,23,0.08); }
+    .cmp th { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+    .cmp td.c { text-align: center; width: 90px; }
+    .cmp .no { color: var(--muted); }
+    .inside-note { font-size: 13px; color: var(--muted); margin-top: 12px; }
+    @media (max-width: 640px) { .inside { padding: 0 16px 40px; } }
   </style>
 </head>
 <body>
@@ -567,12 +585,8 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-badge">
-      <span class="hero-badge-dot"></span>
-      Limited time offer
-    </div>
     <h1>Crack your Android<br/>interview with <span class="accent">Droidly Premium</span></h1>
-    <p class="hero-sub">Get unlimited access to all system design deep-dives, explainers, mock questions, and more — built specifically for Android engineers.</p>
+    <p class="hero-sub">Full Android system design walkthroughs: architecture, trade-offs, edge cases, Kotlin code and interview Q&amp;As. Every interview question and answer stays free.</p>
   </section>
 
   <!-- PRICING CARD -->
@@ -581,7 +595,7 @@
       <div class="pricing-header">
         <div class="plan-label">Premium Plan</div>
         <div class="plan-name">All Access</div>
-        <div class="plan-desc">Everything you need to land your next Android role</div>
+        <div class="plan-desc">The system design rounds, in depth</div>
         <div class="plan-price">
           <span class="price-currency">₹</span>
           <span class="price-amount">299</span>
@@ -593,23 +607,19 @@
         <ul class="features-list">
           <li>
             <span class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
-            <span><strong>All System Design deep-dives</strong> — Instagram feed, chat, ride-sharing, and more</span>
+            <span><strong>All System Design deep-dives</strong> — full Android walkthroughs such as Chat, Payments, Image Loader and Ride Sharing</span>
           </li>
           <li>
             <span class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
-            <span><strong>All Explainer articles</strong> — Coroutines, image loading, offline-first, and more</span>
+            <span><strong>Built for the interview</strong> — design walkthrough, edge cases, what interviewers expect at each level, and Q&amp;As</span>
           </li>
           <li>
             <span class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
-            <span><strong>Full question bank</strong> — 600 curated Android interview questions with answers</span>
+            <span><strong>New premium content</strong> — added to your plan as it is published</span>
           </li>
           <li>
             <span class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
-            <span><strong>New content every week</strong> — Stay up to date with the latest Android ecosystem</span>
-          </li>
-          <li>
-            <span class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
-            <span><strong>Cancel anytime</strong> — No lock-in, no questions asked</span>
+            <span><strong>7-day money-back guarantee</strong> — for new subscribers, see the <a href="/refund">Refund Policy</a></span>
           </li>
         </ul>
 
@@ -626,6 +636,47 @@
     </div>
   </section>
 
+  <!-- WHAT'S INSIDE -->
+  <section class="inside">
+    <h2>What's inside Premium</h2>
+    <p class="sub">System design walkthroughs written for Android engineers.</p>
+    <div class="inside-grid">
+      <div class="inside-item">Chat App</div>
+      <div class="inside-item">Payment System</div>
+      <div class="inside-item">Image Loading Library</div>
+      <div class="inside-item">Ride-Sharing App</div>
+      <div class="inside-item">Instagram-Style Feed</div>
+      <div class="inside-item">Video Streaming App</div>
+      <div class="inside-item">Offline-First News App</div>
+      <div class="inside-item">Push Notification System</div>
+      <div class="inside-item">File Download Manager</div>
+      <div class="inside-item">E-commerce Product Listing</div>
+      <div class="inside-item">Maps &amp; Live Location Tracking</div>
+      <div class="inside-item">Networking SDK (like Retrofit)</div>
+      <div class="inside-item">Analytics SDK</div>
+    </div>
+
+    <h2 style="font-size:20px">How each deep-dive is structured</h2>
+    <p class="sub">The same path every time, so you know how to approach the round.</p>
+    <div class="anatomy">
+      <span>Understanding the problem</span><span>The set-up</span><span>High-level design</span><span>Low-level design</span><span>Edge cases</span><span>What is expected at each level</span><span>Interview Q&amp;As</span>
+    </div>
+
+    <h2 style="font-size:20px">Free and Premium</h2>
+    <table class="cmp" aria-label="Free vs Premium">
+      <thead><tr><th></th><th class="c">Free</th><th class="c">Premium</th></tr></thead>
+      <tbody>
+        <tr><td>All interview Q&amp;As, with code answers</td><td class="c">Yes</td><td class="c">Yes</td></tr>
+        <tr><td>HR &amp; Behavioural section</td><td class="c">Yes</td><td class="c">Yes</td></tr>
+        <tr><td>Personalised 7-day roadmap</td><td class="c">Yes</td><td class="c">Yes</td></tr>
+        <tr><td>System Design deep-dives</td><td class="c no">No</td><td class="c">Yes</td></tr>
+        <tr><td>New premium content as it is added</td><td class="c no">No</td><td class="c">Yes</td></tr>
+        <tr><td>1:1 mock interview (booked separately, ₹1,499 per session)</td><td class="c">Add-on</td><td class="c">Add-on</td></tr>
+      </tbody>
+    </table>
+    <p class="inside-note">Not sure yet? Start with the free <a href="/questions" style="color:var(--green);font-weight:600">Question Bank</a>. See <a href="/accuracy" style="color:var(--green);font-weight:600">how answers are checked</a>.</p>
+  </section>
+
   <!-- TRUST SIGNALS -->
   <div class="trust-row">
     <div class="trust-item">
@@ -638,30 +689,34 @@
     </div>
     <div class="trust-item">
       <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-      Cancel anytime
+      7-day money-back guarantee
     </div>
   </div>
 
   <!-- FAQ -->
   <section class="faq-section">
     <div class="faq-title">Frequently asked questions</div>
-
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">
         What do I get with Premium?
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
-      <div class="faq-a">You get unlimited access to all system design case studies, explainer articles, and the full interview question bank. New content is added every week.</div>
+      <div class="faq-a">All system design deep-dives, plus new premium content as it is added. Every interview question and answer stays free.</div>
     </div>
-
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Is the question bank really free?
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="faq-a">Yes. All interview Q&amp;As, code answers, the HR section and the personalised roadmap are free.</div>
+    </div>
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">
         How does billing work?
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
-      <div class="faq-a">You're billed ₹299 every month. You can cancel at any time from your account settings — your access continues until the end of the billing period.</div>
+      <div class="faq-a">Premium is ₹299 per month, paid securely through Razorpay. For cancellations and refunds, see our <a href="/refund">Refund Policy</a>.</div>
     </div>
-
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">
         What payment methods are accepted?
@@ -669,13 +724,26 @@
       </button>
       <div class="faq-a">All major UPI apps (GPay, PhonePe, Paytm), credit/debit cards (Visa, Mastercard, RuPay), and netbanking are accepted via Razorpay.</div>
     </div>
-
     <div class="faq-item">
       <button class="faq-q" onclick="toggleFaq(this)">
         Can I get a refund?
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
-      <div class="faq-a">If you're not satisfied within the first 7 days, reach out and we'll process a full refund — no questions asked.</div>
+      <div class="faq-a">New subscribers get a 7-day money-back guarantee. The <a href="/refund">Refund Policy</a> explains how to request one.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Is the 1:1 mock interview included?
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="faq-a">No. Mock interviews are booked separately at ₹1,499 per session. See <a href="/mock_interview">Mock Interview</a>.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        How are answers checked?
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="faq-a">Every topic links to the official documentation and every answer has a report link. Details are on <a href="/accuracy">How answers are checked</a>.</div>
     </div>
   </section>
 
@@ -689,12 +757,10 @@
       <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
     <div class="cel-title">You're Premium now! 🎉</div>
-    <p class="cel-sub">Unlimited access, unlocked. Go build something great.</p>
+    <p class="cel-sub">Premium is unlocked. Go build something great.</p>
     <ul class="cel-features">
       <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> All system design deep-dives</li>
-      <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Full explainer library</li>
-      <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 600 interview questions with answers</li>
-      <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> New content every week</li>
+      <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> New premium content as it is added</li>
     </ul>
     <button class="cel-btn" onclick="closeCelebration()">Start learning →</button>
   </div>
@@ -770,7 +836,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             You're already on Premium
           </div>
-          <p>Enjoy unlimited access. <a href="/">Go back to learning →</a></p>
+          <p>Premium is active. <a href="/">Go back to learning →</a></p>
         </div>`;
     } else {
       // Signed in, not premium

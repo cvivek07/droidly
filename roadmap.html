@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
 <meta name="theme-color" content="#3d7a4f"/>
 <title>Your Android Interview Roadmap — Droidly</title>
-<meta name="description" content="Tell Droidly your experience, target company and interview date. Get a personalised day-by-day Android interview plan built from 600+ questions, with progress tracking and spaced revision."/>
+<meta name="description" content="Tell Droidly your experience, target company and interview date. Get a personalised day-by-day Android interview plan built from the Droidly question bank, with progress tracking and spaced revision."/>
 <link rel="canonical" href="https://droidly.io/roadmap.html"/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://droidly.io/roadmap.html"/>
@@ -160,6 +160,23 @@ input:focus{outline:none;border-color:var(--green)}
   h1{font-size:28px}
   .wrap{padding:24px 16px 60px}
 }
+.lv-row{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.lv{display:grid;grid-template-columns:64px 1fr 34px;align-items:center;gap:10px;margin-top:8px;font-size:13px;color:var(--ink2)}
+.lv .lv-name{font-weight:600}
+.lv b{text-align:right;font-variant-numeric:tabular-nums}
+.lv.target .lv-name,.lv.target b{color:var(--green2)}
+.lv.target .bar{outline:2px solid var(--border-green);outline-offset:2px}
+.lv-note{font-size:12px;color:var(--muted);margin-top:8px}
+.skill{padding:13px 0;border-top:1px solid var(--border)}
+.skill:first-child{border-top:none}
+.skill-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.skill-rank{width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.skill-basis{font-size:11px;color:var(--muted);margin-left:auto}
+.skill-why{list-style:none;margin:7px 0 0 32px;padding:0;font-size:13px;color:var(--ink2)}
+.skill-why li{margin-top:3px}
+.skill-go{display:block;margin:9px 0 0 32px;font-size:13px;font-weight:600;color:var(--green2);text-decoration:none}
+.skill-go:hover{text-decoration:underline}
+.skill-go small{font-weight:500;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -326,7 +343,7 @@ input:focus{outline:none;border-color:var(--green)}
       '<div class="card" style="max-width:720px;margin:0 auto">' +
       '<span class="eyebrow">' + (editing ? 'Edit your goal' : 'Free · about 30 seconds') + '</span>' +
       '<h1>' + (editing ? 'Update your goal' : 'Build your Android interview roadmap') + '</h1>' +
-      '<p class="sub">Tell us where you\'re headed. We\'ll turn 600+ questions into a day-by-day plan that focuses on what matters for your level and company type.</p>' +
+      '<p class="sub">Tell us where you\'re headed. We\'ll turn the question bank into a day-by-day plan that focuses on what matters for your level and company type.</p>' +
       '<div class="q-group"><div class="q-label">Your Android experience</div>' + chipGroup('level', LEVELS, g.level) + '</div>' +
       '<div class="q-group"><div class="q-label">Where are you interviewing?</div>' + chipGroup('company', COMPANIES, g.company) + '</div>' +
       '<div class="q-group"><div class="q-label">Time you can study per day</div>' + chipGroup('minutes', MINUTES, g.minutes) + '</div>' +
@@ -407,6 +424,29 @@ input:focus{outline:none;border-color:var(--green)}
     }).join('');
   }
 
+  function skillsHtml(skills) {
+    if (!skills.length) return '<p class="empty">No weak spots right now. Keep marking questions so this stays current.</p>';
+    return skills.map(function (k, i) {
+      var locked = lockedTopics[k.topic] && !isPremium;
+      var nx = k.next;
+      return '<div class="skill"><div class="skill-head"><span class="skill-rank">' + (i + 1) + '</span><span class="topic-name">' + esc(k.name) + '</span>' +
+        '<span class="pill ' + pillClass(k.label) + '">' + esc(k.label) + '</span>' + (locked ? '<span class="pill lock">🔒 Premium</span>' : '') +
+        '<span class="skill-basis" title="How much evidence backs this score">' + esc(k.basis) + '</span></div>' +
+        '<ul class="skill-why">' + k.reasons.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' +
+        (nx ? '<a class="skill-go" data-skill="' + esc(k.topic) + '" href="' + esc(nx.href) + '">Start with: ' + esc(nx.title) + ' <small>· ' + esc(nx.diff) + ' · ' + nx.min + ' min</small></a>' : '') +
+        '</div>';
+    }).join('');
+  }
+
+  function levelRowHtml(byLevel) {
+    return '<div class="lv-row"><div class="q-label" style="margin:0">Same progress, scored per level</div>' +
+      byLevel.map(function (x) {
+        return '<div class="lv' + (x.isTarget ? ' target' : '') + '"><span class="lv-name">' + esc(LEVEL_NAME[x.level]) + '</span>' +
+          '<div class="bar"><i style="width:' + x.score + '%"></i></div><b>' + x.score + '</b></div>';
+      }).join('') +
+      '<p class="lv-note">Your target is outlined. Senior levels weight system design, architecture and hard questions more.</p></div>';
+  }
+
   function renderDash() {
     var s = R.get();
     var plan = R.ensurePlan(index, false);
@@ -423,6 +463,8 @@ input:focus{outline:none;border-color:var(--green)}
     var saved = Object.keys(s.marks).filter(function (k) { return s.marks[k].b; });
     var lookup = {}; R.TOPIC_ORDER.forEach(function (tid) { index.topics[tid].items.forEach(function (it) { lookup[it.id] = { it: it, topic: tid }; }); });
 
+    var byLevel = R.readinessByLevel(index, s);
+    var skills = R.skillsToImprove(index, s, { limit: 5 });
     var sorted = R.TOPIC_ORDER.slice().sort(function (a, b) { return (r.weights[b] * (100 - r.stats[b].mastery)) - (r.weights[a] * (100 - r.stats[a].mastery)); });
 
     app.innerHTML =
@@ -438,13 +480,15 @@ input:focus{outline:none;border-color:var(--green)}
         '<circle cx="75" cy="75" r="62" fill="none" stroke="' + color + '" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + dash.toFixed(1) + ' ' + circ.toFixed(1) + '"/></svg>' +
         '<div class="ring-num"><b>' + r.score + '</b><span>out of 100</span></div></div>' +
         '<div class="meta-line">Confidence: <b>' + r.confidence + '</b> · ' + r.ratedTopics + '/' + R.TOPIC_ORDER.length + ' topics rated · ' + r.attempted + ' questions marked</div>' +
+        levelRowHtml(byLevel) +
         '<p class="disclaimer">Self-assessed estimate based on your ratings and marks. It becomes more reliable as you mark more questions. It is not a test score.</p></div>' +
+        '<div class="card" style="margin-top:20px"><h2>Skills to improve</h2><p class="sub" style="font-size:13px;margin-top:2px">Ranked by how much each matters for your target level and how far you are from Strong.</p><div style="margin-top:8px">' + skillsHtml(skills) + '</div></div>' +
         '<div class="card" style="margin-top:20px"><h2>Topics</h2><p class="sub" style="font-size:13px;margin-top:2px">Weakest and most important first. Tap to re-rate.</p><div style="margin-top:8px">' +
         sorted.map(function (tid) {
           var st = r.stats[tid], cls = pillClass(st.label);
           return '<div class="topic"><div class="topic-head"><span class="topic-name">' + esc(st.name) + '</span><span class="pill ' + cls + '">' + st.label + '</span></div>' +
             '<div class="bar"><i class="' + (cls === 'strong' ? '' : cls) + '" style="width:' + (st.rated || st.attempted ? st.mastery : 0) + '%"></i></div>' +
-            '<div class="topic-foot"><span>' + st.got + '/' + st.total + ' done' + (st.revisit ? ' · ' + st.revisit + ' to revisit' : '') + '</span>' + raterHtml(tid, s.ratings[tid] && s.ratings[tid].v) + '</div></div>';
+            '<div class="topic-foot"><span>' + st.got + '/' + st.total + ' done' + (st.revisit ? ' · ' + st.revisit + ' to revisit' : '') + ' · <span title="How much evidence backs this score">' + esc(st.basis) + '</span></span>' + raterHtml(tid, s.ratings[tid] && s.ratings[tid].v) + '</div></div>';
         }).join('') + '</div></div></div>' +
       '<div><div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>Your plan</h2>' +
         '<div class="progress-line"><span><b>' + doneToday.length + '/' + today.tasks.length + '</b> tasks done today · ' + doneMin + '/' + today.minutes + ' min</span></div></div>' +
@@ -462,6 +506,7 @@ input:focus{outline:none;border-color:var(--green)}
       '</div></div>';
 
     bindRaters(app);
+    app.querySelectorAll('[data-skill]').forEach(function (a) { a.addEventListener('click', function () { track('roadmap_skill_clicked', { topic: a.dataset.skill }); }); });
     app.querySelectorAll('.tab').forEach(function (b) { b.onclick = function () { selectedDay = +b.dataset.day; render(); }; });
     app.querySelectorAll('[data-mark]').forEach(function (b) {
       b.onclick = function () {
