@@ -1920,6 +1920,7 @@
 .resume-strip{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px;padding:12px 16px;border-radius:14px;background:var(--green-light,#e8f2ec);border:1px solid rgba(61,122,79,.25);color:var(--ink,#0f1117);text-decoration:none;font-size:14px;font-weight:600}
 .resume-strip[hidden]{display:none}
 .resume-strip span:last-child{color:var(--green,#3d7a4f);white-space:nowrap}
+.resume-strip small{display:block;font-weight:500;color:#4b5563;margin-top:2px;font-size:13px}
 .hero-micro{margin-top:12px;font-size:13px;color:var(--muted,#6b7280)}
 .hcard-answer{font-size:13px;line-height:1.55;background:#f0f8f2;border:1px solid rgba(61,122,79,.2);border-radius:10px;padding:12px 14px;margin-bottom:10px;color:#1f2937}
 .hcard-answer code{font-size:12px}
@@ -2386,11 +2387,6 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
         <span class="ico" aria-hidden="true">→</span><span class="lbl">Build my free plan</span>
       </a>
     </div>
-    <ul class="hero-ticks fade-5" aria-label="What to expect">
-      <li>Free to start</li>
-      <li>No sign-up needed</li>
-      <li>Progress saved on this device</li>
-    </ul>
 
   </div>
 
@@ -2407,7 +2403,6 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <div class="co-tile t-c"><span class="co-mono">Fl</span><b>Coroutines &amp; Flow</b><small>Concurrency</small></div>
       <div class="co-tile t-b"><span class="co-mono">Jc</span><b>Jetpack Compose</b><small>Declarative UI</small></div>
       <div class="co-tile t-d"><span class="co-mono">Sd</span><b>System Design</b><small>Case studies</small></div>
-      <div class="co-badge"><span class="co-tick">✓</span>Made by an Android engineer</div>
 
       <div class="plan-card">
         <div class="pc-top">
@@ -3031,86 +3026,6 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
   <div class="cta-trust">Free account · No credit card needed · Upgrade anytime</div>
 </div>
 
-<!-- WHAT'S NEW -->
-<section id="whats-new" class="whats-new-section reveal">
-  <div class="wn-header">
-    <div>
-      <div class="section-label">Changelog</div>
-      <h2>What's <span style="color:var(--green)">new</span></h2>
-      <p class="section-sub-sm">We ship updates regularly. Here's what's been added recently.</p>
-    </div>
-    <a href="#" onclick="goToQuestions(''); return false;" class="btn-line" style="white-space:nowrap; align-self:flex-start; margin-top:8px;">Explore all content →</a>
-  </div>
-  <div class="cl-list">
-    <div class="cl-item">
-      <div class="cl-left">
-        <div class="cl-date">Oct 2026</div>
-        <div class="cl-line"></div>
-      </div>
-      <div class="cl-right">
-        <div class="cl-badge new">New</div>
-        <div class="cl-title">Personalised interview roadmap</div>
-        <div class="cl-desc">Set your goal, rate your topics and get a day-by-day plan with progress tracking and spaced revision. Mark any question "Got it", "Revisit" or "Save".</div>
-        <div class="cl-tags"><span class="cl-tag">Roadmap</span><span class="cl-tag">Progress</span><span class="cl-tag">Revision</span></div>
-      </div>
-    </div>
-
-    <div class="cl-item">
-      <div class="cl-left">
-        <div class="cl-date">Apr 2026</div>
-        <div class="cl-line"></div>
-      </div>
-      <div class="cl-right">
-        <div class="cl-badge new">New</div>
-        <div class="cl-title">Micro Explainers — 30-second animated concepts</div>
-        <div class="cl-desc">Watch Android concepts come alive: code types in, threads animate, cancellation flows. First up: Coroutines Lifecycle. Recomposition and Flow vs LiveData are now live too.</div>
-        <div class="cl-tags">
-          <span class="cl-tag">Coroutines</span>
-          <span class="cl-tag">Recomposition</span>
-          <span class="cl-tag">Flow</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="cl-item">
-      <div class="cl-left">
-        <div class="cl-date">Mar 2026</div>
-        <div class="cl-line"></div>
-      </div>
-      <div class="cl-right">
-        <div class="cl-badge updated">Updated</div>
-        <div class="cl-title">System Design — Android deep-dives</div>
-        <div class="cl-desc">Full breakdowns with architecture decisions, data flow diagrams, Kotlin code snippets, and interview Q&As in each. Covers Chat App, Image Loader, Ride Sharing, File Downloads, Push Notifications, and more.</div>
-        <div class="cl-tags">
-          <span class="cl-tag">Chat App</span>
-          <span class="cl-tag">Image Loader</span>
-          <span class="cl-tag">Ride Sharing</span>
-          <span class="cl-tag">+ 10 more</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="cl-item">
-      <div class="cl-left">
-        <div class="cl-date">Nov 2025</div>
-        <div class="cl-line last"></div>
-      </div>
-      <div class="cl-right">
-        <div class="cl-badge added">Added</div>
-        <div class="cl-title">Expanded question bank — Kotlin 2.0, Android 15, Compose</div>
-        <div class="cl-desc">Expanded question bank covering Kotlin 2.0 features, Compose stability contracts, Hilt with KSP, Android 15 APIs, and updated Coroutines patterns. Every answer has a code example.</div>
-        <div class="cl-tags">
-          <span class="cl-tag">Kotlin 2.0</span>
-          <span class="cl-tag">Android 15</span>
-          <span class="cl-tag">Compose</span>
-          <span class="cl-tag">Hilt KSP</span>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
 <!-- FOOTER -->
 <footer>
   <a href="/" class="logo">
@@ -3700,22 +3615,20 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
 <script src="/assets/readiness.js" defer></script>
 <script>
 (function () {
-  // Returning users: show where they left off. No question index needed; uses the saved plan only.
+  // Returning users: one specific next step (what to do now), not a bare progress count.
   function paint() {
     try {
       var R = window.Readiness; if (!R) return;
       var s = R.load(), el = document.getElementById('resumeStrip'), cta = document.getElementById('heroPrimaryCta');
-      if (!el || !s.goals) return;
-      var today = R.ymd(new Date()), text = 'Welcome back. Your plan is ready for today';
-      if (s.plan && s.plan.on === today && s.plan.days && s.plan.days[0]) {
-        var tasks = s.plan.days[0].tasks, done = tasks.filter(function (t) { return R.isDone(t, s, s.plan.at); }).length;
-        text = 'Today: ' + done + ' of ' + tasks.length + ' tasks done';
-      }
-      var guest = !s.owner;
-      el.innerHTML = '<span>' + text + (guest ? ' <small style="font-weight:500;color:#6b7280">· Sign in to keep your progress</small>' : '') + '</span><span>Continue →</span>';
-      el.hidden = false;
-      el.onclick = function () { try { gtag('event', 'resume_strip_click'); } catch (e) {} };
-      if (cta) { var lbl = cta.querySelector('.lbl'); (lbl || cta).textContent = lbl ? 'Continue my plan' : 'Continue my plan →'; }
+      if (!el || !s.owner) return;   // signed-out visitors see nothing personal
+      var n = R.nudgeFor(s, new Date());
+      var head = document.createElement('span'), b = document.createElement('b'), small = document.createElement('small'), go = document.createElement('span');
+      b.textContent = n.headline; small.textContent = n.detail.length > 90 ? n.detail.slice(0, 87) + '…' : n.detail; go.textContent = n.cta + ' →';
+      head.appendChild(b); head.appendChild(small);
+      el.textContent = ''; el.appendChild(head); el.appendChild(go);
+      el.href = n.href; el.hidden = false;
+      el.onclick = function () { try { gtag('event', 'resume_strip_click', { kind: n.kind }); } catch (e) {} };
+      if (cta && s.goals) { var lbl = cta.querySelector('.lbl'); (lbl || cta).textContent = lbl ? 'Continue my plan' : 'Continue my plan →'; cta.href = n.kind === 'continue' || n.kind === 'start_today' ? n.href : '/roadmap'; }
     } catch (e) { /* never break the homepage */ }
   }
   window.addEventListener('load', function () {
