@@ -351,10 +351,21 @@ input:focus{outline:none;border-color:var(--green)}
     if (!view) view = s.goals ? 'dash' : 'onboard';
     render();
   }
+  // Everything on this page is personal (goals, plan, skill check), so it needs an account.
+  function renderGate() {
+    track('roadmap_gate_shown', {});
+    app.innerHTML = '<div class="card" style="max-width:720px;margin:0 auto"><span class="eyebrow">Free account</span><h1>Sign in to build your plan</h1>' +
+      '<p class="sub">Your plan, skill-check results and progress are personal to you, so they are saved to your account and follow you across devices. Creating an account is free and takes under a minute.</p>' +
+      '<ul class="ck" style="margin-top:14px"><li class="hit">A day-by-day plan for your level and company type</li><li class="hit">A skill check that finds your real gaps</li><li class="hit">The same progress on your phone and your laptop</li></ul>' +
+      '<div class="actions"><button class="btn" id="gateUp" type="button">Create free account</button><button class="btn ghost" id="gateIn" type="button">Sign in</button></div></div>';
+    document.getElementById('gateUp').onclick = function () { track('roadmap_gate_click', { action: 'signup' }); openAuth('signup'); };
+    document.getElementById('gateIn').onclick = function () { track('roadmap_gate_click', { action: 'signin' }); openAuth('signin'); };
+  }
   function settle(err) { authReady = true; loadErr = err || null; if (index) { if (!err) view = view || (R.get().goals ? 'dash' : 'onboard'); render(); } }
   function render() {
     if (!index) return;
     if (!authReady) { app.innerHTML = '<div class="card" style="max-width:720px;margin:0 auto"><p class="sub">Loading your progress…</p></div>'; return; }
+    if (!user && !loadErr) return renderGate();
     if (loadErr) {
       app.innerHTML = '<div class="card" style="max-width:720px;margin:0 auto"><h2>Could not load your progress</h2><p class="sub">Your saved plan lives in your account, so we will not start a new one on top of it. Check your connection and try again. (' + esc(loadErr) + ')</p><div class="actions"><button class="btn" id="retryLoad" type="button">Try again</button></div></div>';
       document.getElementById('retryLoad').onclick = function () { loadErr = null; authReady = false; render(); R.sync().then(function (r) { settle(r && r.ok ? null : (r && r.reason) || 'network'); }); };
@@ -513,7 +524,6 @@ input:focus{outline:none;border-color:var(--green)}
       '<div><span class="eyebrow">Your roadmap</span><h1>' + (left != null && left > 0 ? left + ' day' + (left > 1 ? 's' : '') + ' to your interview' : left === 0 ? 'Interview day. You\'ve got this.' : 'Keep your prep on track') + '</h1>' +
       '<p class="sub">' + esc(COMPANY_NAME[g.company]) + ' · ' + esc(LEVEL_NAME[g.level]) + ' · ' + g.minutes + ' min/day</p></div>' +
       '<div style="display:flex;gap:8px"><button class="btn ghost small" id="editGoals" type="button">Edit goal</button><button class="btn ghost small" id="rebuild" type="button">Rebuild plan</button></div></div>' +
-      (user ? '' : '<div class="banner"><span>Your progress is <b>not saved</b> until you sign in. Leave this page and it is gone.</span><button class="btn small" id="bannerSignIn" type="button">Sign in / Sign up</button></div>') +
       (plan.note ? '<div class="note">' + esc(plan.note) + '</div>' : '') +
       '<div class="grid"><div>' +
         '<div class="card score-card"><div class="q-label" style="margin:0">Readiness estimate</div>' +
@@ -559,7 +569,6 @@ input:focus{outline:none;border-color:var(--green)}
     var dgr = document.getElementById('diagResults'); if (dgr) dgr.onclick = function () { showLastResults(); };
     document.getElementById('editGoals').onclick = function () { editing = true; view = 'onboard'; render(); window.scrollTo(0, 0); };
     document.getElementById('rebuild').onclick = function () { R.ensurePlan(index, true); track('roadmap_plan_rebuilt'); render(); toast('Plan rebuilt from your latest progress.'); };
-    var bs = document.getElementById('bannerSignIn'); if (bs) bs.onclick = function () { openAuth('signup'); };
   }
 
 
@@ -611,7 +620,7 @@ input:focus{outline:none;border-color:var(--green)}
       '<div class="actions" style="margin-top:14px"><button class="btn small" id="diagStart" type="button">Retake with new questions</button><button class="btn ghost small" id="diagResults" type="button">See last results</button></div>' +
       '<p class="dg-note">' + syncNote() + '</p></div>';
   }
-  function syncNote() { return user ? 'Saved to your account, so it follows you across devices.' : 'Saved on this device. Sign in to keep it across devices.'; }
+  function syncNote() { return 'Saved to your account, so it follows you across devices.'; }
   function showLastResults() {
     var d = R.get().diag || {}, res = [];
     Object.keys(d.results || {}).forEach(function (id) { var r = d.results[id]; res.push({ id: id, type: 'mcq', topic: r.topic, ref: r.ref, d: r.d, c: r.c, k: r.k, flag: r.c ? 'solid' : 'gap' }); });
