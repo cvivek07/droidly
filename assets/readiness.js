@@ -3,7 +3,9 @@
  * Used by roadmap.html and assets/question-marks.js (questions.html).
  *
  *  - Engine: difficulty-aware topic mastery, readiness by level, skills to improve, rules-based study plan.
- *  - Store : localStorage first (works for guests), syncs to Supabase when signed in.
+ *  - Store : Supabase is the source of truth. Nothing about the user is kept in browser storage: state is loaded
+ *            from Supabase on each page load and written back as it changes. Signed-out visitors get an empty,
+ *            in-memory session that is lost on reload (the pages tell them to sign in to save).
  *
  * Honesty note: every number here is derived from the user's SELF-ASSESSMENT
  * (topic ratings + "Got it / Revisit" marks). It is an estimate, not a test score.
@@ -382,10 +384,14 @@
   var cfg = { getSession: defaultGetSession, storage: null };
 
   function storage() {
-    if (cfg.storage) return cfg.storage;
-    try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch (e) { return null; }
+    return cfg.storage || null;   // only injected in tests; the app never persists user data in the browser
+  }
+  function purgeLegacy() {
+    // Older versions kept progress in this browser. It must not outlive a sign-out, so remove it.
+    try { if (typeof localStorage !== 'undefined') localStorage.removeItem(LS_KEY); } catch (e) { /* ignore */ }
   }
   function load() {
+    purgeLegacy();
     var s = storage();
     try { var raw = s && s.getItem(LS_KEY); if (raw) { var p = JSON.parse(raw); if (p && p.v === 1) state = Object.assign(emptyState(), p); } } catch (e) { /* ignore */ }
     return state;
@@ -410,7 +416,7 @@
   function rest(method, path, token, body, prefer) {
     var h = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
     if (prefer) h.Prefer = prefer;
-    return fetch(SUPABASE_URL + '/rest/v1/' + path, { method: method, headers: h, body: body ? JSON.stringify(body) : undefined })
+    return fetch(SUPABASE_URL + '/rest/v1/' + path, { method: method, headers: h, body: body ? JSON.stringify(body) : undefined, keepalive: method !== 'GET' })
       .then(function (r) {
         if (!r.ok) return r.text().then(function (t) { throw new Error(r.status + ' ' + t); });
         return method === 'GET' ? r.json() : null;
@@ -434,6 +440,7 @@
       if (w) return { user_id: uid, item_id: key, kind: 'written', topic: w.topic, ref: w.ref || null, difficulty: w.d, correct: null, confidence: null, score: w.s, updated_at: iso(w.t) };
       return null;
     }
+    if (kind === 'plan') return state.plan ? { user_id: uid, plan: state.plan, updated_at: iso(state.plan.at || Date.now()) } : null;
     if (kind === 'run') { var u = (diagOf(state).runs || []).filter(function (x) { return x.id === key; })[0]; return u && { user_id: uid, run_id: key, answered: u.n, correct: u.ok, updated_at: iso(u.t) }; }
     if (kind === 'jd') {
       var j = state.jd;
@@ -443,7 +450,7 @@
     var m = state.marks[key]; return m && { user_id: uid, question_id: key, status: m.s || null, bookmarked: !!m.b, updated_at: iso(m.t) };
   }
   function pushRows(sess, items) {
-    var by = { goal: [], rating: [], mark: [], dans: [], run: [], jd: [] };
+    var by = { goal: [], rating: [], mark: [], dans: [], run: [], jd: [], plan: [] };
     items.forEach(function (p) { var row = rowFor(p[0], p[1], sess.uid); if (row) by[p[0]].push(row); });
     var jobs = [];
     if (by.goal.length) jobs.push(rest('POST', 'user_goals?on_conflict=user_id', sess.token, by.goal, 'resolution=merge-duplicates,return=minimal'));
@@ -454,17 +461,31 @@
     if (by.dans.length) jobs.push(soft(rest('POST', 'diag_answers?on_conflict=user_id,item_id', sess.token, by.dans, 'resolution=merge-duplicates,return=minimal')));
     if (by.run.length) jobs.push(soft(rest('POST', 'diag_runs?on_conflict=user_id,run_id', sess.token, by.run, 'resolution=merge-duplicates,return=minimal')));
     if (by.jd.length) jobs.push(soft(rest('POST', 'user_jd?on_conflict=user_id', sess.token, by.jd, 'resolution=merge-duplicates,return=minimal')));
+    if (by.plan.length) jobs.push(soft(rest('POST', 'user_plan?on_conflict=user_id', sess.token, by.plan, 'resolution=merge-duplicates,return=minimal')));
     return Promise.all(jobs);
   }
+  var pushFails = 0;
   function flushPush() {
     var items = Object.keys(pushQueue).map(function (k) { return pushQueue[k]; });
     pushQueue = {};
     if (!items.length) return Promise.resolve();
     return cfg.getSession().then(function (sess) {
       if (!sess) return null;
-      return pushRows(sess, items);
-    }).catch(function (e) { console.warn('[readiness] push failed; will retry on next sync', e.message); });
+      return pushRows(sess, items).then(function () { pushFails = 0; });
+    }).catch(function (e) {
+      // Nothing is kept in the browser, so a failed write must be retried or it is lost.
+      console.warn('[readiness] push failed; retrying', e.message);
+      items.forEach(function (p) { pushQueue[p[0] + '|' + p[1]] = p; });
+      if (++pushFails <= 6) { clearTimeout(pushTimer); pushTimer = setTimeout(flushPush, Math.min(30000, 2000 * pushFails * pushFails)); }
+    });
   }
+  // Leaving the page: send what is pending now rather than waiting for the debounce.
+  try {
+    if (typeof document !== 'undefined' && document.addEventListener) {
+      document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') { clearTimeout(pushTimer); flushPush(); } });
+      window.addEventListener('pagehide', function () { clearTimeout(pushTimer); flushPush(); });
+    }
+  } catch (e) { /* not a browser */ }
 
   /** Merge quiz answers, runs and the JD by "newer wins". A null remote means the table does not exist yet: stay local. */
   function mergeSkillCheck(rAns, rRuns, rJd, push) {
@@ -509,7 +530,10 @@
 
   function sync() {
     return cfg.getSession().then(function (sess) {
-      if (!sess) return { ok: false, reason: 'signed-out' };
+      if (!sess) {
+        if (state.owner) { state = emptyState(); save(); emit(); }   // signed out: nothing of the previous user may remain
+        return { ok: false, reason: 'signed-out' };
+      }
       if (state.owner && state.owner !== sess.uid) { state = emptyState(); }   // different account on this browser
       state.owner = sess.uid;
       var q = 'select=*&user_id=eq.' + sess.uid;
@@ -519,7 +543,8 @@
         rest('GET', 'question_marks?' + q + '&limit=5000', sess.token),
         rest('GET', 'diag_answers?' + q + '&limit=1000', sess.token).catch(function () { return null; }),   // null = table not created yet
         rest('GET', 'diag_runs?' + q + '&order=updated_at.desc&limit=20', sess.token).catch(function () { return null; }),
-        rest('GET', 'user_jd?' + q, sess.token).catch(function () { return null; })
+        rest('GET', 'user_jd?' + q, sess.token).catch(function () { return null; }),
+        rest('GET', 'user_plan?' + q, sess.token).catch(function () { return null; })
       ]).then(function (res) {
         var push = [];
         var remoteGoal = res[0][0];
@@ -542,6 +567,11 @@
         });
         Object.keys(state.marks).forEach(function (k) { if (!seenM[k]) push.push(['mark', k]); });
         mergeSkillCheck(res[3], res[4], res[5], push);
+        if (res[6]) {
+          var rp = res[6][0], rpt = rp ? Date.parse(rp.updated_at) : 0, lpt = state.plan ? (state.plan.at || 0) : 0;
+          if (rp && rpt > lpt) state.plan = rp.plan;
+          else if (state.plan && lpt > rpt) push.push(['plan', 'p']);
+        }
         save(); emit();
         return push.length ? pushRows(sess, push).then(function () { return { ok: true, pushed: push.length }; }) : { ok: true, pushed: 0 };
       });
@@ -553,7 +583,7 @@
   // Activation: the first time this browser marks a question Got it / Revisit.
   function firstMarkOnce() {
     try {
-      var s = storage(); if (!s || s.getItem('droidly_first_mark_sent')) return;
+      var s = (typeof localStorage !== 'undefined') ? localStorage : null; if (!s || s.getItem('droidly_first_mark_sent')) return;   // analytics de-dupe only, not user data
       s.setItem('droidly_first_mark_sent', '1'); track('first_task_marked');
     } catch (e) { /* ignore */ }
   }
@@ -620,7 +650,7 @@
     var carry = [];
     if (p && p.on === ymd(now) && p.days[0]) carry = p.days[0].tasks.filter(function (t) { return isDone(t, state, p.at); });
     var plan = buildPlan(index, state, { today: now, carry: carry });
-    plan.sig = sig; state.plan = plan; save();
+    plan.sig = sig; state.plan = plan; save(); queuePush('plan', 'p');
     return plan;
   }
 

@@ -264,6 +264,8 @@ input:focus{outline:none;border-color:var(--green)}
   var selectedDay = 0;
   var user = null, isPremium = false, lockedTopics = {};
   var authMode = 'signin';
+  var authReady = false;      // true once we know whether someone is signed in and, if so, their data has loaded
+  var loadErr = null;         // set when a signed-in user's data could not be loaded
 
   var LEVELS = [['0-2', '0–2 years'], ['2-5', '2–5 years'], ['5+', '5+ years']];
   var COMPANIES = [['product', 'Product company'], ['startup', 'Startup'], ['service', 'Service company']];
@@ -324,7 +326,7 @@ input:focus{outline:none;border-color:var(--green)}
     });
   };
   document.getElementById('navSignOut').onclick = function () {
-    db.auth.signOut().then(function () { R.clearLocal(); isPremium = false; setUser(null); view = null; route(); toast('Signed out.'); });
+    db.auth.signOut().then(function () { setUser(null); signedOut(); toast('Signed out.'); });
   };
 
   function loadEntitlements() {
@@ -349,8 +351,15 @@ input:focus{outline:none;border-color:var(--green)}
     if (!view) view = s.goals ? 'dash' : 'onboard';
     render();
   }
+  function settle(err) { authReady = true; loadErr = err || null; if (index) { if (!err) view = view || (R.get().goals ? 'dash' : 'onboard'); render(); } }
   function render() {
     if (!index) return;
+    if (!authReady) { app.innerHTML = '<div class="card" style="max-width:720px;margin:0 auto"><p class="sub">Loading your progress…</p></div>'; return; }
+    if (loadErr) {
+      app.innerHTML = '<div class="card" style="max-width:720px;margin:0 auto"><h2>Could not load your progress</h2><p class="sub">Your saved plan lives in your account, so we will not start a new one on top of it. Check your connection and try again. (' + esc(loadErr) + ')</p><div class="actions"><button class="btn" id="retryLoad" type="button">Try again</button></div></div>';
+      document.getElementById('retryLoad').onclick = function () { loadErr = null; authReady = false; render(); R.sync().then(function (r) { settle(r && r.ok ? null : (r && r.reason) || 'network'); }); };
+      return;
+    }
     if (view === 'onboard') return renderOnboard();
     if (view === 'rate') return renderRate();
     if (view === 'diag') return renderDiag();
@@ -536,7 +545,7 @@ input:focus{outline:none;border-color:var(--green)}
       '<div><span class="eyebrow">Your roadmap</span><h1>' + (left != null && left > 0 ? left + ' day' + (left > 1 ? 's' : '') + ' to your interview' : left === 0 ? 'Interview day. You\'ve got this.' : 'Keep your prep on track') + '</h1>' +
       '<p class="sub">' + esc(COMPANY_NAME[g.company]) + ' · ' + esc(LEVEL_NAME[g.level]) + ' · ' + g.minutes + ' min/day</p></div>' +
       '<div style="display:flex;gap:8px"><button class="btn ghost small" id="editGoals" type="button">Edit goal</button><button class="btn ghost small" id="rebuild" type="button">Rebuild plan</button></div></div>' +
-      (user ? '' : '<div class="banner"><span>💾 Progress is saved on this device. <b>Sign in</b> to keep it across devices.</span><button class="btn small" id="bannerSignIn" type="button">Sign in / Sign up</button></div>') +
+      (user ? '' : '<div class="banner"><span>Your progress is <b>not saved</b> until you sign in. Leave this page and it is gone.</span><button class="btn small" id="bannerSignIn" type="button">Sign in / Sign up</button></div>') +
       (plan.note ? '<div class="note">' + esc(plan.note) + '</div>' : '') +
       '<div class="grid"><div>' +
         '<div class="card score-card"><div class="q-label" style="margin:0">Readiness estimate</div>' +
@@ -809,30 +818,34 @@ input:focus{outline:none;border-color:var(--green)}
   }
 
   /* ---------- boot ---------- */
-  R.load();
-  R.onChange(function () { if (index && view && view !== 'diag') render(); });   // the quiz saves as you go; do not redraw it under the user
+  R.load();   // also removes anything older versions left in this browser
+  R.onChange(function () { if (index && view && view !== 'diag' && authReady) render(); });   // the quiz saves as you go; do not redraw it under the user
   fetch('assets/roadmap-index.json').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (j) {
-    index = j; route();
+    index = j;
+    if (authReady) settle(loadErr);
     track('roadmap_viewed', { has_goals: !!R.get().goals });
   }).catch(function (e) {
     app.innerHTML = '<div class="card"><h2>Couldn\'t load the roadmap</h2><p class="sub">Please refresh. If it keeps happening, email support@droidly.io. (' + esc(e.message) + ')</p></div>';
   });
 
+  function signedOut() { R.clearLocal(); isPremium = false; dg = null; view = null; settle(); }
+  function loadFor(session, event) {
+    return R.sync().then(function (res) {
+      if (!res || !res.ok) return settle((res && res.reason) || 'network');
+      return loadEntitlements().then(function () {
+        if (view === 'diag') { authReady = true; return; }   // never redraw a quiz in progress
+        settle();
+        if (event === 'SIGNED_IN') toast('Signed in. Progress loaded.');
+      });
+    });
+  }
   db.auth.onAuthStateChange(function (event, session) {
     setUser(session ? session.user : null);
-    if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-      R.sync().then(function (res) {
-        loadEntitlements().then(function () {
-          var s = R.get();
-          if (s.goals && view === 'onboard' && !editing) view = 'dash';
-          if (index) { view = view || (s.goals ? 'dash' : 'onboard'); render(); }
-          if (res && res.ok && event === 'SIGNED_IN') toast('Signed in. Progress synced.');
-        });
-      });
-    } else if (event === 'INITIAL_SESSION') {
-      loadEntitlements().then(function () { if (index) render(); });
-    }
+    if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) loadFor(session, event);
+    else if (event === 'SIGNED_OUT') signedOut();
+    else if (event === 'INITIAL_SESSION') { R.clearLocal(); loadEntitlements().then(function () { settle(); }); }
   });
+  setTimeout(function () { if (!authReady) { R.clearLocal(); settle(); } }, 6000);   // auth client never answered: treat as signed out
 })();
 </script>
 </body>
