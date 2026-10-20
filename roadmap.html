@@ -150,6 +150,9 @@ input:focus{outline:none;border-color:var(--green)}
 .mini{border:1px solid var(--bg3);background:#fff;border-radius:100px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer}
 .mini:hover{border-color:var(--green);color:var(--green2)}
 .mini[aria-pressed=true]{background:var(--green-light);border-color:var(--green);color:var(--green2)}
+.mini.act-done[aria-pressed=true]{background:var(--green);border-color:var(--green);color:#fff}
+.mini.act-save[aria-pressed=true]{background:var(--amber-bg);border-color:#e6b25c;color:var(--amber)}
+.mini{padding:6px 14px;font-size:13px}
 .progress-line{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;color:var(--ink2);margin-top:4px;flex-wrap:wrap}
 .banner{background:var(--green-pale);border:1px solid var(--border-green);border-radius:14px;padding:12px 16px;font-size:14px;color:var(--ink2);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px}
 .note{background:var(--amber-bg);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--amber);margin-top:12px}
@@ -453,8 +456,8 @@ input:focus{outline:none;border-color:var(--green)}
       '<a class="t-title" href="' + esc(t.href) + '" target="_self">' + esc(t.title) + '</a>' +
       '<div class="t-meta"><span class="pill ' + esc(t.diff) + '">' + esc(t.diff) + '</span><span>' + t.min + ' min</span><span>· ' + esc(index.topics[t.topic].name) + '</span>' +
       (locked ? '<span class="pill lock">🔒 Premium</span>' : '') + '</div>' +
-      (interactive ? '<div class="t-act"><button class="mini" type="button" data-mark="got_it" aria-pressed="' + (m.s === 'got_it') + '">✓ Got it</button>' +
-        '<button class="mini" type="button" data-mark="revisit" aria-pressed="' + (m.s === 'revisit') + '">↻ Revisit</button></div>' : '') +
+      (interactive ? '<div class="t-act"><button class="mini act-done" type="button" data-act="done" aria-pressed="' + (!!m.s) + '">' + (m.s ? '✓ Done' : 'Mark done') + '</button>' +
+        '<button class="mini act-save" type="button" data-act="save" aria-pressed="' + (!!m.b) + '" aria-label="' + (m.b ? 'Remove from saved' : 'Save to revisit later') + '">' + (m.b ? '★ Saved' : '☆ Save') + '</button></div>' : '') +
       '</div></div>';
   }
 
@@ -547,15 +550,16 @@ input:focus{outline:none;border-color:var(--green)}
       '<div class="card saved" style="margin-top:20px"><h2>Saved questions</h2><div style="margin-top:6px">' +
         (saved.length ? saved.slice(0, 12).map(function (id) {
           var x = lookup[id]; if (!x) return ''; return '<a href="' + esc(x.it.href || ('/questions.html?topic=' + x.topic + '&q=' + x.it.n + '#' + x.topic)) + '">' + esc(x.it.q) + ' <small>· ' + esc(index.topics[x.topic].name) + '</small></a>';
-        }).join('') : '<p class="empty">Tap ☆ Save on any question to keep it here.</p>') + '</div></div>' +
+        }).join('') : '<p class="empty">Tap ☆ Save on a question in your plan to keep it here for later.</p>') + '</div></div>' +
       '</div></div>';
 
     app.querySelectorAll('[data-skill]').forEach(function (a) { a.addEventListener('click', function () { track('roadmap_skill_clicked', { topic: a.dataset.skill }); }); });
     app.querySelectorAll('.tab').forEach(function (b) { b.onclick = function () { selectedDay = +b.dataset.day; render(); }; });
-    app.querySelectorAll('[data-mark]').forEach(function (b) {
+    app.querySelectorAll('[data-act]').forEach(function (b) {
       b.onclick = function () {
-        var id = b.closest('.task').dataset.id; R.setMark(id, { s: b.dataset.mark });
-        track('roadmap_task_marked', { status: b.dataset.mark, topic: id.split(':')[0] });
+        var id = b.closest('.task').dataset.id, m = R.get().marks[id] || {};
+        if (b.dataset.act === 'save') { R.setMark(id, { b: !m.b }); track('roadmap_task_saved', { on: !m.b, topic: id.split(':')[0] }); }
+        else { R.setMark(id, { s: m.s ? m.s : 'got_it' }); track('roadmap_task_marked', { status: 'got_it', topic: id.split(':')[0] }); }
       };
     });
     var dgb = document.getElementById('diagStart'); if (dgb) dgb.onclick = function () { startDiag('dashboard'); };
