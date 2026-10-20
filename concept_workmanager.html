@@ -1228,7 +1228,7 @@ adb shell am broadcast -a androidx.work.diagnostics.REQUEST_DIAGNOSTICS \
     }
   });
   async function handleSignOut() { await sbClient.auth.signOut(); }
-  function openAuthModal() { window.location.href = '/#auth'; }
+  function openAuthModal(tab) { window.location.href = '/?auth=' + (tab === 'signup' ? 'signup' : 'signin') + '&return=concept_workmanager'; }
 </script>
 </body>
 </html>

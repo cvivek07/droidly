@@ -1696,9 +1696,7 @@
     await sbClient.auth.signOut();
   }
 
-  function openAuthModal() {
-    window.location.href = '/#auth';
-  }
+  function openAuthModal(tab) { window.location.href = '/?auth=' + (tab === 'signup' ? 'signup' : 'signin') + '&return=sysdesign_payment'; }
 </script>
 </body>
 </html>

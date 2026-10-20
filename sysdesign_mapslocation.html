@@ -854,7 +854,7 @@
     document.getElementById('navUserMenu').style.display = 'none';
     document.getElementById('navSignInBtn').style.display = '';
   }
-  function openAuthModal() { window.location.href = '/#auth'; }
+  function openAuthModal(tab) { window.location.href = '/?auth=' + (tab === 'signup' ? 'signup' : 'signin') + '&return=sysdesign_mapslocation'; }
   function handleSignOut() { _sb.auth.signOut(); }
   document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
     if (!e.target.classList.contains('user-dropdown-item')) this.classList.toggle('open');

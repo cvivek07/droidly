@@ -3335,7 +3335,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     gtag('event', 'login', { method: 'email' });
     closeAuthModal();
     updateNavForUser(data.user);
-    const returnTo = new URLSearchParams(window.location.search).get('return');
+    const returnTo = safeReturn();
     if (returnTo) {
       window.location.href = '/' + returnTo;
     } else {
@@ -3382,7 +3382,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       gtag('event', 'sign_up', { method: 'email' });
       closeAuthModal();
       updateNavForUser(data.user);
-      const returnTo = new URLSearchParams(window.location.search).get('return');
+      const returnTo = safeReturn();
       if (returnTo) {
         window.location.href = '/' + returnTo;
       } else {
@@ -3480,10 +3480,17 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
           gtag('event', 'login', { method: 'google' });
           closeAuthModal();
           updateNavForUser(session.user);
+          const rt = safeReturn(); if (rt) { window.location.href = '/' + rt; return; }
           showToast('✓ Welcome, ' + (session.user.user_metadata?.full_name || session.user.email).split(' ')[0] + '!', 'success');
         }
       }
     }, 600);
+  }
+
+  // Pages send people here to sign in (?auth=signin|signup&return=page). Only plain page names are followed.
+  function safeReturn() {
+    const r = new URLSearchParams(window.location.search).get('return');
+    return r && /^[A-Za-z0-9_-]{1,60}$/.test(r) ? r : null;
   }
 
   // ── Sign Out ────────────────────────────────────────
@@ -3576,7 +3583,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     if (session) {
       updateNavForUser(session.user);
       // If already logged in and there's a return destination, go there immediately
-      const returnTo = new URLSearchParams(window.location.search).get('return');
+      const returnTo = safeReturn();
       if (returnTo) {
         window.location.href = '/' + returnTo;
         return;
@@ -3586,9 +3593,9 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
 
     // Auto-open auth modal if redirected from another page (e.g. questions page)
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('auth') === 'signin' && !session) {
-      openAuthModal('signin');
-    }
+    const authParam = urlParams.get('auth');
+    if ((authParam === 'signin' || authParam === 'signup') && !session) openAuthModal(authParam);
+    else if (window.location.hash === '#auth' && !session) openAuthModal('signin');   // older links
   })();
 
   // Escape key for auth modal

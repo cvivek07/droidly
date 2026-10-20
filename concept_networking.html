@@ -789,7 +789,7 @@ okHttpClient.<span class="fn">newCall</span>(request).<span class="fn">enqueue</
     }
   });
   async function handleSignOut() { await sbClient.auth.signOut(); }
-  function openAuthModal() { window.location.href = '/#auth'; }
+  function openAuthModal(tab) { window.location.href = '/?auth=' + (tab === 'signup' ? 'signup' : 'signin') + '&return=concept_networking'; }
 </script>
 </body>
 </html>

@@ -1130,7 +1130,7 @@
   sb.auth.onAuthStateChange((_, session) => updateNav(session?.user ?? null));
 
   window.handleSignOut = async function () { await sb.auth.signOut(); updateNav(null); };
-  window.openAuthModal = function () { window.location.href = '/?auth=signin'; };
+  window.openAuthModal = function (tab) { window.location.href = '/?auth=' + (tab === 'signup' ? 'signup' : 'signin') + '&return=sysdesign_videostreaming'; };
 
   document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
     this.classList.toggle('open'); e.stopPropagation();

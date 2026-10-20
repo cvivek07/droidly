@@ -1884,7 +1884,7 @@
   sb.auth.onAuthStateChange((event, session) => updateNavForUser(session?.user ?? null));
 
   window.handleSignOut = async function () { await sb.auth.signOut(); updateNavForUser(null); };
-  window.openAuthModal = function () { window.location.href = '/?auth=signin&return=sysdesign_analyticsdk'; };
+  window.openAuthModal = function (tab) { window.location.href = '/?auth=' + (tab === 'signup' ? 'signup' : 'signin') + '&return=sysdesign_analyticsdk'; };
 
   document.getElementById('navUserMenu')?.addEventListener('click', function(e) {
     this.classList.toggle('open'); e.stopPropagation();
