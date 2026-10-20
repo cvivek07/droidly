@@ -345,6 +345,58 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
   .tp-bar{flex-direction:column;align-items:stretch}.tp-bar .btn{width:100%}.tp-tabs{width:100%}.tp-tabs .tab{flex:1;text-align:center}
   .tp-nav{max-width:100%;flex:1}
 }
+
+/* ===== lessons (Learn tab) ===== */
+.ln-wrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:22px;align-items:start}
+.ln-list{display:flex;flex-direction:column;gap:6px;position:sticky;top:84px}
+.ln-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;font-size:14px;font-weight:600;color:var(--ink2);background:none;border:1.5px solid transparent;border-radius:14px;padding:9px 12px;cursor:pointer;text-decoration:none;line-height:1.3}
+.ln-item:hover{background:color-mix(in srgb,var(--cb) 12%,#fff)}
+.ln-item.on{background:color-mix(in srgb,var(--cb) 20%,#fff);border-color:color-mix(in srgb,var(--ca) 45%,#fff);color:var(--ink)}
+.ln-n{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;background:var(--bg2);color:var(--muted)}
+.ln-item.on .ln-n{background:linear-gradient(135deg,var(--ca),var(--cb));color:#fff}
+.ln-more{margin-top:6px;border-top:1px solid var(--border);border-radius:0 0 14px 14px;padding-top:12px}
+.ln-main{min-width:0}
+.ln-step{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ca)}
+.ln-main h2{font-size:24px;margin:4px 0 10px}
+.ln-p{font-size:15.5px;line-height:1.7;color:var(--ink2);margin-top:10px}
+.ln-p code,.ln-pts code,.ln-tip code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88em;background:color-mix(in srgb,var(--cb) 16%,#fff);color:var(--ink);padding:1px 6px;border-radius:6px}
+.ln-p b{color:var(--ink)}
+.ln-h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:800;margin:22px 0 8px}
+.ln-pts{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.ln-pts li{position:relative;padding:9px 12px 9px 32px;border-radius:12px;background:var(--bg2);font-size:14px;color:var(--ink2);line-height:1.45}
+.ln-pts li::before{content:"";position:absolute;left:13px;top:15px;width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--ca),var(--cb))}
+.ln-ex{margin-top:22px}
+.ln-ex-h{font-size:14px;font-weight:700;margin-bottom:8px}
+.ln-code{border-radius:16px;overflow:hidden;background:#0f1a24;box-shadow:0 10px 26px rgba(15,26,36,.18)}
+.ln-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px 8px 16px;background:#16232f;color:#9fb3c4;font-size:12px;font-weight:700}
+.ln-copy{font:inherit;font-size:12px;color:#d6e3ee;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:4px 10px;cursor:pointer}
+.ln-copy:hover{background:rgba(255,255,255,.16)}
+.ln-code pre{margin:0;padding:16px 18px;overflow-x:auto;font:13px/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#e6edf3;white-space:pre;tab-size:4}
+.ln-code i{font-style:normal}
+.hl-k{color:#ff8fa3}.hl-s{color:#a5e3a0}.hl-c{color:#7f93a6;font-style:italic!important}.hl-a{color:#f6c177}.hl-n{color:#f6c177}.hl-t{color:#82c7ff}
+.ln-tip{display:flex;gap:12px;margin-top:22px;padding:14px 16px;border-radius:16px;background:linear-gradient(110deg,#e9f8ef,#eef9fb);border:1px solid rgba(61,122,79,.18)}
+.ln-tip-ic{font-size:20px;line-height:1.3}
+.ln-tip b{font-size:14px;color:var(--green2)}.ln-tip p{font-size:14px;color:var(--ink2);margin-top:2px;line-height:1.55}
+.ln-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--border);flex-wrap:wrap}
+.ln-nav .btn{display:inline-flex;align-items:center;gap:4px;max-width:100%;text-align:left}
+.ln-nav .btn:not(.ghost){background:linear-gradient(100deg,var(--ca),var(--cb))}
+.ln-read{margin-top:26px;padding-top:20px;border-top:1px solid var(--border)}
+.art-grp{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+.arts{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.art{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--bg3);border-radius:14px;text-decoration:none;color:var(--ink);background:#fff;transition:all .15s}
+.art:hover{border-color:var(--ca);transform:translateY(-1px)}
+.art-ic{width:36px;height:36px;flex:none;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--cb) 22%,#fff)}
+.art-b{flex:1;min-width:0;display:flex;flex-direction:column}.art-b b{font-size:14px;line-height:1.35}.art-b small{font-size:12px;color:var(--muted)}
+.art .chev{color:#a3acba}
+@media(max-width:860px){
+  .ln-wrap{grid-template-columns:minmax(0,1fr)}
+  .ln-list{position:static;flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:6px;margin:0 -4px}
+  .ln-item{flex:none;width:auto;white-space:nowrap;border-color:var(--bg3)}
+  .ln-more{margin-top:0;border-top:1.5px solid var(--bg3);border-radius:14px;padding-top:9px}
+  .ln-main h2{font-size:21px}
+  .ln-code pre{font-size:12px;padding:14px}
+  .ln-nav .btn{width:100%;justify-content:center}
+}
 </style>
 </head>
 <body>
@@ -589,18 +641,6 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
     hr: ['💬', 'Behavioural stories, ownership, conflict and how to present your experience.'],
     sysdesign: ['🧩', 'Design mobile systems end to end: chat, feeds, downloads, payments, offline sync.']
   };
-  var GUIDES = {
-    android: [['/concept_android_fundamentals', 'Core Android fundamentals', 'Lifecycle, Intents, Context, Services and BroadcastReceivers.']],
-    kotlin: [['/concept_kotlin', 'Kotlin interview topics', 'Sealed and data classes, delegation, inline and extension functions.']],
-    compose: [['/concept_compose', 'Jetpack Compose', 'Recomposition, state, side effects, remember and performance.'], ['/explainer_recomposition', 'Recomposition explained', 'A short visual explainer of how and when Compose redraws.']],
-    coroutines: [['/concept_coroutines', 'Coroutines and Flow', 'Structured concurrency, StateFlow, SharedFlow and cancellation.'], ['/explainer_coroutines', 'Coroutines lifecycle', 'A short visual explainer of a coroutine from launch to cancel.']],
-    flows: [['/explainer_flow', 'Flow vs LiveData', 'A short visual explainer of when to use which.'], ['/concept_coroutines', 'Coroutines and Flow', 'The full guide, including StateFlow and SharedFlow.']],
-    architecture: [['/concept_mvvm', 'MVVM architecture', 'ViewModel, repository pattern and Clean Architecture layers.']],
-    di: [['/concept_di', 'Dependency Injection and Hilt', 'Scopes, components, @Inject, @Provides, @Binds and qualifiers.']],
-    networking: [['/concept_networking', 'OkHttp and networking', 'Interceptors, Retrofit, token refresh, pinning and HTTP caching.']],
-    storage: [['/concept_room', 'Room and SQLite', 'Entities, DAOs, migrations, transactions and Room with Flow.']],
-    performance: [['/concept_recyclerview', 'RecyclerView', 'Internals, DiffUtil, ListAdapter and smooth scrolling.']]
-  };
   var topicTab = null, topicTabFor = null, bankErr = null;
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
   function palette(id) { var k = R.TOPIC_ORDER.indexOf(id); k = (k < 0 ? 0 : k) % 6 + 1; return '--ca:var(--a' + k + ');--cb:var(--b' + k + ')'; }
@@ -754,21 +794,14 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
   function renderTopic(pp, id) {
     var s = R.get(), x = pp.items.filter(function (i) { return i.id === id; })[0];
     if (!x) { location.hash = 'roadmap'; return; }
-    var info = TOPIC_INFO[id] || ['📚', ''], guides = GUIDES[id] || [], topic = index.topics[id];
-    if (topicTabFor !== id) { topicTabFor = id; topicTab = (guides.length || id === 'sysdesign') ? 'learn' : 'practice'; }
+    var info = TOPIC_INFO[id] || ['📚', ''], topic = index.topics[id];
+    if (topicTabFor !== id) { topicTabFor = id; topicTab = 'learn'; }
     var pct = x.complete ? 100 : x.pct, circ = 2 * Math.PI * 27, shown = x.complete ? x.total : Math.min(x.done, x.total);
     var prev = pp.items[x.index - 1], next = pp.items[x.index + 1];
     var steps = x.steps.map(itemTask).filter(Boolean);
     var body;
     if (topicTab === 'learn') {
-      var lessons = guides.length ? guides.map(function (gd) { return { href: gd[0], title: gd[1], desc: gd[2], ic: '📖' }; })
-        : id === 'sysdesign' ? steps.map(function (t) { return { href: t.href, title: 'Design: ' + t.title, desc: 'Step-by-step system design walkthrough.', ic: '🧩' }; }) : [];
-      body = (lessons.length ? '<div class="sec-title" style="margin-top:0">Read</div><div class="lessons">' + lessons.map(function (l) {
-        return '<a class="lesson" href="' + esc(l.href) + '"><span class="ls-ic">' + l.ic + '</span><span class="ls-body"><b>' + esc(l.title) + '</b><small>' + esc(l.desc) + '</small></span>' + CHEV + '</a>';
-      }).join('') + '</div>'
-        : '<div class="note-soft">There is no long-form guide for this topic yet. Every practice question has a worked answer, so start there.</div>') +
-        '<div class="sec-title">What you will cover</div><ul class="cover">' + steps.slice(0, 6).map(function (t) { return '<li>' + esc(t.title) + '</li>'; }).join('') + (steps.length > 6 ? '<li class="more">and ' + (steps.length - 6) + ' more</li>' : '') + '</ul>' +
-        '<div class="actions" style="margin-top:18px"><button class="btn" data-tab-go="practice" type="button">Go to practice ' + CHEV + '</button></div>';
+      body = learnHtml(id);
     } else if (topicTab === 'practice') {
       body = '<div class="prac-head"><span><b>' + shown + '</b> of ' + x.total + ' steps done</span><a class="skill-go" style="margin:0" href="/questions.html?topic=' + esc(id) + '#' + esc(id) + '">Browse all ' + topic.items.length + ' questions ' + CHEV + '</a></div>' +
         steps.map(function (t) { return taskHtml(t, s, true); }).join('');
@@ -789,7 +822,7 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
           return '<button class="tab" role="tab" data-tab="' + t[0] + '" aria-selected="' + (topicTab === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>' +
         '<button type="button" class="btn small ' + (x.complete ? 'ghost' : '') + '" id="markDone">' + (x.complete ? '✓ Completed · Undo' : 'Mark as complete') + '</button></div>' +
       '</div>' + banner +
-      '<div class="card tp-body">' + body + '</div>' +
+      '<div class="card tp-body" style="' + palette(id) + '">' + body + '</div>' +
       '<div class="tp-foot">' + (prev ? '<a class="tp-nav" href="#topic/' + esc(prev.id) + '"><small>Previous</small><b>' + esc(prev.name) + '</b></a>' : '<span></span>') +
         (next ? '<a class="tp-nav r" href="#topic/' + esc(next.id) + '"><small>Next topic</small><b>' + esc(next.name) + '</b></a>' : '') + '</div>';
     bindCommon();
@@ -800,6 +833,76 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
       if (on) { var np = R.pathProgress(R.get()); toast(np.current ? 'Topic complete. Next up: ' + np.current.name : 'Every topic complete. Nice work.'); }
     };
     var tq = document.getElementById('topicQuiz'); if (tq) tq.onclick = function () { startDiag('topic', id); };
+    if (topicTab === 'learn') bindLearn(id);
+  }
+
+  /* ---------- Learn tab: lessons with examples, then reading ---------- */
+  var lessonsData = null, lessonsErr = null, lessonAt = {};
+  function loadLessons() {
+    if (lessonsData) return Promise.resolve(lessonsData);
+    return fetch('assets/lessons.json').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (j) { lessonsData = j.topics; return lessonsData; });
+  }
+  function fmt(t) { return esc(t).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>'); }
+  var KW = /^(val|var|fun|class|interface|object|data|sealed|enum|abstract|open|override|private|protected|internal|public|return|if|else|when|for|while|in|is|as|try|catch|finally|throw|suspend|inline|reified|noinline|crossinline|out|import|package|null|true|false|this|super|by|lazy|lateinit|const|companion|init|get|set|operator|value|typealias|where)$/;
+  function highlight(src, lang) {
+    if (lang === 'kotlin') {
+      return src.replace(/(\/\/[^\n]*)|("(?:\\.|[^"\\\n])*")|('(?:\\.|[^'\\\n])')|(@[A-Za-z]+)|(\b\d+(?:\.\d+)?[Lf]?\b)|([A-Za-z_]\w*)|([\s\S])/g, function (m, cm, st, ch, an, nu, w) {
+        if (cm) return '<i class="hl-c">' + esc(cm) + '</i>';
+        if (st || ch) return '<i class="hl-s">' + esc(m) + '</i>';
+        if (an) return '<i class="hl-a">' + esc(an) + '</i>';
+        if (nu) return '<i class="hl-n">' + esc(nu) + '</i>';
+        if (w) return KW.test(w) ? '<i class="hl-k">' + w + '</i>' : /^[A-Z]/.test(w) ? '<i class="hl-t">' + w + '</i>' : w;
+        return esc(m);
+      });
+    }
+    return esc(src).replace(/(^|\n)(\s*(?:#|\/\/)[^\n]*)/g, '$1<i class="hl-c">$2</i>').replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<i class="hl-c">$1</i>');
+  }
+  var LANG_NAME = { kotlin: 'Kotlin', xml: 'XML', toml: 'TOML', properties: 'gradle.properties', text: 'Notes' };
+  function learnHtml(id) {
+    if (!lessonsData) {
+      if (lessonsErr) return '<p class="empty">Could not load the lessons. Please refresh and try again.</p>';
+      loadLessons().then(function () { if (view === 'dash' && topicTab === 'learn') render(); }).catch(function (e) { lessonsErr = e.message; if (view === 'dash') render(); });
+      return '<p class="empty">Loading lessons…</p>';
+    }
+    var t = lessonsData[id]; if (!t) return '<p class="empty">Lessons for this topic are coming soon.</p>';
+    var n = t.lessons.length, i = Math.min(lessonAt[id] || 0, n - 1), l = t.lessons[i];
+    var list = '<div class="ln-list" role="navigation" aria-label="Lessons">' + t.lessons.map(function (x, k) {
+      return '<button type="button" class="ln-item' + (k === i ? ' on' : '') + '" data-lesson="' + k + '" aria-current="' + (k === i) + '"><span class="ln-n">' + (k + 1) + '</span><span>' + esc(x.title) + '</span></button>';
+    }).join('') + '<a class="ln-item ln-more" href="#readMore"><span class="ln-n">📚</span><span>Further reading</span></a></div>';
+    var code = l.code ? '<div class="ln-ex"><div class="ln-ex-h">' + (l.code.lang === 'text' ? '' : 'Example: ') + esc(l.code.title) + '</div>' +
+      '<div class="ln-code"><div class="ln-bar"><span>' + esc(LANG_NAME[l.code.lang] || l.code.lang) + '</span><button type="button" class="ln-copy" id="lnCopy">Copy</button></div>' +
+      '<pre><code>' + highlight(l.code.src, l.code.lang) + '</code></pre></div></div>' : '';
+    var main = '<article class="ln-main"><div class="ln-step">Lesson ' + (i + 1) + ' of ' + n + '</div><h2>' + (i + 1) + '. ' + esc(l.title) + '</h2>' +
+      l.body.map(function (p) { return '<p class="ln-p">' + fmt(p) + '</p>'; }).join('') +
+      '<h3 class="ln-h3">Key concepts</h3><ul class="ln-pts">' + l.points.map(function (p) { return '<li>' + fmt(p) + '</li>'; }).join('') + '</ul>' +
+      code +
+      '<div class="ln-tip"><span class="ln-tip-ic">💡</span><div><b>Pro tip</b><p>' + fmt(l.tip) + '</p></div></div>' +
+      '<div class="ln-nav">' + (i > 0 ? '<button type="button" class="btn ghost small" data-lesson="' + (i - 1) + '">‹ ' + esc(t.lessons[i - 1].title) + '</button>' : '<span></span>') +
+      (i < n - 1 ? '<button type="button" class="btn small" data-lesson="' + (i + 1) + '">Next: ' + esc(t.lessons[i + 1].title) + ' ' + CHEV + '</button>'
+        : '<button type="button" class="btn small" data-tab-go="practice">Done reading. Practise now ' + CHEV + '</button>') + '</div></article>';
+    var arts = t.articles || [], own = arts.filter(function (a) { return a.src === 'Droidly'; }), ext = arts.filter(function (a) { return a.src !== 'Droidly'; });
+    function artRow(a) {
+      var out = a.src !== 'Droidly';
+      return '<a class="art" href="' + esc(a.url) + '"' + (out ? ' target="_blank" rel="noopener"' : '') + '><span class="art-ic">' + (out ? '🔗' : '📖') + '</span><span class="art-b"><b>' + esc(a.title) + '</b><small>' + esc(a.src) + (out ? ' ↗' : '') + '</small></span>' + CHEV + '</a>';
+    }
+    var reading = '<section class="ln-read" id="readMore"><h3 class="ln-h3" style="margin-top:0">Further reading</h3><p class="sub" style="font-size:13px;margin:2px 0 12px">Go deeper once the lessons make sense. Official docs open in a new tab.</p>' +
+      (own.length ? '<div class="art-grp">On Droidly</div><div class="arts">' + own.map(artRow).join('') + '</div>' : '') +
+      (ext.length ? '<div class="art-grp">Official docs and articles</div><div class="arts">' + ext.map(artRow).join('') + '</div>' : '') + '</section>';
+    return '<div class="ln-wrap">' + list + main + '</div>' + reading;
+  }
+  function bindLearn(id) {
+    app.querySelectorAll('[data-lesson]').forEach(function (b) {
+      b.onclick = function () {
+        lessonAt[id] = +b.dataset.lesson; track('roadmap_lesson_open', { topic: id, lesson: lessonAt[id] }); render();
+        var top = app.querySelector('.tp-body'); if (top) window.scrollTo({ top: top.getBoundingClientRect().top + window.scrollY - 84, behavior: 'smooth' });
+      };
+    });
+    var cp = document.getElementById('lnCopy');
+    if (cp) cp.onclick = function () {
+      var l = lessonsData[id].lessons[Math.min(lessonAt[id] || 0, lessonsData[id].lessons.length - 1)];
+      try { navigator.clipboard.writeText(l.code.src).then(function () { cp.textContent = 'Copied'; setTimeout(function () { cp.textContent = 'Copy'; }, 1500); }); } catch (e) { toast('Copy is not available here.'); }
+    };
+    var more = app.querySelector('.ln-more'); if (more) more.onclick = function (e) { e.preventDefault(); var r = document.getElementById('readMore'); if (r) r.scrollIntoView({ behavior: 'smooth' }); };
   }
 
   function quizPanel(x) {
