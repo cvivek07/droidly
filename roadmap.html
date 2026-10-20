@@ -136,6 +136,7 @@ input:focus{outline:none;border-color:var(--green)}
 .topic-foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:12px;color:var(--muted);gap:8px;flex-wrap:wrap}
 .tabs{display:flex;gap:6px;overflow-x:auto;margin:16px 0 6px;padding-bottom:4px}
 .tab{border:1.5px solid var(--bg3);background:#fff;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap}
+.tab-saved{margin-right:6px;position:relative}.tab-saved::after{content:'';position:absolute;right:-7px;top:6px;bottom:6px;width:1px;background:var(--bg3)}
 .tab[aria-selected=true]{background:var(--ink);border-color:var(--ink);color:#fff}
 .sec-title{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 0 6px}
 .task{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--border)}
@@ -185,12 +186,13 @@ input:focus{outline:none;border-color:var(--green)}
   h1{font-size:28px}
   .wrap{padding:24px 16px 60px}
 }
-.lv-row{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.lv-row{align-self:stretch;width:100%;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
 .lv{display:grid;grid-template-columns:64px 1fr 34px;align-items:center;gap:10px;margin-top:8px;font-size:13px;color:var(--ink2)}
 .lv .lv-name{font-weight:600}
 .lv b{text-align:right;font-variant-numeric:tabular-nums}
 .lv.target .lv-name,.lv.target b{color:var(--green2)}
 .lv.target .bar{outline:2px solid var(--border-green);outline-offset:2px}
+.info{cursor:help;color:var(--muted);margin-left:2px}
 .lv-note{font-size:12px;color:var(--muted);margin-top:8px}
 .skill{padding:13px 0;border-top:1px solid var(--border)}
 .skill:first-child{border-top:none}
@@ -471,6 +473,14 @@ input:focus{outline:none;border-color:var(--green)}
       '</div>';
   }
 
+  function savedBlock(saved, lookup, state, plan) {
+    var rows = saved.map(function (id) {
+      var x = lookup[id]; if (!x) return '';
+      return taskHtml({ id: id, topic: x.topic, title: x.it.q, diff: x.it.d, min: 7, href: x.it.href || ('/questions.html?topic=' + x.topic + '&q=' + x.it.n + '#' + x.topic) }, state, plan, true);
+    }).join('');
+    return rows || '<p class="empty">Nothing saved yet. Tap the ☆ on any question to keep it here for later.</p>';
+  }
+
   function tasksBlock(day, state, plan, interactive) {
     if (!day.tasks.length) return '<p class="empty">Nothing left to schedule. You\'ve covered every available question. Nice.</p>';
     var groups = [['revision', 'Revision'], ['sysdesign', 'System design'], ['study', 'Study']];
@@ -497,12 +507,12 @@ input:focus{outline:none;border-color:var(--green)}
   }
 
   function levelRowHtml(byLevel) {
-    return '<div class="lv-row"><div class="q-label" style="margin:0">Same progress, scored per level</div>' +
+    return '<div class="lv-row"><div class="q-label" style="margin:0;font-size:13px;color:var(--muted)">By level</div>' +
       byLevel.map(function (x) {
-        return '<div class="lv' + (x.isTarget ? ' target' : '') + '"><span class="lv-name">' + esc(LEVEL_NAME[x.level]) + '</span>' +
+        return '<div class="lv' + (x.isTarget ? ' target' : '') + '"><span class="lv-name">' + esc(LEVEL_NAME[x.level].split(' · ')[0]) + '</span>' +
           '<div class="bar"><i style="width:' + x.score + '%"></i></div><b>' + x.score + '</b></div>';
       }).join('') +
-      '<p class="lv-note">Your target is outlined. Senior levels weight system design, architecture and hard questions more.</p></div>';
+      '</div>';
   }
 
   function renderDash() {
@@ -510,7 +520,8 @@ input:focus{outline:none;border-color:var(--green)}
     var plan = R.ensurePlan(index, false);
     var r = R.readiness(index, s);
     var g = Object.assign({}, R.DEFAULT_GOALS, s.goals);
-    if (selectedDay >= plan.days.length) selectedDay = 0;
+    if (selectedDay !== 'saved' && selectedDay >= plan.days.length) selectedDay = 0;
+    if (location.hash === '#saved' && !renderDash._jumped) { renderDash._jumped = true; selectedDay = 'saved'; }
     var left = g.date ? R.daysBetween(new Date(), R.parseYmd(g.date)) : null;
     var today = plan.days[0] || { tasks: [], minutes: 0 };
     var doneToday = today.tasks.filter(function (t) { return R.isDone(t, s, plan.at); });
@@ -532,13 +543,12 @@ input:focus{outline:none;border-color:var(--green)}
       '<div style="display:flex;gap:8px"><button class="btn small" id="rebuild" type="button">Rebuild my plan</button></div></div>' +
       (plan.note ? '<div class="note">' + esc(plan.note) + '</div>' : '') +
       '<div class="grid"><div>' +
-        '<div class="card score-card"><div class="q-label" style="margin:0">Readiness estimate</div>' +
+        '<div class="card score-card"><div class="q-label" style="margin:0">Interview readiness estimate</div>' +
         '<div class="ring"><svg width="150" height="150" viewBox="0 0 150 150"><circle cx="75" cy="75" r="62" fill="none" stroke="#eaecf0" stroke-width="12"/>' +
         '<circle cx="75" cy="75" r="62" fill="none" stroke="' + color + '" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + dash.toFixed(1) + ' ' + circ.toFixed(1) + '"/></svg>' +
         '<div class="ring-num"><b>' + r.score + '</b><span>out of 100</span></div></div>' +
-        '<div class="meta-line">Confidence: <b>' + r.confidence + '</b> · ' + r.ratedTopics + '/' + R.TOPIC_ORDER.length + ' topics with evidence · ' + r.attempted + ' questions answered or marked</div>' +
-        levelRowHtml(byLevel) +
-        '<p class="disclaimer">Estimate based on your skill-check answers and the questions you mark. It becomes more reliable as you answer more. It is not a test score.</p></div>' +
+        '<div class="meta-line">Confidence: <b>' + r.confidence + '</b> · ' + r.attempted + ' answered <span class="info" tabindex="0" title="Based on your skill-check answers and the questions you mark. It gets more reliable as you answer more. It is a study estimate, not a test score.">ⓘ</span></div>' +
+        levelRowHtml(byLevel) + '</div>' +
         diagCardHtml(s) +
         '<div class="card" style="margin-top:20px"><h2>Skills to improve</h2><p class="sub" style="font-size:13px;margin-top:2px">Ranked by how much each matters for your target level and how far you are from Strong.</p><div style="margin-top:8px">' + skillsHtml(skills) + '</div></div>' +
         '<div class="card" style="margin-top:20px"><h2>Topics</h2><p class="sub" style="font-size:13px;margin-top:2px">Weakest and most important first. Take the skill check to sharpen these.</p><div style="margin-top:8px">' +
@@ -550,21 +560,17 @@ input:focus{outline:none;border-color:var(--green)}
         }).join('') + '</div></div></div>' +
       '<div><div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>Your plan</h2>' +
         '<div class="progress-line"><span><b>' + doneToday.length + '/' + today.tasks.length + '</b> tasks done today · ' + doneMin + '/' + today.minutes + ' min</span></div></div>' +
-        '<div class="tabs" role="tablist">' + plan.days.map(function (d, i) {
+        '<div class="tabs" role="tablist">' + '<button class="tab tab-saved" role="tab" data-day="saved" aria-selected="' + (selectedDay === 'saved') + '">★ Saved' + (saved.length ? ' (' + saved.length + ')' : '') + '</button>' + plan.days.map(function (d, i) {
           var lab = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : new Date(R.parseYmd(d.date)).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
           return '<button class="tab" role="tab" data-day="' + i + '" aria-selected="' + (i === selectedDay) + '">' + lab + '</button>';
         }).join('') + '</div>' +
-        '<div id="dayBody">' + tasksBlock(plan.days[selectedDay], s, plan, selectedDay === 0) + '</div>' +
+        '<div id="dayBody">' + (selectedDay === 'saved' ? savedBlock(saved, lookup, s, plan) : tasksBlock(plan.days[selectedDay], s, plan, selectedDay === 0)) + '</div>' +
         (revisitCount ? '<p class="disclaimer">↻ ' + revisitCount + ' question' + (revisitCount > 1 ? 's' : '') + ' marked "Revisit". They return in your plan a day after you marked them.</p>' : '') +
       '</div>' +
-      '<div class="card saved" id="saved" style="margin-top:20px;scroll-margin-top:84px"><h2>Saved questions</h2><div style="margin-top:6px">' +
-        (saved.length ? saved.slice(0, 12).map(function (id) {
-          var x = lookup[id]; if (!x) return ''; return '<a href="' + esc(x.it.href || ('/questions.html?topic=' + x.topic + '&q=' + x.it.n + '#' + x.topic)) + '">' + esc(x.it.q) + ' <small>· ' + esc(index.topics[x.topic].name) + '</small></a>';
-        }).join('') : '<p class="empty">Tap ☆ Save on a question in your plan to keep it here for later.</p>') + '</div></div>' +
       '</div></div>';
 
     app.querySelectorAll('[data-skill]').forEach(function (a) { a.addEventListener('click', function () { track('roadmap_skill_clicked', { topic: a.dataset.skill }); }); });
-    app.querySelectorAll('.tab').forEach(function (b) { b.onclick = function () { selectedDay = +b.dataset.day; render(); }; });
+    app.querySelectorAll('.tab').forEach(function (b) { b.onclick = function () { selectedDay = b.dataset.day === 'saved' ? 'saved' : +b.dataset.day; render(); }; });
     app.querySelectorAll('[data-act]').forEach(function (b) {
       b.onclick = function () {
         var id = b.closest('.task').dataset.id, m = R.get().marks[id] || {};
@@ -572,7 +578,6 @@ input:focus{outline:none;border-color:var(--green)}
         else { R.setMark(id, { s: m.s ? m.s : 'got_it' }); track('roadmap_task_marked', { status: 'got_it', topic: id.split(':')[0] }); }
       };
     });
-    if (location.hash === '#saved' && !renderDash._jumped) { renderDash._jumped = true; var sv = document.getElementById('saved'); if (sv) setTimeout(function () { sv.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60); }
     var dgb = document.getElementById('diagStart'); if (dgb) dgb.onclick = function () { startDiag('dashboard'); };
     var dgr = document.getElementById('diagResults'); if (dgr) dgr.onclick = function () { showLastResults(); };
     document.getElementById('rebuild').onclick = function () { track('roadmap_plan_rebuild_click'); editing = true; view = 'onboard'; render(); window.scrollTo(0, 0); };
@@ -768,7 +773,7 @@ input:focus{outline:none;border-color:var(--green)}
     var sum = D.summarize(dg.results);
     var skills = R.skillsToImprove(index, R.get(), { limit: 3 });
     var change = (dg.before != null && dg.after != null)
-      ? '<p class="sub" style="font-size:14px">Readiness estimate: <b>' + dg.before + '</b> → <b>' + dg.after + '</b>' + (dg.after === dg.before ? ' (no change)' : '') + '. This is an estimate that blends your ratings, marks and these answers.</p>' : '';
+      ? '<p class="sub" style="font-size:14px">Interview readiness: <b>' + dg.before + '</b> → <b>' + dg.after + '</b>' + (dg.after === dg.before ? ' (no change)' : '') + '. This is an estimate that blends your ratings, marks and these answers.</p>' : '';
     return '<div class="card" style="max-width:720px;margin:0 auto"><span class="eyebrow">' + (dg.fromHistory ? 'Latest results across your checks' : 'Skill check complete') + '</span>' +
       '<div class="dg-big">' + sum.correct + ' of ' + sum.answered + ' correct</div>' +
       change +
