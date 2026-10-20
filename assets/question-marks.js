@@ -79,7 +79,7 @@
         var got = btn('✓ Got it', 'rd-got', gate(id, function () { R.setMark(id, { s: 'got_it' }); }));
         var rev = btn('↻ Revisit later', 'rd-rev', gate(id, function () { R.setMark(id, { s: 'revisit' }); }));
         var save = btn('☆ Save', 'rd-save', gate(id, function () { var m = R.get().marks[id]; R.setMark(id, { b: !(m && m.b) }); }));
-        var link = document.createElement('a'); link.className = 'rd-link'; link.href = '/roadmap.html'; link.textContent = 'Your roadmap →';
+        var link = document.createElement('a'); link.className = 'rd-link'; link.href = '/roadmap.html'; link.textContent = 'Your roadmap ›';
         var hint = document.createElement('div'); hint.className = 'rd-hint'; hint.style.display = 'none';
         hint.innerHTML = 'Sign in to save your progress and build your plan. It is free. <a href="#" class="rd-signin" style="color:#3d7a4f;font-weight:600">Sign in</a>';
         hint.querySelector('.rd-signin').addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); if (typeof window.openAuthModal === 'function') window.openAuthModal(); else location.href = '/?auth=signin&return=questions'; });
@@ -115,7 +115,7 @@
       document.body.appendChild(pill);
     }
     pill.querySelector('span').textContent = (afterMark ? '\u2713 Saved. ' : '') + n.headline + (n.kind === 'continue' || n.kind === 'start_today' ? ' \u00b7 ' + n.detail : '');
-    var a = pill.querySelector('a'); a.textContent = n.cta + ' \u2192'; a.href = n.href;
+    var a = pill.querySelector('a'); a.textContent = n.cta + ' \u203a'; a.href = n.href;
     pill.hidden = false;
     if (afterMark) { pill.classList.remove('pop'); void pill.offsetWidth; pill.classList.add('pop'); }
   }

@@ -2121,6 +2121,9 @@ body{background:#fff}
 
 /* single CTA */
 .btn-grad{display:inline-flex;align-items:center;gap:14px;padding:9px 30px 9px 9px;border-radius:20px;font-weight:700;font-size:18px;letter-spacing:-.01em;color:#fff !important;text-decoration:none;background:linear-gradient(100deg,#2e6040 0%,#3f9a6c 62%,#cf8a30 100%);box-shadow:0 0 0 4px rgba(61,122,79,.14),0 16px 36px rgba(46,96,64,.30);transition:transform .2s,box-shadow .2s;cursor:pointer;border:0;font-family:inherit}
+.btn-grad.no-ico{padding:17px 26px 17px 32px;justify-content:center;gap:6px}
+.btn-grad .chev{flex:none;transition:transform .2s}
+.btn-grad:hover .chev{transform:translateX(3px)}
 .btn-grad.block{display:flex;width:100%;justify-content:center;padding-right:24px}
 .btn-line{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 28px;border-radius:20px;font-weight:700;font-size:16px;color:#14171f;text-decoration:none;background:#fff;border:1.5px solid rgba(15,17,23,.16);transition:all .2s;font-family:inherit}
 .btn-line.block{display:flex;width:100%}
@@ -2187,9 +2190,14 @@ h2 span[style*="--green"]{background:linear-gradient(100deg,#2e6040 0%,#3f9a6c 5
 .tc-icon{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;font-size:28px;background:linear-gradient(135deg,color-mix(in srgb,var(--a) 14%,#fff),color-mix(in srgb,var(--b) 22%,#fff))}
 .tc-count{color:color-mix(in srgb,var(--a) 85%,#000);background:color-mix(in srgb,var(--a) 11%,#fff);padding:4px 10px;border-radius:100px}
 .tc-arrow{border-radius:50%;background:color-mix(in srgb,var(--a) 12%,#fff);color:var(--a)}
+.tc-arrow{font-size:22px;font-weight:700;line-height:1;padding-bottom:3px;padding-left:1px}
 .topic-card:hover .tc-arrow{background:linear-gradient(135deg,var(--a),var(--b)) !important;color:#fff}
 
 /* concept cards */
+.concept-card .cc-art{margin:-24px -24px 6px;height:124px;background-size:cover;background-position:center;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.concept-card{overflow:hidden}
+.concept-card:hover .cc-art{transform:scale(1.05)}
+.concept-card .cc-art{position:relative;z-index:0}
 .concepts-grid>.concept-card{--a:var(--a5);--b:var(--b5)}
 .concepts-grid>.concept-card:nth-child(5n+2){--a:var(--a1);--b:var(--b1)}.concepts-grid>.concept-card:nth-child(5n+3){--a:var(--a3);--b:var(--b3)}.concepts-grid>.concept-card:nth-child(5n+4){--a:var(--a2);--b:var(--b2)}.concepts-grid>.concept-card:nth-child(5n+5){--a:var(--a4);--b:var(--b4)}
 .concept-card{border:0 !important;border-radius:24px;background:#fff;box-shadow:0 8px 26px rgba(40,40,100,.09);overflow:hidden}
@@ -2383,8 +2391,8 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     </p>
 
     <div class="hero-ctas fade-5">
-      <a href="/roadmap" id="heroPrimaryCta" onclick="gtag('event','hero_cta_roadmap')" class="btn-grad">
-        <span class="ico" aria-hidden="true">→</span><span class="lbl">Build my free plan</span>
+      <a href="/roadmap" id="heroPrimaryCta" onclick="gtag('event','hero_cta_roadmap')" class="btn-grad no-ico">
+        <span class="lbl">Start my plan</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
       </a>
     </div>
 
@@ -2439,7 +2447,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <div id="hcard-answer" class="hcard-answer" style="display:none">
         <strong>Answer.</strong> Wrap the calls in <code>coroutineScope { }</code> and start each with <code>async { }</code>. They run in parallel, and if any one throws, the scope cancels its siblings and rethrows to the caller (structured concurrency gives you fail-fast for free). Call <code>await()</code> on each result and catch the exception around the whole scope to show your error state. Use <code>supervisorScope</code> only if you want one failure <em>not</em> to cancel the others.
         <div class="hcard-save">Want the full set, plus a plan for your interview date?
-          <a href="/roadmap" onclick="gtag('event','hero_answer_plan_click')">Build my plan →</a>
+          <a href="/roadmap" onclick="gtag('event','hero_answer_plan_click')">Start my plan</a>
           <button type="button" onclick="gtag('event','hero_answer_signup_click'); openAuthModal('signup')">Create free account</button>
         </div>
       </div>
@@ -2454,7 +2462,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
 
 <div class="frame-strip">
   <span><b>Free to start.</b> Premium is ₹299/month.</span>
-  <a href="#pricing" onclick="gtag('event','strip_pricing_click')"><span class="ico" aria-hidden="true">→</span>See what's in Premium</a>
+  <a href="#pricing" onclick="gtag('event','strip_pricing_click')">See what's in Premium <svg class="chev" width="14" height="14" style="vertical-align:-2px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>
 </div>
 
 <ul class="frame-topics" aria-label="Topics covered">
@@ -2475,8 +2483,8 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
         <li>Today's tasks sized to the time you have</li>
         <li>Missed or shaky questions come back for revision</li>
       </ul>
-      <a href="/roadmap" onclick="gtag('event','preview_cta_roadmap')" class="btn-grad"><span class="ico" aria-hidden="true">→</span><span class="lbl">Build my free plan</span></a>
-      <p class="hero-micro">Free. No account needed to start.</p>
+      <a href="/roadmap" onclick="gtag('event','preview_cta_roadmap')" class="btn-grad no-ico"><span class="lbl">Start my plan</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>
+      <p class="hero-micro">Free to start. Sign in to save your plan.</p>
     </div>
     <div class="rp-card" id="rpCard" aria-label="Example roadmap, animated (illustrative)">
       <div class="rp-head">
@@ -2533,7 +2541,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <div class="how-icon-wrap"><span class="how-icon">🎯</span></div>
       <div class="how-title">Set your goal</div>
       <p class="how-desc">Tell us your experience, whether you're aiming at a product company, startup or service company, how long you can study each day, and your interview date.</p>
-      <div class="how-example"><span class="he-label">Takes</span><span class="he-chip">About 30 seconds</span><span class="he-chip">No account needed</span></div>
+      <div class="how-example"><span class="he-label">Takes</span><span class="he-chip">About 30 seconds</span><span class="he-chip">Free account</span></div>
     </div>
     <div class="how-card reveal">
       <div class="how-num">02</div>
@@ -2568,7 +2576,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="section-sub-sm" style="margin-top:10px; max-width:480px;">From Kotlin fundamentals to Android 15 APIs, Jetpack Compose, and architecture — every Q&amp;A is free, forever. Upgrade only if you want System Design deep dives or Mock Interviews.</p>
     </div>
     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
-      <a href="#" onclick="goToQuestions(''); return false;" class="btn-grad"><span class="ico" aria-hidden="true">→</span><span class="lbl">Open Question Bank</span></a>
+      <a href="#" onclick="goToQuestions(''); return false;" class="btn-grad no-ico"><span class="lbl">Open Question Bank</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>
       <span style="font-size:12px; color:var(--muted);">Sign up free · System Design &amp; Mock Interviews are Premium</span>
     </div>
   </div>
@@ -2583,7 +2591,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Activity & Fragment lifecycle, Intents, Services, Permissions, BroadcastReceivers, and 2025 APIs.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
 
@@ -2596,7 +2604,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Null safety, extension functions, sealed classes, coroutines, generics, and Kotlin 2.0 features.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
 
@@ -2609,7 +2617,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Recomposition, state hoisting, side effects, custom layouts, animations, and Compose internals.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
 
@@ -2622,7 +2630,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Suspend functions, dispatchers, StateFlow, SharedFlow, channels, and structured concurrency.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
 
@@ -2635,7 +2643,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">MVVM, MVI, Clean Architecture, multi-module apps, feature modules, and navigation patterns.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
 
@@ -2648,7 +2656,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Hilt, Dagger 2, component scopes, multibindings, testing with DI, and KSP migration.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
 
@@ -2661,7 +2669,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Retrofit, OkHttp, interceptors, token refresh, SSL pinning, REST vs GraphQL, and gRPC.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
 
@@ -2674,7 +2682,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Room, DataStore, SharedPreferences, migrations, encrypted storage, and offline strategies.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
 
@@ -2687,7 +2695,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Gradle, R8, ProGuard, APK vs AAB, build variants, flavors, and APK size reduction.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
 
@@ -2700,7 +2708,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Memory leaks, overdraw, ANR, startup time, and profiling with Android Studio tools.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
 
@@ -2713,7 +2721,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Design WhatsApp, Instagram, Uber for Android. Offline sync, scalability, architecture decisions.</p>
       <div class="tc-footer">
         <span class="tc-count">Case studies</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
 
@@ -2726,7 +2734,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">STAR method answers, conflict resolution, and leadership stories for Android developer roles.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
 
@@ -2739,7 +2747,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Personal 1:1 session with an Android engineer. Resume-based questions, real feedback, and a written report. Booked separately, not part of Premium.</p>
       <div class="tc-footer">
         <span class="tc-count">₹1,499 / session</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
     <a href="/machine_coding" class="topic-card reveal" style="--img:url(/assets/img/topics/machine.webp)">
@@ -2751,7 +2759,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Practice real interview coding problems in Kotlin — LRU cache, rate limiter, state machines, and a hands-on Android UI challenge.</p>
       <div class="tc-footer">
         <span class="tc-count">Coding problems</span>
-        <div class="tc-arrow">→</div>
+        <div class="tc-arrow">›</div>
       </div>
     </a>
   </div>
@@ -2770,6 +2778,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
   <div class="concepts-grid reveal-stagger">
 
     <a href="/concept_coroutines" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c0.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">🧵</span>
         <span class="cc-meta">~20 min read</span>
@@ -2784,11 +2793,12 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">→</span>
+        <span class="cc-arrow">›</span>
       </div>
     </a>
 
     <a href="/concept_mvvm" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c1.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">🏛️</span>
         <span class="cc-meta">~35 min read</span>
@@ -2803,11 +2813,12 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">→</span>
+        <span class="cc-arrow">›</span>
       </div>
     </a>
 
     <a href="/concept_compose" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c2.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">🎨</span>
         <span class="cc-meta">~40 min read</span>
@@ -2822,11 +2833,12 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Beginner → Advanced</span>
-        <span class="cc-arrow">→</span>
+        <span class="cc-arrow">›</span>
       </div>
     </a>
 
     <a href="/concept_di" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c3.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">💉</span>
         <span class="cc-meta">~30 min read</span>
@@ -2841,11 +2853,12 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">→</span>
+        <span class="cc-arrow">›</span>
       </div>
     </a>
 
     <a href="/concept_recyclerview" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c4.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">♻️</span>
         <span class="cc-meta">~35 min read</span>
@@ -2860,11 +2873,12 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">→</span>
+        <span class="cc-arrow">›</span>
       </div>
     </a>
 
     <a href="/concept_kotlin" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c5.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">📗</span>
         <span class="cc-meta">~40 min read</span>
@@ -2879,11 +2893,12 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">→</span>
+        <span class="cc-arrow">›</span>
       </div>
     </a>
 
     <a href="/concept_android_fundamentals" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c6.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">📱</span>
         <span class="cc-meta">~45 min read</span>
@@ -2898,11 +2913,12 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Beginner → Advanced</span>
-        <span class="cc-arrow">→</span>
+        <span class="cc-arrow">›</span>
       </div>
     </a>
 
     <a href="/concept_room" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c7.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">🗄️</span>
         <span class="cc-meta">~35 min read</span>
@@ -2917,11 +2933,12 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate</span>
-        <span class="cc-arrow">→</span>
+        <span class="cc-arrow">›</span>
       </div>
     </a>
 
     <a href="/concept_workmanager" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c8.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">⚙️</span>
         <span class="cc-meta">~40 min read</span>
@@ -2936,11 +2953,12 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">→</span>
+        <span class="cc-arrow">›</span>
       </div>
     </a>
 
     <a href="/concept_networking" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c9.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">🌐</span>
         <span class="cc-meta">~30 min read</span>
@@ -2955,7 +2973,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">→</span>
+        <span class="cc-arrow">›</span>
       </div>
     </a>
 
@@ -2995,11 +3013,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
         <li><span class="chk">✓</span> New premium content as it is added</li>
         <li><span class="chk">✓</span> 7-day money-back guarantee</li>
       </ul>
-      <a href="/premium" class="btn-grad block"><span class="ico" aria-hidden="true">→</span><span class="lbl">Get Premium · ₹299/mo</span></a>
+      <a href="/premium" class="btn-grad block no-ico"><span class="lbl">Get Premium · ₹299/mo</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>
     </div>
   </div>
 
-  <p style="text-align:center;margin-top:22px;font-size:14px;color:var(--muted)"><a href="/premium" style="color:var(--green);font-weight:600;text-decoration:none">See everything inside Premium →</a></p>
+  <p style="text-align:center;margin-top:22px;font-size:14px;color:var(--muted)"><a href="/premium" style="color:var(--green);font-weight:600;text-decoration:none">See everything inside Premium ›</a></p>
 
 </section>
 
@@ -3022,7 +3040,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
   <div class="cta-orb cta-orb-3"></div>
   <h2 style="color:white;">Ready to Crack Your<br>Android Interview?</h2>
   <p class="cta-sub">Create your free account and get instant access to the most thorough Android interview prep platform.</p>
-  <a href="#" onclick="openAuthModal('signup'); return false;" class="btn-grad"><span class="ico" aria-hidden="true">→</span><span class="lbl">Create free account</span></a>
+  <a href="#" onclick="openAuthModal('signup'); return false;" class="btn-grad no-ico"><span class="lbl">Create free account</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>
   <div class="cta-trust">Free account · No credit card needed · Upgrade anytime</div>
 </div>
 
@@ -3075,7 +3093,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <a href="#" class="auth-forgot" onclick="handleForgot(event)">Forgot password?</a>
       <button class="auth-submit" id="siBtn" onclick="handleSignIn()">
-        Sign In →
+        Sign In ›
       </button>
 
       <div class="auth-divider">or continue with</div>
@@ -3084,7 +3102,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
         Continue with Google
       </button>
 
-      <div class="auth-switch">Don't have an account? <a href="#" onclick="switchTab('signup'); return false;">Create one free →</a></div>
+      <div class="auth-switch">Don't have an account? <a href="#" onclick="switchTab('signup'); return false;">Create one free ›</a></div>
     </div>
 
     <!-- SIGN UP FORM -->
@@ -3109,7 +3127,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
         <div class="auth-error" id="suPassErr">Password must be at least 6 characters.</div>
       </div>
       <button class="auth-submit" id="suBtn" onclick="handleSignUp()">
-        Create Free Account →
+        Create Free Account ›
       </button>
 
       <div class="auth-divider">or continue with</div>
@@ -3119,7 +3137,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </button>
 
       <div class="auth-terms">By signing up you agree to our <a href="#">Terms</a> & <a href="#">Privacy Policy</a>.</div>
-      <div class="auth-switch">Already have an account? <a href="#" onclick="switchTab('signin'); return false;">Sign in →</a></div>
+      <div class="auth-switch">Already have an account? <a href="#" onclick="switchTab('signin'); return false;">Sign in ›</a></div>
     </div>
 
     <!-- Email verification state (shown after signup) -->
@@ -3129,7 +3147,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p style="font-size:14px; color:var(--muted); line-height:1.7; margin-bottom:6px;">We sent a verification link to</p>
       <p style="font-size:14px; font-weight:700; color:var(--ink); margin-bottom:24px;" id="verifyEmailAddr"></p>
       <p style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:24px;">Click the link in the email to activate your account. Check your spam folder if you don't see it.</p>
-      <button onclick="closeAuthModal()" style="width:100%; background:var(--green); color:white; border:none; padding:14px; border-radius:100px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; margin-bottom:14px;">Got it →</button>
+      <button onclick="closeAuthModal()" style="width:100%; background:var(--green); color:white; border:none; padding:14px; border-radius:100px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; margin-bottom:14px;">Got it ›</button>
       <p style="font-size:13px; color:var(--muted);">Didn't receive it? <a href="#" id="resendEmail" onclick="resendVerification(); return false;" style="color:var(--green); font-weight:600; text-decoration:none;">Resend email</a></p>
     </div>
   </div>
@@ -3231,9 +3249,9 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     if (!pass) { showErr('siPassErr','siPassword'); valid = false; }
     if (!valid) return;
 
-    setLoading('siBtn', true, 'Sign In →');
+    setLoading('siBtn', true, 'Sign In ›');
     const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
-    setLoading('siBtn', false, 'Sign In →');
+    setLoading('siBtn', false, 'Sign In ›');
 
     if (error) {
       gtag('event', 'sign_in_error', { error_message: error.message });
@@ -3271,13 +3289,13 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     if (pass.length < 6)                 { showErr('suPassErr','suPassword'); valid = false; }
     if (!valid) return;
 
-    setLoading('suBtn', true, 'Create Free Account →');
+    setLoading('suBtn', true, 'Create Free Account ›');
     const { data, error } = await db.auth.signUp({
       email,
       password: pass,
       options: { data: { full_name: name } }
     });
-    setLoading('suBtn', false, 'Create Free Account →');
+    setLoading('suBtn', false, 'Create Free Account ›');
 
     if (error) {
       if (error.message.toLowerCase().includes('already registered') ||
@@ -3289,11 +3307,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       return;
     }
 
-    // Session is null → email confirmation required
+    // Session is null › email confirmation required
     if (data.user && !data.session) {
       showVerifyState(email);
     } else if (data.session) {
-      // Email confirmation disabled in Supabase → logged in immediately
+      // Email confirmation disabled in Supabase › logged in immediately
       gtag('event', 'sign_up', { method: 'email' });
       closeAuthModal();
       updateNavForUser(data.user);
@@ -3623,12 +3641,12 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       if (!el || !s.owner) return;   // signed-out visitors see nothing personal
       var n = R.nudgeFor(s, new Date());
       var head = document.createElement('span'), b = document.createElement('b'), small = document.createElement('small'), go = document.createElement('span');
-      b.textContent = n.headline; small.textContent = n.detail.length > 90 ? n.detail.slice(0, 87) + '…' : n.detail; go.textContent = n.cta + ' →';
+      b.textContent = n.headline; small.textContent = n.detail.length > 90 ? n.detail.slice(0, 87) + '…' : n.detail; go.textContent = n.cta + ' ›';
       head.appendChild(b); head.appendChild(small);
       el.textContent = ''; el.appendChild(head); el.appendChild(go);
       el.href = n.href; el.hidden = false;
       el.onclick = function () { try { gtag('event', 'resume_strip_click', { kind: n.kind }); } catch (e) {} };
-      if (cta && s.goals) { var lbl = cta.querySelector('.lbl'); (lbl || cta).textContent = lbl ? 'Continue my plan' : 'Continue my plan →'; cta.href = n.kind === 'continue' || n.kind === 'start_today' || n.kind === 'welcome_back' ? n.href : '/roadmap'; }
+      if (cta && s.goals) { var lbl = cta.querySelector('.lbl'); (lbl || cta).textContent = lbl ? 'Continue my plan' : 'Continue my plan'; cta.href = n.kind === 'continue' || n.kind === 'start_today' || n.kind === 'welcome_back' ? n.href : '/roadmap'; }
     } catch (e) { /* never break the homepage */ }
   }
   window.addEventListener('load', function () {
