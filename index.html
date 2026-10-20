@@ -2194,6 +2194,10 @@ h2 span[style*="--green"]{background:linear-gradient(100deg,#2e6040 0%,#3f9a6c 5
 .topic-card:hover .tc-arrow{background:linear-gradient(135deg,var(--a),var(--b)) !important;color:#fff}
 
 /* concept cards */
+.concept-card .cc-art{margin:-24px -24px 6px;height:124px;background-size:cover;background-position:center;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.concept-card{overflow:hidden}
+.concept-card:hover .cc-art{transform:scale(1.05)}
+.concept-card .cc-art{position:relative;z-index:0}
 .concepts-grid>.concept-card{--a:var(--a5);--b:var(--b5)}
 .concepts-grid>.concept-card:nth-child(5n+2){--a:var(--a1);--b:var(--b1)}.concepts-grid>.concept-card:nth-child(5n+3){--a:var(--a3);--b:var(--b3)}.concepts-grid>.concept-card:nth-child(5n+4){--a:var(--a2);--b:var(--b2)}.concepts-grid>.concept-card:nth-child(5n+5){--a:var(--a4);--b:var(--b4)}
 .concept-card{border:0 !important;border-radius:24px;background:#fff;box-shadow:0 8px 26px rgba(40,40,100,.09);overflow:hidden}
@@ -2774,6 +2778,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
   <div class="concepts-grid reveal-stagger">
 
     <a href="/concept_coroutines" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c0.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">🧵</span>
         <span class="cc-meta">~20 min read</span>
@@ -2793,6 +2798,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     </a>
 
     <a href="/concept_mvvm" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c1.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">🏛️</span>
         <span class="cc-meta">~35 min read</span>
@@ -2812,6 +2818,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     </a>
 
     <a href="/concept_compose" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c2.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">🎨</span>
         <span class="cc-meta">~40 min read</span>
@@ -2831,6 +2838,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     </a>
 
     <a href="/concept_di" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c3.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">💉</span>
         <span class="cc-meta">~30 min read</span>
@@ -2850,6 +2858,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     </a>
 
     <a href="/concept_recyclerview" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c4.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">♻️</span>
         <span class="cc-meta">~35 min read</span>
@@ -2869,6 +2878,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     </a>
 
     <a href="/concept_kotlin" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c5.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">📗</span>
         <span class="cc-meta">~40 min read</span>
@@ -2888,6 +2898,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     </a>
 
     <a href="/concept_android_fundamentals" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c6.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">📱</span>
         <span class="cc-meta">~45 min read</span>
@@ -2907,6 +2918,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     </a>
 
     <a href="/concept_room" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c7.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">🗄️</span>
         <span class="cc-meta">~35 min read</span>
@@ -2926,6 +2938,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     </a>
 
     <a href="/concept_workmanager" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c8.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">⚙️</span>
         <span class="cc-meta">~40 min read</span>
@@ -2945,6 +2958,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     </a>
 
     <a href="/concept_networking" class="concept-card reveal">
+      <div class="cc-art" style="background-image:url(/assets/img/concepts/c9.svg)" aria-hidden="true"></div>
       <div class="cc-top">
         <span class="cc-icon">🌐</span>
         <span class="cc-meta">~30 min read</span>
