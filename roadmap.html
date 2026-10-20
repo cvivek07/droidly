@@ -325,7 +325,8 @@ input:focus{outline:none;border-color:var(--green)}
     if (!authReady) { app.innerHTML = '<div class="card" style="max-width:720px;margin:0 auto"><p class="sub">Loading your progress…</p></div>'; return; }
     if (!user && !loadErr) return renderGate();
     if (loadErr) {
-      app.innerHTML = '<div class="card" style="max-width:720px;margin:0 auto"><h2>Could not load your progress</h2><p class="sub">Your saved plan lives in your account, so we will not start a new one on top of it. Check your connection and try again. (' + esc(loadErr) + ')</p><div class="actions"><button class="btn" id="retryLoad" type="button">Try again</button></div></div>';
+      var setupMissing = /PGRST205|PGRST204|42P01|schema cache/.test(String(loadErr));
+      app.innerHTML = '<div class="card" style="max-width:720px;margin:0 auto"><h2>' + (setupMissing ? 'Setup is not finished' : 'Could not load your progress') + '</h2><p class="sub">' + (setupMissing ? 'The database tables that store your progress have not been created yet. Run the Supabase migration, then try again.' : 'Your saved plan lives in your account, so we will not start a new one on top of it. Check your connection and try again.') + ' (' + esc(loadErr) + ')</p><div class="actions"><button class="btn" id="retryLoad" type="button">Try again</button></div></div>';
       document.getElementById('retryLoad').onclick = function () { loadErr = null; authReady = false; render(); R.sync().then(function (r) { settle(r && r.ok ? null : (r && r.reason) || 'network'); }); };
       return;
     }
