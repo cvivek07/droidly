@@ -2538,7 +2538,6 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
 <section class="ha-hero">
   <div class="ha-wrap ha-hero-grid">
     <div class="ha-hero-copy">
-      <a id="resumeStrip" class="resume-strip" href="/roadmap" hidden></a>
       <span class="ha-eyebrow">Android interview prep</span>
       <h1 class="ha-h1">Know exactly what to study for your Android interview.</h1>
       <p class="ha-lead">Tell us your level and target company. Droidly turns 600+ real Android interview questions into a topic-by-topic path, with Kotlin code and an in-depth lesson for every topic.</p>
@@ -3233,8 +3232,10 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     try {
       var R = window.Readiness; if (!R) return;
       var s = R.load(), el = document.getElementById('resumeStrip'), cta = document.getElementById('heroPrimaryCta');
-      if (!el || !s.owner) return;   // signed-out visitors see nothing personal
+      if (!s.owner) return;   // signed-out visitors see nothing personal
       var n = R.nudgeFor(s, new Date());
+      if (cta && s.goals) { var lb = cta.querySelector('.lbl'); (lb || cta).textContent = 'Continue my plan'; cta.href = n.href; }
+      if (!el) return;   // the homepage no longer shows the next-topic strip
       var st = n.stats || {}, ttl, sub;
       ttl = n.headline; sub = n.detail;
       function mk(tag, cls, text) { var x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; }
