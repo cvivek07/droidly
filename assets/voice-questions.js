@@ -51,7 +51,7 @@
     st.textContent = '.q-meta .tts-ic{margin-left:auto}.q-meta .tts-ic+.rd-side{margin-left:8px}' +
       '.topic-header .tts-topic{margin-top:14px;background:rgba(255,255,255,.92);color:#14444d;border-color:transparent;box-shadow:0 6px 16px rgba(0,0,0,.12);font-size:14px;padding:9px 16px 9px 12px}' +
       '.topic-header .tts-topic.on{background:#fff;color:#168592}' +
-      '.q-answer-inner .tts-now{padding-left:6px}' +
+      '.q-answer-inner p.tts-now{padding-left:6px}' +
       '@media(max-width:640px){.q-meta .tts-ic{width:30px;height:30px}.q-meta .tts-ic svg{width:14px;height:14px}}';
     document.head.appendChild(st);
 
