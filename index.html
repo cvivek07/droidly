@@ -2058,7 +2058,7 @@
 .frame{padding:var(--frame-pad);background:linear-gradient(125deg,#1f5a3b 0%,#2f8a5f 36%,#86bd8e 64%,#e2a850 100%)}
 .frame-card{border-radius:clamp(24px,3vw,40px);overflow:hidden;background:radial-gradient(55% 45% at 94% 86%,rgba(226,168,80,.17),transparent 70%),radial-gradient(50% 45% at 4% 0%,rgba(76,175,112,.17),transparent 70%),#f6faf5}
 
-nav{top:calc(var(--frame-pad) + 14px);left:50%;right:auto;transform:translateX(-50%);width:min(1360px,calc(100% - 2*var(--frame-pad) - 28px));height:64px;padding:0 12px 0 20px;border-radius:20px;border:1px solid rgba(15,17,23,.06);background:rgba(255,255,255,.88);box-shadow:0 10px 30px rgba(20,50,35,.10)}
+nav{top:calc(var(--frame-pad) + 14px);left:50%;right:auto;transform:translateX(-50%);width:min(1360px,calc(100% - 2*var(--frame-pad) - 28px));height:64px;padding:0 12px 0 20px;border-radius:20px;border:1px solid rgba(15,17,23,.06);background:rgba(255,255,255,.8);box-shadow:0 10px 30px rgba(20,50,35,.10)}
 nav::before{display:none}
 nav .nav-link{color:#14171f;font-weight:600;font-size:14.5px}
 nav .nav-link:hover{color:#2e6040;background:rgba(61,122,79,.08)}
@@ -2365,6 +2365,23 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
 .topics-grid .tc-arrow{background:color-mix(in srgb,var(--a) 12%,#fff);color:var(--a)}
 .topics-grid>.topic-card:hover .tc-arrow{background:linear-gradient(135deg,var(--a),var(--b)) !important;color:#fff}
 @media (max-width:640px){.topics-grid>.topic-card{min-height:0;padding:112px 14px 14px}.topics-grid>.topic-card::before{height:96px !important}.topics-grid .tc-title{font-size:15px}.topics-grid .tc-top{right:8px;top:8px}}
+
+/* topic card arrow: larger chevron */
+.topics-grid .tc-footer{gap:10px}
+.topics-grid .tc-count{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.topics-grid .tc-arrow{flex:none;width:40px;height:40px;padding:0 !important;border-radius:50%;display:grid;place-items:center;font-size:0;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--a) 22%,transparent);transition:background .2s,color .2s,box-shadow .2s,transform .2s}
+.topics-grid .tc-arrow svg{display:block;transition:transform .2s}
+.topics-grid>.topic-card:hover .tc-arrow{box-shadow:0 8px 18px color-mix(in srgb,var(--a) 35%,transparent);transform:scale(1.06)}
+.topics-grid>.topic-card:hover .tc-arrow svg{transform:translateX(2px)}
+@media (max-width:640px){.topics-grid .tc-footer{position:static}.topics-grid .tc-arrow{position:absolute;right:10px;top:79px;width:34px;height:34px;background:#fff !important;box-shadow:0 6px 14px rgba(20,30,50,.18);z-index:3}.topics-grid .tc-arrow svg{width:17px;height:17px}.topics-grid .tc-count{overflow:visible}}
+
+/* concept card arrow: chevron in a circle, matching the topic cards */
+.concept-card .cc-footer{gap:10px;margin-top:8px}
+.concept-card .cc-arrow{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:0;background:color-mix(in srgb,var(--a) 12%,#fff);color:var(--a) !important;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--a) 22%,transparent);transition:background .2s,color .2s,box-shadow .2s,transform .2s}
+.concept-card .cc-arrow svg{display:block;transition:transform .2s}
+.concept-card:hover .cc-arrow{background:linear-gradient(135deg,var(--a),var(--b));color:#fff !important;box-shadow:0 8px 18px color-mix(in srgb,var(--a) 35%,transparent);transform:scale(1.06)}
+.concept-card:hover .cc-arrow svg{transform:translateX(2px)}
+@media (max-width:640px){.concept-card .cc-arrow{width:34px;height:34px}.concept-card .cc-arrow svg{width:17px;height:17px}}
 </style>
 </head>
 <body>
@@ -2613,7 +2630,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
   </div>
 
   <div class="topics-grid reveal-stagger">
-    <a href="#" onclick="goToQuestions('#android'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/android.webp)">
+    <a href="#" onclick="goToQuestions('#android'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/android.svg)">
       <div class="tc-top">
         <div class="tc-icon">🤖</div>
 
@@ -2622,11 +2639,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Activity & Fragment lifecycle, Intents, Services, Permissions, BroadcastReceivers, and 2025 APIs.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#kotlin'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/kotlin.webp)">
+    <a href="#" onclick="goToQuestions('#kotlin'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/kotlin.svg)">
       <div class="tc-top">
         <div class="tc-icon">🟣</div>
 
@@ -2635,11 +2652,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Null safety, extension functions, sealed classes, coroutines, generics, and Kotlin 2.0 features.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#compose'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/compose.webp)">
+    <a href="#" onclick="goToQuestions('#compose'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/compose.svg)">
       <div class="tc-top">
         <div class="tc-icon">🎨</div>
 
@@ -2648,11 +2665,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Recomposition, state hoisting, side effects, custom layouts, animations, and Compose internals.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#coroutines'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/coroutines.webp)">
+    <a href="#" onclick="goToQuestions('#coroutines'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/coroutines.svg)">
       <div class="tc-top">
         <div class="tc-icon">⚡</div>
 
@@ -2661,11 +2678,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Suspend functions, dispatchers, StateFlow, SharedFlow, channels, and structured concurrency.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#architecture'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/architecture.webp)">
+    <a href="#" onclick="goToQuestions('#architecture'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/architecture.svg)">
       <div class="tc-top">
         <div class="tc-icon">🏛️</div>
 
@@ -2674,11 +2691,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">MVVM, MVI, Clean Architecture, multi-module apps, feature modules, and navigation patterns.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#di'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/di.webp)">
+    <a href="#" onclick="goToQuestions('#di'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/di.svg)">
       <div class="tc-top">
         <div class="tc-icon">💉</div>
 
@@ -2687,11 +2704,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Hilt, Dagger 2, component scopes, multibindings, testing with DI, and KSP migration.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#networking'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/networking.webp)">
+    <a href="#" onclick="goToQuestions('#networking'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/networking.svg)">
       <div class="tc-top">
         <div class="tc-icon">🌐</div>
 
@@ -2700,11 +2717,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Retrofit, OkHttp, interceptors, token refresh, SSL pinning, REST vs GraphQL, and gRPC.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#storage'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/storage.webp)">
+    <a href="#" onclick="goToQuestions('#storage'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/storage.svg)">
       <div class="tc-top">
         <div class="tc-icon">🗄️</div>
 
@@ -2713,11 +2730,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Room, DataStore, SharedPreferences, migrations, encrypted storage, and offline strategies.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#buildtools'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/buildtools.webp)">
+    <a href="#" onclick="goToQuestions('#buildtools'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/buildtools.svg)">
       <div class="tc-top">
         <div class="tc-icon">🔧</div>
 
@@ -2726,11 +2743,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Gradle, R8, ProGuard, APK vs AAB, build variants, flavors, and APK size reduction.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#performance'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/performance.webp)">
+    <a href="#" onclick="goToQuestions('#performance'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/performance.svg)">
       <div class="tc-top">
         <div class="tc-icon">🚀</div>
 
@@ -2739,11 +2756,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Memory leaks, overdraw, ANR, startup time, and profiling with Android Studio tools.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#sysdesign'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/sysdesign.webp)">
+    <a href="#" onclick="goToQuestions('#sysdesign'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/sysdesign.svg)">
       <div class="tc-top">
         <div class="tc-icon">🏗️</div>
         <span class="tc-badge premium">Premium</span>
@@ -2752,11 +2769,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Design WhatsApp, Instagram, Uber for Android. Offline sync, scalability, architecture decisions.</p>
       <div class="tc-footer">
         <span class="tc-count">Case studies</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
-    <a href="#" onclick="goToQuestions('#hr'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/hr.webp)">
+    <a href="#" onclick="goToQuestions('#hr'); return false;" class="topic-card reveal" style="--img:url(/assets/img/topics/hr.svg)">
       <div class="tc-top">
         <div class="tc-icon">🤝</div>
 
@@ -2765,11 +2782,11 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">STAR method answers, conflict resolution, and leadership stories for Android developer roles.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
-    <a href="/mock_interview" class="topic-card reveal" style="--img:url(/assets/img/topics/mock.webp)">
+    <a href="/mock_interview" class="topic-card reveal" style="--img:url(/assets/img/topics/mock.svg)">
       <div class="tc-top">
         <div class="tc-icon">🎯</div>
         <span class="tc-badge" style="background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">1:1 · Live</span>
@@ -2778,10 +2795,10 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Personal 1:1 session with an Android engineer. Resume-based questions, real feedback, and a written report. Booked separately, not part of Premium.</p>
       <div class="tc-footer">
         <span class="tc-count">₹1,499 / session</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
-    <a href="/machine_coding" class="topic-card reveal" style="--img:url(/assets/img/topics/machine.webp)">
+    <a href="/machine_coding" class="topic-card reveal" style="--img:url(/assets/img/topics/machine.svg)">
       <div class="tc-top">
         <div class="tc-icon">⌨️</div>
         <span class="tc-badge" style="background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">Kotlin IDE</span>
@@ -2790,7 +2807,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Practice real interview coding problems in Kotlin — LRU cache, rate limiter, state machines, and a hands-on Android UI challenge.</p>
       <div class="tc-footer">
         <span class="tc-count">Coding problems</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
   </div>
@@ -2824,7 +2841,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">›</span>
+        <span class="cc-arrow" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
       </div>
     </a>
 
@@ -2844,7 +2861,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">›</span>
+        <span class="cc-arrow" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
       </div>
     </a>
 
@@ -2864,7 +2881,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Beginner → Advanced</span>
-        <span class="cc-arrow">›</span>
+        <span class="cc-arrow" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
       </div>
     </a>
 
@@ -2884,7 +2901,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">›</span>
+        <span class="cc-arrow" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
       </div>
     </a>
 
@@ -2904,7 +2921,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">›</span>
+        <span class="cc-arrow" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
       </div>
     </a>
 
@@ -2924,7 +2941,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">›</span>
+        <span class="cc-arrow" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
       </div>
     </a>
 
@@ -2944,7 +2961,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Beginner → Advanced</span>
-        <span class="cc-arrow">›</span>
+        <span class="cc-arrow" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
       </div>
     </a>
 
@@ -2964,7 +2981,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate</span>
-        <span class="cc-arrow">›</span>
+        <span class="cc-arrow" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
       </div>
     </a>
 
@@ -2984,7 +3001,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">›</span>
+        <span class="cc-arrow" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
       </div>
     </a>
 
@@ -3004,7 +3021,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       </div>
       <div class="cc-footer">
         <span class="cc-readtime">Intermediate → Advanced</span>
-        <span class="cc-arrow">›</span>
+        <span class="cc-arrow" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
       </div>
     </a>
 
