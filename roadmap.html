@@ -17,6 +17,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/assets/auth-dialog.js" defer></script>
+<script src="/assets/voice.js" defer></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -423,6 +424,11 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
 .ln-qa details[open] summary::before{content:"▾ "}
 .ln-qa details p{margin-top:10px;font-size:15px;line-height:1.7;color:var(--ink2);background:#fff;border-radius:12px;padding:12px 14px}
 @media(max-width:640px){.ln-mis-h{display:none}.ln-mis-r{grid-template-columns:1fr}.ln-mis-r .bad::before{content:"✕ ";color:#b6341c;font-weight:800}.ln-mis-r .good::before{content:"✓ ";color:#1d6b3e;font-weight:800}.ln-toc{flex-wrap:nowrap;overflow-x:auto}.ln-toc button{flex:none}}
+
+/* read aloud in lessons */
+.ln-step{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ln-listen .tts-btn{text-transform:none;letter-spacing:0}
+.ln-main .tts-now{padding-left:6px}
 </style>
 </head>
 <body>
@@ -899,7 +905,7 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
     function codeCard(c, prefix) {
       var k = codes.length; codes.push(c.src);
       var label = c.lang === 'text' || /^example/i.test(c.title) ? '' : (prefix || 'Example: ');
-      return '<div class="ln-ex"><div class="ln-ex-h">' + label + esc(c.title) + '</div>' +
+      return '<div class="ln-ex" data-tts="Code example: ' + esc(c.title.replace(/^example:\s*/i, '')) + '."><div class="ln-ex-h">' + label + esc(c.title) + '</div>' +
         '<div class="ln-code"><div class="ln-bar"><span>' + esc(LANG_NAME[c.lang] || c.lang) + '</span><button type="button" class="ln-copy" data-copy="' + k + '">Copy</button></div>' +
         '<pre><code>' + highlight(c.src, c.lang) + '</code></pre></div></div>';
     }
@@ -908,7 +914,7 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
     var toc = [['ln-intro', 'Overview']].concat(deep.map(function (d, k) { return ['ln-s' + k, d.h]; }));
     if (l.mistakes) toc.push(['ln-mistakes', 'Common mistakes']);
     if (l.qa) toc.push(['ln-qa', 'Interview question']);
-    var main = '<article class="ln-main"><div class="ln-step">Lesson ' + (i + 1) + ' of ' + n + ' · about ' + mins + ' min read</div><h2>' + (i + 1) + '. ' + esc(l.title) + '</h2>' +
+    var main = '<article class="ln-main"><div class="ln-step"><span>Lesson ' + (i + 1) + ' of ' + n + ' · about ' + mins + ' min read</span><span class="ln-listen"></span></div><h2>' + (i + 1) + '. ' + esc(l.title) + '</h2>' +
       (deep.length ? '<div class="ln-toc"><b>In this lesson</b>' + toc.map(function (x) { return '<button type="button" data-goto="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : '') +
       '<div id="ln-intro">' + l.body.map(function (p) { return '<p class="ln-p">' + fmt(p) + '</p>'; }).join('') + '</div>' +
       '<h3 class="ln-h3">Key concepts</h3><ul class="ln-pts">' + l.points.map(function (p) { return '<li>' + fmt(p) + '</li>'; }).join('') + '</ul>' +
@@ -921,7 +927,7 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
       '<div class="ln-tip"><span class="ln-tip-ic">💡</span><div><b>Pro tip</b><p>' + fmt(l.tip) + '</p></div></div>' +
       (l.mistakes ? '<section class="ln-sec" id="ln-mistakes"><h3 class="ln-h3">Common mistakes</h3><div class="ln-mis">' +
         '<div class="ln-mis-h"><span>✕ Avoid</span><span>✓ Do this instead</span></div>' +
-        l.mistakes.map(function (m) { return '<div class="ln-mis-r"><div class="bad">' + fmt(m.bad) + '</div><div class="good">' + fmt(m.good) + '</div></div>'; }).join('') + '</div></section>' : '') +
+        l.mistakes.map(function (m) { return '<div class="ln-mis-r"><div class="bad" data-tts="Avoid: ' + esc(m.bad.replace(/[`*]/g, '')) + '">' + fmt(m.bad) + '</div><div class="good" data-tts="Instead: ' + esc(m.good.replace(/[`*]/g, '')) + '">' + fmt(m.good) + '</div></div>'; }).join('') + '</div></section>' : '') +
       (l.qa ? '<section class="ln-sec" id="ln-qa"><div class="ln-qa"><div class="ln-qa-k">Interview question</div><p class="ln-qa-q">' + fmt(l.qa.q) + '</p>' +
         '<details><summary>Try answering out loud first, then show the model answer</summary><p>' + fmt(l.qa.a) + '</p></details></div></section>' : '') +
       '<div class="ln-nav">' + (i > 0 ? '<button type="button" class="btn ghost small" data-lesson="' + (i - 1) + '">‹ ' + esc(t.lessons[i - 1].title) + '</button>' : '<span></span>') +
@@ -941,6 +947,7 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
   function bindLearn(id) {
     app.querySelectorAll('[data-lesson]').forEach(function (b) {
       b.onclick = function () {
+        if (window.DroidlyVoice) DroidlyVoice.stop();
         lessonAt[id] = +b.dataset.lesson; track('roadmap_lesson_open', { topic: id, lesson: lessonAt[id] }); render();
         var top = app.querySelector('.tp-body'); if (top) window.scrollTo({ top: top.getBoundingClientRect().top + window.scrollY - 84, behavior: 'smooth' });
       };
@@ -951,6 +958,17 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
         try { navigator.clipboard.writeText(src).then(function () { cp.textContent = 'Copied'; setTimeout(function () { cp.textContent = 'Copy'; }, 1500); }); } catch (e) { toast('Copy is not available here.'); }
       };
     });
+    var slot = app.querySelector('.ln-listen'), V = window.DroidlyVoice;
+    if (slot && V && V.supported) {
+      var t = lessonsData[id], k = Math.min(lessonAt[id] || 0, t.lessons.length - 1), l = t.lessons[k], key = 'lesson:' + id + ':' + k;
+      var btn = V.button('Listen to this lesson', function () {
+        track('voice_play', { from: 'lesson', topic: id, lesson: k });
+        var main = app.querySelector('.ln-main');
+        V.play([{ key: key, title: (k + 1) + '. ' + l.title, titleEl: main.querySelector('h2'), speakTitle: 'Lesson ' + (k + 1) + '. ' + l.title,
+          root: main, opts: { skip: '.ln-step,h2,.ln-toc,.ln-nav,.ln-mis-h', detailsLead: 'Try answering it out loud first. Here is the model answer.' } }]);
+      }, key, false);
+      slot.appendChild(btn);
+    }
     app.querySelectorAll('[data-goto]').forEach(function (b) {
       b.onclick = function () { var el = document.getElementById(b.dataset.goto); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' }); };
     });
@@ -1197,7 +1215,7 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
   }
 
   /* ---------- boot ---------- */
-  window.addEventListener('hashchange', function () { if (index && authReady && view === 'dash') { render(); window.scrollTo(0, 0); } });
+  window.addEventListener('hashchange', function () { if (window.DroidlyVoice) DroidlyVoice.stop(); if (index && authReady && view === 'dash') { render(); window.scrollTo(0, 0); } });
   R.load();   // also removes anything older versions left in this browser
   R.onChange(function () { if (index && view && view !== 'diag' && authReady) render(); });   // the quiz saves as you go; do not redraw it under the user
   fetch('assets/roadmap-index.json').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (j) {
