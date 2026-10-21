@@ -397,6 +397,32 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
   .ln-code pre{font-size:12px;padding:14px}
   .ln-nav .btn{width:100%;justify-content:center}
 }
+
+/* ===== lesson deep dives ===== */
+.ln-toc{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0 14px;padding:12px 14px;border-radius:14px;background:var(--bg2)}
+.ln-toc b{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.ln-toc button{font:inherit;font-size:13px;font-weight:600;color:var(--ink2);background:#fff;border:1px solid var(--bg3);border-radius:100px;padding:5px 12px;cursor:pointer}
+.ln-toc button:hover{border-color:var(--ca);color:var(--ca)}
+.ln-sec{margin-top:8px;padding-top:6px}
+.ln-sec .ln-h3{font-size:18px;margin-top:26px;padding-left:12px;border-left:4px solid var(--ca)}
+.ln-mis{border:1px solid var(--bg3);border-radius:16px;overflow:hidden}
+.ln-mis-h,.ln-mis-r{display:grid;grid-template-columns:1fr 1fr}
+.ln-mis-h span{padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.ln-mis-h span:first-child{background:#fff1ee;color:#b6341c}.ln-mis-h span:last-child{background:#e9f8ef;color:#1d6b3e}
+.ln-mis-r{border-top:1px solid var(--bg3)}
+.ln-mis-r>div{padding:11px 14px;font-size:14px;line-height:1.5;color:var(--ink2)}
+.ln-mis-r .bad{background:#fffafa}.ln-mis-r .good{background:#fbfffc}
+.ln-mis-r code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88em;background:var(--bg2);padding:1px 5px;border-radius:5px}
+.ln-qa{margin-top:24px;padding:18px 20px;border-radius:18px;background:linear-gradient(120deg,color-mix(in srgb,var(--cb) 18%,#fff),#fff);border:1.5px solid color-mix(in srgb,var(--ca) 30%,#fff)}
+.ln-qa-k{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ca)}
+.ln-qa-q{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:17px;line-height:1.45;margin-top:6px}
+.ln-qa details{margin-top:12px}
+.ln-qa summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--ca);list-style:none}
+.ln-qa summary::-webkit-details-marker{display:none}
+.ln-qa summary::before{content:"▸ ";}
+.ln-qa details[open] summary::before{content:"▾ "}
+.ln-qa details p{margin-top:10px;font-size:15px;line-height:1.7;color:var(--ink2);background:#fff;border-radius:12px;padding:12px 14px}
+@media(max-width:640px){.ln-mis-h{display:none}.ln-mis-r{grid-template-columns:1fr}.ln-mis-r .bad::before{content:"✕ ";color:#b6341c;font-weight:800}.ln-mis-r .good::before{content:"✓ ";color:#1d6b3e;font-weight:800}.ln-toc{flex-wrap:nowrap;overflow-x:auto}.ln-toc button{flex:none}}
 </style>
 </head>
 <body>
@@ -869,17 +895,39 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
     var list = '<div class="ln-list" role="navigation" aria-label="Lessons">' + t.lessons.map(function (x, k) {
       return '<button type="button" class="ln-item' + (k === i ? ' on' : '') + '" data-lesson="' + k + '" aria-current="' + (k === i) + '"><span class="ln-n">' + (k + 1) + '</span><span>' + esc(x.title) + '</span></button>';
     }).join('') + '<a class="ln-item ln-more" href="#readMore"><span class="ln-n">📚</span><span>Further reading</span></a></div>';
-    var code = l.code ? '<div class="ln-ex"><div class="ln-ex-h">' + (l.code.lang === 'text' ? '' : 'Example: ') + esc(l.code.title) + '</div>' +
-      '<div class="ln-code"><div class="ln-bar"><span>' + esc(LANG_NAME[l.code.lang] || l.code.lang) + '</span><button type="button" class="ln-copy" id="lnCopy">Copy</button></div>' +
-      '<pre><code>' + highlight(l.code.src, l.code.lang) + '</code></pre></div></div>' : '';
-    var main = '<article class="ln-main"><div class="ln-step">Lesson ' + (i + 1) + ' of ' + n + '</div><h2>' + (i + 1) + '. ' + esc(l.title) + '</h2>' +
-      l.body.map(function (p) { return '<p class="ln-p">' + fmt(p) + '</p>'; }).join('') +
+    var codes = [];
+    function codeCard(c, prefix) {
+      var k = codes.length; codes.push(c.src);
+      var label = c.lang === 'text' || /^example/i.test(c.title) ? '' : (prefix || 'Example: ');
+      return '<div class="ln-ex"><div class="ln-ex-h">' + label + esc(c.title) + '</div>' +
+        '<div class="ln-code"><div class="ln-bar"><span>' + esc(LANG_NAME[c.lang] || c.lang) + '</span><button type="button" class="ln-copy" data-copy="' + k + '">Copy</button></div>' +
+        '<pre><code>' + highlight(c.src, c.lang) + '</code></pre></div></div>';
+    }
+    var deep = l.deep || [];
+    var words = JSON.stringify(l).split(/\s+/).length, mins = Math.max(2, Math.round(words / 180));
+    var toc = [['ln-intro', 'Overview']].concat(deep.map(function (d, k) { return ['ln-s' + k, d.h]; }));
+    if (l.mistakes) toc.push(['ln-mistakes', 'Common mistakes']);
+    if (l.qa) toc.push(['ln-qa', 'Interview question']);
+    var main = '<article class="ln-main"><div class="ln-step">Lesson ' + (i + 1) + ' of ' + n + ' · about ' + mins + ' min read</div><h2>' + (i + 1) + '. ' + esc(l.title) + '</h2>' +
+      (deep.length ? '<div class="ln-toc"><b>In this lesson</b>' + toc.map(function (x) { return '<button type="button" data-goto="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : '') +
+      '<div id="ln-intro">' + l.body.map(function (p) { return '<p class="ln-p">' + fmt(p) + '</p>'; }).join('') + '</div>' +
       '<h3 class="ln-h3">Key concepts</h3><ul class="ln-pts">' + l.points.map(function (p) { return '<li>' + fmt(p) + '</li>'; }).join('') + '</ul>' +
-      code +
+      (l.code ? codeCard(l.code) : '') +
+      deep.map(function (d, k) {
+        return '<section class="ln-sec" id="ln-s' + k + '"><h3 class="ln-h3">' + esc(d.h) + '</h3>' +
+          d.p.map(function (p) { return '<p class="ln-p">' + fmt(p) + '</p>'; }).join('') +
+          (d.code ? codeCard(d.code) : '') + '</section>';
+      }).join('') +
       '<div class="ln-tip"><span class="ln-tip-ic">💡</span><div><b>Pro tip</b><p>' + fmt(l.tip) + '</p></div></div>' +
+      (l.mistakes ? '<section class="ln-sec" id="ln-mistakes"><h3 class="ln-h3">Common mistakes</h3><div class="ln-mis">' +
+        '<div class="ln-mis-h"><span>✕ Avoid</span><span>✓ Do this instead</span></div>' +
+        l.mistakes.map(function (m) { return '<div class="ln-mis-r"><div class="bad">' + fmt(m.bad) + '</div><div class="good">' + fmt(m.good) + '</div></div>'; }).join('') + '</div></section>' : '') +
+      (l.qa ? '<section class="ln-sec" id="ln-qa"><div class="ln-qa"><div class="ln-qa-k">Interview question</div><p class="ln-qa-q">' + fmt(l.qa.q) + '</p>' +
+        '<details><summary>Try answering out loud first, then show the model answer</summary><p>' + fmt(l.qa.a) + '</p></details></div></section>' : '') +
       '<div class="ln-nav">' + (i > 0 ? '<button type="button" class="btn ghost small" data-lesson="' + (i - 1) + '">‹ ' + esc(t.lessons[i - 1].title) + '</button>' : '<span></span>') +
       (i < n - 1 ? '<button type="button" class="btn small" data-lesson="' + (i + 1) + '">Next: ' + esc(t.lessons[i + 1].title) + ' ' + CHEV + '</button>'
         : '<button type="button" class="btn small" data-tab-go="practice">Done reading. Practise now ' + CHEV + '</button>') + '</div></article>';
+    learnHtml.codes = codes;
     var arts = t.articles || [], own = arts.filter(function (a) { return a.src === 'Droidly'; }), ext = arts.filter(function (a) { return a.src !== 'Droidly'; });
     function artRow(a) {
       var out = a.src !== 'Droidly';
@@ -897,11 +945,15 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
         var top = app.querySelector('.tp-body'); if (top) window.scrollTo({ top: top.getBoundingClientRect().top + window.scrollY - 84, behavior: 'smooth' });
       };
     });
-    var cp = document.getElementById('lnCopy');
-    if (cp) cp.onclick = function () {
-      var l = lessonsData[id].lessons[Math.min(lessonAt[id] || 0, lessonsData[id].lessons.length - 1)];
-      try { navigator.clipboard.writeText(l.code.src).then(function () { cp.textContent = 'Copied'; setTimeout(function () { cp.textContent = 'Copy'; }, 1500); }); } catch (e) { toast('Copy is not available here.'); }
-    };
+    app.querySelectorAll('[data-copy]').forEach(function (cp) {
+      cp.onclick = function () {
+        var src = (learnHtml.codes || [])[+cp.dataset.copy]; if (src == null) return;
+        try { navigator.clipboard.writeText(src).then(function () { cp.textContent = 'Copied'; setTimeout(function () { cp.textContent = 'Copy'; }, 1500); }); } catch (e) { toast('Copy is not available here.'); }
+      };
+    });
+    app.querySelectorAll('[data-goto]').forEach(function (b) {
+      b.onclick = function () { var el = document.getElementById(b.dataset.goto); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' }); };
+    });
     var more = app.querySelector('.ln-more'); if (more) more.onclick = function (e) { e.preventDefault(); var r = document.getElementById('readMore'); if (r) r.scrollIntoView({ behavior: 'smooth' }); };
   }
 
