@@ -2365,6 +2365,15 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
 .topics-grid .tc-arrow{background:color-mix(in srgb,var(--a) 12%,#fff);color:var(--a)}
 .topics-grid>.topic-card:hover .tc-arrow{background:linear-gradient(135deg,var(--a),var(--b)) !important;color:#fff}
 @media (max-width:640px){.topics-grid>.topic-card{min-height:0;padding:112px 14px 14px}.topics-grid>.topic-card::before{height:96px !important}.topics-grid .tc-title{font-size:15px}.topics-grid .tc-top{right:8px;top:8px}}
+
+/* topic card arrow: larger chevron */
+.topics-grid .tc-footer{gap:10px}
+.topics-grid .tc-count{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.topics-grid .tc-arrow{flex:none;width:40px;height:40px;padding:0 !important;border-radius:50%;display:grid;place-items:center;font-size:0;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--a) 22%,transparent);transition:background .2s,color .2s,box-shadow .2s,transform .2s}
+.topics-grid .tc-arrow svg{display:block;transition:transform .2s}
+.topics-grid>.topic-card:hover .tc-arrow{box-shadow:0 8px 18px color-mix(in srgb,var(--a) 35%,transparent);transform:scale(1.06)}
+.topics-grid>.topic-card:hover .tc-arrow svg{transform:translateX(2px)}
+@media (max-width:640px){.topics-grid .tc-footer{position:static}.topics-grid .tc-arrow{position:absolute;right:10px;top:79px;width:34px;height:34px;background:#fff !important;box-shadow:0 6px 14px rgba(20,30,50,.18);z-index:3}.topics-grid .tc-arrow svg{width:17px;height:17px}.topics-grid .tc-count{overflow:visible}}
 </style>
 </head>
 <body>
@@ -2622,7 +2631,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Activity & Fragment lifecycle, Intents, Services, Permissions, BroadcastReceivers, and 2025 APIs.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
@@ -2635,7 +2644,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Null safety, extension functions, sealed classes, coroutines, generics, and Kotlin 2.0 features.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
@@ -2648,7 +2657,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Recomposition, state hoisting, side effects, custom layouts, animations, and Compose internals.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
@@ -2661,7 +2670,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Suspend functions, dispatchers, StateFlow, SharedFlow, channels, and structured concurrency.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
@@ -2674,7 +2683,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">MVVM, MVI, Clean Architecture, multi-module apps, feature modules, and navigation patterns.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
@@ -2687,7 +2696,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Hilt, Dagger 2, component scopes, multibindings, testing with DI, and KSP migration.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
@@ -2700,7 +2709,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Retrofit, OkHttp, interceptors, token refresh, SSL pinning, REST vs GraphQL, and gRPC.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
@@ -2713,7 +2722,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Room, DataStore, SharedPreferences, migrations, encrypted storage, and offline strategies.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
@@ -2726,7 +2735,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Gradle, R8, ProGuard, APK vs AAB, build variants, flavors, and APK size reduction.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
@@ -2739,7 +2748,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Memory leaks, overdraw, ANR, startup time, and profiling with Android Studio tools.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
@@ -2752,7 +2761,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Design WhatsApp, Instagram, Uber for Android. Offline sync, scalability, architecture decisions.</p>
       <div class="tc-footer">
         <span class="tc-count">Case studies</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
@@ -2765,7 +2774,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">STAR method answers, conflict resolution, and leadership stories for Android developer roles.</p>
       <div class="tc-footer">
         <span class="tc-count">Questions &amp; answers</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
 
@@ -2778,7 +2787,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Personal 1:1 session with an Android engineer. Resume-based questions, real feedback, and a written report. Booked separately, not part of Premium.</p>
       <div class="tc-footer">
         <span class="tc-count">₹1,499 / session</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
     <a href="/machine_coding" class="topic-card reveal" style="--img:url(/assets/img/topics/machine.svg)">
@@ -2790,7 +2799,7 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
       <p class="tc-desc">Practice real interview coding problems in Kotlin — LRU cache, rate limiter, state machines, and a hands-on Android UI challenge.</p>
       <div class="tc-footer">
         <span class="tc-count">Coding problems</span>
-        <div class="tc-arrow">›</div>
+        <div class="tc-arrow" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
       </div>
     </a>
   </div>
