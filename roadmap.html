@@ -502,6 +502,11 @@ body{background:var(--hg-bg) !important}
 .opt:hover,.opt[aria-pressed=true]{border-color:var(--hg)}
 .opt.right{border-color:var(--hg);background:var(--hg-tint)}
 @media(max-width:640px){.dash-head{border-radius:20px}}
+
+/* no per-topic icons */
+.rm-row{grid-template-columns:30px minmax(0,1fr) auto !important}
+.rm-row.completed .rm-num{color:#2e6040}
+@media(max-width:640px){.rm-row{grid-template-columns:26px minmax(0,1fr) auto !important;padding:12px 8px}.rm-num{display:block !important}}
 </style>
 </head>
 <body>
@@ -837,7 +842,6 @@ body{background:var(--hg-bg) !important}
     var shown = x.complete ? x.total : Math.min(x.done, x.total);
     return '<a class="rm-row ' + x.status + '" href="#topic/' + esc(x.id) + '" style="' + palette(x.id) + '">' +
       '<span class="rm-num">' + pad2(x.index + 1) + '</span>' +
-      '<span class="rm-ic">' + (x.complete ? CHECK : info[0]) + '</span>' +
       '<span class="rm-body"><b>' + esc(x.name) + '</b><small>' + esc(info[1]) + '</small>' +
       '<span class="rm-meta">' + (x.why ? esc(x.why) + ' · ' : '') + shown + ' of ' + x.total + ' steps</span></span>' +
       '<span class="rm-end">' + statusPill(x.status) + (locked ? '<span class="pill lock">🔒</span>' : '') + CHEV + '</span></a>';
@@ -854,13 +858,13 @@ body{background:var(--hg-bg) !important}
     if (cur) {
       var info = TOPIC_INFO[cur.id] || ['📚', ''];
       cl = '<a class="cl-card" href="#topic/' + esc(cur.id) + '" style="' + palette(cur.id) + '">' +
-        '<span class="cl-ic">' + info[0] + '</span><span class="cl-main"><span class="cl-kick">' + (cur.done > 0 ? 'Continue learning' : 'Start here') + '</span>' +
+        '<span class="cl-main"><span class="cl-kick">' + (cur.done > 0 ? 'Continue learning' : 'Start here') + '</span>' +
         '<b class="cl-name">' + pad2(cur.index + 1) + ' · ' + esc(cur.name) + '</b>' +
         '<span class="cl-why">' + esc(cur.why || info[1]) + '</span>' +
         '<span class="cl-prog"><span class="bar"><i style="width:' + cur.pct + '%"></i></span><span>' + cur.done + ' of ' + cur.total + ' steps · about ' + cur.minLeft + ' min left</span></span></span>' +
         '<span class="btn cl-go">' + (cur.done > 0 ? 'Continue' : 'Start') + ' ' + CHEV + '</span></a>';
     } else {
-      cl = '<div class="cl-card done"><span class="cl-ic">🎉</span><span class="cl-main"><span class="cl-kick">Roadmap complete</span><b class="cl-name">All ' + pp.total + ' topics done</b><span class="cl-why">Retake the skill check to find what to revise before the interview.</span></span>' +
+      cl = '<div class="cl-card done"><span class="cl-main"><span class="cl-kick">Roadmap complete</span><b class="cl-name">All ' + pp.total + ' topics done</b><span class="cl-why">Retake the skill check to find what to revise before the interview.</span></span>' +
         '<button class="btn cl-go" id="rebuild2" type="button">Retake skill check</button></div>';
     }
     app.innerHTML =
@@ -920,7 +924,7 @@ body{background:var(--hg-bg) !important}
       '<div class="card tp-card" style="' + palette(id) + '">' +
         '<div class="tp-top"><div class="tp-ring"><svg width="68" height="68" viewBox="0 0 68 68"><circle cx="34" cy="34" r="27" fill="none" stroke="#eaecf0" stroke-width="6"/><circle cx="34" cy="34" r="27" fill="none" stroke="url(#tpg)" stroke-width="6" stroke-linecap="round" stroke-dasharray="' + (circ * pct / 100).toFixed(1) + ' ' + circ.toFixed(1) + '" transform="rotate(-90 34 34)"/>' +
         '<defs><linearGradient id="tpg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--ca)"/><stop offset="1" stop-color="var(--cb)"/></linearGradient></defs></svg><b>' + pad2(x.index + 1) + '</b></div>' +
-        '<div class="tp-title"><h1>' + info[0] + ' ' + esc(x.name) + '</h1><p class="sub">' + esc(info[1]) + '</p></div>' +
+        '<div class="tp-title"><h1>' + esc(x.name) + '</h1><p class="sub">' + esc(info[1]) + '</p></div>' +
         '<div class="tp-side">' + statusPill(x.status) + '</div></div>' +
         '<div class="tp-prog"><div class="bar"><i style="width:' + pct + '%"></i></div><span><b>' + shown + '</b> of ' + x.total + ' steps completed</span></div>' +
         '<div class="tp-bar"><div class="tabs tp-tabs" role="tablist">' + [['learn', 'Learn'], ['practice', 'Practice'], ['quiz', 'Quiz']].map(function (t) {
