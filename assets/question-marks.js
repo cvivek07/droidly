@@ -47,6 +47,7 @@
     c.btns.save.setAttribute('aria-pressed', !!m.b);
     c.btns.save.title = m.b ? 'Saved' : 'Save to revisit later'; c.btns.save.setAttribute('aria-label', c.btns.save.title);
     c.btns.save.querySelector('path').setAttribute('fill', m.b ? 'currentColor' : 'none');
+    var lbl = c.btns.save.querySelector('.rd-lbl'); if (lbl) lbl.textContent = m.b ? 'Saved' : 'Save';
     var html = '';
     if (m.s === 'revisit') html += '<span class="rd-chip rev">↻ Revisit</span>';
     c.chip.innerHTML = html;
@@ -91,8 +92,15 @@
         var bar = document.createElement('div'); bar.className = 'rd-bar';
         var got = icoBtn('rd-ic-done', '<path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>', gate(id, function () { var m = R.get().marks[id]; R.setMark(id, { s: m && m.s ? m.s : 'got_it' }); }));
         var save = icoBtn('rd-ic-save', '<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1L3.2 9.6l6.1-.8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>', gate(id, function () { var m = R.get().marks[id]; R.setMark(id, { b: !(m && m.b) }); }));
-        var side = document.createElement('div'); side.className = 'rd-side'; side.appendChild(got); side.appendChild(save);
-        meta.appendChild(side);
+        var right = card.querySelector('.q-right'), tools = card.querySelector('.qa-tools');
+        if (right && tools) {                       // redesigned page: check on the row, Save next to the answer
+          right.appendChild(got);
+          save.classList.add('rd-ic-pill'); save.insertAdjacentHTML('beforeend', '<span class="rd-lbl">Save</span>');
+          tools.appendChild(save);
+        } else {
+          var side = document.createElement('div'); side.className = 'rd-side'; side.appendChild(got); side.appendChild(save);
+          meta.appendChild(side);
+        }
         var link = document.createElement('a'); link.className = 'rd-link'; link.href = '/roadmap.html'; link.textContent = 'Your roadmap ›';
         var hint = document.createElement('div'); hint.className = 'rd-hint'; hint.style.display = 'none';
         hint.innerHTML = 'Sign in to save your progress and build your plan. It is free. <a href="#" class="rd-signin" style="color:#3d7a4f;font-weight:600">Sign in</a>';

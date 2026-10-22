@@ -26,11 +26,13 @@
     function track(name, p) { try { if (typeof gtag === 'function') gtag('event', name, p || {}); } catch (e) { /* ignore */ } }
 
     all.forEach(function (card) {
-      var meta = card.querySelector('.q-meta'); if (!meta || meta.querySelector('.tts-btn')) return;
+      var tools = card.querySelector('.qa-tools'), meta = card.querySelector('.q-meta');
+      if ((tools && tools.querySelector('.tts-btn')) || (!tools && (!meta || meta.querySelector('.tts-btn')))) return;
       var b = V.button('Listen', function () {
         track('voice_play', { from: 'question' });
         V.play(queueFrom(card));
-      }, card.dataset.ttsKey, true);
+      }, card.dataset.ttsKey, !tools);
+      if (tools) { tools.insertBefore(b, tools.firstChild); return; }   // redesigned page: next to "Answer"
       var side = meta.querySelector('.rd-side');
       if (side) meta.insertBefore(b, side); else meta.appendChild(b);
     });
