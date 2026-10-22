@@ -18,6 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/assets/auth-dialog.js" defer></script>
 <script src="/assets/voice.js" defer></script>
+<script src="/assets/doubts.js" defer></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -1007,6 +1008,7 @@ body{background:var(--hg-bg) !important}
         l.mistakes.map(function (m) { return '<div class="ln-mis-r"><div class="bad" data-tts="Avoid: ' + esc(m.bad.replace(/[`*]/g, '')) + '">' + fmt(m.bad) + '</div><div class="good" data-tts="Instead: ' + esc(m.good.replace(/[`*]/g, '')) + '">' + fmt(m.good) + '</div></div>'; }).join('') + '</div></section>' : '') +
       (l.qa ? '<section class="ln-sec" id="ln-qa"><div class="ln-qa"><div class="ln-qa-k">Interview question</div><p class="ln-qa-q">' + fmt(l.qa.q) + '</p>' +
         '<details><summary>Try answering out loud first, then show the model answer</summary><p>' + fmt(l.qa.a) + '</p></details></div></section>' : '') +
+      '<div class="ln-doubt"></div>' +
       '<div class="ln-nav">' + (i > 0 ? '<button type="button" class="btn ghost small" data-lesson="' + (i - 1) + '">‹ ' + esc(t.lessons[i - 1].title) + '</button>' : '<span></span>') +
       (i < n - 1 ? '<button type="button" class="btn small" data-lesson="' + (i + 1) + '">Next: ' + esc(t.lessons[i + 1].title) + ' ' + CHEV + '</button>'
         : '<button type="button" class="btn small" data-tab-go="practice">Done reading. Practise now ' + CHEV + '</button>') + '</div></article>';
@@ -1035,6 +1037,11 @@ body{background:var(--hg-bg) !important}
         try { navigator.clipboard.writeText(src).then(function () { cp.textContent = 'Copied'; setTimeout(function () { cp.textContent = 'Copy'; }, 1500); }); } catch (e) { toast('Copy is not available here.'); }
       };
     });
+    var dslot = app.querySelector('.ln-doubt');
+    if (dslot && window.DroidlyDoubts) {
+      var dt = lessonsData[id], dk = Math.min(lessonAt[id] || 0, dt.lessons.length - 1);
+      DroidlyDoubts.mount(dslot, { itemId: 'lesson:' + id + ':' + dk, title: dt.lessons[dk].title + ' (' + (index.topics[id] ? index.topics[id].name : id) + ')', page: 'lesson' });
+    }
     var slot = app.querySelector('.ln-listen'), V = window.DroidlyVoice;
     if (slot && V && V.supported) {
       var t = lessonsData[id], k = Math.min(lessonAt[id] || 0, t.lessons.length - 1), l = t.lessons[k], key = 'lesson:' + id + ':' + k;
