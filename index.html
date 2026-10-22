@@ -2495,6 +2495,26 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
   .ha .ha-btn-main{width:100%}
   .ha .ha-path{padding:18px}.ha .ha-row{padding:10px}
 }
+
+/* ── polish: solid buttons, phone menu, nav pinned on scroll ── */
+.btn-nav,.hcard-btn.fill,.auth-submit{background:#2e6040 !important;border-color:transparent !important;box-shadow:0 4px 12px rgba(46,96,64,.20) !important}
+.btn-nav:hover,.hcard-btn.fill:hover,.auth-submit:hover{background:#24503a !important}
+nav{transition:top .2s ease,width .2s ease,border-radius .2s ease,box-shadow .2s ease}
+nav.nav-pinned{top:0 !important;width:100% !important;border-radius:0 !important;border-width:0 0 1px !important;border-color:rgba(15,17,23,.08) !important;background:rgba(255,255,255,.92) !important;box-shadow:0 2px 14px rgba(20,50,35,.06) !important;padding-left:max(20px,calc((100% - 1360px)/2 + 20px)) !important;padding-right:max(12px,calc((100% - 1360px)/2 + 12px)) !important}
+.nav-menu-btn{display:none;align-items:center;justify-content:center;width:42px;height:42px;margin-left:auto;margin-right:8px;border:0;border-radius:12px;background:transparent;color:#0f1117;cursor:pointer;font-family:inherit}
+.nav-menu-btn:hover{background:rgba(61,122,79,.08)}
+.nav-menu-btn path{transition:transform .2s,opacity .2s;transform-origin:12px 12px}
+.nav-menu-btn[aria-expanded="true"] .l1{transform:translateY(5px) rotate(45deg)}
+.nav-menu-btn[aria-expanded="true"] .l2{opacity:0}
+.nav-menu-btn[aria-expanded="true"] .l3{transform:translateY(-5px) rotate(-45deg)}
+.nav-menu{position:absolute;top:calc(100% + 8px);left:0;right:0;background:#fff;border:1px solid rgba(15,17,23,.08);border-radius:18px;box-shadow:0 18px 40px rgba(20,50,35,.14);padding:8px;display:flex;flex-direction:column}
+.nav-menu[hidden]{display:none}
+nav.nav-pinned .nav-menu{left:12px;right:12px}
+.nav-menu a{display:flex;flex-direction:column;gap:2px;padding:14px 16px;border-radius:12px;text-decoration:none;color:#0f1117;font-weight:700;font-size:16px}
+.nav-menu a span{font-weight:500;font-size:13px;color:#5b6472}
+.nav-menu a:hover,.nav-menu a:active{background:#f1f6f3}
+@media (max-width:900px){.nav-menu-btn{display:inline-flex}}
+@media (min-width:901px){.nav-menu{display:none !important}}
 </style>
 </head>
 <body>
@@ -2512,6 +2532,12 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
     <a href="/questions" class="nav-link">Questions</a>
     <a href="/roadmap" class="nav-link">Roadmap</a>
     <a href="#how-it-works" class="nav-link">How it works</a>
+  </div>
+  <button type="button" class="nav-menu-btn" id="navMenuBtn" aria-label="Menu" aria-expanded="false" aria-controls="navMenu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path class="l1" d="M4 7h16"/><path class="l2" d="M4 12h16"/><path class="l3" d="M4 17h16"/></svg></button>
+  <div class="nav-menu" id="navMenu" hidden>
+    <a href="/questions">Questions <span>600+ with answers</span></a>
+    <a href="/roadmap">Roadmap <span>Your topic-by-topic plan</span></a>
+    <a href="#how-it-works">How it works</a>
   </div>
   <div class="nav-right" id="navRight">
     <!-- Logged-out state -->
@@ -2622,9 +2648,9 @@ section.compare-section>.compare-wrap{grid-column:2;grid-row:1 / span 4;margin-t
   <div class="ha-wrap">
     <div class="ha-head"><span class="ha-kick">What's inside</span><h2 class="ha-h2">Everything for the Android rounds, in one place.</h2></div>
     <div class="ha-g3">
-      <a class="ha-card ha-feature" href="/questions" onclick="gtag('event','home_feature',{f:'questions'})"><span class="ha-ic" style="background:#e8f2ec;color:#2e6040"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h10"/></svg></span><h3>Question bank</h3><p>600+ questions across 13 topics, each with a clear answer, Kotlin code and an interview tip.</p><span class="ha-chip ha-chip-green">Free</span></a>
-      <a class="ha-card ha-feature" href="/roadmap" onclick="gtag('event','home_feature',{f:'lessons'})"><span class="ha-ic" style="background:#e6e9fb;color:#3d4fb8"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5v16"/></svg></span><h3>In-depth lessons</h3><p>How each concept really works, common mistakes and a model interview answer. Read it or listen to it.</p><span class="ha-chip ha-chip-green">Free</span></a>
-      <a class="ha-card ha-feature" href="/roadmap" onclick="gtag('event','home_feature',{f:'path'})"><span class="ha-ic" style="background:#fbeee2;color:#b4561a"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h4l3-7 3 4 6-10"/><circle cx="20" cy="6" r="1.5"/></svg></span><h3>Skill check and learning path</h3><p>A 10-minute check finds your gaps, then all 13 topics are ordered for your level, weakest first.</p><span class="ha-chip ha-chip-green">Free</span></a>
+      <a class="ha-card ha-feature" href="/questions" onclick="gtag('event','home_feature',{f:'questions'})"><span class="ha-ic" style="background:#e8f2ec;color:#2e6040"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h10"/></svg></span><h3>Question bank</h3><p>600+ questions across 13 topics, each with a clear answer, Kotlin code and an interview tip.</p></a>
+      <a class="ha-card ha-feature" href="/roadmap" onclick="gtag('event','home_feature',{f:'lessons'})"><span class="ha-ic" style="background:#e6e9fb;color:#3d4fb8"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5v16"/></svg></span><h3>In-depth lessons</h3><p>How each concept really works, common mistakes and a model interview answer. Read it or listen to it.</p></a>
+      <a class="ha-card ha-feature" href="/roadmap" onclick="gtag('event','home_feature',{f:'path'})"><span class="ha-ic" style="background:#fbeee2;color:#b4561a"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h4l3-7 3 4 6-10"/><circle cx="20" cy="6" r="1.5"/></svg></span><h3>Skill check and learning path</h3><p>A 10-minute check finds your gaps, then all 13 topics are ordered for your level, weakest first.</p></a>
     </div>
     <div class="ha-topics-head">Popular topics</div>
     <div class="ha-topics">
@@ -3332,6 +3358,21 @@ window.addEventListener('load', function () {
   }, 'home-q', false);
   slot.appendChild(b);
 });
+</script>
+
+<script>
+(function(){
+  var nav=document.querySelector('nav'), btn=document.getElementById('navMenuBtn'), menu=document.getElementById('navMenu');
+  if(!nav) return;
+  function pin(){ nav.classList.toggle('nav-pinned', window.scrollY > 24); }
+  window.addEventListener('scroll', pin, {passive:true}); pin();
+  if(!btn||!menu) return;
+  function set(open){ btn.setAttribute('aria-expanded', open); menu.hidden = !open; }
+  btn.addEventListener('click', function(e){ e.stopPropagation(); set(menu.hidden); });
+  menu.addEventListener('click', function(e){ if(e.target.closest('a')) set(false); });
+  document.addEventListener('click', function(e){ if(!menu.hidden && !menu.contains(e.target)) set(false); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') set(false); });
+})();
 </script>
 </body>
 </html>
