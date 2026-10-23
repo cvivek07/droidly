@@ -470,6 +470,7 @@ body{background:var(--hg-bg) !important}
 .cl-go{background:var(--hg) !important;box-shadow:none !important}
 .cl-prog .bar i,.tp-prog .bar i,.rm-bar i{background:#3d7a4f !important}
 .saved-card{background:#fff !important}
+.pr-card .pr-ic{background:var(--hg-tint) !important;color:var(--hg) !important}
 /* roadmap list */
 .rm-row:hover,.rm-row.next,.rm-row.in_progress{background:#f7faf8 !important}
 .rm-row.in_progress,.rm-row.next{box-shadow:inset 0 0 0 1.5px #d7e6dc}
@@ -516,6 +517,7 @@ body{background:var(--hg-bg) !important}
   <div class="nav-center">
     <a href="/questions" class="nav-link">Questions</a>
     <a href="/roadmap" class="nav-link active">Roadmap</a>
+    <a href="/practice" class="nav-link">Practice</a>
     <a href="/mock_interview" class="nav-link">Mock Interview</a>
     <a href="/premium" class="nav-link">Premium</a>
   </div>
@@ -885,6 +887,7 @@ body{background:var(--hg-bg) !important}
         '<div class="meta-line">Confidence: <b>' + r.confidence + '</b> · ' + r.attempted + ' answered <span class="info" tabindex="0" title="Based on your skill-check answers and the questions you mark. It gets more reliable as you answer more. It is a study estimate, not a test score.">ⓘ</span></div>' +
         levelRowHtml(byLevel) + '</div>' +
         diagCardHtml(s) +
+        '<a class="card saved-card pr-card" href="/practice"><span class="sv-ic pr-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M9 15.5l2 2 4-4"/></svg></span><span class="sv-t"><b>Daily practice</b><small>5 questions a day from your path. Missed ones come back until they stick.</small></span>' + CHEV + '</a>' +
         '<a class="card saved-card" href="#saved"><span class="sv-ic">★</span><span class="sv-t"><b>Saved questions</b><small>' + (saved.length ? saved.length + ' to revisit later' : 'Tap ☆ on any question to keep it here') + '</small></span>' + CHEV + '</a>' +
       '</div>' +
       '<div><div class="card"><div class="rm-head"><div><h2>Learning roadmap</h2><p class="sub" style="font-size:13px;margin-top:2px">Ordered for your level and weak areas. Tap a topic to learn it.</p></div>' +
