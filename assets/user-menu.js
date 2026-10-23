@@ -10,6 +10,7 @@
     roadmap: '<path d="M4 19h4l3-7 3 4 6-10"/><circle cx="20" cy="6" r="1.5"/>',
     questions: '<path d="M4 5h16M4 12h16M4 19h10"/>',
     saved: '<path d="M6 3h12v18l-6-4-6 4z"/>',
+    practice: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M9 15.5l2 2 4-4"/>',
     signout: '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/>'
   };
   function icon(k) {
@@ -17,6 +18,7 @@
   }
   var ITEMS = [
     ['profile', 'Profile', '/profile'],
+    ['practice', 'Daily practice', '/practice'],
     ['roadmap', 'My roadmap', '/roadmap'],
     ['questions', 'Questions', '/questions'],
     ['saved', 'Saved questions', '/roadmap#saved']

@@ -112,6 +112,19 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
 .pill.next{color:#1d4a30;background:#fff;box-shadow:inset 0 0 0 1.5px #c9e0d1}
 .pill.not_started{color:#4b5563;background:#eef0f3}
 
+/* practice */
+.pr{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.pr-main{flex:1;min-width:220px}
+.pr-main h2{font-size:19px;display:flex;align-items:center;gap:8px}
+.pr-main p{font-size:14.5px;color:var(--muted);margin-top:4px}
+.flame{color:#e09a2b}
+.pwk{display:flex;gap:6px;margin-top:12px}
+.pwk div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);font-weight:600}
+.pwk i{width:26px;height:26px;border-radius:50%;border:1.5px solid #dfe5e1;display:grid;place-items:center;font-style:normal;color:#fff}
+.pwk .done i{background:#3d7a4f;border-color:#3d7a4f}
+.pwk .started i{border-color:#3d7a4f;border-style:dashed}
+.pwk .today{color:var(--ink)}
+
 /* account */
 .rows{display:flex;flex-direction:column}
 .row{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-top:1px solid #eef1ef;font-size:15px}
@@ -152,6 +165,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
   <div class="nav-center">
     <a href="/questions" class="nav-link">Questions</a>
     <a href="/roadmap" class="nav-link">Roadmap</a>
+    <a href="/practice" class="nav-link">Practice</a>
   </div>
   <div class="nav-right">
     <button class="btn-nav" id="navSignIn" type="button">Sign In</button>
@@ -174,6 +188,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
 <div class="toast" id="toast" role="status"></div>
 
 <script src="/assets/readiness.js"></script>
+<script src="/assets/practice.js"></script>
+<script src="/assets/reminder.js"></script>
 <script>
 (function () {
   'use strict';
@@ -184,7 +200,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
   window.DroidlyDb = db;   // the sign-in dialog reuses this client
 
   var app = document.getElementById('app');
-  var user = null, loaded = false, loadErr = null;
+  var user = null, loaded = false, loadErr = null, pdays = null;   // pdays: practice_days rows, null if unavailable
 
   var LEVEL = { '0-2': ['SDE 1', '0–2 years of experience'], '2-5': ['SDE 2', '2–5 years of experience'], '5+': ['SDE 3 / Senior', '5+ years of experience'] };
   var COMPANY = { product: 'Product company', startup: 'Startup', service: 'Service company' };
@@ -253,6 +269,19 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
       '<div class="stat"><b>' + esc(check) + '</b><span>' + (last && last.n ? 'last skill check, ' + esc(fmtDate(new Date(last.t), false)) : 'skill check') + '</span></div></section>';
   }
 
+  function practice() {
+    if (!pdays) return '';
+    var P = window.DroidlyPractice, today = P.ymd(new Date()), st = P.streak(pdays, today);
+    var row = pdays.filter(function (d) { return d.day === today; })[0], n = row ? P.doneCount(row) : 0, of = row && row.items ? row.items.length : 5;
+    var line = st.doneToday ? 'Done for today. Come back tomorrow to keep it going.' : n ? n + ' of ' + of + ' done today. Finish the set to keep your streak.' : 'Today\'s 5 questions are ready, picked from your weak topics.';
+    var tick = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    var wk = P.week(pdays, today).map(function (d) { return '<div class="' + (d.done ? 'done ' : d.started ? 'started ' : '') + (d.isToday ? 'today' : '') + '"><i>' + (d.done ? tick : '') + '</i>' + d.label + '</div>'; }).join('');
+    return '<section class="card pr"><div class="pr-main"><h2><svg class="flame" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1 3.5 5 5.6 5 10.5A5 5 0 0 1 12 22a5 5 0 0 1-5-5.2c0-2.2 1.1-3.6 2.3-4.8.2 1.6 1 2.7 2.2 3.1C11 12 10.3 6 12 2z"/></svg>' +
+      (st.current ? st.current + '-day practice streak' : 'Daily practice') + '</h2><p>' + esc(line) + '</p><div class="pwk">' + wk + '</div></div>' +
+      '<a class="btn' + (st.doneToday ? ' ghost' : '') + '" href="/practice">' + (st.doneToday ? 'See today\'s set' : n ? 'Continue' : 'Start today\'s 5') + '</a>' +
+      '<div id="rmdSlot" style="flex-basis:100%;border-top:1px solid #eef1ef;padding-top:16px" hidden></div></section>';
+  }
+
   function goal(s) {
     var g = s.goals;
     if (!g) return '<section class="card"><div class="card-h"><h2>Your goal</h2></div><p class="muted">You have not set a goal yet. Tell us your level, company type and interview date to get a learning path made for you.</p>' +
@@ -301,12 +330,19 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
     if (!loaded) return;
     var s = R.get(), pp = s.goals ? R.pathProgress(s) : null;
     var warn = loadErr ? '<div class="card" style="padding:14px 18px;background:#fff8ec;border-color:#f3dfb8"><p style="font-size:14px;color:#8a4b05">Some progress could not be loaded right now, so these numbers may be incomplete. <a class="link" href="" style="font-size:14px">Reload</a></p></div>' : '';
-    app.innerHTML = warn + header(user) + stats(s, pp) + goal(s) + path(s, pp) + account(user);
+    app.innerHTML = warn + header(user) + stats(s, pp) + practice() + goal(s) + path(s, pp) + account(user);
     document.getElementById('pSignOut').onclick = signOut;
+    var rs = document.getElementById('rmdSlot'); if (rs && window.DroidlyReminder) DroidlyReminder.mount(rs);
   }
 
   function load() {
-    return R.sync().then(function (r) { loadErr = r && r.ok ? null : (r && r.reason) || 'network'; })
+    var since = window.DroidlyPractice.addDays(window.DroidlyPractice.ymd(new Date()), -60);
+    var pjob = db.auth.getSession().then(function (r) {
+      var tok = r.data && r.data.session && r.data.session.access_token; if (!tok) return null;
+      return fetch(SUPABASE_URL + '/rest/v1/practice_days?select=day,items,results&day=gte.' + since, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok } })
+        .then(function (x) { return x.ok ? x.json() : null; });
+    }).catch(function () { return null; }).then(function (rows) { pdays = rows; });   // practice tables missing: just hide the card
+    return Promise.all([R.sync(), pjob]).then(function (res) { var r = res[0]; loadErr = r && r.ok ? null : (r && r.reason) || 'network'; })
       .catch(function (e) { loadErr = String(e && e.message || e); })
       .then(function () { loaded = true; render(); track('profile_view', { has_goal: !!R.get().goals }); });
   }

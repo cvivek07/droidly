@@ -786,6 +786,7 @@
     skillsToImprove: skillsToImprove, stepMin: stepMin, buildPlan: buildPlan, buildPath: buildPath, pathProgress: pathProgress, isDone: isDone, nudgeFor: nudgeFor,
     ymd: ymd, parseYmd: parseYmd, daysBetween: daysBetween,
     load: load, get: function () { return state; }, onChange: onChange, configure: configure, sync: sync,
+    flush: function () { clearTimeout(pushTimer); return flushPush(); },   // send pending writes now (e.g. right after a deliberate action)
     setGoals: setGoals, setRating: setRating, setMark: setMark, setJD: setJD, setTopicComplete: setTopicComplete, recordDiag: recordDiag, clearDiag: clearDiag, clearLocal: clearLocal, ensurePlan: ensurePlan,
     _setState: function (s) { state = s; }                           // tests only
   };
