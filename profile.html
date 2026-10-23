@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+<meta name="theme-color" content="#2e6040"/>
+<title>Your profile — Droidly</title>
+<meta name="robots" content="noindex"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/auth-dialog.js" defer></script>
+<script src="/assets/user-menu.js" defer></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-61G11MD574');
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#2e6040;--g2:#244d33;--g-dark:#0f2a1d;--g-tint:#e8f2ec;--bg:#f4f7f5;--line:#e3e8e5;
+  --ink:#0f1117;--ink2:#374151;--muted:#5b6472;--bg2:#f4f6f9;--bg3:#eaecf0;--border:rgba(15,17,23,.08);
+  --green:#2e6040;--green2:#244d33;--green-pale:#f0f8f2;--shadow-lg:0 18px 40px rgba(20,50,35,.14);
+  --card-shadow:0 10px 30px rgba(30,40,60,.07);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;font-size:16px;line-height:1.55;padding-top:68px;min-height:100vh}
+a{color:inherit}
+h1,h2{font-family:'Plus Jakarta Sans','DM Sans',sans-serif;letter-spacing:-.02em;line-height:1.2}
+
+/* nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 max(20px,calc((100% - 1200px)/2));background:rgba(255,255,255,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.5px;color:var(--ink)}
+.logo img{height:32px;width:auto;display:block}
+.nav-center{display:flex;gap:4px}
+.nav-link{color:#14171f;text-decoration:none;font-size:14.5px;font-weight:600;padding:8px 14px;border-radius:10px}
+.nav-link:hover{color:var(--g);background:rgba(61,122,79,.08)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.btn-nav{background:var(--g);color:#fff;padding:9px 20px;border-radius:100px;font:inherit;font-size:14px;font-weight:700;border:0;cursor:pointer}
+.btn-nav:hover{background:var(--g2)}
+.nav-user{display:none;align-items:center;gap:8px;position:relative;cursor:pointer;padding:4px 6px 4px 4px;border-radius:100px}
+.nav-user:hover{background:#f4f7f5}
+.nav-avatar{width:34px;height:34px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.nav-user-name{font-size:14px;font-weight:600}
+.nav-caret{font-size:11px;color:var(--muted)}
+.user-dropdown{display:none;position:absolute;right:0;top:46px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 18px 40px rgba(20,50,35,.14)}
+.nav-user:hover .user-dropdown,.nav-user:focus-within .user-dropdown{display:block}
+.user-dropdown::before{content:'';position:absolute;left:0;right:0;top:-12px;height:12px}
+@media(max-width:760px){.nav-center{display:none}.nav-user-name,.nav-caret{display:none}}
+
+/* page */
+.wrap{max-width:880px;margin:0 auto;padding:32px 20px 72px;display:flex;flex-direction:column;gap:20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--card-shadow);padding:26px 28px}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.card-h h2{font-size:19px}
+.kick{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--g)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--g);color:#fff;text-decoration:none;font:inherit;font-size:14.5px;font-weight:700;padding:11px 20px;border-radius:100px;border:0;cursor:pointer}
+.btn:hover{background:var(--g2)}
+.btn.ghost{background:#fff;color:var(--g);border:1.5px solid var(--g)}
+.btn.ghost:hover{background:var(--g-tint)}
+.btn.small{font-size:13.5px;padding:8px 14px}
+.link{color:var(--g);font-weight:700;text-decoration:none;font-size:14.5px}
+.link:hover{text-decoration:underline}
+.muted{color:var(--muted)}
+
+/* header */
+.who{display:flex;align-items:center;gap:20px}
+.who-av{width:76px;height:76px;flex:none;border-radius:50%;background:var(--g);color:#fff;display:grid;place-items:center;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:26px;overflow:hidden;position:relative}
+.who-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.who h1{font-size:28px}
+.who-mail{color:var(--ink2);font-size:15px;word-break:break-all}
+.who-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:#1d4a30;background:var(--g-tint);border-radius:100px;padding:4px 10px}
+.tag.grey{color:#4b5563;background:#eef0f3}
+
+/* stats band */
+.stats{background:var(--g-dark);color:#fff;border-radius:22px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:22px 10px}
+.stat{padding:4px 18px;border-left:1px solid rgba(255,255,255,.12)}
+.stat:first-child{border-left:0}
+.stat b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.02em}
+.stat span{font-size:13.5px;color:#cfe0d6}
+
+/* goal */
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fact{background:#f7faf8;border:1px solid #e9eeeb;border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.ic{width:38px;height:38px;flex:none;border-radius:11px;background:var(--g-tint);color:var(--g);display:grid;place-items:center}
+.fact small{display:block;font-size:12.5px;color:var(--muted);font-weight:600}
+.fact b{display:block;font-size:15.5px;color:var(--ink);margin-top:1px}
+.fact em{font-style:normal;font-size:13px;color:var(--g);font-weight:600}
+
+/* path */
+.prog{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.bar{flex:1;height:8px;border-radius:100px;background:#e9eeeb;overflow:hidden}
+.bar i{display:block;height:100%;background:#3d7a4f;border-radius:100px}
+.prog b{font-size:14px;white-space:nowrap}
+.topics{list-style:none;display:flex;flex-direction:column}
+.topics a{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 10px;border-radius:12px;text-decoration:none;color:var(--ink)}
+.topics a:hover{background:#f7faf8}
+.topics li+li{border-top:1px solid #eef1ef}
+.tn{font-size:13px;font-weight:700;color:var(--muted);text-align:center}
+.topics .done .tn{color:var(--g)}
+.tt b{display:block;font-size:15px;font-weight:600}
+.tt small{font-size:12.5px;color:var(--muted)}
+.pill{font-size:12px;font-weight:700;border-radius:100px;padding:4px 10px;white-space:nowrap}
+.pill.completed{color:#1d6b3e;background:#dcf5e6}
+.pill.in_progress{color:#8a4b05;background:#fff0d4}
+.pill.next{color:#1d4a30;background:#fff;box-shadow:inset 0 0 0 1.5px #c9e0d1}
+.pill.not_started{color:#4b5563;background:#eef0f3}
+
+/* account */
+.rows{display:flex;flex-direction:column}
+.row{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-top:1px solid #eef1ef;font-size:15px}
+.row:first-child{border-top:0;padding-top:0}
+.row span:first-child{color:var(--muted)}
+.row span:last-child{font-weight:600;text-align:right;word-break:break-all}
+.acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;align-items:center}
+.note{font-size:13.5px;color:var(--muted);margin-top:14px}
+.note a{color:var(--g);font-weight:600}
+
+/* empty / loading */
+.empty{text-align:center;padding:36px 28px}
+.empty h1{font-size:26px;margin:10px 0 8px}
+.empty p{color:var(--muted);max-width:460px;margin:0 auto 18px}
+.empty .acts{justify-content:center}
+.sk{background:linear-gradient(90deg,#eef1ef 25%,#f6f8f7 50%,#eef1ef 75%);background-size:200% 100%;animation:sk 1.2s infinite linear;border-radius:10px}
+@keyframes sk{to{background-position:-200% 0}}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--g);color:#fff;padding:12px 22px;border-radius:100px;font-size:14px;font-weight:600;opacity:0;transition:all .3s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+@media(max-width:640px){
+  body{padding-top:62px} nav{height:62px}
+  .wrap{padding:20px 16px 56px;gap:16px}
+  .card{padding:20px 18px;border-radius:20px}
+  .who{gap:14px}.who-av{width:60px;height:60px;font-size:21px}.who h1{font-size:22px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:16px;padding:18px 6px}
+  .stat{padding:2px 14px}.stat:nth-child(3){border-left:0}
+  .stat b{font-size:22px}
+  .facts{grid-template-columns:1fr}
+  .card-h{flex-wrap:wrap}
+  .row{flex-direction:column;gap:2px}.row span:last-child{text-align:left}
+}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><img src="/assets/logo.png" alt="Droidly"/>Droidly</a>
+  <div class="nav-center">
+    <a href="/questions" class="nav-link">Questions</a>
+    <a href="/roadmap" class="nav-link">Roadmap</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn-nav" id="navSignIn" type="button">Sign In</button>
+    <div class="nav-user" id="navUser" tabindex="0">
+      <div class="nav-avatar" id="navAvatar">?</div>
+      <span class="nav-user-name" id="navName"></span>
+      <span class="nav-caret">▾</span>
+      <div class="user-dropdown">
+        <div class="user-dropdown-email" id="navEmail"></div>
+        <div class="user-dropdown-item danger" id="navSignOut">Sign out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="wrap" id="app" aria-live="polite">
+  <div class="card"><div class="who"><div class="who-av sk"></div><div style="flex:1"><div class="sk" style="height:26px;width:55%"></div><div class="sk" style="height:16px;width:40%;margin-top:10px"></div></div></div></div>
+  <div class="card"><div class="sk" style="height:120px"></div></div>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="/assets/readiness.js"></script>
+<script>
+(function () {
+  'use strict';
+  var R = window.Readiness;
+  var SUPABASE_URL = 'https://dquheflcmcppldrnckzf.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWhlZmxjbWNwcGxkcm5ja3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjI1MDcsImV4cCI6MjA5MTY5ODUwN30.SRhP7mzqlaNzGYEec56IV348aAl66YmFv9ApBuXbN1c';
+  var db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  window.DroidlyDb = db;   // the sign-in dialog reuses this client
+
+  var app = document.getElementById('app');
+  var user = null, loaded = false, loadErr = null;
+
+  var LEVEL = { '0-2': ['SDE 1', '0–2 years of experience'], '2-5': ['SDE 2', '2–5 years of experience'], '5+': ['SDE 3 / Senior', '5+ years of experience'] };
+  var COMPANY = { product: 'Product company', startup: 'Startup', service: 'Service company' };
+  var SVG = function (p) { return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>'; };
+  var IC = {
+    level: SVG('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'),
+    company: SVG('<path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/><path d="M16 9h2a2 2 0 0 1 2 2v10"/><path d="M8 7h4M8 11h4M8 15h4M2 21h20"/>'),
+    time: SVG('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+    date: SVG('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>')
+  };
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function track(n, p) { try { window.gtag && gtag('event', n, p || {}); } catch (e) { /* ignore */ } }
+  function toast(m) { var t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove('show'); }, 3000); }
+  function fmtDate(d, withYear) { try { return d.toLocaleDateString('en-IN', withYear === false ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return d.toDateString(); } }
+  function nameOf(u) { var m = u.user_metadata || {}; return (m.full_name || m.name || u.email.split('@')[0]).trim(); }
+  function initials(n) { return n.split(/\s+/).filter(Boolean).map(function (x) { return x[0]; }).join('').slice(0, 2).toUpperCase() || '?'; }
+
+  /* ---------- auth ---------- */
+  R.configure({ getSession: function () {
+    return db.auth.getSession().then(function (r) { var s = r.data && r.data.session; return s ? { token: s.access_token, uid: s.user.id } : null; }).catch(function () { return null; });
+  } });
+  function openAuth(mode) { if (typeof window.openAuthModal === 'function') window.openAuthModal(mode); else location.href = '/?auth=' + mode + '&return=profile'; }
+  function setNav(u) {
+    document.getElementById('navSignIn').style.display = u ? 'none' : '';
+    document.getElementById('navUser').style.display = u ? 'flex' : 'none';
+    if (!u) return;
+    var n = nameOf(u);
+    document.getElementById('navAvatar').textContent = initials(n);
+    document.getElementById('navName').textContent = n.split(' ')[0];
+    document.getElementById('navEmail').textContent = u.email;
+  }
+  document.getElementById('navSignIn').onclick = function () { openAuth('signin'); };
+  function signOut() { db.auth.signOut().then(function () { R.clearLocal(); toast('Signed out.'); }); }
+  document.getElementById('navSignOut').onclick = signOut;
+
+  /* ---------- views ---------- */
+  function gate() {
+    app.innerHTML = '<div class="card empty"><span class="kick">Your profile</span><h1>Sign in to see your profile</h1>' +
+      '<p>Your goal, learning path and saved questions are kept in your account, so they follow you across devices.</p>' +
+      '<div class="acts"><button class="btn" id="gIn" type="button">Sign in</button><button class="btn ghost" id="gUp" type="button">Create free account</button></div></div>';
+    document.getElementById('gIn').onclick = function () { openAuth('signin'); };
+    document.getElementById('gUp').onclick = function () { openAuth('signup'); };
+  }
+
+  function header(u) {
+    var n = nameOf(u), m = u.user_metadata || {}, pic = m.avatar_url || m.picture || '';
+    var prov = (u.app_metadata && u.app_metadata.provider) || 'email';
+    var since = u.created_at ? fmtDate(new Date(u.created_at)) : '';
+    return '<section class="card"><div class="who">' +
+      '<div class="who-av">' + esc(initials(n)) + (pic ? '<img src="' + esc(pic) + '" alt="" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + '</div>' +
+      '<div style="min-width:0"><h1>' + esc(n) + '</h1><div class="who-mail">' + esc(u.email) + '</div>' +
+      '<div class="who-meta">' + (since ? '<span class="tag">Member since ' + esc(since) + '</span>' : '') +
+      '<span class="tag grey">Signed in with ' + (prov === 'google' ? 'Google' : 'email') + '</span></div></div></div></section>';
+  }
+
+  function stats(s, pp) {
+    var done = 0, saved = 0;
+    Object.keys(s.marks || {}).forEach(function (k) { var x = s.marks[k]; if (x && x.s) done++; if (x && x.b) saved++; });
+    var runs = (s.diag && s.diag.runs) || [], last = runs[runs.length - 1];
+    var check = last && last.n ? last.ok + ' / ' + last.n : 'Not taken';
+    return '<section class="stats" aria-label="Your progress">' +
+      '<div class="stat"><b>' + (pp ? pp.completed + ' / ' + pp.total : '0') + '</b><span>topics complete</span></div>' +
+      '<div class="stat"><b>' + done + '</b><span>questions done</span></div>' +
+      '<div class="stat"><b>' + saved + '</b><span>saved to revisit</span></div>' +
+      '<div class="stat"><b>' + esc(check) + '</b><span>' + (last && last.n ? 'last skill check, ' + esc(fmtDate(new Date(last.t), false)) : 'skill check') + '</span></div></section>';
+  }
+
+  function goal(s) {
+    var g = s.goals;
+    if (!g) return '<section class="card"><div class="card-h"><h2>Your goal</h2></div><p class="muted">You have not set a goal yet. Tell us your level, company type and interview date to get a learning path made for you.</p>' +
+      '<div class="acts"><a class="btn" href="/roadmap">Set my goal</a></div></section>';
+    var lv = LEVEL[g.level] || [g.level, ''], dateTxt = 'Not set', dateSub = '';
+    if (g.date) {
+      var d = R.parseYmd(g.date), left = R.daysBetween(new Date(new Date().toDateString()), d);
+      dateTxt = fmtDate(d);
+      dateSub = left > 1 ? left + ' days to go' : left === 1 ? 'Tomorrow' : left === 0 ? 'Today. Good luck!' : 'Date has passed';
+    }
+    var mins = g.minutes >= 60 ? (g.minutes / 60) + ' hour' + (g.minutes > 60 ? 's' : '') : g.minutes + ' min';
+    function fact(ic, label, val, sub) { return '<div class="fact"><span class="ic">' + ic + '</span><div><small>' + label + '</small><b>' + esc(val) + '</b>' + (sub ? '<em>' + esc(sub) + '</em>' : '') + '</div></div>'; }
+    return '<section class="card"><div class="card-h"><h2>Your goal</h2><a class="btn ghost small" href="/roadmap#edit">Change goal</a></div><div class="facts">' +
+      fact(IC.level, 'Target level', lv[0], lv[1]) +
+      fact(IC.company, 'Company type', COMPANY[g.company] || g.company) +
+      fact(IC.time, 'Study time', mins + ' a day') +
+      fact(IC.date, 'Interview date', dateTxt, dateSub) + '</div></section>';
+  }
+
+  function path(s, pp) {
+    if (!s.goals) return '';
+    if (!pp) return '<section class="card"><div class="card-h"><h2>Learning path</h2></div><p class="muted">Your learning path is ready to build. Open the roadmap to see which topic to learn first.</p><div class="acts"><a class="btn" href="/roadmap">Open my roadmap</a></div></section>';
+    var label = { completed: 'Completed', in_progress: 'In progress', next: 'Up next', not_started: 'Not started' };
+    return '<section class="card"><div class="card-h"><h2>Learning path</h2><a class="link" href="/roadmap">Open roadmap</a></div>' +
+      '<div class="prog"><div class="bar"><i style="width:' + pp.pct + '%"></i></div><b>' + pp.pct + '% done</b></div><ul class="topics">' +
+      pp.items.map(function (x, i) {
+        return '<li class="' + (x.complete ? 'done' : '') + '"><a href="/roadmap#topic/' + esc(x.id) + '"><span class="tn">' + (x.complete ? '✓' : (i < 9 ? '0' : '') + (i + 1)) + '</span>' +
+          '<span class="tt"><b>' + esc(x.name) + '</b><small>' + (x.complete ? x.total : Math.min(x.done, x.total)) + ' of ' + x.total + ' steps</small></span>' +
+          '<span class="pill ' + x.status + '">' + label[x.status] + '</span></a></li>';
+      }).join('') + '</ul></section>';
+  }
+
+  function account(u) {
+    var prov = (u.app_metadata && u.app_metadata.provider) || 'email';
+    return '<section class="card"><div class="card-h"><h2>Account</h2></div><div class="rows">' +
+      '<div class="row"><span>Name</span><span>' + esc(nameOf(u)) + '</span></div>' +
+      '<div class="row"><span>Email</span><span>' + esc(u.email) + '</span></div>' +
+      '<div class="row"><span>Sign-in method</span><span>' + (prov === 'google' ? 'Google' : 'Email and password') + '</span></div>' +
+      (u.created_at ? '<div class="row"><span>Joined</span><span>' + esc(fmtDate(new Date(u.created_at))) + '</span></div>' : '') +
+      '</div><div class="acts"><a class="btn ghost small" href="/roadmap#saved">Saved questions</a><button class="btn ghost small" id="pSignOut" type="button">Sign out</button></div>' +
+      '<p class="note">Want your account and data deleted? Email <a href="mailto:support@droidly.io?subject=' + encodeURIComponent('Delete my Droidly account') + '">support@droidly.io</a> from this address.</p></section>';
+  }
+
+  function render() {
+    if (!user) { if (loaded) gate(); return; }
+    if (!loaded) return;
+    var s = R.get(), pp = s.goals ? R.pathProgress(s) : null;
+    var warn = loadErr ? '<div class="card" style="padding:14px 18px;background:#fff8ec;border-color:#f3dfb8"><p style="font-size:14px;color:#8a4b05">Some progress could not be loaded right now, so these numbers may be incomplete. <a class="link" href="" style="font-size:14px">Reload</a></p></div>' : '';
+    app.innerHTML = warn + header(user) + stats(s, pp) + goal(s) + path(s, pp) + account(user);
+    document.getElementById('pSignOut').onclick = signOut;
+  }
+
+  function load() {
+    return R.sync().then(function (r) { loadErr = r && r.ok ? null : (r && r.reason) || 'network'; })
+      .catch(function (e) { loadErr = String(e && e.message || e); })
+      .then(function () { loaded = true; render(); track('profile_view', { has_goal: !!R.get().goals }); });
+  }
+
+  db.auth.onAuthStateChange(function (event, session) {
+    user = session ? session.user : null;
+    setNav(user);
+    if (session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) { loaded = false; load(); }
+    else if (event === 'USER_UPDATED' && session) render();
+    else if (!session) { R.clearLocal(); loaded = true; render(); }
+  });
+  setTimeout(function () { if (!loaded && !user) { loaded = true; render(); } }, 6000);
+})();
+</script>
+</body>
+</html>
