@@ -508,6 +508,7 @@ body{background:var(--hg-bg) !important}
 .rm-row.completed .rm-num{color:#2e6040}
 @media(max-width:640px){.rm-row{grid-template-columns:26px minmax(0,1fr) auto !important;padding:12px 8px}.rm-num{display:block !important}}
 </style>
+<script src="/assets/user-menu.js" defer></script>
 </head>
 <body>
 <nav>
@@ -629,7 +630,12 @@ body{background:var(--hg-bg) !important}
     document.getElementById('gateUp').onclick = function () { track('roadmap_gate_click', { action: 'signup' }); openAuth('signup'); };
     document.getElementById('gateIn').onclick = function () { track('roadmap_gate_click', { action: 'signin' }); openAuth('signin'); };
   }
-  function settle(err) { authReady = true; loadErr = err || null; if (index) { if (!err) view = view || (R.get().goals ? 'dash' : 'onboard'); render(); } }
+  function settle(err) {
+    authReady = true; loadErr = err || null;
+    // /roadmap#edit (from the profile page): open goal editing straight away
+    if (!err && location.hash === '#edit' && R.get().goals) { editing = true; view = 'onboard'; try { history.replaceState(null, '', location.pathname); } catch (e) { /* ignore */ } }
+    if (index) { if (!err) view = view || (R.get().goals ? 'dash' : 'onboard'); render(); }
+  }
   function render() {
     if (!index) return;
     if (!authReady) { app.innerHTML = '<div class="card" style="max-width:720px;margin:0 auto"><p class="sub">Loading your progress…</p></div>'; return; }
