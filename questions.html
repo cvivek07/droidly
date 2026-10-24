@@ -10,7 +10,9 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
   <link rel="manifest" href="/site.webmanifest"/>
   <meta name="theme-color" content="#3d7a4f"/>
-  <title>Droidly — Android Interview Prep</title>
+  <title>Android Interview Questions and Answers (600+) | Droidly</title>
+  <link rel="canonical" href="https://droidly.io/questions"/>
+  <meta name="description" content="600+ Android interview questions with answers and Kotlin code: Kotlin, coroutines, Flow, Jetpack Compose, architecture, Hilt, Room, networking and more. Free."/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
@@ -987,7 +989,7 @@ body{background:linear-gradient(160deg,#eaf7ef 0%,#e8f1fb 38%,#fff3e4 72%,#fdebf
 <div class="page-header">
   <div class="page-header-inner">
     <div class="page-eyebrow">Android Interview Prep</div>
-    <h1>Question <span>Bank</span></h1>
+    <h1>Android Interview Questions <span>and Answers</span></h1>
     <p>Expert questions across the core Android topics, plus system designs — tap any card to reveal a detailed answer.</p>
     <div class="stats-row">
       <div class="stat-chip">
@@ -6481,10 +6483,10 @@ counter.count++</pre>
 <span class="kw">fun</span> <span class="fn">sendEmail</span>(userId: <span class="tp">UserId</span>, email: <span class="tp">Email</span>) { }
 
 <span class="kw">val</span> id = <span class="tp">UserId</span>(<span class="str">"user_123"</span>)
-<span class="kw">val</span> mail = <span class="tp">Email</span>(<span class="str">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="41332029342d012439202c312d246f222e2c">[email&#160;protected]</a>"</span>)
+<span class="kw">val</span> mail = <span class="tp">Email</span>(<span class="str">"rahul@example.com"</span>)
 <span class="fn">sendEmail</span>(id, mail)  <span class="cm">// ✅</span>
 <span class="cm">// sendEmail(mail, id)  ❌ compile error — types don't match!</span>
-<span class="cm">// sendEmail("user_123", "<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3745565f425b77524f565a475b521954585a">[email&#160;protected]</a>")  ❌ must wrap in value class</span>
+<span class="cm">// sendEmail("user_123", "rahul@example.com")  ❌ must wrap in value class</span>
 
 <span class="cm">// No runtime overhead — compiled to underlying type</span>
 <span class="cm">// val id: UserId = UserId("123")  →  compiled as  val id: String = "123"</span>
@@ -6791,9 +6793,9 @@ counter.count++</pre>
 )
 
 <span class="cm">// Encode to JSON</span>
-<span class="kw">val</span> user = <span class="tp">User</span>(<span class="nm">1</span>, <span class="str">"Rahul"</span>, <span class="str">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="21534049544d614051510f424e4c">[email&#160;protected]</a>"</span>)
+<span class="kw">val</span> user = <span class="tp">User</span>(<span class="nm">1</span>, <span class="str">"Rahul"</span>, <span class="str">"rahul@app.com"</span>)
 <span class="kw">val</span> json = <span class="tp">Json</span>.<fn>encodeToString</fn>(user)
-<span class="cm">// {"id":1,"name":"Rahul","email_address":"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9deffcf5e8f1ddfcededb3fef2f0">[email&#160;protected]</a>","role":"user"}</span>
+<span class="cm">// {"id":1,"name":"Rahul","email_address":"rahul@app.com","role":"user"}</span>
 
 <span class="cm">// Decode from JSON</span>
 <span class="kw">val</span> decoded: <span class="tp">User</span> = <span class="tp">Json</span>.<fn>decodeFromString</fn>(json)
@@ -21139,7 +21141,7 @@ dependencies {
           <pre class="code-block"><span class="cm">// Approach 1: Fake API (simplest — just implement the interface)</span>
 <span class="kw">class</span> <span class="tp">FakeUserApi</span> : <span class="tp">UserApi</span> {
     <span class="kw">var</span> shouldThrow = <span class="kw">false</span>
-    <span class="kw">var</span> userToReturn = <span class="tp">UserDto</span>(<span class="str">"1"</span>, <span class="str">"Alice"</span>, <span class="str">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="36575a5f555376534e575b465a531855595b">[email&#160;protected]</a>"</span>, <span class="str">"1990-01-01"</span>, <span class="str">"PRO"</span>)
+    <span class="kw">var</span> userToReturn = <span class="tp">UserDto</span>(<span class="str">"1"</span>, <span class="str">"Alice"</span>, <span class="str">"alice@example.com"</span>, <span class="str">"1990-01-01"</span>, <span class="str">"PRO"</span>)
 
     <span class="kw">override suspend fun</span> <span class="fn">getUser</span>(id: <span class="tp">String</span>): <span class="tp">UserDto</span> {
         <span class="kw">if</span> (shouldThrow) <span class="kw">throw</span> <span class="tp">IOException</span>(<span class="str">"No internet"</span>)
@@ -21174,7 +21176,7 @@ dependencies {
     <span class="kw">@Test fun</span> <span class="fn">getUser_parsesResponseCorrectly</span>() = runTest {
         server.<fn>enqueue</fn>(<span class="tp">MockResponse</span>()
             .<fn>setResponseCode</fn>(<span class="nm">200</span>)
-            .<fn>setBody</fn>(<span class="str">"""{"user_id":"1","full_name":"Alice","email_addr":"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c4a584a6eaa7aba9">[email&#160;protected]</a>","birth_date":"1990-01-01","account_type":"PRO"}"""</span>))
+            .<fn>setBody</fn>(<span class="str">"""{"user_id":"1","full_name":"Alice","email_addr":"a@b.com","birth_date":"1990-01-01","account_type":"PRO"}"""</span>))
 
         <span class="kw">val</span> retrofit = <fn>buildRetrofit</fn>(server.<fn>url</fn>(<span class="str">"/"</span>).<fn>toString</fn>())
         <span class="kw">val</span> repo = <span class="tp">UserRepositoryImpl</span>(retrofit.<fn>create</fn>(<span class="tp">UserApi</span>::<span class="kw">class</span>.java))
@@ -21906,7 +21908,7 @@ dependencies {
 <span class="cm">// Zero code needed — it just works</span>
 
 <span class="cm">// Typical compression ratios for API responses:</span>
-<span class="cm">// JSON:  60-80% reduction  ({"name":"Alice","email":"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c9a8a5a0aaac89acb1a8a4b9a5ace7aaa6a4">[email&#160;protected]</a>"...} = very compressible)</span>
+<span class="cm">// JSON:  60-80% reduction  ({"name":"Alice","email":"alice@example.com"...} = very compressible)</span>
 <span class="cm">// HTML:  70-80% reduction</span>
 <span class="cm">// Images: 0-5% (already compressed — JPEG, PNG, WebP)</span>
 <span class="cm">// Binary: 0-20%</span>
@@ -22157,7 +22159,7 @@ dependencies {
         <div class="q-answer"><div class="q-answer-inner"><div class="answer-label">Answer</div><p class="answer-text">gRPC is Google's RPC framework using Protocol Buffers (binary format) over HTTP/2. It's significantly faster and more efficient than REST+JSON, but more complex to set up. Best for internal microservices or high-performance data-heavy apps.</p>
           <pre class="code-block"><span class="cm">// REST+JSON vs gRPC+Protobuf comparison</span>
 <span class="cm">// Same user object:</span>
-<span class="cm">// JSON:    {"id":"123","name":"Alice","email":"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="abcac7c2c8ceebced385c8c4c6">[email&#160;protected]</a>"} = 47 bytes</span>
+<span class="cm">// JSON:    {"id":"123","name":"Alice","email":"alice@ex.com"} = 47 bytes</span>
 <span class="cm">// Protobuf: binary encoded                                   = ~15 bytes (3x smaller)</span>
 <span class="cm">// Protobuf also parses 5-10x faster than JSON</span>
 
@@ -23144,7 +23146,7 @@ encryptedFile.<fn>openFileInput</fn>().<fn>use</fn> { it.<fn>readBytes</fn>() }
     <span class="kw">@After fun</span> <span class="fn">tearDown</span>() { db.<fn>close</fn>() }
 
     <span class="kw">@Test fun</span> <span class="fn">insertAndRetrieve</span>() = runTest {
-        <span class="kw">val</span> user = <span class="tp">UserEntity</span>(<span class="str">"1"</span>, <span class="str">"Alice"</span>, <span class="str">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="56373a3f353316332e373b263a337835393b">[email&#160;protected]</a>"</span>)
+        <span class="kw">val</span> user = <span class="tp">UserEntity</span>(<span class="str">"1"</span>, <span class="str">"Alice"</span>, <span class="str">"alice@example.com"</span>)
         dao.<fn>insert</fn>(user)
         <span class="kw">val</span> result = dao.<fn>getUser</fn>(<span class="str">"1"</span>)
         <fn>assertEquals</fn>(<span class="str">"Alice"</span>, result?.name)
@@ -23153,7 +23155,7 @@ encryptedFile.<fn>openFileInput</fn>().<fn>use</fn> { it.<fn>readBytes</fn>() }
     <span class="kw">@Test fun</span> <span class="fn">observeEmitsOnInsert</span>() = runTest {
         <span class="kw">val</span> collected = <fn>mutableListOf</fn>&lt;<span class="tp">List</span>&lt;<span class="tp">UserEntity</span>&gt;&gt;()
         <span class="kw">val</span> job = <fn>launch</fn> { dao.<fn>observeAll</fn>().<fn>collect</fn> { collected.<fn>add</fn>(it) } }
-        dao.<fn>insert</fn>(<span class="tp">UserEntity</span>(<span class="str">"1"</span>, <span class="str">"Alice"</span>, <span class="str">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b8d9f8da96dbd7d5">[email&#160;protected]</a>"</span>))
+        dao.<fn>insert</fn>(<span class="tp">UserEntity</span>(<span class="str">"1"</span>, <span class="str">"Alice"</span>, <span class="str">"a@b.com"</span>))
         <fn>advanceUntilIdle</fn>()
         <fn>assertTrue</fn>(collected.<fn>any</fn> { it.<fn>size</fn> == <span class="nm">1</span> })
         job.<fn>cancel</fn>()
@@ -26306,7 +26308,7 @@ implementation(libs.compose.material3)      <span class="cm">// guaranteed compa
                         license { name.<fn>set</fn>(<span class="str">"Apache-2.0"</span>) }
                     }
                     developers {
-                        developer { name.<fn>set</fn>(<span class="str">"Alice"</span>); email.<fn>set</fn>(<span class="str">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="096865606a6c496c71686479656c276a6664">[email&#160;protected]</a>"</span>) }
+                        developer { name.<fn>set</fn>(<span class="str">"Alice"</span>); email.<fn>set</fn>(<span class="str">"alice@example.com"</span>) }
                     }
                     scm {
                         connection.<fn>set</fn>(<span class="str">"scm:git:github.com/example/mylibrary.git"</span>)
@@ -28094,7 +28096,7 @@ am.<fn>getMemoryInfo</fn>(ram)
 <span class="kw">class</span> <span class="tp">JsonParsingBenchmark</span> {
     <span class="kw">@get:Rule</span> <span class="kw">val</span> benchmarkRule = <span class="tp">BenchmarkRule</span>()
 
-    <span class="kw">private val</span> json = <span class="str">"""{"id":"1","name":"Alice","email":"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="17767b7e747257726f767a677b723974787a">[email&#160;protected]</a>"}"""</span>
+    <span class="kw">private val</span> json = <span class="str">"""{"id":"1","name":"Alice","email":"alice@example.com"}"""</span>
 
     <span class="kw">@Test</span>
     <span class="kw">fun</span> <span class="fn">gsonParsing</span>() {
