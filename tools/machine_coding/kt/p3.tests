@@ -1,0 +1,26 @@
+fun main() {
+    test("subscribe returns unique ids") {
+        val b = EventBus(); val a = b.subscribe("A") {}; val c = b.subscribe("A") {}; expectTrue(a != c, "ids must differ")
+    }
+    test("publish notifies every listener of that type") {
+        val b = EventBus(); val got = mutableListOf<String>()
+        b.subscribe("ORDER") { got += "L1:$it" }; b.subscribe("ORDER") { got += "L2:$it" }
+        b.publish("ORDER", "#1"); expect(got.sorted(), listOf("L1:#1", "L2:#1"))
+    }
+    test("listeners of other event types are not called") {
+        val b = EventBus(); var calls = 0; b.subscribe("PAYMENT") { calls++ }; b.publish("ORDER", "x"); expect(calls, 0)
+    }
+    test("unsubscribe stops only that listener") {
+        val b = EventBus(); val got = mutableListOf<String>()
+        val id1 = b.subscribe("ORDER") { got += "L1" }; b.subscribe("ORDER") { got += "L2" }
+        b.unsubscribe(id1); b.publish("ORDER", "x"); expect(got, listOf("L2"))
+    }
+    test("publishing with no listeners does not crash") { EventBus().publish("NOBODY", 1) }
+    test("unsubscribing an unknown id does not crash") { EventBus().unsubscribe("does-not-exist") }
+    test("a listener can unsubscribe itself while being notified") {
+        val b = EventBus(); var calls = 0; lateinit var id: String
+        id = b.subscribe("E") { calls++; b.unsubscribe(id) }; b.subscribe("E") { calls++ }
+        b.publish("E", 1); b.publish("E", 2); expect(calls, 3, "total calls")
+    }
+    summary()
+}

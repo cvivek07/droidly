@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+<meta name="theme-color" content="#2e6040"/>
+<title>Android Machine Coding Interview Questions in Kotlin | Droidly</title>
+<meta name="description" content="9 Android machine coding round problems in Kotlin: LRU cache, rate limiter, event bus, retry with backoff and more, with tests and solutions."/>
+<link rel="canonical" href="https://droidly.io/machine-coding/"/>
+<meta property="og:type" content="article"/>
+<meta property="og:url" content="https://droidly.io/machine-coding/"/>
+<meta property="og:title" content="Android Machine Coding Interview Questions in Kotlin | Droidly"/>
+<meta property="og:description" content="9 Android machine coding round problems in Kotlin: LRU cache, rate limiter, event bus, retry with backoff and more, with tests and solutions."/>
+<meta property="og:image" content="https://droidly.io/assets/og-image.png"/>
+<meta property="og:site_name" content="Droidly"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/assets/topic-pages.css"/>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-61G11MD574');</script>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Droidly", "item": "https://droidly.io/"}, {"@type": "ListItem", "position": 2, "name": "Machine coding", "item": "https://droidly.io/machine-coding/"}]}]</script>
+</head>
+<body>
+<nav class="tp-nav"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="Droidly" width="32" height="32"/>Droidly</a>
+<div class="tp-links"><a href="/questions">Questions</a><a href="/roadmap">Roadmap</a><a href="/practice">Practice</a></div>
+<a class="tp-cta" href="/machine_coding">Open the editor</a></nav>
+<main class="tp-wrap" id="top">
+<nav class="tp-crumb" aria-label="Breadcrumb"><a href="/">Droidly</a><span>›</span><span>Machine coding</span></nav>
+<header class="tp-head"><h1>Android Machine Coding Interview Questions</h1><p class="tp-intro">The machine coding round asks you to build a small, working piece of an app in 30–60 minutes: a cache, a rate limiter, a state machine or a screen. These problems are written in Kotlin and come with hints, an approach, automatic tests and a reference solution. Solve them in the browser editor with a timer, like the real round.</p>
+<p class="tp-by">By <a href="https://www.linkedin.com/in/vivek-choudhary-4686b477" target="_blank" rel="noopener">Vivek Choudhary</a>, Android engineer · Updated October 2026</p>
+<div class="tp-learn"><a class="mc-go" href="/machine_coding">Open the editor</a></div></header>
+<section class="tp-steps"><h2>How to approach a machine coding round</h2><ol><li><b>Restate the problem and agree on the API</b><span>Write the class and function signatures first, and confirm edge cases: empty input, capacity 1, invalid arguments.</span></li><li><b>Pick the data structures out loud</b><span>Say why: a HashMap for O(1) lookup, a linked list for order, a sealed class for states. Interviewers grade the reasoning.</span></li><li><b>Get a correct version working</b><span>Clean, readable Kotlin beats a clever half-finished solution. Run it against small examples as you go.</span></li><li><b>Handle the edge cases and threading</b><span>Most Android machine coding rounds ask what happens with concurrent calls, lifecycle changes or failures.</span></li><li><b>Talk about trade-offs and tests</b><span>Explain complexity, what you would change for production, and how you would unit test it.</span></li></ol></section>
+<section><h2 class="tp-h2">9 problems</h2><div class="tp-sds"><a class="tp-sd" href="/machine-coding/lru-cache"><b>LRU Cache</b><span>Implement an LRU cache in Kotlin with O(1) get and put.</span><em class="tp-d medium">Medium · 45 min</em></a><a class="tp-sd" href="/machine-coding/token-bucket-rate-limiter"><b>Token Bucket Rate Limiter</b><span>Build a per-user token bucket rate limiter in Kotlin with lazy refill.</span><em class="tp-d medium">Medium · 40 min</em></a><a class="tp-sd" href="/machine-coding/event-bus"><b>Event Bus</b><span>Implement a publish-subscribe event bus in Kotlin: subscribe, unsubscribe, publish.</span><em class="tp-d medium">Medium · 35 min</em></a><a class="tp-sd" href="/machine-coding/pagination-manager"><b>Pagination Manager</b><span>Write a pagination manager in Kotlin: pages, navigation and bounds checks.</span><em class="tp-d easy">Easy · 25 min</em></a><a class="tp-sd" href="/machine-coding/retry-with-exponential-backoff"><b>Retry with Exponential Backoff</b><span>Retry a suspending call with exponential backoff using Kotlin coroutines.</span><em class="tp-d medium">Medium · 40 min</em></a><a class="tp-sd" href="/machine-coding/shopping-cart-with-discounts"><b>Shopping Cart with Discounts</b><span>Model a shopping cart with sealed-class discounts in Kotlin.</span><em class="tp-d medium">Medium · 45 min</em></a><a class="tp-sd" href="/machine-coding/in-memory-cache-with-ttl"><b>In-Memory Cache with TTL</b><span>Build a generic in-memory cache with per-entry TTL in Kotlin.</span><em class="tp-d medium">Medium · 35 min</em></a><a class="tp-sd" href="/machine-coding/order-state-machine"><b>Order State Machine</b><span>Implement a food-order state machine with Kotlin sealed classes.</span><em class="tp-d medium">Medium · 35 min</em></a><a class="tp-sd" href="/machine-coding/restaurant-bill-screen"><b>Restaurant Bill Screen</b><span>Build a restaurant bill screen on Android: Repository, StateFlow, ViewModel and RecyclerView.</span><em class="tp-d hard">Hard · 60 min</em></a></div></section>
+<section class="tp-more"><h2>Keep preparing</h2><div class="tp-grid"><a href="/android-system-design-interview-questions">Android System Design Interview Questions</a><a href="/kotlin-interview-questions">Kotlin Interview Questions</a><a href="/kotlin-coroutines-interview-questions">Kotlin Coroutines Interview Questions</a><a href="/android-interview-questions-for-experienced">Android Interview Questions for Experienced</a></div></section>
+</main>
+<footer class="tp-foot"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="" width="24" height="24"/>Droidly</a>
+<span>Android interview prep, built by an Android engineer.</span>
+<span class="tp-foot-links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:support@droidly.io">support@droidly.io</a></span></footer>
+</body>
+</html>

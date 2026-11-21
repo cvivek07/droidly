@@ -143,7 +143,9 @@ def more_topics(current):
     links = ''.join(f'<a href="/{TOPICS[t][0]}">{esc(TOPICS[t][1])}</a>' for t in ORDER if t != current)
     if current != 'sysdesign':
         links += f'<a href="/{SD_SLUG}">Android System Design Interview Questions</a>'
-    return (f'<section class="tp-more"><h2>More Android interview topics</h2><div class="tp-grid">{links}</div>'
+    lv = ''.join(f'<a href="/{L["slug"]}">{esc(L["short"])}</a>' for L in LEVELS if L['slug'] != current)
+    return (f'<section class="tp-more"><h2>By experience level</h2><div class="tp-grid">{lv}</div></section>'
+            f'<section class="tp-more"><h2>More Android interview topics</h2><div class="tp-grid">{links}</div>'
             f'<p><a class="tp-all" href="/questions">See all 600+ questions in the question bank</a></p></section>')
 
 FOOT = """<footer class="tp-foot"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="" width="24" height="24"/>Droidly</a>
@@ -229,6 +231,123 @@ def sysdesign_page(sd):
 """ + FOOT
     return slug, out, title, desc
 
+# ---------- Pages by experience level ----------
+# Topic weights are the same ones the roadmap engine uses (assets/readiness.js, BASE_WEIGHTS).
+WEIGHTS = {
+ '0-2': {'android': 1.3, 'kotlin': 1.3, 'compose': 1.0, 'coroutines': 1.0, 'flows': 0.6, 'architecture': 0.6, 'di': 0.5, 'networking': 0.6, 'storage': 0.7, 'buildtools': 0.3, 'performance': 0.3, 'hr': 0.7},
+ '2-5': {'android': 1.1, 'kotlin': 1.1, 'compose': 1.1, 'coroutines': 1.2, 'flows': 0.9, 'architecture': 1.0, 'di': 0.8, 'networking': 0.9, 'storage': 0.8, 'buildtools': 0.5, 'performance': 0.7, 'hr': 0.7},
+ '5+':  {'android': 0.8, 'kotlin': 0.9, 'compose': 1.0, 'coroutines': 1.1, 'flows': 0.9, 'architecture': 1.3, 'di': 0.9, 'networking': 0.9, 'storage': 0.8, 'buildtools': 0.7, 'performance': 1.1, 'hr': 0.9},
+}
+def _scen(q): return q['q'].startswith('Scenario') or q['q'].startswith('Final code review')
+LEVELS = [
+ {'key': '0-2', 'slug': 'android-interview-questions-for-freshers', 'n': 40, 'short': 'Freshers and 0–2 years (SDE 1)',
+  'h1': 'Android Interview Questions for Freshers',
+  'title': 'Android Interview Questions for Freshers (0–2 Years) | Droidly',
+  'desc': '40 Android interview questions for freshers and SDE 1 roles, with short answers and full Kotlin examples: lifecycle, Kotlin basics, coroutines, Compose.',
+  'intro': 'If this is your first Android role, or you have up to two years of experience, interviewers mostly check that your fundamentals are solid: how the Android platform works, how well you know Kotlin, and whether you can explain your own projects clearly. These are the questions to be comfortable with first.',
+  'expect': ['How the Activity and Fragment lifecycle works, and what happens on rotation or when the app goes to the background',
+             'Kotlin basics: null safety, data and sealed classes, scope functions, collections',
+             'The basics of coroutines and Jetpack Compose, and when you would use them',
+             'Simple app structure: a ViewModel, a repository, calling an API and showing a list',
+             'Talking clearly about a project you built: what you did, what was hard, what you would change'],
+  'pick': lambda q: q['d'] in ('easy', 'medium'), 'score': lambda q: (q['m'] * 3 + (q['d'] == 'easy') * 1)},
+ {'key': '2-5', 'slug': 'android-interview-questions-for-experienced', 'n': 45, 'short': 'Experienced, 2–5 years (SDE 2)',
+  'h1': 'Android Interview Questions for Experienced Developers',
+  'title': 'Android Interview Questions for Experienced (2–5 Years) | Droidly',
+  'desc': '45 Android interview questions for 2 to 5 years of experience (SDE 2): coroutines and Flow, Compose, architecture, Hilt and testing, with answers.',
+  'intro': 'With two to five years of experience, knowing the definitions is not enough. Interviewers go deeper: why you chose an approach, what goes wrong in production, and how you would structure a real feature. Expect follow-up questions on everything you say.',
+  'expect': ['Coroutines and Flow in depth: structured concurrency, cancellation, exceptions, StateFlow vs SharedFlow',
+             'Jetpack Compose beyond the basics: state, side effects, recomposition and performance',
+             'Architecture: MVVM or MVI, Clean Architecture layers, repositories, modularisation',
+             'Dependency injection with Hilt, and how you test ViewModels, repositories and coroutines',
+             'Real problems from your work: a bug you fixed, a screen you made faster, a trade-off you made'],
+  'pick': lambda q: q['d'] in ('medium', 'hard'), 'score': lambda q: (q['m'] * 2 + (q['d'] == 'hard') * 1.5 + _scen(q) * 0.5)},
+ {'key': '5+', 'slug': 'senior-android-interview-questions', 'n': 40, 'short': 'Senior, 5+ years (SDE 3 / lead)',
+  'h1': 'Senior Android Developer Interview Questions',
+  'title': 'Senior Android Developer Interview Questions (5+ Years) | Droidly',
+  'desc': 'Senior Android interview questions for 5+ years (SDE 3 / lead): architecture, performance, offline-first and real scenarios, plus system design walkthroughs.',
+  'intro': 'Senior Android interviews test judgement more than knowledge. You will be asked to design systems, defend architecture decisions, diagnose performance problems and explain how you lead technical work. Most questions here are scenarios: there is no single right answer, but there are clearly better ones.',
+  'expect': ['Android system design: designing the client for a chat app, a feed, payments or offline sync',
+             'Architecture decisions and trade-offs across a large, multi-module codebase',
+             'Performance: startup time, jank, memory leaks, and how you measure and prevent regressions',
+             'Reviewing code and spotting concurrency, lifecycle and threading bugs',
+             'Leadership: mentoring, technical disagreements, and decisions with incomplete information'],
+  'pick': lambda q: q['d'] == 'hard', 'score': lambda q: (_scen(q) * 2 + q['m'] * 1)},
+]
+
+def short_answer(h, limit=320):
+    ps = [html.unescape(re.sub(r'<[^>]+>', '', p)).strip() for p in re.findall(r'<p class="answer-text">(.*?)</p>', h, re.S)]
+    txt = ' '.join(ps[:2]) if ps and len(ps[0]) < 90 else (ps[0] if ps else '')
+    txt = ' '.join(txt.split())
+    if len(txt) <= limit: return txt
+    cut = txt[:limit]; dot = max(cut.rfind('. '), cut.rfind('? '))
+    return (cut[:dot + 1] if dot > 120 else cut.rsplit(' ', 1)[0] + '…')
+
+def pick_level(L, data, taken):
+    w = WEIGHTS[L['key']]; total = sum(w.values())
+    pools = {}
+    for tid in w:
+        qs = [q for q in data[tid]['qs'] if L['pick'](q) and (tid, q['n']) not in taken and q['a']]
+        pools[tid] = sorted(qs, key=lambda q: (-L['score'](q), q['n']))
+    raw = {t: L['n'] * w[t] / total for t in w}
+    cnt = {t: min(int(raw[t]), len(pools[t])) for t in w}
+    for t in sorted(w, key=lambda t: -(raw[t] - int(raw[t]))):          # largest remainder
+        if sum(cnt.values()) >= L['n']: break
+        if cnt[t] < len(pools[t]): cnt[t] += 1
+    while sum(cnt.values()) < L['n']:                                     # top up from topics with spare questions
+        t = max((t for t in w if cnt[t] < len(pools[t])), key=lambda t: w[t], default=None)
+        if not t: break
+        cnt[t] += 1
+    return {t: pools[t][:cnt[t]] for t in sorted(w, key=lambda t: -w[t]) if cnt[t]}
+
+def level_page(L, picked, data, sd):
+    slug, h1 = L['slug'], L['h1']
+    n = sum(len(v) for v in picked.values())
+    title, desc = L['title'], L['desc']
+    assert len(desc) <= 160, (slug, len(desc))
+    focus = ''.join(f'<a href="#{t}">{esc(data[t]["name"])} <b>{len(v)}</b></a>' for t, v in picked.items())
+    secs = []; i = 0
+    for t, qs in picked.items():
+        items = []
+        for q in qs:
+            i += 1
+            full = f'/{TOPICS[t][0]}#q{q["n"]}'
+            items.append(f'<li class="lv-q"><div class="tp-chips"><span class="tp-d {q["d"]}">{q["d"].capitalize()}</span>{"<span class=tp-m>Most asked</span>" if q["m"] else ""}</div>'
+                         f'<h3>{i}. {esc(q["q"])}</h3><p>{esc(short_answer(q["a"]))}</p><a class="lv-full" href="{full}">Full answer with code</a></li>')
+        secs.append(f'<section class="lv-sec" id="{t}"><h2>{esc(data[t]["name"])} <span>{len(qs)} questions</span></h2><ol class="lv-list">{"".join(items)}</ol>'
+                    f'<p class="lv-all"><a href="/{TOPICS[t][0]}">All {len(data[t]["qs"])} {esc(TOPICS[t][1].replace(" Interview Questions", ""))} questions</a></p></section>')
+        if len(secs) == 3:
+            secs.append(practice_box(L['key'], h1))
+    sd_block = ''
+    if L['key'] in ('2-5', '5+'):
+        cards = []
+        for it in sd['items'][:13 if L['key'] == '5+' else 6]:
+            key = it['href'].strip('/').replace('sysdesign_', '')
+            page = open(os.path.join(ROOT, it['href'].strip('/') + '.html'), encoding='utf-8').read()
+            hh = re.search(r'<h1[^>]*>(.*?)</h1>', page, re.S)
+            name = html.unescape(re.sub(r'<[^>]+>', '', hh.group(1))).strip() if hh else it['q']
+            cards.append(f'<a class="tp-sd" href="{esc(it["href"])}"><b>{esc(name)}</b><span>{esc(SD_DESC.get(key, ""))}</span></a>')
+        sd_block = (f'<section class="lv-sec" id="system-design"><h2>System design <span>{"all 13 walkthroughs" if L["key"] == "5+" else "start with these"}</span></h2>'
+                    f'<p class="lv-note">{"Expect at least one system design round at this level." if L["key"] == "5+" else "Many SDE 2 interviews now include a lighter system design round."} '
+                    f'<a href="/{SD_SLUG}">How to answer a system design question</a></p><div class="tp-sds">{"".join(cards)}</div></section>')
+    expect = ''.join(f'<li>{esc(x)}</li>' for x in L['expect'])
+    ladder = ''.join(f'<a href="/{o["slug"]}"{" aria-current=page" if o is L else ""}>{esc(o["short"])}</a>' for o in LEVELS)
+    ld = ld_for(title, desc, slug, h1)
+    out = head(title, desc, slug, ld) + f"""<main class="tp-wrap" id="top">
+<nav class="tp-crumb" aria-label="Breadcrumb"><a href="/">Droidly</a><span>›</span><a href="/questions">Android interview questions</a><span>›</span><span>{esc(L['short'])}</span></nav>
+<div class="lv-ladder" aria-label="Experience level">{ladder}</div>
+<header class="tp-head"><h1>{esc(h1)}</h1><p class="tp-intro">{esc(L['intro'])}</p>
+{byline()}
+<div class="tp-stats"><span><b>{n}</b> questions picked for this level</span><span>Short answers here, full answers with code one tap away</span></div></header>
+<section class="tp-steps"><h2>What interviewers check at this level</h2><ul class="lv-expect">{expect}</ul>
+<div class="lv-focus"><b>Questions by topic</b>{focus}{'<a href="#system-design">System design</a>' if sd_block else ''}</div></section>
+{''.join(secs)}
+{sd_block}
+{more_topics(slug)}
+</main>
+""" + FOOT
+    return slug, out, title, desc
+
 if __name__ == '__main__':
     data = load()
     made = []
@@ -237,5 +356,13 @@ if __name__ == '__main__':
         open(os.path.join(ROOT, slug + '.html'), 'w', encoding='utf-8').write(out); made.append((slug, title, desc))
     slug, out, title, desc = sysdesign_page(data['sysdesign'])
     open(os.path.join(ROOT, slug + '.html'), 'w', encoding='utf-8').write(out); made.append((slug, title, desc))
+    taken = set()
+    for L in LEVELS:
+        picked = pick_level(L, data, taken)
+        for t, qs in picked.items():
+            taken.update((t, q['n']) for q in qs)
+        slug, out, title, desc = level_page(L, picked, data, data['sysdesign'])
+        open(os.path.join(ROOT, slug + '.html'), 'w', encoding='utf-8').write(out); made.append((slug, title, desc))
+        print(L['slug'], {t: len(v) for t, v in picked.items()})
     for s, t, d in made:
         print(f'{s}.html  [{len(t)}] {t}\n    [{len(d)}] {d}')

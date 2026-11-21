@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+<meta name="theme-color" content="#2e6040"/>
+<title>LRU Cache in Kotlin — Android Machine Coding Interview | Droidly</title>
+<meta name="description" content="Implement an LRU cache in Kotlin with O(1) get and put. Android machine coding interview question with hints, tests and a reference solution."/>
+<link rel="canonical" href="https://droidly.io/machine-coding/lru-cache"/>
+<meta property="og:type" content="article"/>
+<meta property="og:url" content="https://droidly.io/machine-coding/lru-cache"/>
+<meta property="og:title" content="LRU Cache in Kotlin — Android Machine Coding Interview | Droidly"/>
+<meta property="og:description" content="Implement an LRU cache in Kotlin with O(1) get and put. Android machine coding interview question with hints, tests and a reference solution."/>
+<meta property="og:image" content="https://droidly.io/assets/og-image.png"/>
+<meta property="og:site_name" content="Droidly"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/assets/topic-pages.css"/>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-61G11MD574');</script>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Droidly", "item": "https://droidly.io/"}, {"@type": "ListItem", "position": 2, "name": "Machine coding", "item": "https://droidly.io/machine-coding/"}, {"@type": "ListItem", "position": 3, "name": "LRU Cache", "item": "https://droidly.io/machine-coding/lru-cache"}]}, {"@context": "https://schema.org", "@type": "Article", "headline": "LRU Cache in Kotlin", "description": "Implement an LRU cache in Kotlin with O(1) get and put. Android machine coding interview question with hints, tests and a reference solution.", "mainEntityOfPage": "https://droidly.io/machine-coding/lru-cache", "dateModified": "2026-10-27", "author": {"@type": "Person", "name": "Vivek Choudhary", "url": "https://www.linkedin.com/in/vivek-choudhary-4686b477"}, "publisher": {"@type": "Organization", "name": "Droidly", "logo": {"@type": "ImageObject", "url": "https://droidly.io/assets/logo.png"}}}]</script>
+</head>
+<body>
+<nav class="tp-nav"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="Droidly" width="32" height="32"/>Droidly</a>
+<div class="tp-links"><a href="/questions">Questions</a><a href="/roadmap">Roadmap</a><a href="/practice">Practice</a></div>
+<a class="tp-cta" href="/machine_coding">Open the editor</a></nav>
+<main class="tp-wrap" id="top">
+<nav class="tp-crumb" aria-label="Breadcrumb"><a href="/">Droidly</a><span>›</span><a href="/machine-coding/">Machine coding</a><span>›</span><span>LRU Cache</span></nav>
+<header class="tp-head"><h1>LRU Cache in Kotlin</h1><p class="tp-intro">Implement an LRU cache in Kotlin with O(1) get and put. A common Android machine coding round question, solved in the browser and checked by tests.</p>
+<p class="tp-by">By <a href="https://www.linkedin.com/in/vivek-choudhary-4686b477" target="_blank" rel="noopener">Vivek Choudhary</a>, Android engineer · Updated October 2026</p>
+<div class="tp-stats"><span class="tp-d medium">Medium</span><span>About 45 min</span><span><b>8</b> automatic tests</span></div>
+<div class="tp-learn"><a class="mc-go" href="/machine_coding#lru-cache">Open it in the editor</a></div></header>
+<section class="mc-sec mc-prob"><h3>Problem</h3>
+<p>Design and implement a <strong>Least Recently Used (LRU) Cache</strong>. It should support <code>get</code> and <code>put</code> operations in <strong>O(1)</strong> time.</p>
+<div class="req-box"><div class="req-box-title">Functional Requirements</div>
+<ul>
+<li><code>get(key)</code> — Return the value if the key exists, otherwise return <code>-1</code>. Accessing a key marks it as recently used.</li>
+<li><code>put(key, value)</code> — Insert or update the key-value pair. If the cache is at capacity, evict the least recently used entry before inserting.</li>
+</ul></div>
+<div class="req-box"><div class="req-box-title">Non-Functional Requirements</div>
+<ul>
+<li>Both operations must run in O(1) time</li>
+<li>Capacity is fixed at construction time</li>
+</ul></div>
+<h3>Example</h3>
+<pre style="background:var(--bg2);padding:12px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;overflow-x:auto">val cache = LRUCache(2)
+cache.put(1, 1)
+cache.put(2, 2)
+cache.get(1)    // → 1  (1 is now most recent)
+cache.put(3, 3) // evicts key 2
+cache.get(2)    // → -1 (evicted)
+cache.get(3)    // → 3</pre></section>
+<section class="mc-sec"><h2>What the tests check</h2><ul class="mc-tests"><li>get returns -1 for a missing key</li><li>put then get returns the value</li><li>evicts the least recently used key when full</li><li>get marks a key as recently used</li><li>put on an existing key updates it without evicting</li><li>updating a key also makes it most recent</li><li>capacity 1 keeps only the latest key</li><li>handles 100,000 operations quickly (O(1))</li></ul></section>
+<section class="mc-sec"><h2>Hints</h2><details class="mc-d"><summary>Hint 1</summary><p>What data structure gives you O(1) lookup by key?</p></details><details class="mc-d"><summary>Hint 2</summary><p>To track recency, you need to know both the most recent and least recent entries quickly. A doubly linked list lets you remove and add nodes in O(1) — combine it with a HashMap.</p></details><details class="mc-d"><summary>Hint 3</summary><p>Use a HashMap&lt;Int, Node&gt; where each Node is in a doubly linked list. On every get/put, move that node to the head (most recent). The tail is always the LRU candidate to evict.</p></details></section>
+<section class="mc-sec mc-prob"><h2>Approach</h2><h3>Data Structure</h3>
+<p>Use a <strong>HashMap + Doubly Linked List</strong>. The map gives O(1) access to any node. The linked list maintains recency order — head is most recent, tail is least recent.</p>
+<h3>Key Operations</h3>
+<ul>
+<li><strong>get</strong>: Look up node in map → move to head → return value</li>
+<li><strong>put</strong>: If key exists, update + move to head. If new, add at head. If over capacity, remove tail node and its map entry.</li>
+</ul>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>Using <code>LinkedHashMap</code> shortcut — fine for production but expect a "implement from scratch" follow-up</li>
+<li>Forgetting to update the map when evicting the tail node</li>
+<li>Off-by-one: checking capacity <em>before</em> insertion vs <em>after</em></li>
+</ul></div></section>
+<section class="mc-sec"><h2>Reference solution</h2><p class="mc-note">Try it yourself first. Then compare: the solution passes all 8 tests.</p><details class="mc-d mc-sol"><summary>Show the Kotlin solution</summary><pre class="code-block mc-code">class LRUCache(private val capacity: Int) {
+    private class Node(val key: Int, var value: Int) {
+        var prev: Node? = null
+        var next: Node? = null
+    }
+
+    private val map = HashMap&lt;Int, Node&gt;()
+    private val head = Node(0, 0)   // sentinel: most recent side
+    private val tail = Node(0, 0)   // sentinel: least recent side
+
+    init { head.next = tail; tail.prev = head }
+
+    fun get(key: Int): Int {
+        val node = map[key] ?: return -1
+        moveToFront(node)
+        return node.value
+    }
+
+    fun put(key: Int, value: Int) {
+        val existing = map[key]
+        if (existing != null) {
+            existing.value = value
+            moveToFront(existing)
+            return
+        }
+        if (map.size == capacity) {
+            val lru = tail.prev!!
+            unlink(lru)
+            map.remove(lru.key)
+        }
+        val node = Node(key, value)
+        map[key] = node
+        addFront(node)
+    }
+
+    private fun unlink(n: Node) { n.prev!!.next = n.next; n.next!!.prev = n.prev }
+    private fun addFront(n: Node) { n.next = head.next; n.prev = head; head.next!!.prev = n; head.next = n }
+    private fun moveToFront(n: Node) { unlink(n); addFront(n) }
+}
+</pre></details></section>
+<aside class="tp-box"><div><b>Practise it under interview conditions.</b><span>Timer, editor and tests in your browser. Your solved problems are saved to your free account.</span></div><a href="/machine_coding#lru-cache">Open the editor</a></aside>
+<section class="tp-more"><h2>More machine coding problems</h2><div class="tp-grid"><a href="/machine-coding/token-bucket-rate-limiter">Token Bucket Rate Limiter</a><a href="/machine-coding/event-bus">Event Bus</a><a href="/machine-coding/pagination-manager">Pagination Manager</a><a href="/machine-coding/retry-with-exponential-backoff">Retry with Exponential Backoff</a><a href="/machine-coding/shopping-cart-with-discounts">Shopping Cart with Discounts</a><a href="/machine-coding/in-memory-cache-with-ttl">In-Memory Cache with TTL</a><a href="/machine-coding/order-state-machine">Order State Machine</a><a href="/machine-coding/restaurant-bill-screen">Restaurant Bill Screen</a></div>
+<p><a class="tp-all" href="/questions">Android interview questions with answers</a></p></section>
+</main>
+<footer class="tp-foot"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="" width="24" height="24"/>Droidly</a>
+<span>Android interview prep, built by an Android engineer.</span>
+<span class="tp-foot-links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:support@droidly.io">support@droidly.io</a></span></footer>
+</body>
+</html>

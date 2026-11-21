@@ -1,0 +1,25 @@
+fun main() {
+    test("get returns a fresh value") { val c = TTLCache<String, String>(1000); c.put("a", "A"); expect(c.get("a"), "A") }
+    test("get returns null for a missing key") { expect(TTLCache<String, String>().get("nope"), null) }
+    test("an entry expires after its own TTL") {
+        val c = TTLCache<String, String>(1000); c.put("a", "A", ttlMs = 50); Thread.sleep(80); expect(c.get("a"), null)
+    }
+    test("the default TTL is used when none is given") {
+        val c = TTLCache<String, String>(defaultTtlMs = 50); c.put("a", "A"); Thread.sleep(80); expect(c.get("a"), null)
+    }
+    test("entries with a longer TTL stay alive") {
+        val c = TTLCache<String, String>(1000); c.put("long", "L"); c.put("short", "S", 50); Thread.sleep(80)
+        expect(c.get("long"), "L", "long"); expect(c.get("short"), null, "short")
+    }
+    test("put on an existing key resets its value and TTL") {
+        val c = TTLCache<String, String>(1000); c.put("a", "old", 50); c.put("a", "new", 1000); Thread.sleep(80); expect(c.get("a"), "new")
+    }
+    test("size() counts only entries that have not expired") {
+        val c = TTLCache<String, Int>(1000); c.put("a", 1); c.put("b", 2, 50); Thread.sleep(80); expect(c.size(), 1)
+    }
+    test("evictExpired() removes expired entries") {
+        val c = TTLCache<String, Int>(1000); c.put("a", 1, 50); c.put("b", 2); Thread.sleep(80); c.evictExpired()
+        expect(c.size(), 1, "size"); expect(c.get("b"), 2, "b")
+    }
+    summary()
+}

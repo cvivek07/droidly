@@ -1,0 +1,27 @@
+fun main() {
+    test("a new user starts with a full bucket (3 requests pass)") {
+        val l = TokenBucketRateLimiter(3, 1.0); repeat(3) { expect(l.isAllowed("u1"), true, "request ${it + 1}") }
+    }
+    test("the request after the burst is denied") {
+        val l = TokenBucketRateLimiter(3, 1.0); repeat(3) { l.isAllowed("u1") }; expect(l.isAllowed("u1"), false)
+    }
+    test("each user has an independent bucket") {
+        val l = TokenBucketRateLimiter(2, 1.0); repeat(3) { l.isAllowed("u1") }; expect(l.isAllowed("u2"), true, "u2")
+    }
+    test("tokens refill over time") {
+        val l = TokenBucketRateLimiter(1, 10.0); expect(l.isAllowed("u1"), true, "first"); expect(l.isAllowed("u1"), false, "second")
+        Thread.sleep(150); expect(l.isAllowed("u1"), true, "after 150ms at 10 tokens/s")
+    }
+    test("refill never goes above maxTokens") {
+        val l = TokenBucketRateLimiter(3, 20.0); repeat(3) { l.isAllowed("u1") }
+        Thread.sleep(400)   // would be 8 tokens without the cap
+        var allowed = 0; repeat(6) { if (l.isAllowed("u1")) allowed++ }
+        expect(allowed, 3, "requests allowed after a long wait")
+    }
+    test("fractional refill works (no integer rounding)") {
+        val l = TokenBucketRateLimiter(1, 4.0); l.isAllowed("u1")
+        Thread.sleep(150); expect(l.isAllowed("u1"), false, "0.6 tokens is not enough")
+        Thread.sleep(150); expect(l.isAllowed("u1"), true, "1.2 tokens is enough")
+    }
+    summary()
+}

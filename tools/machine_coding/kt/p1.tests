@@ -1,0 +1,30 @@
+fun main() {
+    test("get returns -1 for a missing key") { expect(LRUCache(2).get(42), -1) }
+    test("put then get returns the value") { val c = LRUCache(2); c.put(1, 10); expect(c.get(1), 10) }
+    test("evicts the least recently used key when full") {
+        val c = LRUCache(2); c.put(1, 1); c.put(2, 2); c.put(3, 3)
+        expect(c.get(1), -1, "key 1"); expect(c.get(2), 2, "key 2"); expect(c.get(3), 3, "key 3")
+    }
+    test("get marks a key as recently used") {
+        val c = LRUCache(2); c.put(1, 1); c.put(2, 2); c.get(1); c.put(3, 3)
+        expect(c.get(2), -1, "key 2 should be evicted"); expect(c.get(1), 1, "key 1 should stay")
+    }
+    test("put on an existing key updates it without evicting") {
+        val c = LRUCache(2); c.put(1, 1); c.put(2, 2); c.put(1, 100)
+        expect(c.get(1), 100, "key 1"); expect(c.get(2), 2, "key 2")
+    }
+    test("updating a key also makes it most recent") {
+        val c = LRUCache(2); c.put(1, 1); c.put(2, 2); c.put(1, 5); c.put(3, 3)
+        expect(c.get(2), -1, "key 2 should be evicted"); expect(c.get(1), 5, "key 1")
+    }
+    test("capacity 1 keeps only the latest key") {
+        val c = LRUCache(1); c.put(1, 1); c.put(2, 2); expect(c.get(1), -1, "key 1"); expect(c.get(2), 2, "key 2")
+    }
+    test("handles 100,000 operations quickly (O(1))") {
+        val c = LRUCache(1000); val start = System.nanoTime()
+        for (i in 0 until 100_000) { c.put(i, i); c.get(i - 500) }
+        expect(c.get(99_999), 99_999); expect(c.get(98_000), -1, "old key")
+        expectTrue((System.nanoTime() - start) / 1_000_000 < 2000, "took too long — is get/put O(n)?")
+    }
+    summary()
+}

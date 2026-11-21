@@ -1,0 +1,27 @@
+fun main() {
+    val m = PaginationManager((1..23).toList(), pageSize = 5)
+    test("page 1 has the first 5 items") { expect(m.getPage(1).items, listOf(1, 2, 3, 4, 5)) }
+    test("total pages rounds up (23 items / 5 = 5 pages)") { expect(m.getPage(1).totalPages, 5) }
+    test("last page holds the remainder") { expect(m.getPage(5).items, listOf(21, 22, 23)) }
+    test("hasNext / hasPrevious on first, middle and last page") {
+        expect(m.getPage(1).hasPrevious, false, "p1 hasPrevious"); expect(m.getPage(1).hasNext, true, "p1 hasNext")
+        expect(m.getPage(3).hasPrevious, true, "p3 hasPrevious"); expect(m.getPage(3).hasNext, true, "p3 hasNext")
+        expect(m.getPage(5).hasNext, false, "p5 hasNext")
+    }
+    test("nextPage and previousPage navigate") {
+        expect(m.nextPage(1)?.currentPage, 2, "next of 1"); expect(m.previousPage(3)?.currentPage, 2, "previous of 3")
+    }
+    test("nextPage on the last page and previousPage on the first return null") {
+        expect(m.nextPage(5), null, "next of 5"); expect(m.previousPage(1), null, "previous of 1")
+    }
+    test("exact division has no empty last page") {
+        val e = PaginationManager((1..10).toList(), 5); expect(e.getPage(1).totalPages, 2); expect(e.getPage(2).items, listOf(6, 7, 8, 9, 10))
+    }
+    test("out-of-range page numbers throw IllegalArgumentException") {
+        for (n in listOf(0, -1, 6)) {
+            val err = runCatching { m.getPage(n) }.exceptionOrNull()
+            expectTrue(err is IllegalArgumentException, "getPage($n) should throw IllegalArgumentException, got ${err?.let { it::class.simpleName } ?: "no exception"}")
+        }
+    }
+    summary()
+}

@@ -890,7 +890,7 @@ nav.nav-pinned .nav-menu{left:12px;right:12px}
       <h3 style="font-family:'Plus Jakarta Sans',sans-serif; font-size:22px; font-weight:800; letter-spacing:-0.5px; margin-bottom:10px;">Check your inbox!</h3>
       <p style="font-size:14px; color:var(--muted); line-height:1.7; margin-bottom:6px;">We sent a verification link to</p>
       <p style="font-size:14px; font-weight:700; color:var(--ink); margin-bottom:24px;" id="verifyEmailAddr"></p>
-      <p style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:24px;">Click the link in the email to activate your account. Check your spam folder if you don't see it.</p>
+      <p style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:24px;">Click the link in the email to activate your account.</p>
       <button onclick="closeAuthModal()" style="width:100%; background:var(--green); color:white; border:none; padding:14px; border-radius:100px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; margin-bottom:14px;">Got it ›</button>
       <p style="font-size:13px; color:var(--muted);">Didn't receive it? <a href="#" id="resendEmail" onclick="resendVerification(); return false;" style="color:var(--green); font-weight:600; text-decoration:none;">Resend email</a></p>
     </div>
@@ -1009,7 +1009,6 @@ nav.nav-pinned .nav-menu{left:12px;right:12px}
     }
 
     const name = data.user.user_metadata?.full_name || email.split('@')[0];
-    gtag('event', 'login', { method: 'email' });
     closeAuthModal();
     updateNavForUser(data.user);
     const returnTo = safeReturn();
@@ -1056,7 +1055,6 @@ nav.nav-pinned .nav-menu{left:12px;right:12px}
       showVerifyState(email);
     } else if (data.session) {
       // Email confirmation disabled in Supabase › logged in immediately
-      gtag('event', 'sign_up', { method: 'email' });
       closeAuthModal();
       updateNavForUser(data.user);
       const returnTo = safeReturn();
