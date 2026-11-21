@@ -111,6 +111,7 @@ def head(title, desc, path, ld):
 FOOT = """<footer class="tp-foot"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="" width="24" height="24"/>Droidly</a>
 <span>Android interview prep, built by an Android engineer.</span>
 <span class="tp-foot-links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:support@droidly.io">support@droidly.io</a></span></footer>
+<script src="/assets/site-nav.js" defer></script>
 </body>
 </html>
 """
