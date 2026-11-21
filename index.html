@@ -582,7 +582,23 @@ nav.nav-pinned .nav-menu{left:12px;right:12px}
 .nav-menu a span{font-weight:500;font-size:13px;color:#5b6472}
 .nav-menu a:hover, .nav-menu a:active{background:#f1f6f3}
 @media (max-width:900px){.nav-menu-btn{display:inline-flex}}
-@media (min-width:901px){.nav-menu{display:none !important}}
+.nav-browse{background:none;border:0;font:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.nav-browse svg{transition:transform .2s}
+.nav-browse[aria-expanded="true"] svg{transform:rotate(180deg)}
+.nav-menu{max-height:calc(100vh - 110px);overflow-y:auto}
+.nav-menu .nm-main{display:flex;flex-direction:column}
+.nav-menu .nm-h{font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#2e6040;padding:14px 16px 6px}
+.nav-menu .nm-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.nav-menu .nm-grid a{padding:9px 16px;font-size:14.5px;font-weight:600}
+.nav-menu .nm-lv{grid-template-columns:1fr 1fr 1fr}
+.nav-menu .nm-lv a span{font-size:12px}
+.nav-menu a.nm-foot{margin-top:6px;border-top:1px solid rgba(15,17,23,.08);border-radius:0 0 12px 12px;font-size:14px;font-weight:600;color:#2e6040}
+@media (min-width:901px){
+  .nav-menu{left:50% !important;right:auto !important;transform:translateX(-50%);width:600px;padding:8px 8px 4px}
+  .nav-menu .nm-main{display:none}
+  .nav-menu .nm-grid{grid-template-columns:1fr 1fr 1fr}
+}
+@media (max-width:420px){.nav-menu .nm-lv{grid-template-columns:1fr}}
 .ha .ha-ticks{list-style:none;margin:4px 0 6px;padding:0;display:flex;flex-direction:column;gap:14px}
 .ha .ha-ticks li{position:relative;padding-left:34px;display:flex;flex-direction:column;gap:2px}
 .ha .ha-ticks li::before{content:"";position:absolute;left:0;top:1px;width:22px;height:22px;border-radius:50%;background:#e8f2ec url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232e6040' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4L18 8'/%3E%3C/svg%3E") center/14px no-repeat}
@@ -609,14 +625,40 @@ nav.nav-pinned .nav-menu{left:12px;right:12px}
     <a href="/questions" class="nav-link">Questions</a>
     <a href="/roadmap" class="nav-link">Roadmap</a>
     <a href="/practice" class="nav-link">Practice</a>
-    <a href="#how-it-works" class="nav-link">How it works</a>
+    <a href="/machine-coding/" class="nav-link">Machine coding</a>
+    <button type="button" class="nav-link nav-browse" id="navBrowseBtn" aria-expanded="false" aria-controls="navMenu">Browse <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
   </div>
   <button type="button" class="nav-menu-btn" id="navMenuBtn" aria-label="Menu" aria-expanded="false" aria-controls="navMenu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path class="l1" d="M4 7h16"/><path class="l2" d="M4 12h16"/><path class="l3" d="M4 17h16"/></svg></button>
   <div class="nav-menu" id="navMenu" hidden>
-    <a href="/questions">Questions <span>600+ with answers</span></a>
-    <a href="/roadmap">Roadmap <span>Your topic-by-topic plan</span></a>
-    <a href="/practice">Daily practice <span>5 questions a day from your weak topics</span></a>
-    <a href="#how-it-works">How it works</a>
+    <div class="nm-main">
+      <a href="/questions">Questions <span>600+ with answers</span></a>
+      <a href="/roadmap">Roadmap <span>Your topic-by-topic plan</span></a>
+      <a href="/practice">Daily practice <span>5 questions a day from your weak topics</span></a>
+      <a href="/machine-coding/">Machine coding <span>Kotlin problems with tests you can run</span></a>
+    </div>
+    <div class="nm-h">Interview questions by topic</div>
+    <div class="nm-grid">
+      <a href="/kotlin-interview-questions">Kotlin</a>
+      <a href="/kotlin-coroutines-interview-questions">Coroutines</a>
+      <a href="/kotlin-flow-interview-questions">Flow</a>
+      <a href="/jetpack-compose-interview-questions">Jetpack Compose</a>
+      <a href="/android-fundamentals-interview-questions">Android fundamentals</a>
+      <a href="/android-architecture-interview-questions">Architecture</a>
+      <a href="/hilt-dagger-interview-questions">Hilt and Dagger</a>
+      <a href="/android-room-datastore-interview-questions">Room and DataStore</a>
+      <a href="/android-networking-interview-questions">Networking</a>
+      <a href="/android-performance-interview-questions">Performance</a>
+      <a href="/gradle-android-build-interview-questions">Gradle and build</a>
+      <a href="/android-system-design-interview-questions">System design</a>
+      <a href="/android-developer-behavioral-interview-questions">Behavioral</a>
+    </div>
+    <div class="nm-h">By experience</div>
+    <div class="nm-grid nm-lv">
+      <a href="/android-interview-questions-for-freshers">Freshers <span>0–2 years</span></a>
+      <a href="/android-interview-questions-for-experienced">Experienced <span>2–5 years</span></a>
+      <a href="/senior-android-interview-questions">Senior <span>5+ years</span></a>
+    </div>
+    <a class="nm-foot" href="#how-it-works">How Droidly works</a>
   </div>
   <div class="nav-right" id="navRight">
     <!-- Logged-out state -->
@@ -1445,13 +1487,14 @@ window.addEventListener('load', function () {
 
 <script>
 (function(){
-  var nav=document.querySelector('nav'), btn=document.getElementById('navMenuBtn'), menu=document.getElementById('navMenu');
+  var nav=document.querySelector('nav'), btn=document.getElementById('navMenuBtn'), btn2=document.getElementById('navBrowseBtn'), menu=document.getElementById('navMenu');
   if(!nav) return;
   function pin(){ nav.classList.toggle('nav-pinned', window.scrollY > 24); }
   window.addEventListener('scroll', pin, {passive:true}); pin();
   if(!btn||!menu) return;
-  function set(open){ btn.setAttribute('aria-expanded', open); menu.hidden = !open; }
+  function set(open){ btn.setAttribute('aria-expanded', open); if(btn2) btn2.setAttribute('aria-expanded', open); menu.hidden = !open; }
   btn.addEventListener('click', function(e){ e.stopPropagation(); set(menu.hidden); });
+  if(btn2) btn2.addEventListener('click', function(e){ e.stopPropagation(); set(menu.hidden); });
   menu.addEventListener('click', function(e){ if(e.target.closest('a')) set(false); });
   document.addEventListener('click', function(e){ if(!menu.hidden && !menu.contains(e.target)) set(false); });
   document.addEventListener('keydown', function(e){ if(e.key==='Escape') set(false); });
