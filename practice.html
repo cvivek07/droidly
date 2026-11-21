@@ -281,7 +281,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
   if (fromLink) { guest = fromLink; try { var qs = location.search.replace(/([?&])g=[^&#]*&?/, '$1').replace(/[?&]$/, ''); history.replaceState(null, '', location.pathname + qs + location.hash); } catch (e) { /* ignore */ } }
   function googleSignIn() {
     track('practice_guest_signin', { method: 'google', done: guest ? Object.keys(guest.results).length : 0 });
-    if (window.DroidlyOneTap && DroidlyOneTap.ready && DroidlyOneTap.prompt()) return;
+    // A click always goes to Google's sign-in page: One Tap can be silently held back by Google after it was closed.
     db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/practice' + (guest ? '?g=' + encodeURIComponent(guestParam()) : '') } })
       .then(function (r) { if (r.error) toast('Google sign-in failed. Try again.', true); });
   }

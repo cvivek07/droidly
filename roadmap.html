@@ -639,7 +639,7 @@ body{background:var(--hg-bg) !important}
   }
   function guestGoogle() {
     track('roadmap_guest_signin', { method: 'google' });
-    if (window.DroidlyOneTap && DroidlyOneTap.ready && DroidlyOneTap.prompt()) return;
+    // A click always goes to Google's sign-in page: One Tap can be silently held back by Google after it was closed.
     db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/roadmap?rg=' + encodeURIComponent(guestParam()) } })
       .then(function (r) { if (r.error) toast('Google sign-in failed. Try again.'); });
   }
