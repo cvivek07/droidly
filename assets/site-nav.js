@@ -36,7 +36,7 @@
   // ---- styles (scoped to .snav-*) ----
   var css = document.createElement('style');
   css.textContent =
-    '.snav-links{display:flex;align-items:center;gap:4px}' +
+    '.snav-links.snav-new{display:flex;align-items:center;gap:4px}' +
     '.snav-links a.snav-a,.snav-links button.snav-a{color:#14171f;text-decoration:none;font-size:14.5px;font-weight:600;padding:8px 12px;border-radius:10px;white-space:nowrap}' +
     '.snav-links a.snav-a:hover,.snav-links button.snav-a:hover{background:rgba(61,122,79,.08);color:#2e6040}' +
     '.snav-links a.snav-on{color:#2e6040 !important;background:rgba(46,96,64,.08);border-radius:10px}' +
@@ -70,6 +70,7 @@
     box = document.createElement('div');
     var logo = nav.querySelector('.logo, .tp-logo');
     if (logo) logo.insertAdjacentElement('afterend', box); else nav.insertBefore(box, nav.firstChild);
+    box.classList.add('snav-new');
   }
   var tpl = box.querySelector('a:not(.active):not(.on)') || box.querySelector('a');
   var cls = tpl ? tpl.className.replace(/\b(active|on)\b/g, '').trim() : 'snav-a';
@@ -87,6 +88,11 @@
   browse.setAttribute('aria-expanded', 'false'); browse.setAttribute('aria-controls', 'snavPanel');
   browse.innerHTML = 'Browse <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
   box.appendChild(browse);
+  // Browse is a button: give it the same type as the page's own links.
+  try {
+    var ref = box.querySelector('a:not([aria-current])'), cs = ref && getComputedStyle(ref);
+    if (cs) { browse.style.color = cs.color; browse.style.fontSize = cs.fontSize; browse.style.fontWeight = cs.fontWeight; browse.style.fontFamily = cs.fontFamily; browse.style.padding = cs.padding; }
+  } catch (e) { /* keep the defaults */ }
 
   var burger = document.createElement('button');
   burger.type = 'button'; burger.className = 'snav-burger';

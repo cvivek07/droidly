@@ -73,34 +73,32 @@
 })();
 
 /*!
- * Sign-up / login tracking for Google Analytics, for every sign-in method (Google and email).
- * Hooks every Supabase client the page creates and reports once per page when someone has just signed in:
- *   sign_up  - first sign-in of a brand-new account (signed in within 2 min of the account being created or confirmed)
- *   login    - any other fresh sign-in
- * Needs no browser storage. Must load after supabase-js and before the page calls createClient (true on all pages).
+ * Sign-up / login tracking for Google Analytics, for every sign-in method (Google, One Tap and email).
+ * Reads the session Supabase saves for this site (the only thing the site keeps in the browser) instead of hooking
+ * the page's client, because pages create their client before this deferred script runs.
+ * Reports once per page:
+ *   sign_up - first sign-in of a brand-new account (signed in within 2 min of the account being created or confirmed)
+ *   login   - any other fresh sign-in
+ * "Fresh" = the sign-in happened while this page was open, or at most 15 s before it loaded (the landing page of a
+ * Google redirect). Opening another page later does not count it again.
  */
 (function () {
   'use strict';
-  var sent = {};
+  var KEY = 'sb-dquheflcmcppldrnckzf-auth-token', loadedAt = Date.now() - ((window.performance && performance.now && performance.now()) || 0);
+  var sent = false, timer = null, ticks = 0;
   function ms(t) { var n = t ? Date.parse(t) : NaN; return isNaN(n) ? null : n; }
-  function track(ev, session) {
-    if (ev !== 'SIGNED_IN' || !session || !session.user || typeof gtag !== 'function') return;
-    var u = session.user, last = ms(u.last_sign_in_at);
-    if (last === null || sent[u.id] || Date.now() - last > 120000) return;   // not a fresh sign-in (e.g. tab refocus later)
-    sent[u.id] = 1;
+  function current() { try { var j = JSON.parse(localStorage.getItem(KEY) || 'null'); return j && j.user ? j.user : null; } catch (e) { return null; } }
+  function check() {
+    if (sent) return;
+    var u = current(), last = u && ms(u.last_sign_in_at);
+    if (!u || last === null || last < loadedAt - 15000) return;
+    sent = true; clearInterval(timer);
     var born = ms(u.email_confirmed_at) || ms(u.created_at);
     var method = (u.app_metadata && u.app_metadata.provider) || 'email';
-    gtag('event', born !== null && Math.abs(last - born) < 120000 ? 'sign_up' : 'login', { method: method });
+    try { if (typeof gtag === 'function') gtag('event', born !== null && Math.abs(last - born) < 120000 ? 'sign_up' : 'login', { method: method }); } catch (e) { /* never break the page */ }
   }
-  function hook(sb) {
-    if (!sb || typeof sb.createClient !== 'function' || sb.createClient.__droidlyTracked) return;
-    var orig = sb.createClient;
-    sb.createClient = function () {
-      var c = orig.apply(this, arguments);
-      try { c.auth.onAuthStateChange(function (ev, s) { track(ev, s); }); } catch (e) { /* never break the page */ }
-      return c;
-    };
-    sb.createClient.__droidlyTracked = true;
-  }
-  hook(window.supabase);
+  window.DroidlyTrackSignIn = check;   // called right after an in-page sign-in (One Tap, email)
+  check();
+  // A sign-in can happen at any time on the page (dialog, One Tap, Google redirect finishing): look every 1.5 s.
+  timer = setInterval(function () { check(); if (++ticks > 2400) clearInterval(timer); }, 1500);
 })();

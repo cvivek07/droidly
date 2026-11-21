@@ -1125,6 +1125,7 @@ repeatOnLifecycle(<span class="cl">Lifecycle</span>.State.STARTED) {
   async function handleSignOut() { await sbClient.auth.signOut(); }
   function openAuthModal(tab) { window.location.href = '/?auth=' + (tab === 'signup' ? 'signup' : 'signin') + '&return=concept_coroutines'; }
 </script>
+<script src="/assets/one-tap.js" defer></script>
 <script src="/assets/site-nav.js" defer></script>
 </body>
 </html>
