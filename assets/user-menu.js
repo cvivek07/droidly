@@ -71,3 +71,36 @@
   function run() { document.querySelectorAll('.user-dropdown').forEach(enhance); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
 })();
+
+/*!
+ * Sign-up / login tracking for Google Analytics, for every sign-in method (Google and email).
+ * Hooks every Supabase client the page creates and reports once per page when someone has just signed in:
+ *   sign_up  - first sign-in of a brand-new account (signed in within 2 min of the account being created or confirmed)
+ *   login    - any other fresh sign-in
+ * Needs no browser storage. Must load after supabase-js and before the page calls createClient (true on all pages).
+ */
+(function () {
+  'use strict';
+  var sent = {};
+  function ms(t) { var n = t ? Date.parse(t) : NaN; return isNaN(n) ? null : n; }
+  function track(ev, session) {
+    if (ev !== 'SIGNED_IN' || !session || !session.user || typeof gtag !== 'function') return;
+    var u = session.user, last = ms(u.last_sign_in_at);
+    if (last === null || sent[u.id] || Date.now() - last > 120000) return;   // not a fresh sign-in (e.g. tab refocus later)
+    sent[u.id] = 1;
+    var born = ms(u.email_confirmed_at) || ms(u.created_at);
+    var method = (u.app_metadata && u.app_metadata.provider) || 'email';
+    gtag('event', born !== null && Math.abs(last - born) < 120000 ? 'sign_up' : 'login', { method: method });
+  }
+  function hook(sb) {
+    if (!sb || typeof sb.createClient !== 'function' || sb.createClient.__droidlyTracked) return;
+    var orig = sb.createClient;
+    sb.createClient = function () {
+      var c = orig.apply(this, arguments);
+      try { c.auth.onAuthStateChange(function (ev, s) { track(ev, s); }); } catch (e) { /* never break the page */ }
+      return c;
+    };
+    sb.createClient.__droidlyTracked = true;
+  }
+  hook(window.supabase);
+})();
