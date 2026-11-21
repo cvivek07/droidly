@@ -1,0 +1,42 @@
+fun near(a: Double, b: Double) = kotlin.math.abs(a - b) < 0.001
+fun main() {
+    test("an item without a discount costs price × quantity") {
+        val c = ShoppingCart(); c.addItem(CartItem("pen", "Pen", 10.0, 3)); expectTrue(near(c.calculateTotal(), 30.0), "total ${c.calculateTotal()}, expected 30.0")
+    }
+    test("PercentageOff: 2 × 1000 with 20% off = 1600") {
+        val c = ShoppingCart(); c.addItem(CartItem("shirt", "Shirt", 1000.0, 2, Discount.PercentageOff(20.0)))
+        expectTrue(near(c.calculateTotal(), 1600.0), "total ${c.calculateTotal()}, expected 1600.0")
+    }
+    test("FlatDiscount: 2000 − 200 = 1800") {
+        val c = ShoppingCart(); c.addItem(CartItem("shoes", "Shoes", 2000.0, 1, Discount.FlatDiscount(200.0)))
+        expectTrue(near(c.calculateTotal(), 1800.0), "total ${c.calculateTotal()}, expected 1800.0")
+    }
+    test("FlatDiscount larger than the price floors at 0") {
+        val c = ShoppingCart(); c.addItem(CartItem("cap", "Cap", 100.0, 1, Discount.FlatDiscount(300.0)))
+        expectTrue(near(c.calculateTotal(), 0.0), "total ${c.calculateTotal()}, expected 0.0")
+    }
+    test("BuyXGetYFree: buy 2 get 1 → 3 socks cost 2, 5 socks cost 4") {
+        val c = ShoppingCart(); c.addItem(CartItem("socks", "Socks", 100.0, 3, Discount.BuyXGetYFree(2, 1)))
+        expectTrue(near(c.calculateTotal(), 200.0), "3 socks: total ${c.calculateTotal()}, expected 200.0")
+        c.addItem(CartItem("socks", "Socks", 100.0, 2, Discount.BuyXGetYFree(2, 1)))
+        expectTrue(near(c.calculateTotal(), 400.0), "5 socks: total ${c.calculateTotal()}, expected 400.0")
+    }
+    test("adding the same product again increases its quantity") {
+        val c = ShoppingCart(); c.addItem(CartItem("pen", "Pen", 10.0, 1)); c.addItem(CartItem("pen", "Pen", 10.0, 2))
+        expectTrue(near(c.calculateTotal(), 30.0), "total ${c.calculateTotal()}, expected 30.0")
+    }
+    test("removeItem removes the product") {
+        val c = ShoppingCart(); c.addItem(CartItem("pen", "Pen", 10.0, 1)); c.addItem(CartItem("cap", "Cap", 50.0, 1))
+        c.removeItem("pen"); expectTrue(near(c.calculateTotal(), 50.0), "total ${c.calculateTotal()}, expected 50.0")
+    }
+    test("full cart total is 3600 and savings are listed per product") {
+        val c = ShoppingCart()
+        c.addItem(CartItem("shirt", "Shirt", 1000.0, 2, Discount.PercentageOff(20.0)))
+        c.addItem(CartItem("shoes", "Shoes", 2000.0, 1, Discount.FlatDiscount(200.0)))
+        c.addItem(CartItem("socks", "Socks", 100.0, 3, Discount.BuyXGetYFree(2, 1)))
+        expectTrue(near(c.calculateTotal(), 3600.0), "total ${c.calculateTotal()}, expected 3600.0")
+        val d = c.getAppliedDiscounts()
+        expectTrue(near(d["shirt"] ?: -1.0, 400.0) && near(d["shoes"] ?: -1.0, 200.0) && near(d["socks"] ?: -1.0, 100.0), "savings $d, expected shirt=400, shoes=200, socks=100")
+    }
+    summary()
+}

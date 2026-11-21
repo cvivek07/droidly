@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+<meta name="theme-color" content="#2e6040"/>
+<title>Token Bucket Rate Limiter in Kotlin | Droidly Machine Coding</title>
+<meta name="description" content="Build a per-user token bucket rate limiter in Kotlin with lazy refill. Android machine coding question with hints, tests and a solution."/>
+<link rel="canonical" href="https://droidly.io/machine-coding/token-bucket-rate-limiter"/>
+<meta property="og:type" content="article"/>
+<meta property="og:url" content="https://droidly.io/machine-coding/token-bucket-rate-limiter"/>
+<meta property="og:title" content="Token Bucket Rate Limiter in Kotlin | Droidly Machine Coding"/>
+<meta property="og:description" content="Build a per-user token bucket rate limiter in Kotlin with lazy refill. Android machine coding question with hints, tests and a solution."/>
+<meta property="og:image" content="https://droidly.io/assets/og-image.png"/>
+<meta property="og:site_name" content="Droidly"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/assets/topic-pages.css"/>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-61G11MD574');</script>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Droidly", "item": "https://droidly.io/"}, {"@type": "ListItem", "position": 2, "name": "Machine coding", "item": "https://droidly.io/machine-coding/"}, {"@type": "ListItem", "position": 3, "name": "Token Bucket Rate Limiter", "item": "https://droidly.io/machine-coding/token-bucket-rate-limiter"}]}, {"@context": "https://schema.org", "@type": "Article", "headline": "Token Bucket Rate Limiter in Kotlin", "description": "Build a per-user token bucket rate limiter in Kotlin with lazy refill. Android machine coding question with hints, tests and a solution.", "mainEntityOfPage": "https://droidly.io/machine-coding/token-bucket-rate-limiter", "dateModified": "2026-10-27", "author": {"@type": "Person", "name": "Vivek Choudhary", "url": "https://www.linkedin.com/in/vivek-choudhary-4686b477"}, "publisher": {"@type": "Organization", "name": "Droidly", "logo": {"@type": "ImageObject", "url": "https://droidly.io/assets/logo.png"}}}]</script>
+</head>
+<body>
+<nav class="tp-nav"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="Droidly" width="32" height="32"/>Droidly</a>
+<div class="tp-links"><a href="/questions">Questions</a><a href="/roadmap">Roadmap</a><a href="/practice">Practice</a></div>
+<a class="tp-cta" href="/machine_coding">Open the editor</a></nav>
+<main class="tp-wrap" id="top">
+<nav class="tp-crumb" aria-label="Breadcrumb"><a href="/">Droidly</a><span>›</span><a href="/machine-coding/">Machine coding</a><span>›</span><span>Token Bucket Rate Limiter</span></nav>
+<header class="tp-head"><h1>Token Bucket Rate Limiter in Kotlin</h1><p class="tp-intro">Build a per-user token bucket rate limiter in Kotlin with lazy refill. A common Android machine coding round question, solved in the browser and checked by tests.</p>
+<p class="tp-by">By <a href="https://www.linkedin.com/in/vivek-choudhary-4686b477" target="_blank" rel="noopener">Vivek Choudhary</a>, Android engineer · Updated October 2026</p>
+<div class="tp-stats"><span class="tp-d medium">Medium</span><span>About 40 min</span><span><b>6</b> automatic tests</span></div>
+<div class="tp-learn"><a class="mc-go" href="/machine_coding#token-bucket-rate-limiter">Open it in the editor</a></div></header>
+<section class="mc-sec mc-prob"><h3>Problem</h3>
+<p>Implement a <strong>Token Bucket Rate Limiter</strong> that controls how many requests each user can make per second.</p>
+<div class="req-box"><div class="req-box-title">Functional Requirements</div>
+<ul>
+<li><code>isAllowed(userId)</code> — Return <code>true</code> if the request is permitted, <code>false</code> if rate limited</li>
+<li>Each user gets their own independent bucket</li>
+<li>Bucket refills at a fixed rate over time (not just at fixed intervals)</li>
+<li>Bucket has a max capacity — tokens don't accumulate beyond it</li>
+</ul></div>
+<div class="req-box"><div class="req-box-title">Token Bucket Rules</div>
+<ul>
+<li>Each request consumes 1 token</li>
+<li>Tokens refill continuously at <code>refillRatePerSecond</code></li>
+<li>If bucket is empty → request is denied</li>
+<li>Users start with a full bucket</li>
+</ul></div></section>
+<section class="mc-sec"><h2>What the tests check</h2><ul class="mc-tests"><li>a new user starts with a full bucket (3 requests pass)</li><li>the request after the burst is denied</li><li>each user has an independent bucket</li><li>tokens refill over time</li><li>refill never goes above maxTokens</li><li>fractional refill works (no integer rounding)</li></ul></section>
+<section class="mc-sec"><h2>Hints</h2><details class="mc-d"><summary>Hint 1</summary><p>You don't need an actual background thread to refill tokens. How can you calculate how many tokens should have been added since the last request, using only the current timestamp?</p></details><details class="mc-d"><summary>Hint 2</summary><p>Store the last-access timestamp per user. On each request, compute elapsed time → multiply by refill rate → add tokens (capped at maxTokens).</p></details><details class="mc-d"><summary>Hint 3</summary><p>Use a data class to hold each user's current token count and last refill timestamp. Use System.currentTimeMillis() for time tracking.</p></details></section>
+<section class="mc-sec mc-prob"><h2>Approach</h2><h3>Lazy Refill Strategy</h3>
+<p>Don't use a background thread. Instead, calculate tokens lazily: on each request, check how much time has elapsed since the last request for that user, compute how many tokens should have been added, and top up the bucket.</p>
+<h3>Per-user State</h3>
+<pre style="background:var(--bg2);padding:10px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px">data class Bucket(
+  var tokens: Double,
+  var lastRefillTime: Long
+)</pre>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>Using integer tokens instead of Double — causes precision loss with fractional refill rates</li>
+<li>Not capping tokens at <code>maxTokens</code> after refill</li>
+<li>Thread safety — a real implementation needs synchronization per user bucket</li>
+</ul></div></section>
+<section class="mc-sec"><h2>Reference solution</h2><p class="mc-note">Try it yourself first. Then compare: the solution passes all 6 tests.</p><details class="mc-d mc-sol"><summary>Show the Kotlin solution</summary><pre class="code-block mc-code">class TokenBucketRateLimiter(
+    private val maxTokens: Int,
+    private val refillRatePerSecond: Double
+) {
+    private class Bucket(var tokens: Double, var lastRefillNanos: Long)
+
+    private val buckets = HashMap&lt;String, Bucket&gt;()
+
+    @Synchronized
+    fun isAllowed(userId: String): Boolean {
+        val now = System.nanoTime()
+        val bucket = buckets.getOrPut(userId) { Bucket(maxTokens.toDouble(), now) }
+        val elapsedSeconds = (now - bucket.lastRefillNanos) / 1_000_000_000.0
+        bucket.tokens = minOf(maxTokens.toDouble(), bucket.tokens + elapsedSeconds * refillRatePerSecond)
+        bucket.lastRefillNanos = now
+        if (bucket.tokens &gt;= 1.0) {
+            bucket.tokens -= 1.0
+            return true
+        }
+        return false
+    }
+}
+</pre></details></section>
+<aside class="tp-box"><div><b>Practise it under interview conditions.</b><span>Timer, editor and tests in your browser. Your solved problems are saved to your free account.</span></div><a href="/machine_coding#token-bucket-rate-limiter">Open the editor</a></aside>
+<section class="tp-more"><h2>More machine coding problems</h2><div class="tp-grid"><a href="/machine-coding/lru-cache">LRU Cache</a><a href="/machine-coding/event-bus">Event Bus</a><a href="/machine-coding/pagination-manager">Pagination Manager</a><a href="/machine-coding/retry-with-exponential-backoff">Retry with Exponential Backoff</a><a href="/machine-coding/shopping-cart-with-discounts">Shopping Cart with Discounts</a><a href="/machine-coding/in-memory-cache-with-ttl">In-Memory Cache with TTL</a><a href="/machine-coding/order-state-machine">Order State Machine</a><a href="/machine-coding/restaurant-bill-screen">Restaurant Bill Screen</a></div>
+<p><a class="tp-all" href="/questions">Android interview questions with answers</a></p></section>
+</main>
+<footer class="tp-foot"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="" width="24" height="24"/>Droidly</a>
+<span>Android interview prep, built by an Android engineer.</span>
+<span class="tp-foot-links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:support@droidly.io">support@droidly.io</a></span></footer>
+</body>
+</html>

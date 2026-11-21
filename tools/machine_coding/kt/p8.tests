@@ -1,0 +1,33 @@
+fun main() {
+    test("the happy path: Placed → Confirmed → Preparing → OutForDelivery → Delivered") {
+        val o = OrderStateMachine()
+        expect(o.transition(OrderEvent.Confirm), true, "Confirm"); expect(o.transition(OrderEvent.StartPreparing), true, "StartPreparing")
+        expect(o.transition(OrderEvent.Dispatch), true, "Dispatch"); expect(o.transition(OrderEvent.MarkDelivered), true, "MarkDelivered")
+        expect(o.currentState, OrderState.Delivered as OrderState, "final state")
+    }
+    test("an invalid event returns false and keeps the state") {
+        val o = OrderStateMachine(); expect(o.transition(OrderEvent.MarkDelivered), false); expect(o.currentState, OrderState.Placed as OrderState)
+    }
+    test("steps cannot be skipped") {
+        val o = OrderStateMachine(); o.transition(OrderEvent.Confirm)
+        expect(o.transition(OrderEvent.Dispatch), false, "Dispatch from Confirmed"); expect(o.currentState, OrderState.Confirmed as OrderState)
+    }
+    test("Cancel works from every active state") {
+        val paths = listOf(listOf<OrderEvent>(), listOf(OrderEvent.Confirm), listOf(OrderEvent.Confirm, OrderEvent.StartPreparing),
+            listOf(OrderEvent.Confirm, OrderEvent.StartPreparing, OrderEvent.Dispatch))
+        for (p in paths) { val o = OrderStateMachine(); p.forEach { o.transition(it) }
+            expect(o.transition(OrderEvent.Cancel), true, "Cancel after ${p.size} steps"); expect(o.currentState, OrderState.Cancelled as OrderState) }
+    }
+    test("Delivered is final: nothing moves it, not even Cancel") {
+        val o = OrderStateMachine(OrderState.Delivered)
+        listOf(OrderEvent.Cancel, OrderEvent.Confirm, OrderEvent.Dispatch).forEach { expect(o.transition(it), false, "event ${it::class.simpleName}") }
+        expect(o.currentState, OrderState.Delivered as OrderState)
+    }
+    test("Cancelled is final") {
+        val o = OrderStateMachine(OrderState.Cancelled); expect(o.transition(OrderEvent.Confirm), false); expect(o.transition(OrderEvent.Cancel), false)
+    }
+    test("status text follows the state") {
+        val o = OrderStateMachine(); o.transition(OrderEvent.Confirm); expect(o.getStatusDescription(), "Order confirmed by restaurant")
+    }
+    summary()
+}

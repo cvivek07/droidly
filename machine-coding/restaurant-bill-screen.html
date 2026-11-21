@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+<meta name="theme-color" content="#2e6040"/>
+<title>Restaurant Bill Screen in Kotlin | Droidly Machine Coding</title>
+<meta name="description" content="Build a restaurant bill screen on Android: Repository, StateFlow, ViewModel and RecyclerView. A UI machine coding interview challenge with hints."/>
+<link rel="canonical" href="https://droidly.io/machine-coding/restaurant-bill-screen"/>
+<meta property="og:type" content="article"/>
+<meta property="og:url" content="https://droidly.io/machine-coding/restaurant-bill-screen"/>
+<meta property="og:title" content="Restaurant Bill Screen in Kotlin | Droidly Machine Coding"/>
+<meta property="og:description" content="Build a restaurant bill screen on Android: Repository, StateFlow, ViewModel and RecyclerView. A UI machine coding interview challenge with hints."/>
+<meta property="og:image" content="https://droidly.io/assets/og-image.png"/>
+<meta property="og:site_name" content="Droidly"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/assets/topic-pages.css"/>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-61G11MD574');</script>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Droidly", "item": "https://droidly.io/"}, {"@type": "ListItem", "position": 2, "name": "Machine coding", "item": "https://droidly.io/machine-coding/"}, {"@type": "ListItem", "position": 3, "name": "Restaurant Bill Screen", "item": "https://droidly.io/machine-coding/restaurant-bill-screen"}]}, {"@context": "https://schema.org", "@type": "Article", "headline": "Restaurant Bill Screen in Kotlin", "description": "Build a restaurant bill screen on Android: Repository, StateFlow, ViewModel and RecyclerView. A UI machine coding interview challenge with hints.", "mainEntityOfPage": "https://droidly.io/machine-coding/restaurant-bill-screen", "dateModified": "2026-10-27", "author": {"@type": "Person", "name": "Vivek Choudhary", "url": "https://www.linkedin.com/in/vivek-choudhary-4686b477"}, "publisher": {"@type": "Organization", "name": "Droidly", "logo": {"@type": "ImageObject", "url": "https://droidly.io/assets/logo.png"}}}]</script>
+</head>
+<body>
+<nav class="tp-nav"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="Droidly" width="32" height="32"/>Droidly</a>
+<div class="tp-links"><a href="/questions">Questions</a><a href="/roadmap">Roadmap</a><a href="/practice">Practice</a></div>
+<a class="tp-cta" href="/machine_coding">Open the editor</a></nav>
+<main class="tp-wrap" id="top">
+<nav class="tp-crumb" aria-label="Breadcrumb"><a href="/">Droidly</a><span>›</span><a href="/machine-coding/">Machine coding</a><span>›</span><span>Restaurant Bill Screen</span></nav>
+<header class="tp-head"><h1>Restaurant Bill Screen in Kotlin</h1><p class="tp-intro">Build a restaurant bill screen on Android: Repository, StateFlow, ViewModel and RecyclerView. A common Android machine coding round question.</p>
+<p class="tp-by">By <a href="https://www.linkedin.com/in/vivek-choudhary-4686b477" target="_blank" rel="noopener">Vivek Choudhary</a>, Android engineer · Updated October 2026</p>
+<div class="tp-stats"><span class="tp-d hard">Hard</span><span>About 60 min</span><span>Build it in Android Studio</span></div>
+<div class="tp-learn"><a class="mc-go" href="/machine_coding#restaurant-bill-screen">Open the challenge</a></div></header>
+<section class="mc-sec mc-prob"><h3>Problem</h3>
+<p>Design and implement the restaurant bill screen below. Fetch bill data from a dummy API (simulated with a <strong>1.5s delay</strong>), show a loading state, then render the check. This is a UI-focused machine coding challenge.</p>
+
+<div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;margin:14px 0">
+  <div style="flex-shrink:0">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:6px;text-align:center">Target Screen</div>
+    <div style="width:180px;border:2px solid #d0d0d0;border-radius:18px;overflow:hidden;background:#f5f5f5;box-shadow:0 4px 20px rgba(0,0,0,0.12)">
+      <div style="background:#e0e0e0;height:8px;display:flex;align-items:center;justify-content:center">
+        <div style="width:40px;height:4px;border-radius:2px;background:#bbb"></div>
+      </div>
+      <div style="background:#FFFFFF;padding:10px 12px;border-bottom:1px solid #eeeeee">
+        <span style="color:#404040;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif">Toast</span>
+      </div>
+      <div style="background:#fff;padding:0 12px;min-height:120px">
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f2f2f2;font-size:11px;color:#404040;font-family:'DM Sans',sans-serif"><span>Burger</span><span>$8.99</span></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f2f2f2;font-size:11px;color:#404040;font-family:'DM Sans',sans-serif"><span>Fries</span><span>$3.49</span></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f2f2f2;font-size:11px;color:#404040;font-family:'DM Sans',sans-serif"><span>Soda</span><span>$1.99</span></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:11px;color:#404040;font-family:'DM Sans',sans-serif"><span>Ice Cream</span><span>$1.99</span></div>
+      </div>
+      <div style="background:#FFFFFF;padding:10px 12px;border-top:1px solid #eeeeee">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:11px;color:#404040;font-family:'DM Sans',sans-serif"><span>Total:</span><span>$15.67</span></div>
+        <div style="display:flex;gap:6px">
+          <div style="flex:1;height:32px;background:#022CFA;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-family:'DM Sans',sans-serif">Print</div>
+          <div style="flex:1;height:32px;background:#022CFA;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-family:'DM Sans',sans-serif">Pay $15.67</div>
+        </div>
+      </div>
+      <div style="background:#e0e0e0;height:8px"></div>
+    </div>
+  </div>
+
+  <div style="flex:1;min-width:0">
+    <div class="req-box" style="margin-bottom:8px"><div class="req-box-title">Header</div>
+    <ul style="margin:0">
+      <li>Background: <code>#FFFFFF</code> · Padding: <code>12dp</code></li>
+      <li>"Toast" text — color <code>#404040</code>, size <code>16sp</code></li>
+    </ul></div>
+    <div class="req-box" style="margin-bottom:8px"><div class="req-box-title">Item List (RecyclerView)</div>
+    <ul style="margin:0">
+      <li>Each row: item name (left) + price (right)</li>
+      <li>Scrollable — list length is dynamic from API</li>
+      <li>Show <strong>loading spinner</strong> while fetching</li>
+    </ul></div>
+    <div class="req-box"><div class="req-box-title">Footer</div>
+    <ul style="margin:0">
+      <li>Background: <code>#FFFFFF</code> · Padding: <code>12dp</code></li>
+      <li>Total text — color <code>#404040</code>, size <code>16sp</code></li>
+      <li>Two buttons side by side · Height: <code>48dp</code></li>
+      <li>Margin top (from total): <code>8dp</code> · Between buttons: <code>8dp</code></li>
+      <li>Button bg: <code>#022CFA</code> · Text: <code>#FFFFFF</code>, size <code>16sp</code></li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="req-box"><div class="req-box-title">Dummy API — Mock this in your Repository</div>
+<pre style="font-family:'JetBrains Mono',monospace;font-size:11.5px;margin:0;line-height:1.7;overflow-x:auto">{
+  "items": [
+    { "name": "Burger",    "price": 8.99 },
+    { "name": "Fries",     "price": 3.49 },
+    { "name": "Soda",      "price": 1.99 },
+    { "name": "Ice Cream", "price": 1.99 }
+  ],
+  "total": 15.67
+}
+<span style="color:var(--muted)">// Simulate network latency: delay(1500) before emitting data</span></pre></div>
+
+<h3>Requirements</h3>
+<ul>
+<li>Architecture: <strong>MVVM</strong> — ViewModel + Repository + sealed UiState</li>
+<li>Use <code>StateFlow</code> in ViewModel, collect with <code>repeatOnLifecycle(STARTED)</code></li>
+<li>Use <code>StateFlow.update { }</code> — not <code>.value =</code></li>
+<li>Repository returns <code>Flow&lt;CheckData&gt;</code> with <code>delay(1500)</code></li>
+<li>Handle Loading → Success → Error states in the UI</li>
+<li>Total amount and Pay button text must come from API data — do not hardcode</li>
+</ul></section>
+
+<section class="mc-sec"><h2>Hints</h2><details class="mc-d"><summary>Hint 1</summary><p>Start with data models: <code>data class CheckItem(val name: String, val price: Double)</code> and <code>CheckData(items, total)</code>. Then define a sealed <code>CheckUiState</code> with Loading, Success(data), Error(message).</p></details><details class="mc-d"><summary>Hint 2</summary><p>Repository: <code>fun getCheck(): Flow&lt;CheckData&gt; = flow { delay(1500); emit(mockData) }</code>. ViewModel: <code>private val _state = MutableStateFlow&lt;CheckUiState&gt;(Loading)</code> — call <code>.update{}</code> never <code>.value =</code>.</p></details><details class="mc-d"><summary>Hint 3</summary><p>In the Activity: <code>lifecycleScope.launch { repeatOnLifecycle(STARTED) { vm.state.collect { when(it) { ... } } } }</code>. On Loading → show ProgressBar, hide RecyclerView. On Success → reverse + call <code>adapter.submitList()</code> + update footer text.</p></details><details class="mc-d"><summary>Hint 4</summary><p>Footer layout: parent <code>LinearLayout</code> with <code>weightSum="2"</code>, each button <code>layout_weight="1"</code>. Pay button text = <code>"Pay $" + String.format("%.2f", total)</code> — read from state, not hardcoded.</p></details></section>
+<section class="mc-sec mc-prob"><h2>Approach</h2><h3>Architecture Flow</h3>
+<p>Repository <code>flow { delay(1500); emit(data) }</code> → ViewModel collects + maps to <code>CheckUiState</code> via <code>MutableStateFlow.update{}</code> → Activity collects with <code>repeatOnLifecycle(STARTED)</code> → UI renders per state.</p>
+<h3>Key Files</h3>
+<ul>
+<li><strong>CheckItem.kt / CheckData.kt</strong> — data models</li>
+<li><strong>CheckUiState.kt</strong> — sealed class with Loading, Success, Error</li>
+<li><strong>CheckRepository.kt</strong> — interface + impl with <code>Flow</code> + <code>delay(1500)</code></li>
+<li><strong>CheckViewModel.kt</strong> — MutableStateFlow + viewModelScope + .update{}</li>
+<li><strong>BillActivity.kt</strong> — repeatOnLifecycle + adapter + footer update</li>
+<li><strong>activity_bill.xml</strong> — header / FrameLayout(RecyclerView + ProgressBar) / footer</li>
+<li><strong>item_check_row.xml</strong> — two TextViews, horizontal LinearLayout</li>
+</ul>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>Using <code>.value =</code> instead of <code>.update { }</code> — not atomic</li>
+<li>Collecting Flow in <code>onCreate</code> scope — leaks coroutine when app is backgrounded</li>
+<li>Hardcoding <code>"Pay $15.67"</code> — interviewer WILL change the mock data to test this</li>
+<li>Not handling Error state — ProgressBar keeps spinning if the API call fails</li>
+<li>ProgressBar outside FrameLayout — it won't overlay the RecyclerView properly</li>
+</ul></div></section>
+
+<aside class="tp-box"><div><b>Practise it under interview conditions.</b><span>Timer, editor and tests in your browser. Your solved problems are saved to your free account.</span></div><a href="/machine_coding#restaurant-bill-screen">Open the editor</a></aside>
+<section class="tp-more"><h2>More machine coding problems</h2><div class="tp-grid"><a href="/machine-coding/lru-cache">LRU Cache</a><a href="/machine-coding/token-bucket-rate-limiter">Token Bucket Rate Limiter</a><a href="/machine-coding/event-bus">Event Bus</a><a href="/machine-coding/pagination-manager">Pagination Manager</a><a href="/machine-coding/retry-with-exponential-backoff">Retry with Exponential Backoff</a><a href="/machine-coding/shopping-cart-with-discounts">Shopping Cart with Discounts</a><a href="/machine-coding/in-memory-cache-with-ttl">In-Memory Cache with TTL</a><a href="/machine-coding/order-state-machine">Order State Machine</a></div>
+<p><a class="tp-all" href="/questions">Android interview questions with answers</a></p></section>
+</main>
+<footer class="tp-foot"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="" width="24" height="24"/>Droidly</a>
+<span>Android interview prep, built by an Android engineer.</span>
+<span class="tp-foot-links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:support@droidly.io">support@droidly.io</a></span></footer>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+<meta name="theme-color" content="#2e6040"/>
+<title>Shopping Cart with Discounts in Kotlin | Droidly Machine Coding</title>
+<meta name="description" content="Model a shopping cart with sealed-class discounts in Kotlin. Android machine coding interview question with hints, tests and a solution."/>
+<link rel="canonical" href="https://droidly.io/machine-coding/shopping-cart-with-discounts"/>
+<meta property="og:type" content="article"/>
+<meta property="og:url" content="https://droidly.io/machine-coding/shopping-cart-with-discounts"/>
+<meta property="og:title" content="Shopping Cart with Discounts in Kotlin | Droidly Machine Coding"/>
+<meta property="og:description" content="Model a shopping cart with sealed-class discounts in Kotlin. Android machine coding interview question with hints, tests and a solution."/>
+<meta property="og:image" content="https://droidly.io/assets/og-image.png"/>
+<meta property="og:site_name" content="Droidly"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/assets/topic-pages.css"/>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-61G11MD574');</script>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Droidly", "item": "https://droidly.io/"}, {"@type": "ListItem", "position": 2, "name": "Machine coding", "item": "https://droidly.io/machine-coding/"}, {"@type": "ListItem", "position": 3, "name": "Shopping Cart with Discounts", "item": "https://droidly.io/machine-coding/shopping-cart-with-discounts"}]}, {"@context": "https://schema.org", "@type": "Article", "headline": "Shopping Cart with Discounts in Kotlin", "description": "Model a shopping cart with sealed-class discounts in Kotlin. Android machine coding interview question with hints, tests and a solution.", "mainEntityOfPage": "https://droidly.io/machine-coding/shopping-cart-with-discounts", "dateModified": "2026-10-27", "author": {"@type": "Person", "name": "Vivek Choudhary", "url": "https://www.linkedin.com/in/vivek-choudhary-4686b477"}, "publisher": {"@type": "Organization", "name": "Droidly", "logo": {"@type": "ImageObject", "url": "https://droidly.io/assets/logo.png"}}}]</script>
+</head>
+<body>
+<nav class="tp-nav"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="Droidly" width="32" height="32"/>Droidly</a>
+<div class="tp-links"><a href="/questions">Questions</a><a href="/roadmap">Roadmap</a><a href="/practice">Practice</a></div>
+<a class="tp-cta" href="/machine_coding">Open the editor</a></nav>
+<main class="tp-wrap" id="top">
+<nav class="tp-crumb" aria-label="Breadcrumb"><a href="/">Droidly</a><span>›</span><a href="/machine-coding/">Machine coding</a><span>›</span><span>Shopping Cart with Discounts</span></nav>
+<header class="tp-head"><h1>Shopping Cart with Discounts in Kotlin</h1><p class="tp-intro">Model a shopping cart with sealed-class discounts in Kotlin. A common Android machine coding round question, solved in the browser and checked by tests.</p>
+<p class="tp-by">By <a href="https://www.linkedin.com/in/vivek-choudhary-4686b477" target="_blank" rel="noopener">Vivek Choudhary</a>, Android engineer · Updated October 2026</p>
+<div class="tp-stats"><span class="tp-d medium">Medium</span><span>About 45 min</span><span><b>8</b> automatic tests</span></div>
+<div class="tp-learn"><a class="mc-go" href="/machine_coding#shopping-cart-with-discounts">Open it in the editor</a></div></header>
+<section class="mc-sec mc-prob"><h3>Problem</h3>
+<p>Design a <strong>Shopping Cart</strong> that supports multiple discount types using Kotlin's sealed classes.</p>
+<div class="req-box"><div class="req-box-title">Discount Types</div>
+<ul>
+<li><strong>PercentageOff</strong> — e.g. 20% off item price</li>
+<li><strong>FlatDiscount</strong> — e.g. ₹200 off the item</li>
+<li><strong>BuyXGetYFree</strong> — e.g. buy 2 get 1 free (pay for ceil(quantity / (buy+free) × buy) items)</li>
+</ul></div>
+<div class="req-box"><div class="req-box-title">Functional Requirements</div>
+<ul>
+<li><code>addItem(item)</code> — Add to cart or increase quantity if already present</li>
+<li><code>removeItem(productId)</code> — Remove item from cart</li>
+<li><code>calculateTotal()</code> — Return total price after all discounts</li>
+<li><code>getAppliedDiscounts()</code> — Return map of productId → discount amount saved</li>
+</ul></div></section>
+<section class="mc-sec"><h2>What the tests check</h2><ul class="mc-tests"><li>an item without a discount costs price × quantity</li><li>PercentageOff: 2 × 1000 with 20% off = 1600</li><li>FlatDiscount: 2000 − 200 = 1800</li><li>FlatDiscount larger than the price floors at 0</li><li>BuyXGetYFree: buy 2 get 1 → 3 socks cost 2, 5 socks cost 4</li><li>adding the same product again increases its quantity</li><li>removeItem removes the product</li><li>full cart total is 3600 and savings are listed per product</li></ul></section>
+<section class="mc-sec"><h2>Hints</h2><details class="mc-d"><summary>Hint 1</summary><p>Use a sealed class for Discount types. Each subtype carries different parameters — this is exactly what sealed classes are designed for.</p></details><details class="mc-d"><summary>Hint 2</summary><p>In calculateTotal(), use a when expression on the Discount type for each item. For BuyXGetYFree: if you buy 3 with buy=2,free=1, you pay for 2.</p></details><details class="mc-d"><summary>Hint 3</summary><p>For BuyXGetYFree: paidQuantity = ceil(quantity / (buyQuantity + freeQuantity).toFloat()) * buyQuantity</p></details></section>
+<section class="mc-sec mc-prob"><h2>Approach</h2><h3>Sealed Class Dispatch</h3>
+<p>Use <code>when (item.discount)</code> in calculateTotal. Each branch handles its discount math. Store items in a <code>MutableMap&lt;String, CartItem&gt;</code> for O(1) add/update/remove by productId.</p>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>BuyXGetYFree calculation — most get the formula wrong for non-divisible quantities</li>
+<li>Flat discount exceeding item price — should floor at 0, not go negative</li>
+<li>Not handling duplicate addItem (should accumulate quantity, not replace)</li>
+</ul></div></section>
+<section class="mc-sec"><h2>Reference solution</h2><p class="mc-note">Try it yourself first. Then compare: the solution passes all 8 tests.</p><details class="mc-d mc-sol"><summary>Show the Kotlin solution</summary><pre class="code-block mc-code">sealed class Discount {
+    data class PercentageOff(val percentage: Double) : Discount()
+    data class FlatDiscount(val amount: Double) : Discount()
+    data class BuyXGetYFree(val buyQuantity: Int, val freeQuantity: Int) : Discount()
+    object None : Discount()
+}
+
+data class CartItem(
+    val productId: String,
+    val name: String,
+    val price: Double,
+    val quantity: Int,
+    val discount: Discount = Discount.None
+)
+
+class ShoppingCart {
+    private val items = LinkedHashMap&lt;String, CartItem&gt;()
+
+    fun addItem(item: CartItem) {
+        val existing = items[item.productId]
+        items[item.productId] = existing?.copy(quantity = existing.quantity + item.quantity) ?: item
+    }
+
+    fun removeItem(productId: String) { items.remove(productId) }
+
+    fun calculateTotal(): Double = items.values.sumOf { lineTotal(it) - saving(it) }
+
+    fun getAppliedDiscounts(): Map&lt;String, Double&gt; =
+        items.values.associate { it.productId to saving(it) }.filterValues { it &gt; 0.0 }
+
+    private fun lineTotal(item: CartItem) = item.price * item.quantity
+
+    private fun saving(item: CartItem): Double = when (val d = item.discount) {
+        is Discount.PercentageOff -&gt; lineTotal(item) * d.percentage / 100.0
+        is Discount.FlatDiscount -&gt; minOf(d.amount, lineTotal(item))          // never below zero
+        is Discount.BuyXGetYFree -&gt; {
+            val group = d.buyQuantity + d.freeQuantity
+            val freeUnits = (item.quantity / group) * d.freeQuantity
+            freeUnits * item.price
+        }
+        Discount.None -&gt; 0.0
+    }
+}
+</pre></details></section>
+<aside class="tp-box"><div><b>Practise it under interview conditions.</b><span>Timer, editor and tests in your browser. Your solved problems are saved to your free account.</span></div><a href="/machine_coding#shopping-cart-with-discounts">Open the editor</a></aside>
+<section class="tp-more"><h2>More machine coding problems</h2><div class="tp-grid"><a href="/machine-coding/lru-cache">LRU Cache</a><a href="/machine-coding/token-bucket-rate-limiter">Token Bucket Rate Limiter</a><a href="/machine-coding/event-bus">Event Bus</a><a href="/machine-coding/pagination-manager">Pagination Manager</a><a href="/machine-coding/retry-with-exponential-backoff">Retry with Exponential Backoff</a><a href="/machine-coding/in-memory-cache-with-ttl">In-Memory Cache with TTL</a><a href="/machine-coding/order-state-machine">Order State Machine</a><a href="/machine-coding/restaurant-bill-screen">Restaurant Bill Screen</a></div>
+<p><a class="tp-all" href="/questions">Android interview questions with answers</a></p></section>
+</main>
+<footer class="tp-foot"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="" width="24" height="24"/>Droidly</a>
+<span>Android interview prep, built by an Android engineer.</span>
+<span class="tp-foot-links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:support@droidly.io">support@droidly.io</a></span></footer>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+<meta name="theme-color" content="#2e6040"/>
+<title>In-Memory Cache with TTL in Kotlin | Droidly Machine Coding</title>
+<meta name="description" content="Build a generic in-memory cache with per-entry TTL in Kotlin. Android machine coding interview question with hints, tests and a solution."/>
+<link rel="canonical" href="https://droidly.io/machine-coding/in-memory-cache-with-ttl"/>
+<meta property="og:type" content="article"/>
+<meta property="og:url" content="https://droidly.io/machine-coding/in-memory-cache-with-ttl"/>
+<meta property="og:title" content="In-Memory Cache with TTL in Kotlin | Droidly Machine Coding"/>
+<meta property="og:description" content="Build a generic in-memory cache with per-entry TTL in Kotlin. Android machine coding interview question with hints, tests and a solution."/>
+<meta property="og:image" content="https://droidly.io/assets/og-image.png"/>
+<meta property="og:site_name" content="Droidly"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/assets/topic-pages.css"/>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-61G11MD574');</script>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Droidly", "item": "https://droidly.io/"}, {"@type": "ListItem", "position": 2, "name": "Machine coding", "item": "https://droidly.io/machine-coding/"}, {"@type": "ListItem", "position": 3, "name": "In-Memory Cache with TTL", "item": "https://droidly.io/machine-coding/in-memory-cache-with-ttl"}]}, {"@context": "https://schema.org", "@type": "Article", "headline": "In-Memory Cache with TTL in Kotlin", "description": "Build a generic in-memory cache with per-entry TTL in Kotlin. Android machine coding interview question with hints, tests and a solution.", "mainEntityOfPage": "https://droidly.io/machine-coding/in-memory-cache-with-ttl", "dateModified": "2026-10-27", "author": {"@type": "Person", "name": "Vivek Choudhary", "url": "https://www.linkedin.com/in/vivek-choudhary-4686b477"}, "publisher": {"@type": "Organization", "name": "Droidly", "logo": {"@type": "ImageObject", "url": "https://droidly.io/assets/logo.png"}}}]</script>
+</head>
+<body>
+<nav class="tp-nav"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="Droidly" width="32" height="32"/>Droidly</a>
+<div class="tp-links"><a href="/questions">Questions</a><a href="/roadmap">Roadmap</a><a href="/practice">Practice</a></div>
+<a class="tp-cta" href="/machine_coding">Open the editor</a></nav>
+<main class="tp-wrap" id="top">
+<nav class="tp-crumb" aria-label="Breadcrumb"><a href="/">Droidly</a><span>›</span><a href="/machine-coding/">Machine coding</a><span>›</span><span>In-Memory Cache with TTL</span></nav>
+<header class="tp-head"><h1>In-Memory Cache with TTL in Kotlin</h1><p class="tp-intro">Build a generic in-memory cache with per-entry TTL in Kotlin. A common Android machine coding round question, solved in the browser and checked by tests.</p>
+<p class="tp-by">By <a href="https://www.linkedin.com/in/vivek-choudhary-4686b477" target="_blank" rel="noopener">Vivek Choudhary</a>, Android engineer · Updated October 2026</p>
+<div class="tp-stats"><span class="tp-d medium">Medium</span><span>About 35 min</span><span><b>8</b> automatic tests</span></div>
+<div class="tp-learn"><a class="mc-go" href="/machine_coding#in-memory-cache-with-ttl">Open it in the editor</a></div></header>
+<section class="mc-sec mc-prob"><h3>Problem</h3>
+<p>Implement a <strong>generic in-memory cache with TTL (time-to-live)</strong> expiry for each entry.</p>
+<div class="req-box"><div class="req-box-title">Functional Requirements</div>
+<ul>
+<li><code>put(key, value, ttlMs)</code> — Store entry with an expiry time (defaults to <code>defaultTtlMs</code>)</li>
+<li><code>get(key)</code> — Return value if key exists and not expired, otherwise <code>null</code></li>
+<li><code>evictExpired()</code> — Proactively remove all expired entries</li>
+<li><code>size()</code> — Return count of non-expired entries</li>
+</ul></div>
+<div class="req-box"><div class="req-box-title">Expiry Rule</div>
+<p>An entry expires when <code>currentTime >= insertionTime + ttlMs</code>. Expired entries should not be returned by <code>get</code> even if not yet evicted.</p></div></section>
+<section class="mc-sec"><h2>What the tests check</h2><ul class="mc-tests"><li>get returns a fresh value</li><li>get returns null for a missing key</li><li>an entry expires after its own TTL</li><li>the default TTL is used when none is given</li><li>entries with a longer TTL stay alive</li><li>put on an existing key resets its value and TTL</li><li>size() counts only entries that have not expired</li><li>evictExpired() removes expired entries</li></ul></section>
+<section class="mc-sec"><h2>Hints</h2><details class="mc-d"><summary>Hint 1</summary><p>Store both the value and its expiry timestamp in a wrapper class.</p></details><details class="mc-d"><summary>Hint 2</summary><p>Use a data class: CacheEntry(value: V, expiryAt: Long). Compute expiryAt = System.currentTimeMillis() + ttlMs at insertion time.</p></details><details class="mc-d"><summary>Hint 3</summary><p>In get(), if entry exists but System.currentTimeMillis() >= entry.expiryAt, treat it as a miss (optionally remove it lazily). In size(), count only entries where expiryAt > currentTime.</p></details></section>
+<section class="mc-sec mc-prob"><h2>Approach</h2><h3>Lazy Expiry + Proactive Eviction</h3>
+<p>Store <code>Map&lt;K, CacheEntry&lt;V&gt;&gt;</code> where each entry carries its absolute expiry timestamp. Lazy expiry on <code>get</code> — check and return null if expired. <code>evictExpired()</code> does a full sweep.</p>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>Thread safety — concurrent reads/writes need synchronization or ConcurrentHashMap</li>
+<li>size() returning stale count — must filter expired entries</li>
+<li>Not removing lazily-expired entries from the map (memory leak)</li>
+</ul></div></section>
+<section class="mc-sec"><h2>Reference solution</h2><p class="mc-note">Try it yourself first. Then compare: the solution passes all 8 tests.</p><details class="mc-d mc-sol"><summary>Show the Kotlin solution</summary><pre class="code-block mc-code">class TTLCache&lt;K, V&gt;(private val defaultTtlMs: Long = 5000L) {
+    private data class Entry&lt;V&gt;(val value: V, val expiresAt: Long)
+
+    private val map = HashMap&lt;K, Entry&lt;V&gt;&gt;()
+
+    private fun now() = System.currentTimeMillis()
+
+    @Synchronized
+    fun put(key: K, value: V, ttlMs: Long = defaultTtlMs) {
+        map[key] = Entry(value, now() + ttlMs)
+    }
+
+    @Synchronized
+    fun get(key: K): V? {
+        val e = map[key] ?: return null
+        if (now() &gt;= e.expiresAt) { map.remove(key); return null }   // lazy expiry
+        return e.value
+    }
+
+    @Synchronized
+    fun evictExpired() {
+        val t = now()
+        map.entries.removeIf { t &gt;= it.value.expiresAt }
+    }
+
+    @Synchronized
+    fun size(): Int {
+        val t = now()
+        return map.values.count { t &lt; it.expiresAt }
+    }
+}
+</pre></details></section>
+<aside class="tp-box"><div><b>Practise it under interview conditions.</b><span>Timer, editor and tests in your browser. Your solved problems are saved to your free account.</span></div><a href="/machine_coding#in-memory-cache-with-ttl">Open the editor</a></aside>
+<section class="tp-more"><h2>More machine coding problems</h2><div class="tp-grid"><a href="/machine-coding/lru-cache">LRU Cache</a><a href="/machine-coding/token-bucket-rate-limiter">Token Bucket Rate Limiter</a><a href="/machine-coding/event-bus">Event Bus</a><a href="/machine-coding/pagination-manager">Pagination Manager</a><a href="/machine-coding/retry-with-exponential-backoff">Retry with Exponential Backoff</a><a href="/machine-coding/shopping-cart-with-discounts">Shopping Cart with Discounts</a><a href="/machine-coding/order-state-machine">Order State Machine</a><a href="/machine-coding/restaurant-bill-screen">Restaurant Bill Screen</a></div>
+<p><a class="tp-all" href="/questions">Android interview questions with answers</a></p></section>
+</main>
+<footer class="tp-foot"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="" width="24" height="24"/>Droidly</a>
+<span>Android interview prep, built by an Android engineer.</span>
+<span class="tp-foot-links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:support@droidly.io">support@droidly.io</a></span></footer>
+</body>
+</html>

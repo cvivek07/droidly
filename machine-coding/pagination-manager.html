@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+<meta name="theme-color" content="#2e6040"/>
+<title>Pagination Manager in Kotlin | Droidly Machine Coding</title>
+<meta name="description" content="Write a pagination manager in Kotlin: pages, navigation and bounds checks. Android machine coding question with hints, tests and a solution."/>
+<link rel="canonical" href="https://droidly.io/machine-coding/pagination-manager"/>
+<meta property="og:type" content="article"/>
+<meta property="og:url" content="https://droidly.io/machine-coding/pagination-manager"/>
+<meta property="og:title" content="Pagination Manager in Kotlin | Droidly Machine Coding"/>
+<meta property="og:description" content="Write a pagination manager in Kotlin: pages, navigation and bounds checks. Android machine coding question with hints, tests and a solution."/>
+<meta property="og:image" content="https://droidly.io/assets/og-image.png"/>
+<meta property="og:site_name" content="Droidly"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/assets/topic-pages.css"/>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-61G11MD574"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-61G11MD574');</script>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Droidly", "item": "https://droidly.io/"}, {"@type": "ListItem", "position": 2, "name": "Machine coding", "item": "https://droidly.io/machine-coding/"}, {"@type": "ListItem", "position": 3, "name": "Pagination Manager", "item": "https://droidly.io/machine-coding/pagination-manager"}]}, {"@context": "https://schema.org", "@type": "Article", "headline": "Pagination Manager in Kotlin", "description": "Write a pagination manager in Kotlin: pages, navigation and bounds checks. Android machine coding question with hints, tests and a solution.", "mainEntityOfPage": "https://droidly.io/machine-coding/pagination-manager", "dateModified": "2026-10-27", "author": {"@type": "Person", "name": "Vivek Choudhary", "url": "https://www.linkedin.com/in/vivek-choudhary-4686b477"}, "publisher": {"@type": "Organization", "name": "Droidly", "logo": {"@type": "ImageObject", "url": "https://droidly.io/assets/logo.png"}}}]</script>
+</head>
+<body>
+<nav class="tp-nav"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="Droidly" width="32" height="32"/>Droidly</a>
+<div class="tp-links"><a href="/questions">Questions</a><a href="/roadmap">Roadmap</a><a href="/practice">Practice</a></div>
+<a class="tp-cta" href="/machine_coding">Open the editor</a></nav>
+<main class="tp-wrap" id="top">
+<nav class="tp-crumb" aria-label="Breadcrumb"><a href="/">Droidly</a><span>›</span><a href="/machine-coding/">Machine coding</a><span>›</span><span>Pagination Manager</span></nav>
+<header class="tp-head"><h1>Pagination Manager in Kotlin</h1><p class="tp-intro">Write a pagination manager in Kotlin: pages, navigation and bounds checks. A common Android machine coding round question, solved in the browser and checked by tests.</p>
+<p class="tp-by">By <a href="https://www.linkedin.com/in/vivek-choudhary-4686b477" target="_blank" rel="noopener">Vivek Choudhary</a>, Android engineer · Updated October 2026</p>
+<div class="tp-stats"><span class="tp-d easy">Easy</span><span>About 25 min</span><span><b>8</b> automatic tests</span></div>
+<div class="tp-learn"><a class="mc-go" href="/machine_coding#pagination-manager">Open it in the editor</a></div></header>
+<section class="mc-sec mc-prob"><h3>Problem</h3>
+<p>Implement a <strong>Pagination Manager</strong> that splits a dataset into pages and supports navigation.</p>
+<div class="req-box"><div class="req-box-title">Functional Requirements</div>
+<ul>
+<li><code>getPage(pageNumber)</code> — Return the correct slice of items for that page (1-indexed)</li>
+<li><code>nextPage(current)</code> — Return the next page or <code>null</code> if on last page</li>
+<li><code>previousPage(current)</code> — Return the previous page or <code>null</code> if on first page</li>
+<li>Each <code>Page</code> object carries: items, currentPage, totalPages, hasNext, hasPrevious</li>
+<li>Page numbers outside <code>1..totalPages</code> throw <code>IllegalArgumentException</code></li>
+</ul></div>
+<h3>Example</h3>
+<pre style="background:var(--bg2);padding:12px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px">// 23 items, pageSize = 5 → 5 pages
+// Page 1: [1,2,3,4,5]
+// Page 5: [21,22,23]  ← last page may be smaller</pre></section>
+<section class="mc-sec"><h2>What the tests check</h2><ul class="mc-tests"><li>page 1 has the first 5 items</li><li>total pages rounds up (23 items / 5 = 5 pages)</li><li>last page holds the remainder</li><li>hasNext / hasPrevious on first, middle and last page</li><li>nextPage and previousPage navigate</li><li>nextPage on the last page and previousPage on the first return null</li><li>exact division has no empty last page</li><li>out-of-range page numbers throw IllegalArgumentException</li></ul></section>
+<section class="mc-sec"><h2>Hints</h2><details class="mc-d"><summary>Hint 1</summary><p>Total pages = ceil(totalItems / pageSize). Use integer math: (totalItems + pageSize - 1) / pageSize</p></details><details class="mc-d"><summary>Hint 2</summary><p>For page N, the start index is (N-1) * pageSize. The end index is min(startIndex + pageSize, totalItems).</p></details><details class="mc-d"><summary>Hint 3</summary><p>Validate pageNumber bounds — throw or return an empty page for out-of-range requests.</p></details></section>
+<section class="mc-sec mc-prob"><h2>Approach</h2><h3>Index Calculation</h3>
+<p>Page N (1-indexed): <code>startIndex = (pageNumber - 1) * pageSize</code>, <code>endIndex = min(startIndex + pageSize, items.size)</code>. Total pages: <code>ceil(items.size / pageSize.toFloat()).toInt()</code>.</p>
+<div class="miss-box"><div class="miss-box-title">What most candidates miss</div>
+<ul>
+<li>Off-by-one on the last page when items don't divide evenly</li>
+<li>Not validating out-of-bounds page numbers</li>
+<li>Using 0-indexed pages when the spec says 1-indexed</li>
+</ul></div></section>
+<section class="mc-sec"><h2>Reference solution</h2><p class="mc-note">Try it yourself first. Then compare: the solution passes all 8 tests.</p><details class="mc-d mc-sol"><summary>Show the Kotlin solution</summary><pre class="code-block mc-code">data class Page&lt;T&gt;(
+    val items: List&lt;T&gt;,
+    val currentPage: Int,
+    val totalPages: Int,
+    val hasNext: Boolean,
+    val hasPrevious: Boolean
+)
+
+class PaginationManager&lt;T&gt;(
+    private val allItems: List&lt;T&gt;,
+    private val pageSize: Int
+) {
+    init { require(pageSize &gt; 0) { &quot;pageSize must be positive&quot; } }
+
+    private val totalPages = ceil(allItems.size / pageSize.toDouble()).toInt()
+
+    fun getPage(pageNumber: Int): Page&lt;T&gt; {
+        require(pageNumber in 1..totalPages) { &quot;Page $pageNumber is out of range 1..$totalPages&quot; }
+        val start = (pageNumber - 1) * pageSize
+        val end = minOf(start + pageSize, allItems.size)
+        return Page(
+            items = allItems.subList(start, end),
+            currentPage = pageNumber,
+            totalPages = totalPages,
+            hasNext = pageNumber &lt; totalPages,
+            hasPrevious = pageNumber &gt; 1
+        )
+    }
+
+    fun nextPage(currentPage: Int): Page&lt;T&gt;? = if (currentPage &lt; totalPages) getPage(currentPage + 1) else null
+
+    fun previousPage(currentPage: Int): Page&lt;T&gt;? = if (currentPage &gt; 1) getPage(currentPage - 1) else null
+}
+</pre></details></section>
+<aside class="tp-box"><div><b>Practise it under interview conditions.</b><span>Timer, editor and tests in your browser. Your solved problems are saved to your free account.</span></div><a href="/machine_coding#pagination-manager">Open the editor</a></aside>
+<section class="tp-more"><h2>More machine coding problems</h2><div class="tp-grid"><a href="/machine-coding/lru-cache">LRU Cache</a><a href="/machine-coding/token-bucket-rate-limiter">Token Bucket Rate Limiter</a><a href="/machine-coding/event-bus">Event Bus</a><a href="/machine-coding/retry-with-exponential-backoff">Retry with Exponential Backoff</a><a href="/machine-coding/shopping-cart-with-discounts">Shopping Cart with Discounts</a><a href="/machine-coding/in-memory-cache-with-ttl">In-Memory Cache with TTL</a><a href="/machine-coding/order-state-machine">Order State Machine</a><a href="/machine-coding/restaurant-bill-screen">Restaurant Bill Screen</a></div>
+<p><a class="tp-all" href="/questions">Android interview questions with answers</a></p></section>
+</main>
+<footer class="tp-foot"><a href="/" class="tp-logo"><img src="/assets/logo.png" alt="" width="24" height="24"/>Droidly</a>
+<span>Android interview prep, built by an Android engineer.</span>
+<span class="tp-foot-links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:support@droidly.io">support@droidly.io</a></span></footer>
+</body>
+</html>

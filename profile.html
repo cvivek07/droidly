@@ -190,6 +190,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
 <script src="/assets/readiness.js"></script>
 <script src="/assets/practice.js"></script>
 <script src="/assets/reminder.js"></script>
+<script src="/assets/machine-coding-data.js"></script>
 <script>
 (function () {
   'use strict';
@@ -200,7 +201,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
   window.DroidlyDb = db;   // the sign-in dialog reuses this client
 
   var app = document.getElementById('app');
-  var user = null, loaded = false, loadErr = null, pdays = null;   // pdays: practice_days rows, null if unavailable
+  var user = null, loaded = false, loadErr = null, pdays = null, mcSolved = null;   // pdays: practice_days rows, null if unavailable
 
   var LEVEL = { '0-2': ['SDE 1', '0–2 years of experience'], '2-5': ['SDE 2', '2–5 years of experience'], '5+': ['SDE 3 / Senior', '5+ years of experience'] };
   var COMPANY = { product: 'Product company', startup: 'Startup', service: 'Service company' };
@@ -282,6 +283,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
       '<div id="rmdSlot" style="flex-basis:100%;border-top:1px solid #eef1ef;padding-top:16px" hidden></div></section>';
   }
 
+  function coding() {
+    var all = (window.MC_PROBLEMS || []).length;
+    if (mcSolved === null || !all) return '';
+    var n = mcSolved.length;
+    return '<section class="card pr"><div class="pr-main"><h2>Machine coding</h2><p>' + (n ? n + ' of ' + all + ' problems solved, checked by tests.' : all + ' Kotlin problems like the real round, with a timer and automatic tests.') + '</p></div>' +
+      '<a class="btn' + (n ? ' ghost' : '') + '" href="/machine_coding">' + (n ? 'Continue' : 'Try a problem') + '</a></section>';
+  }
+
   function goal(s) {
     var g = s.goals;
     if (!g) return '<section class="card"><div class="card-h"><h2>Your goal</h2></div><p class="muted">You have not set a goal yet. Tell us your level, company type and interview date to get a learning path made for you.</p>' +
@@ -330,7 +339,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
     if (!loaded) return;
     var s = R.get(), pp = s.goals ? R.pathProgress(s) : null;
     var warn = loadErr ? '<div class="card" style="padding:14px 18px;background:#fff8ec;border-color:#f3dfb8"><p style="font-size:14px;color:#8a4b05">Some progress could not be loaded right now, so these numbers may be incomplete. <a class="link" href="" style="font-size:14px">Reload</a></p></div>' : '';
-    app.innerHTML = warn + header(user) + stats(s, pp) + practice() + goal(s) + path(s, pp) + account(user);
+    app.innerHTML = warn + header(user) + stats(s, pp) + practice() + coding() + goal(s) + path(s, pp) + account(user);
     document.getElementById('pSignOut').onclick = signOut;
     var rs = document.getElementById('rmdSlot'); if (rs && window.DroidlyReminder) DroidlyReminder.mount(rs);
   }
@@ -342,7 +351,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
       return fetch(SUPABASE_URL + '/rest/v1/practice_days?select=day,items,results&day=gte.' + since, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok } })
         .then(function (x) { return x.ok ? x.json() : null; });
     }).catch(function () { return null; }).then(function (rows) { pdays = rows; });   // practice tables missing: just hide the card
-    return Promise.all([R.sync(), pjob]).then(function (res) { var r = res[0]; loadErr = r && r.ok ? null : (r && r.reason) || 'network'; })
+    var cjob = db.auth.getSession().then(function (r) {
+      var tok = r.data && r.data.session && r.data.session.access_token; if (!tok) return null;
+      return fetch(SUPABASE_URL + '/rest/v1/coding_progress?select=problem_id', { headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok } })
+        .then(function (x) { return x.ok ? x.json() : null; });
+    }).catch(function () { return null; }).then(function (rows) { mcSolved = rows; });   // table missing: hide the card
+    return Promise.all([R.sync(), pjob, cjob]).then(function (res) { var r = res[0]; loadErr = r && r.ok ? null : (r && r.reason) || 'network'; })
       .catch(function (e) { loadErr = String(e && e.message || e); })
       .then(function () { loaded = true; render(); track('profile_view', { has_goal: !!R.get().goals }); });
   }

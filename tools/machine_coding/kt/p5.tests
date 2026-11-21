@@ -1,0 +1,37 @@
+suspend fun testS(name: String, body: suspend () -> Unit) {
+    val err = try { body(); null } catch (e: Throwable) { e }
+    reportSuspend(name, err)
+}
+fun reportSuspend(name: String, err: Throwable?) = test(name) { if (err != null) throw err }
+
+fun main() = runBlocking {
+    testS("returns at once when the first attempt succeeds") {
+        var calls = 0; val t = System.currentTimeMillis()
+        val r = retryWithBackoff(3, 100L) { calls++; "ok" }
+        expect(r, "ok"); expect(calls, 1, "calls"); expectTrue(System.currentTimeMillis() - t < 90, "should not wait")
+    }
+    testS("retries until it succeeds") {
+        var calls = 0
+        val r = retryWithBackoff(3, 10L) { calls++; if (calls < 3) throw Exception("fail $calls"); "data" }
+        expect(r, "data"); expect(calls, 3, "calls")
+    }
+    testS("throws the last exception after maxAttempts") {
+        var calls = 0
+        val err = try { retryWithBackoff(3, 10L) { calls++; throw IllegalStateException("fail $calls") }; null } catch (e: Exception) { e }
+        expect(err?.message, "fail 3", "exception message"); expect(calls, 3, "calls")
+    }
+    testS("waits initialDelay, then initialDelay × multiplier (about 150 ms total)") {
+        val t = System.currentTimeMillis()
+        runCatching { retryWithBackoff(3, 50L, 2.0) { throw Exception("x") } }
+        val ms = System.currentTimeMillis() - t
+        expectTrue(ms in 140..600, "expected about 50 + 100 = 150 ms of waiting, got $ms ms")
+    }
+    testS("caps each delay at maxDelayMs") {
+        var calls = 0; val t = System.currentTimeMillis()
+        runCatching { retryWithBackoff(3, 100L, 10.0, maxDelayMs = 150L) { calls++; throw Exception("x") } }
+        val ms = System.currentTimeMillis() - t
+        expect(calls, 3, "attempts")
+        expectTrue(ms in 230..700, "expected about 100 + 150 = 250 ms, got $ms ms (is the delay capped?)")
+    }
+    summary()
+}
