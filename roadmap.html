@@ -295,6 +295,11 @@ body{background:linear-gradient(160deg,#e9f7ef 0%,#e7f1fb 38%,#fff3e4 72%,#fdebf
 .rm-bar{height:9px;border-radius:99px;background:var(--bg3);overflow:hidden;margin:12px 0 8px}
 .rm-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--a1),var(--a2),var(--a5))}
 .rm-list{margin-top:6px}
+.rm-locked{filter:blur(3.5px);opacity:.55;pointer-events:none;user-select:none}
+.rm-lockcta{margin:10px 0;padding:16px;border-radius:16px;background:#f1f6f3;border:1px solid rgba(46,96,64,.15);display:flex;flex-direction:column;gap:4px}
+.rm-lockcta b{font-size:15px}.rm-lockcta span{font-size:13.5px;color:var(--muted,#5b6472)}.rm-lockcta .actions{margin-top:10px}
+.gu-card{margin:16px 0;border:1px solid rgba(46,96,64,.25);background:linear-gradient(180deg,#f4faf6,#fff)}
+.gu-card h2{margin:4px 0 6px}
 .rm-row{display:grid;grid-template-columns:26px 46px minmax(0,1fr) auto;align-items:center;gap:14px;padding:14px 12px;border-top:1px solid var(--border);border-radius:14px;text-decoration:none;color:var(--ink);transition:background .15s}
 .rm-row:first-child{border-top:none}
 .rm-row:hover{background:linear-gradient(90deg,color-mix(in srgb,var(--cb) 14%,#fff),transparent)}
@@ -596,6 +601,68 @@ body{background:var(--hg-bg) !important}
   // Same dialog as the homepage, opened in place so the visitor stays on this page.
   function openAuth(mode) { if (typeof window.openAuthModal === 'function') window.openAuthModal(mode === 'signup' ? 'signup' : 'signin'); else window.location.href = '/?auth=' + (mode === 'signup' ? 'signup' : 'signin') + '&return=roadmap'; }
   document.getElementById('navSignIn').onclick = function () { openAuth('signin'); };
+
+  /* ---------- guest (signed out) ----------
+   * Visitors can set a goal, take the skill check and see their plan before signing in. It lives in memory only
+   * (nothing in the browser). Signing in in-page (email, One Tap) keeps it and R.sync saves it to the account.
+   * The Google redirect carries the goal and skill-check answers in the return link (?rg=...). */
+  var GUEST_OPEN = 3;   // topics a guest can open before signing in
+  var KCODE = { sure: 's', think: 't', guess: 'g' }, KDECODE = { s: 'sure', t: 'think', g: 'guess' };
+  function guestParam() {
+    var st = R.get(), g = st.goals || {}, res = (st.diag && st.diag.results) || {};
+    var ans = Object.keys(res).slice(0, 80).map(function (id) { return id + '.' + (res[id].c ? 1 : 0) + (KCODE[res[id].k] || 't'); }).join(',');
+    return [g.level || '', g.company || '', g.date || '', ans].join('~');
+  }
+  var fromLink = (function () {
+    var m = /[?&]rg=([^&#]+)/.exec(location.search); if (!m) return null;
+    try { var qs = location.search.replace(/([?&])rg=[^&#]*&?/, '$1').replace(/[?&]$/, ''); history.replaceState(null, '', location.pathname + qs + location.hash); } catch (e) { /* ignore */ }
+    var p = decodeURIComponent(m[1]).split('~'), ok = /^(0-2|2-5|5\+)$/.test(p[0]) && /^(product|startup|service)$/.test(p[1]);
+    if (!ok) return null;
+    var ans = (p[3] || '').split(',').map(function (x) { var q = /^([a-z0-9-]{3,60})\.([01])([stg])$/.exec(x); return q && { id: q[1], c: q[2] === '1', k: KDECODE[q[3]] }; }).filter(Boolean);
+    return { goals: { level: p[0], company: p[1], date: /^\d{4}-\d{2}-\d{2}$/.test(p[2]) ? p[2] : null }, ans: ans };
+  })();
+  // After the Google redirect: put the visitor's goal and answers into the account if it has none yet.
+  function applyFromLink() {
+    var g = fromLink; fromLink = null;
+    if (!g) return Promise.resolve();
+    var st = R.get(), hasDiag = st.diag && st.diag.results && Object.keys(st.diag.results).length;
+    if (!st.goals) R.setGoals(g.goals);
+    if (hasDiag || !g.ans.length) return Promise.resolve(R.flush && R.flush());
+    return fetch('assets/diagnostic-items.json').then(function (r) { return r.json(); }).then(function (j) {
+      var by = {}; (j.items || []).forEach(function (it) { by[it.id] = it; });
+      var res = g.ans.filter(function (a) { return by[a.id]; }).map(function (a) { var it = by[a.id]; return { id: a.id, type: 'mcq', topic: it.topic, ref: it.ref, d: it.diff, c: a.c, k: a.k }; });
+      if (res.length) R.recordDiag(res, { run: 'g' + Date.now() });
+      R.ensurePlan(index, true);
+      track('roadmap_guest_saved', { answers: res.length });
+      return R.flush && R.flush();
+    }).catch(function () { /* keep the goal at least */ });
+  }
+  function guestGoogle() {
+    track('roadmap_guest_signin', { method: 'google' });
+    if (window.DroidlyOneTap && DroidlyOneTap.ready && DroidlyOneTap.prompt()) return;
+    db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/roadmap?rg=' + encodeURIComponent(guestParam()) } })
+      .then(function (r) { if (r.error) toast('Google sign-in failed. Try again.'); });
+  }
+  function guestEmail() { track('roadmap_guest_signin', { method: 'email' }); openAuth('signup'); }
+  var GBTN = '<div class="actions"><button class="btn" data-g="google" type="button">Continue with Google</button><button class="btn ghost" data-g="email" type="button">Use email</button></div>';
+  function bindGuest(root) {
+    (root || app).querySelectorAll('[data-g]').forEach(function (b) { b.onclick = b.dataset.g === 'google' ? guestGoogle : guestEmail; });
+  }
+  function unlockCard(total) {
+    return '<div class="card gu-card"><span class="eyebrow">Your plan is ready</span><h2>Save your plan. It\'s free.</h2>' +
+      '<p class="sub">Sign in to keep your plan and skill-check results, unlock all ' + total + ' topics, and pick up where you left off on any device.</p>' + GBTN + '</div>';
+  }
+  function guestLockPath(pp) {
+    var cl = app.querySelector('.cl-card');
+    if (cl) cl.insertAdjacentHTML('afterend', unlockCard(pp.total));
+    var rows = app.querySelectorAll('.rm-list .rm-row');
+    if (rows.length > GUEST_OPEN) {
+      rows[GUEST_OPEN].insertAdjacentHTML('beforebegin', '<div class="rm-lockcta"><b>🔒 ' + (rows.length - GUEST_OPEN) + ' more topics in your plan</b><span>Sign in free to see the full order and track every topic.</span>' + GBTN + '</div>');
+      for (var i = GUEST_OPEN; i < rows.length; i++) { rows[i].classList.add('rm-locked'); rows[i].setAttribute('tabindex', '-1'); rows[i].setAttribute('aria-hidden', 'true'); rows[i].removeAttribute('href'); }
+    }
+    bindGuest();
+    if (!guestLockPath.sent) { guestLockPath.sent = 1; track('roadmap_guest_plan_shown', { topics: pp.total }); }
+  }
   document.getElementById('navSignOut').onclick = function () {
     db.auth.signOut().then(function () { setUser(null); signedOut(); toast('Signed out.'); });
   };
@@ -641,7 +708,6 @@ body{background:var(--hg-bg) !important}
   function render() {
     if (!index) return;
     if (!authReady) { app.innerHTML = '<div class="card" style="max-width:720px;margin:0 auto"><p class="sub">Loading your progress…</p></div>'; return; }
-    if (!user && !loadErr) return renderGate();
     if (loadErr) {
       var setupMissing = /PGRST205|PGRST204|42P01|schema cache/.test(String(loadErr));
       app.innerHTML = '<div class="card" style="max-width:720px;margin:0 auto"><h2>' + (setupMissing ? 'Setup is not finished' : 'Could not load your progress') + '</h2><p class="sub">' + (setupMissing ? 'The database tables that store your progress have not been created yet. Run the Supabase migration, then try again.' : 'Your saved plan lives in your account, so we will not start a new one on top of it. Check your connection and try again.') + ' (' + esc(loadErr) + ')</p><div class="actions"><button class="btn" id="retryLoad" type="button">Try again</button></div></div>';
@@ -672,7 +738,7 @@ body{background:var(--hg-bg) !important}
     draft = { level: g.level, company: g.company, minutes: g.minutes, date: g.date };
     app.innerHTML =
       '<div class="card" style="max-width:720px;margin:0 auto">' +
-      '<span class="eyebrow">' + (editing ? 'Check your goal, then take the skill check' : 'Free · about 10 minutes') + '</span>' +
+      '<span class="eyebrow">' + (editing ? 'Check your goal, then take the skill check' : user ? 'Free · about 10 minutes' : 'Free · no account needed to start') + '</span>' +
       '<h1>' + (editing ? 'Rebuild your plan' : 'Build your Android interview roadmap') + '</h1>' +
       '<p class="sub">Tell us where you\'re headed. We\'ll turn the question bank into a topic-by-topic learning path, ordered for your level and company type.</p>' +
       '<div class="q-group">' + qLabel(1, 'Your level') + levelCards(g.level) + '</div>' +
@@ -840,9 +906,15 @@ body{background:var(--hg-bg) !important}
     R.ensurePlan(index, false);
     var pp = R.pathProgress(s), h = parseHash();
     if (!pp) { app.innerHTML = '<div class="card"><h2>Building your roadmap…</h2></div>'; return; }
+    if (!user && h.v === 'saved') return renderGate();
+    if (!user && h.v === 'topic') {
+      var x = pp.items.filter(function (i) { return i.id === h.id; })[0];
+      if (x && x.index >= GUEST_OPEN) { app.innerHTML = '<a class="back" href="#roadmap">' + CHEV + ' Learning roadmap</a>' + unlockCard(pp.total); bindGuest(); return; }
+    }
     if (h.v === 'topic') return renderTopic(pp, h.id);
     if (h.v === 'saved') return renderSaved(pp);
     renderPath(pp);
+    if (!user) guestLockPath(pp);
   }
 
   function rowHtml(x) {
@@ -1125,7 +1197,7 @@ body{background:var(--hg-bg) !important}
       '<div class="actions" style="margin-top:14px"><button class="btn ghost small" id="diagResults" type="button">See last results</button></div>' +
       '<p class="dg-note">' + syncNote() + '</p></div>';
   }
-  function syncNote() { return 'Saved to your account, so it follows you across devices.'; }
+  function syncNote() { return user ? 'Saved to your account, so it follows you across devices.' : 'Not saved yet. Sign in free to keep it.'; }
   function showLastResults() {
     var d = R.get().diag || {}, res = [];
     Object.keys(d.results || {}).forEach(function (id) { var r = d.results[id]; res.push({ id: id, type: 'mcq', topic: r.topic, ref: r.ref, d: r.d, c: r.c, k: r.k, flag: r.c ? 'solid' : 'gap' }); });
@@ -1316,7 +1388,7 @@ body{background:var(--hg-bg) !important}
   function loadFor(session, event) {
     return R.sync().then(function (res) {
       if (!res || !res.ok) return settle((res && res.reason) || 'network');
-      return loadEntitlements().then(function () {
+      return applyFromLink().then(loadEntitlements).then(function () {
         if (view === 'diag') { authReady = true; return; }   // never redraw a quiz in progress
         settle();
         if (event === 'SIGNED_IN') toast('Signed in. Progress loaded.');
@@ -1332,6 +1404,7 @@ body{background:var(--hg-bg) !important}
   setTimeout(function () { if (!authReady) { R.clearLocal(); settle(); } }, 6000);   // auth client never answered: treat as signed out
 })();
 </script>
+<script src="/assets/one-tap.js" defer></script>
 <script src="/assets/site-nav.js" defer></script>
 </body>
 </html>

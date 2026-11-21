@@ -151,6 +151,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
 .how{font-size:14px;color:var(--muted);line-height:1.6}
 .how b{color:var(--ink2)}
 
+.guest-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#e8f2ec;color:#1f3b2a;border-radius:14px;padding:12px 16px;margin:0 0 14px;font-size:14px;line-height:1.45}
+.guest-bar .link-btn{flex:none;border:0;background:#fff;color:#2e6040;font:inherit;font-weight:700;font-size:13.5px;padding:8px 14px;border-radius:100px;cursor:pointer}
 /* gate / empty / loading */
 .empty{text-align:center;padding:36px 28px}
 .empty h1{font-size:26px;margin:10px 0 8px}
@@ -228,6 +230,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
   var app = document.getElementById('app');
   var user = null, index = null, reviews = {}, days = [], todayRow = null, answers = {}, answersLoading = {};
   var today = P.ymd(new Date()), revealed = false, saving = false, loadErr = null, ready = false, loadToken = 0;
+  // Signed-out visitors can try today's 5. Their answers live in memory only (nothing in the browser), and are
+  // carried to their account when they sign in: in-page sign-in keeps memory; the Google redirect carries them
+  // in the return link (?g=...).
+  var guest = null;   // { items: [{id, why}], results: {id: 'got_it'|'revisit'} }
 
   var WHY = { due: ['Review: due today', 'rev'], revisit: ['You marked this Revisit', 'rev'], missed: ['Missed in your skill check', 'rev'], 'new': ['New', ''] };
   var ICON = {
@@ -246,6 +252,40 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
   function initials(n) { return n.split(/\s+/).filter(Boolean).map(function (x) { return x[0]; }).join('').slice(0, 2).toUpperCase() || '?'; }
   function item(id) { var t = String(id).split(':')[0], it = null; ((index.topics[t] && index.topics[t].items) || []).some(function (x) { if (x.id === id) { it = x; return true; } return false; }); return it ? { it: it, topic: t, name: index.topics[t].name } : null; }
   function bankHref(id) { var x = item(id); return x ? '/questions?topic=' + x.topic + '&q=' + x.it.n + '#' + x.topic : '/questions'; }
+  var GUEST_TOPICS = ['kotlin', 'android', 'coroutines', 'compose', 'flows', 'architecture', 'di', 'networking', 'storage', 'performance'];
+  function guestPick() {
+    // Same 5 for everyone on a given day: one must-know question from each of 5 core topics, rotating daily.
+    var seed = 0; for (var k = 0; k < today.length; k++) seed = (seed * 31 + today.charCodeAt(k)) >>> 0;
+    function rnd() { seed = (seed * 1103515245 + 12345) >>> 0; return seed / 4294967296; }
+    var ts = GUEST_TOPICS.filter(function (t) { return index.topics[t]; }).slice();
+    for (var i = ts.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)), x = ts[i]; ts[i] = ts[j]; ts[j] = x; }
+    return ts.slice(0, 5).map(function (t) {
+      var its = (index.topics[t].items || []).filter(function (x) { return x.m; }); if (!its.length) its = index.topics[t].items || [];
+      return { id: its[Math.floor(rnd() * its.length)].id, why: 'new' };
+    }).filter(function (x) { return x.id; });
+  }
+  var GCODE = { got_it: 'g', revisit: 'r' }, GDECODE = { g: 'got_it', r: 'revisit' };
+  function guestParam() {   // "kotlin:12.g,android:3.r,coroutines:7"
+    return guest ? guest.items.map(function (x) { var r = guest.results[x.id]; return x.id + (r ? '.' + GCODE[r] : ''); }).join(',') : '';
+  }
+  function readGuestParam() {
+    var m = /[?&]g=([^&#]+)/.exec(location.search); if (!m) return null;
+    var items = [], results = {};
+    decodeURIComponent(m[1]).split(',').slice(0, 10).forEach(function (part) {
+      var p = /^([a-z]+:\d+)(?:\.([gr]))?$/.exec(part); if (!p) return;
+      items.push({ id: p[1], why: 'new' }); if (p[2]) results[p[1]] = GDECODE[p[2]];
+    });
+    return items.length ? { items: items, results: results } : null;
+  }
+  var fromLink = readGuestParam();
+  if (fromLink) { guest = fromLink; try { var qs = location.search.replace(/([?&])g=[^&#]*&?/, '$1').replace(/[?&]$/, ''); history.replaceState(null, '', location.pathname + qs + location.hash); } catch (e) { /* ignore */ } }
+  function googleSignIn() {
+    track('practice_guest_signin', { method: 'google', done: guest ? Object.keys(guest.results).length : 0 });
+    if (window.DroidlyOneTap && DroidlyOneTap.ready && DroidlyOneTap.prompt()) return;
+    db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/practice' + (guest ? '?g=' + encodeURIComponent(guestParam()) : '') } })
+      .then(function (r) { if (r.error) toast('Google sign-in failed. Try again.', true); });
+  }
+  function emailSignIn() { track('practice_guest_signin', { method: 'email', done: guest ? Object.keys(guest.results).length : 0 }); openAuth('signup'); }
   function niceDate() { try { return new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' }); } catch (e) { return today; } }
 
   /* ---------- Supabase ---------- */
@@ -304,6 +344,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
       reviews = {}; (res[2] || []).forEach(function (r) { reviews[r.question_id] = { box: r.box, due: r.due, reps: r.reps }; });
       days = res[3] || [];
       todayRow = days.filter(function (d) { return d.day === today; })[0] || null;
+      var g = guest; guest = null;
+      if (g && g.items.length) return carryGuest(g);
       if (todayRow) return;
       // First visit today: pick the set once and save it, so every device shows the same 5.
       var pp = R.get().goals ? R.pathProgress(R.get()) : null;
@@ -324,11 +366,66 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
     });
   }
 
+  // The visitor practised before signing in: make that today's set in their account (unless today already has answers).
+  function carryGuest(g) {
+    var graded = Object.keys(g.results);
+    var keepServer = todayRow && Object.keys(todayRow.results || {}).length;
+    var jobs = [];
+    if (!keepServer) {
+      var row = { day: today, items: g.items, results: g.results };
+      jobs.push(session().then(function (s) {
+        return todayRow
+          ? rest('PATCH', 'practice_days?day=eq.' + today, { items: g.items, results: g.results, updated_at: new Date().toISOString() }, 'return=minimal')
+          : rest('POST', 'practice_days?on_conflict=user_id,day', { user_id: s.uid, day: today, items: g.items, results: g.results }, 'resolution=merge-duplicates,return=minimal');
+      }).then(function () { todayRow = row; days = [row].concat(days.filter(function (d) { return d.day !== today; })); }));
+    }
+    graded.forEach(function (id) {
+      if (reviews[id] && reviews[id].reps) return;   // already practised in the account: keep its schedule
+      var next = P.schedule(reviews[id], g.results[id], today);
+      jobs.push(session().then(function (s) {
+        return rest('POST', 'practice_reviews?on_conflict=user_id,question_id', { user_id: s.uid, question_id: id, box: next.box, due: next.due, reps: next.reps, last_result: g.results[id], updated_at: new Date().toISOString() }, 'resolution=merge-duplicates,return=minimal');
+      }).then(function () { reviews[id] = next; }));
+      var m = R.get().marks[id]; if (!m || !m.s) R.setMark(id, { s: g.results[id] });
+    });
+    return Promise.all(jobs).then(function () {
+      if (R.flush) R.flush();
+      if (graded.length) { track('practice_guest_saved', { n: graded.length }); setTimeout(function () { toast('Saved. Your streak has started.'); }, 300); }
+    });
+  }
+
+  /* ---------- guest (signed out) ---------- */
+  function startGuest() {
+    loadIndex().then(function () {
+      if (user) return;
+      if (!guest) guest = { items: guestPick(), results: {} };
+      todayRow = { day: today, items: guest.items, results: guest.results };
+      days = [todayRow]; reviews = {}; ready = true; revealed = false; render();
+      itemsOf(todayRow).forEach(function (x) { loadAnswers(x.id.split(':')[0]).catch(function () {}); });
+      track('practice_guest_view', { done: P.doneCount(todayRow) });
+    }).catch(function () { ready = true; gate(); });
+  }
+  function guestBanner() {
+    return '<div class="guest-bar"><span>You are trying Daily practice without an account. <b>Sign in to save your answers and keep a streak.</b></span><button class="link-btn" id="gbIn" type="button">Sign in</button></div>';
+  }
+  function guestSave() {
+    var got = countOf('got_it'), n = itemsOf(todayRow).length;
+    return '<section class="card done-card"><div class="done-ic">' + ICON.bigcheck + '</div><h2>Nice work. ' + got + ' of ' + n + ' got it.</h2>' +
+      '<p>Create a free account to save today\'s answers and start your streak. Tomorrow you get 5 new questions picked from your weak topics, and the ones you missed come back.</p>' +
+      '<div class="acts"><button class="btn" id="gsG" type="button">Continue with Google</button><button class="btn ghost" id="gsE" type="button">Use email</button></div></section>';
+  }
+
   /* ---------- grading ---------- */
   function grade(result) {
     if (saving) return;
     var i = currentIdx(); if (i < 0) return;
     var x = itemsOf(todayRow)[i], next = P.schedule(reviews[x.id], result, today);
+    if (!user) {
+      guest.results[x.id] = result; todayRow.results = guest.results;
+      track('practice_graded', { result: result, why: x.why, topic: x.id.split(':')[0], guest: true });
+      if (currentIdx() >= 0) toast(result === 'got_it' ? 'Nice.' : 'No problem. Sign in and it comes back tomorrow.');
+      revealed = false; if (window.DroidlyVoice) DroidlyVoice.stop(); render(); window.scrollTo(0, 0);
+      return;
+    }
     saving = true; paintGrade();
     var newResults = Object.assign({}, results()); newResults[x.id] = result;
     session().then(function (s) {
@@ -386,7 +483,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
     var segs = its.map(function (x, i) { var v = r[x.id]; return '<span class="' + (v === 'got_it' ? 'ok' : v === 'revisit' ? 'no' : i === cur ? 'cur' : '') + '"></span>'; }).join('');
     var doneN = P.doneCount(todayRow);
     return '<section class="head"><div class="head-top"><div><span class="kick">Daily practice</span><h1>Today\'s ' + (its.length || 5) + '</h1><div class="head-date">' + esc(niceDate()) + '</div></div>' +
-      '<span class="streak' + (st.current ? '' : ' zero') + '" title="Days in a row with the daily set finished">' + ICON.flame + (st.current ? st.current + '-day streak' : 'Start a streak') + '</span></div>' +
+      (user ? '<span class="streak' + (st.current ? '' : ' zero') + '" title="Days in a row with the daily set finished">' + ICON.flame + (st.current ? st.current + '-day streak' : 'Start a streak') + '</span>' : '<span class="streak zero" title="Sign in to keep a streak">' + ICON.flame + 'Sign in to keep a streak</span>') + '</div>' +
       '<div class="wk" aria-label="This week">' + wk + '</div>' +
       (its.length ? '<div class="segs" aria-label="' + doneN + ' of ' + its.length + ' done">' + segs + '<b>' + doneN + ' of ' + its.length + ' done</b></div>' : '') + '</section>';
   }
@@ -429,8 +526,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
   }
 
   function render() {
-    if (!user) { if (ready) gate(); return; }
     if (!ready) return;
+    if (!user && !guest) { gate(); return; }
     if (loadErr) {
       var setup = /PGRST205|PGRST204|42P01|schema cache|relation/.test(loadErr);
       app.innerHTML = '<section class="card empty"><span class="kick">Daily practice</span><h1>' + (setup ? 'Setup is not finished' : 'Could not load today\'s practice') + '</h1><p>' +
@@ -441,7 +538,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
     var its = itemsOf(todayRow);
     if (!its.length) { app.innerHTML = header() + emptyView(); return; }
     var i = currentIdx();
-    app.innerHTML = header() + (i < 0 ? doneView() : question());
+    app.innerHTML = (user ? '' : guestBanner()) + header() + (i < 0 ? (user ? doneView() : guestSave()) : question());
+    var gb = document.getElementById('gbIn'); if (gb) gb.onclick = function () { track('practice_gate_click', { action: 'banner' }); emailSignIn(); };
+    if (!user && i < 0) { document.getElementById('gsG').onclick = googleSignIn; document.getElementById('gsE').onclick = emailSignIn; track('practice_guest_done', { got: countOf('got_it') }); return; }
     if (i < 0) { var m = document.getElementById('more'); if (m) m.onclick = more; var rc = document.getElementById('rmdCard'); if (rc && window.DroidlyReminder) DroidlyReminder.mount(rc); return; }
     var rv = document.getElementById('reveal');
     if (rv) rv.onclick = function () {
@@ -483,13 +582,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;ali
     user = session ? session.user : null;
     setNav(user);
     if (session && (event === 'INITIAL_SESSION' || (event === 'SIGNED_IN' && was !== session.user.id))) load();
-    else if (!session) { loadToken++; R.clearLocal(); todayRow = null; days = []; reviews = {}; ready = true; render(); }
+    else if (!session) { loadToken++; R.clearLocal(); todayRow = null; days = []; reviews = {}; if (event === 'SIGNED_OUT') guest = null; startGuest(); }
   });
-  setTimeout(function () { if (!ready && !user) { ready = true; render(); } }, 6000);
+  setTimeout(function () { if (!ready && !user) startGuest(); }, 6000);
   // A new day while the page is open (practising past midnight): start the new day's set on return.
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && user && P.ymd(new Date()) !== today) { today = P.ymd(new Date()); load(); } });
 })();
 </script>
+<script src="/assets/one-tap.js" defer></script>
 <script src="/assets/site-nav.js" defer></script>
 </body>
 </html>
