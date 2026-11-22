@@ -776,7 +776,7 @@ body{background:var(--hg-bg) !important}
       draft.date = document.getElementById('dateInput').value || null;
       if (jdDraft && Object.keys(jdDraft.topics).length) { R.setJD(jdDraft); track('roadmap_jd_used', { topics: Object.keys(jdDraft.topics).length, level_hint: jdDraft.level || 'none' }); }
       R.setGoals(draft); R.ensurePlan(index, true); track('roadmap_goal_saved', { level: draft.level, company: draft.company, minutes: draft.minutes, has_date: !!draft.date });
-      track('roadmap_plan_built', { source: 'goal_step' });
+      track('roadmap_plan_built', { from: 'goal_step' });
       var src = editing ? 'rebuild' : 'setup'; editing = false; draft = {};
       startDiag(src);
     };
@@ -1173,7 +1173,7 @@ body{background:var(--hg-bg) !important}
     var c = diagCtx();
     view = 'diag';
     dg = { topic: tid || null, phase: 'loading', runId: 'r' + Date.now(), before: R.readiness(index, c.s).score, level: c.g.level, items: [], i: 0, picked: undefined, answered: false, results: [], written: [], wi: 0, last: null };
-    track(tid ? 'topic_quiz_started' : 'diagnostic_started', { source: source || 'unknown', topic: tid || null, has_jd: !!c.s.jd });
+    track(tid ? 'topic_quiz_started' : 'diagnostic_started', { from: source || 'unknown', topic: tid || null, has_jd: !!c.s.jd });
     render(); window.scrollTo(0, 0);
     loadBank().then(function (all) {
       var runs = (R.get().diag && R.get().diag.runs) ? R.get().diag.runs.length : 0;

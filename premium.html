@@ -879,7 +879,7 @@
   }
 
   function redirectToSignIn() {
-    gtag('event', 'sign_in_prompted', { source: 'premium_page' });
+    gtag('event', 'sign_in_prompted', { from: 'premium_page' });
     window.location.href = '/?return=premium';
   }
 
